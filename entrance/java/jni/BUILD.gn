@@ -1,0 +1,110 @@
+/*
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import("//build/ohos.gni")
+import("//foundation/ace/ace_engine/ace_config.gni")
+import("//foundation/ace/ace_engine/adapter/android/capability/java/capability.gni")
+
+template("ace_android_jni_source_set") {
+  forward_variables_from(invoker, "*")
+
+  ohos_source_set(target_name) {
+    defines += invoker.defines
+    configs = [ "$ace_root:ace_config" ]
+
+    sources = [
+      "$ace_root/adapter/android/entrance/java/jni/flutter_ace_view.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/flutter_ace_view_jni.cpp",
+    ]
+
+    deps = [
+      "$ace_flutter_engine_root:third_party_flutter_engine_$platform",
+      "$ace_flutter_engine_root/skia:ace_skia_$platform",
+      "$ace_root/frameworks/core/components/theme:build_theme_code",
+    ]
+  }
+}
+
+# build platform sources
+template("ace_common_jni_source_set") {
+  forward_variables_from(invoker, "*")
+
+  ohos_source_set(target_name) {
+    defines += invoker.defines
+    configs = [
+      "$ace_root:ace_config",
+    ]
+
+    sources = [
+      "$ace_root/adapter/android/entrance/java/jni/ace_application_info_impl.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/ace_application_info_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/ace_container.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/ace_container_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/ace_env_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/ace_resource_register.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/action_event_callback.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/download_manager.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/dump_helper_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/java_event_callback.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/jni_environment.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/jni_load.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/jni_registry.cpp",
+    ]
+
+    sources += common_capability_cpp_files
+
+    if (target_cpu == "arm64") {
+      defines += [ "_ARM64_" ]
+    }
+
+    deps = [
+      ":ace_android_jni_$platform",
+      "$ace_flutter_engine_root:third_party_flutter_engine_$platform",
+      "$ace_flutter_engine_root/skia:ace_skia_$platform",
+    ]
+  }
+}
+
+foreach(item, ace_platforms) {
+  platform = item.name
+  if (platform == "android") {
+    ace_android_jni_source_set("ace_android_jni_" + item.name) {
+      platform = item.name
+      defines = []
+      config = {
+      }
+
+      if (defined(item.config)) {
+        config = item.config
+      }
+      if (defined(config.defines)) {
+        defines = config.defines
+      }
+    }
+    ace_common_jni_source_set("ace_common_jni_" + item.name) {
+      platform = item.name
+      defines = []
+      config = {
+      }
+
+      if (defined(item.config)) {
+        config = item.config
+      }
+      if (defined(config.defines)) {
+        defines = config.defines
+      }
+    }
+  }
+}
