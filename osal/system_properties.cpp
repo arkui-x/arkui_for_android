@@ -45,7 +45,7 @@ int32_t SystemProperties::mcc_ = MCC_UNDEFINED;
 int32_t SystemProperties::mnc_ = MNC_UNDEFINED;
 ColorMode SystemProperties::colorMode_ { ColorMode::LIGHT };
 ScreenShape SystemProperties::screenShape_ {ScreenShape::NOT_ROUND };
-LongScreenShape SystemProperties::longScreen_ { LongScreenType::NOT_LONG };
+LongScreenType SystemProperties::longScreen_ { LongScreenType::NOT_LONG };
 bool SystemProperties::rosenBackendEnabled_ = false;
 bool SystemProperties::accessibilityEnabled_ = false;
 
@@ -77,7 +77,7 @@ void SystemProperties::InitDeviceInfo(int32_t deviceWidth, int32_t deviceHeight,
 void SystemProperties::SetDeviceOrientation(int32_t orientation) {
     if (orientation == ORIENTATION_PORTRAIT && orientation_ != DeviceOrientation::PORTRAIT) {
         std::swap(deviceWidth_, deviceHeight_);
-        orientation_ = DeviceOrientation::PRORTRAIT;
+        orientation_ = DeviceOrientation::PORTRAIT;
     } else if (orientation == ORIENTATION_LANDSCAPE && orientation_ != DeviceOrientation::LANDSCAPE) {
         std::swap(deviceWidth_, deviceHeight_);
         orientation_ = DeviceOrientation::LANDSCAPE;
