@@ -13,7 +13,7 @@
 
 import("//build/ohos.gni")
 import("//foundation/ace/ace_engine/ace_config.gni")
-import("//foundation/ace/ace_engine/adapter/android/capability/java/capability.gni")
+# import("//foundation/ace/ace_engine/adapter/android/capability/java/capability.gni")
 
 # common java files
 common_java_files = [
@@ -21,30 +21,22 @@ common_java_files = [
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceContainer.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceEnv.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceEventCallback.java",
-  "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AEventReport.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/ALog.java",
-  "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/DumpHelper.java",
-  "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/EventInfo.java",
+  #"$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/DumpHelper.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IAceView.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IAceViewCreator.java",
-  "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IEventReport.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/ILogger.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/LibraryLoader.java",
-  "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceResourceRegister.java",
-  "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceResourcePlugin.java",
-  "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IAceOnResourceEvent.java",
-  "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IAceOnCallResourceMethod.java",
-  "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IAceLocaleChanged.java",
-  "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IAceLocaleFallback.java",
-  "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/dfx/JankDetector.java",
+  #"$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceResourceRegister.java",
+  #"$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceResourcePlugin.java",
+  #"$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IAceOnResourceEvent.java",
+  #"$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IAceOnCallResourceMethod.java",
 ]
 
 # build common jar
 java_library("ace_platform_common_java") {
   java_files = common_java_files
-  java_files += common_capability_java_files
-
-  # deps = [ "//third_party/fastjson/repackaged:fastjson_utils_java" ]
+  #java_files += common_capability_java_files
 
   subsystem_name = "ace"
   part_name = "ace_engine_cross"
@@ -59,13 +51,11 @@ java_library("ace_platform_android_java") {
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceViewAosp.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceViewCreatorAosp.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceVsyncWaiter.java",
-    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/DeviceInfoHelperAosp.java",
-    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/DownloadManager.java",
-    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/EventReport.java",
+    #"$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/DownloadManager.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/LoggerAosp.java",
   ]
 
-  java_files += android_capability_java_files
+  #java_files += android_capability_java_files
 
   deps = [
     ":ace_platform_common_java",
