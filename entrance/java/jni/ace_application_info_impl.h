@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "jni.h" 
+
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/utils/noncopyable.h"
 #include "core/common/ace_application_info.h"
@@ -60,12 +61,12 @@ private:
     jmethodID changeLocale_ = nullptr;
     jmethodID getLocaleFallback_ = nullptr;
 
-    std:time_t initiateTimeStamp_;
-    std::map<std:string, std:string> jsEngineParams_;
+    std::time_t initiateTimeStamp_;
+    std::map<std::string, std::string> jsEngineParams_;
 };
 
 
 } // namespace OHOS::Ace::Platform
 
 
-#endif 
+#endif // FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_ACE_APPLICATION_INFO_IMPL_H

@@ -14,8 +14,10 @@
  */
 
 #include "adapter/android/entrance/java/jni/ace_application_info_jni.h"
-#include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
+
 #include "unicode/locid.h"
+
+#include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "base/i18n/localization.h"
 #include "base/log/ace_trace.h"
 #include "base/log/event_report.h"
@@ -23,12 +25,13 @@
 
 namespace OHOS::Ace::Platform {
 
-bool AceApplicationInfoJni::Register(const std::shared_ptr<JNIEnv>& env) {
+bool AceApplicationInfoJni::Register(const std::shared_ptr<JNIEnv>& env)
+{
     static const JNINativeMethod methods[] = {
         {
             .name = "nativeSetPackageInfo",
             .signature = "(Ljava/lang/String;IZZ)V",
-            .fnPtr = reinterpret_cast<void*>(&SetPackageInfo),
+            .fnPtr = reinterpret_cast<void*>(&NativeSetPackageInfo),
         },
         {
             .name = "nativeInitialize",
@@ -43,10 +46,10 @@ bool AceApplicationInfoJni::Register(const std::shared_ptr<JNIEnv>& env) {
         {
             .name = "nativeSetUserId",
             .signature = "(I)V",
-            .fnPtr = reinterpret_cast<void*>(&NativeSetUserId),
+            .fnPtr = reinterpret_cast<void*>(&NativeSetUserID),
         },
         {
-            .name = "nativeSetPrcessName",
+            .name = "nativeSetProcessName",
             .signature = "(Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&NativeSetProcessName),
         },
@@ -61,24 +64,24 @@ bool AceApplicationInfoJni::Register(const std::shared_ptr<JNIEnv>& env) {
             .fnPtr = reinterpret_cast<void*>(&NativeSetAccessibilityEnabled),
         },
     };
-    
+
     if (!env) {
-        LOGE("JNIEnv is null when register Ace ApplicationInfo jni！")；
+        LOGE("JNIEnv is null when register Ace ApplicationInfo jni！");
         return false;
     }
 
-    const jclass myClass = env->FindClaas("ohos/ace/adapter/AceApplicationInfo");
+    const jclass myClass = env->FindClass("ohos/ace/adapter/AceApplicationInfo");
     if (myClass == nullptr) {
         LOGE("Failed to find the AceApplicationInfo Class");
         return false;
     }
 
     return env->RegisterNatives(myClass, methods, ArraySize(methods)) == 0;
- 
 }
 
-void AceApplicationInfoJni::SetPackageInfo(JNIEnv* env, jclass myClass, jstring packageName,
-                                           jint ;uid, jboolean isDebug, jboolean needDebugBreakPoint){
+void AceApplicationInfoJni::NativeSetPackageInfo(
+    JNIEnv* env, jclass myClass, jstring packageName, jint uid, jboolean isDebug, jboolean needDebugBreakPoint)
+{
     if (!env) {
         LOGW("env is null");
         return;
@@ -90,12 +93,11 @@ void AceApplicationInfoJni::SetPackageInfo(JNIEnv* env, jclass myClass, jstring 
     }
     AceApplicationInfo::GetInstance().SetUid(uid);
     AceApplicationInfoImpl::GetInstance().SetDebug(isDebug, needDebugBreakPoint);
-
 }
 
-void AceApplicationInfoJni::NativeLocaleChanged(JNIEnv* env, jclass myClass, jstring language,
-                                                jstring countryOrRegion, jstring script, jstring keywordsAndValues) {
-
+void AceApplicationInfoJni::NativeLocaleChanged(
+    JNIEnv* env, jclass myClass, jstring language, jstring countryOrRegion, jstring script, jstring keywordsAndValues)
+{
     ACE_SCOPED_TRACE("nativeLocaleChanged");
 
     if (env == nullptr) {
@@ -118,28 +120,29 @@ void AceApplicationInfoJni::NativeLocaleChanged(JNIEnv* env, jclass myClass, jst
     }
 
     if (countryOrRegionStr != nullptr) {
-        env->ReleaseStringUTFChars(countryOrRegion, countryOrRegionStr);  
+        env->ReleaseStringUTFChars(countryOrRegion, countryOrRegionStr);
     }
 
     if (languageStr != nullptr) {
-        env->ReleaseStringUTFChars(language, languageStr);  
+        env->ReleaseStringUTFChars(language, languageStr);
     }
 
     if (scriptStr != nullptr) {
-        env->ReleaseStringUTFChars(script, scriptStr);  
+        env->ReleaseStringUTFChars(script, scriptStr);
     }
 
     if (keywordsAndValuesStr != nullptr) {
-        env->ReleaseStringUTFChars(keywordsAndValues, keywordsAndValuesStr);  
+        env->ReleaseStringUTFChars(keywordsAndValues, keywordsAndValuesStr);
     }
-
 }
 
-void AceApplicationInfoJni::NativeInitialize(JNIEnv* env, jclass myClass, jobject object) {
+void AceApplicationInfoJni::NativeInitialize(JNIEnv* env, jclass myClass, jobject object)
+{
     AceApplicationInfoImpl::GetInstance().Initialize(env, object);
 }
 
-void AceApplicationInfoJni::NativeSetupIcuRes(JNIEnv* env, jclass myClass, jstring icuData) {
+void AceApplicationInfoJni::NativeSetupIcuRes(JNIEnv* env, jclass myClass, jstring icuData)
+{
     auto icuDataStr = env->GetStringUTFChars(icuData, nullptr);
     if (icuDataStr == nullptr) {
         return;
@@ -148,27 +151,28 @@ void AceApplicationInfoJni::NativeSetupIcuRes(JNIEnv* env, jclass myClass, jstri
     env->ReleaseStringUTFChars(icuData, icuDataStr);
 }
 
-void AceApplicationInfoJni::NativeSetUserID(JNIEnv* env, jclass myClass, jint userId) {
+void AceApplicationInfoJni::NativeSetUserID(JNIEnv* env, jclass myClass, jint userId)
+{
     AceApplicationInfoImpl::GetInstance().SetUserId(userId);
 }
 
-void AceApplicationInfoJni::NativeSetAccessibilityEnabled(JNIEnv* env, jclass myClass, jboolean enabled) {
+void AceApplicationInfoJni::NativeSetAccessibilityEnabled(JNIEnv* env, jclass myClass, jboolean enabled)
+{
     AceApplicationInfoImpl::GetInstance().SetAccessibilityEnabled(enabled);
 }
 
-void AceApplicationInfoJni::NativeSetProcessName(JNIEnv* env, jclass myClass, jstring processName) {
+void AceApplicationInfoJni::NativeSetProcessName(JNIEnv* env, jclass myClass, jstring processName)
+{
     if (env == nullptr) {
         LOGW("env is null");
         return;
     }
-    
+
     auto processNameStr = env->GetStringUTFChars(processName, nullptr);
     if (processNameStr != nullptr) {
         AceApplicationInfoImpl::GetInstance().SetProcessName(processNameStr);
         env->ReleaseStringUTFChars(processName, processNameStr);
     }
-    
 }
-
 
 } // namespace OHOS::Ace::Platform

@@ -37,6 +37,6 @@ ohos_combine_jars("ace_android_adapter_java") {
 group("ace_packages") {
   deps = [
     ":ace_android_adapter_java",
-    # ":libace_android",
+    ":libace_android",
   ]
 }

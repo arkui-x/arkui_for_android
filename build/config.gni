@@ -12,7 +12,7 @@
 # limitations under the License.
 
 defines = [
-  "OHOS_PLATFORM",
+  "ANDROID_PLATFORM",
   "SK_BUILD_FOR_ANDROID",
 ]
 

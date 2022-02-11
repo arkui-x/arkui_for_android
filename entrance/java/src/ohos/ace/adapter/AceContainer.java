@@ -320,8 +320,8 @@ public class AceContainer {
 
     private native void nativeOnConfigurationUpdated(int instanceId, String configData);
 
-    private native void nativeOnWindowDisplayModeChanged(int instanceId, boolean isShownInMultiWindow,
-            String configData);
+    // private native void nativeOnWindowDisplayModeChanged(int instanceId, boolean isShownInMultiWindow,
+    //         String configData);
 
     private native void nativeInitResourceManager(int instanceId, int themeId, String hapPath);
 }

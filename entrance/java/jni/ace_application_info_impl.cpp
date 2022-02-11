@@ -15,6 +15,8 @@
 
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 
+#include <cstring>
+
 #include "unicode/locid.h"
 
 #include "base/i18n/localization.h"
@@ -31,17 +33,18 @@ AceApplicationInfoImpl::AceApplicationInfoImpl() : object_(nullptr, nullptr) {}
 
 AceApplicationInfoImpl::~AceApplicationInfoImpl() = default;
 
-void AceApplicationInfoImpl::Initialize(JNIEnv* env, jobject info) {
+void AceApplicationInfoImpl::Initialize(JNIEnv* env, jobject info)
+{
     if (env == nullptr) {
         LOGW("env is null");
-        EventReprot::SendAppStartException(AppStartExcepType::JNI_INIT_ERR);
+        EventReport::SendAppStartException(AppStartExcepType::JNI_INIT_ERR);
         return;
     }
 
     object_ = JniEnvironment::MakeJavaGlobalRef(JniEnvironment::GetInstance().GetJniEnv(), info);
     if (object_ == nullptr) {
         LOGW("make global ref failed");
-        EventReprot::SendAppStartException(AppStartExcepType::JNI_INIT_ERR);
+        EventReport::SendAppStartException(AppStartExcepType::JNI_INIT_ERR);
         return;
     }
 
@@ -53,18 +56,18 @@ void AceApplicationInfoImpl::Initialize(JNIEnv* env, jobject info) {
     }
 
     changeLocale_ = env->GetMethodID(objClass, "changeLocale", "(Ljava/lang/String;Ljava/lang/String;)V");
-    if (changeLocal_ == nullptr) {
+    if (changeLocale_ == nullptr) {
         LOGE("fail to get method id: changeLocale");
         EventReport::SendAppStartException(AppStartExcepType::JNI_CLASS_ERR);
         return;
     }
 
-    getLocaleFallback_ = env->GetMethodID(objClass, "getLocaleFallback",
-                                          "(Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;");
-    
-    if (getLocaleFallback_ == nulptr) {
+    getLocaleFallback_ =
+        env->GetMethodID(objClass, "getLocaleFallback", "(Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;");
+
+    if (getLocaleFallback_ == nullptr) {
         LOGE("fail to get method id: getLocaleFallback");
-         EventReport::SendAppStartException(AppStartExcepType::JNI_CLASS_ERR);
+        EventReport::SendAppStartException(AppStartExcepType::JNI_CLASS_ERR);
         return;
     }
 
@@ -72,11 +75,13 @@ void AceApplicationInfoImpl::Initialize(JNIEnv* env, jobject info) {
     time(&initiateTimeStamp_);
 }
 
-void AceApplicationInfoImpl::SetJsEngineParam(const std::string& key, const std::string& value) {
+void AceApplicationInfoImpl::SetJsEngineParam(const std::string& key, const std::string& value)
+{
     jsEngineParams_[key] = value;
 }
 
-std::string AceApplicationInfoImpl::GetJsEngineParam(const std::string& key) const {
+std::string AceApplicationInfoImpl::GetJsEngineParam(const std::string& key) const
+{
     std::string value;
     auto iter = jsEngineParams_.find(key);
     if (iter != jsEngineParams_.end()) {
@@ -85,10 +90,11 @@ std::string AceApplicationInfoImpl::GetJsEngineParam(const std::string& key) con
     return value;
 }
 
-void AceApplicationInfoImpl::ChangeLocale(const std::string& language, const std::string& countryOrRegion) {
-    icu::Locale locale(language.c_str(), co)untryOrRegion.c_str());
+void AceApplicationInfoImpl::ChangeLocale(const std::string& language, const std::string& countryOrRegion)
+{
+    icu::Locale locale(language.c_str(), countryOrRegion.c_str());
 
-    if (strcmp(locale.getISO3Language(), "") == = || strcmp(locale.getISO3Country(),"") == 0) {
+    if (strcmp(locale.getISO3Language(), "") == 0 || strcmp(locale.getISO3Country(), "") == 0) {
         LOGE("locale:[%{public}s-%{public}s] doesn't meet ISO standard.", language.c_str(), countryOrRegion.c_str());
         EventReport::SendInternalException(InternalExcepType::CHANGE_LOCALE_ERR);
         return;
@@ -120,19 +126,22 @@ void AceApplicationInfoImpl::ChangeLocale(const std::string& language, const std
     if (jCountryOrRegion != nullptr) {
         env->DeleteLocalRef(jCountryOrRegion);
     }
-
 }
 
 void AceApplicationInfoImpl::SetLocale(const std::string& language, const std::string& countryOrRegion,
-                                       const std::string& script, const std::string& keywordsAndValues) {
-
+    const std::string& script, const std::string& keywordsAndValues)
+{
     language_ = language;
     countryOrRegion_ = countryOrRegion;
     script_ = script;
-    keywordsAndValues_ keywordsAndValues;
+    keywordsAndValues_ = keywordsAndValues;
 
     localeTag_ = language;
     if (!script_.empty()) {
+        localeTag_.append("-" + script_);
+    }
+
+    if (!countryOrRegion_.empty()) {
         localeTag_.append("-" + countryOrRegion_);
     }
 
@@ -140,26 +149,26 @@ void AceApplicationInfoImpl::SetLocale(const std::string& language, const std::s
     isRightToLeft_ = locale.isRightToLeft();
     auto languageList = Localization::GetLanguageList(language_);
     if (languageList.size() == 1) {
-        Localization::SetLocale(
-            language_, countryOrRegion_, script_, languageList.front(), keywordsAndValues_);
-        )
+        Localization::SetLocale(language_, countryOrRegion_, script_, languageList.front(), keywordsAndValues_);
     } else {
-        auto selectLanguage = AceResConfig::GetLocaleFallback(localTag_, languageList);
-        Localization::SetLocale(
-            selectLanguage, countryOrRegion_, script_, languageList.front(), keywordsAndValues_);        
+        auto selectLanguage = AceResConfig::GetLocaleFallback(localeTag_, languageList);
+        Localization::SetLocale(language_, countryOrRegion_, script_, selectLanguage.front(), keywordsAndValues_);
     }
 }
 
-bool AceApplicationInfoImpl::GetBundleInfo(const std::string& packageName, AceBundleInfo& bundleInfo) {
+bool AceApplicationInfoImpl::GetBundleInfo(const std::string& packageName, AceBundleInfo& bundleInfo)
+{
     return true;
 }
 
-AceApplicationInfoImpl& AceApplicationInfoImpl::GetInstance(){
-    static AceApplicaitonInfoImpl instance;
+AceApplicationInfoImpl& AceApplicationInfoImpl::GetInstance()
+{
+    static AceApplicationInfoImpl instance;
     return instance;
 }
 
-double AceApplicationInfoImpl::GetLifeTime() const {
+double AceApplicationInfoImpl::GetLifeTime() const
+{
     return std::difftime(std::time(nullptr), initiateTimeStamp_);
 }
 
@@ -167,7 +176,8 @@ double AceApplicationInfoImpl::GetLifeTime() const {
 
 namespace OHOS::Ace {
 
-AceApplicationInfo& AceApplicationInfo::GetInstance() {
+AceApplicationInfo& AceApplicationInfo::GetInstance()
+{
     return Platform::AceApplicationInfoImpl::GetInstance();
 }
 

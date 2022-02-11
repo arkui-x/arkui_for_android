@@ -22,7 +22,6 @@
 #include "flutter/fml/synchronization/waitable_event.h"
 
 #include "adapter/android/entrance/java/jni/ace_resource_register.h"
-#include "adapter/android/entrance/java/jni/action_event_callback.h"
 #include "adapter/android/entrance/java/jni/java_event_callback.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/resource/asset_manager.h"
@@ -36,158 +35,151 @@
 
 namespace OHOS::Ace::Platform {
 
-//AceContainer is the instance which has its own pipeline and thread models, it can contain multiple pages.
-class AceContainer : public Container,, public JsMessageDispatcher {
+// AceContainer is the instance which has its own pipeline and thread models, it can contain multiple pages.
+class AceContainer : public Container, public JsMessageDispatcher {
     DECLARE_ACE_TYPE(AceContainer, Container, JsMessageDispatcher);
 
 public:
     AceContainer(jint instanceId, FrontendType type, jobject callback);
-    
+
     ~AceContainer() override = default;
 
     void Initialize() override;
 
     void Destroy() override;
 
-    int32_t GetInstanceId() const override {
+    int32_t GetInstanceId() const override
+    {
         return instanceId_;
-    }    
+    }
 
-    std::string GetInstanceName() const {
+    std::string GetInstanceName() const
+    {
         return instanceName_;
     }
 
-    std::string GetHostClassName() const override {
+    std::string GetHostClassName() const override
+    {
         return hostClassName_;
     }
 
-    RefPtr<Frontend> GetFrontend() const override {
+    RefPtr<Frontend> GetFrontend() const override
+    {
         return frontend_;
     }
 
-
-    RefPtr<TaskExecutor> GetTaskExecutor() const override {
-
+    RefPtr<TaskExecutor> GetTaskExecutor() const override
+    {
         return taskExecutor_;
     }
 
-    void SetAssetManagerIfNull(RefPtf<AssetManager> assetManager) {
-
+    void SetAssetManagerIfNull(RefPtr<AssetManager> assetManager)
+    {
         if (assetManager_ == nullptr) {
             assetManager_ = assetManager;
             if (frontend_) {
                 frontend_->SetAssetManager(assetManager);
             }
         }
-    } 
+    }
 
-    RefPtr<AssetManager> GetAssetManager() const override {
-
+    RefPtr<AssetManager> GetAssetManager() const override
+    {
         return assetManager_;
     }
 
-
-    RefPtr<PlatformResRegister> GetPlatformResRegister() const override {
-
+    RefPtr<PlatformResRegister> GetPlatformResRegister() const override
+    {
         return resRegister_;
-
     }
 
-    RefPtr<PipelineContext> GetPipelineContext() const override {
+    RefPtr<PipelineContext> GetPipelineContext() const override
+    {
         return pipelineContext_;
     }
 
-    int32_t GetViewWidth() const override {
+    int32_t GetViewWidth() const override
+    {
         return aceView_ ? aceView_->GetWidth() : 0;
     }
 
-
-    int32_t GetViewHeight() const override {
+    int32_t GetViewHeight() const override
+    {
         return aceView_ ? aceView_->GetHeight() : 0;
     }
 
-    void* GetView() contst override {
+    void* GetView() const override
+    {
         return static_cast<void*>(aceView_);
     }
 
-    void SetWindowModal(WindowModal windowModal) {
+    void SetWindowModal(WindowModal windowModal)
+    {
         windowModal_ = windowModal;
     }
 
-    void SetColorScheme(ColorScheme colorScheme) {
-
+    void SetColorScheme(ColorScheme colorScheme)
+    {
         colorScheme_ = colorScheme;
     }
 
-    void SetSemiModalHeight(int32_t modalHeight) {
-
+    void SetSemiModalHeight(int32_t modalHeight)
+    {
         modalHeight_ = modalHeight;
     }
 
-    void SetSemiModalColor(uint32_t modalColor) {
-
+    void SetSemiModalColor(uint32_t modalColor)
+    {
         modalColor_ = modalColor;
     }
 
     void Dispatch(
-        const std::string& group, std::vector<unit8_t>&& data, int32_t id, bool replyToComponent) const override;
-
+        const std::string& group, std::vector<uint8_t>&& data, int32_t id, bool replyToComponent) const override;
 
     void DispatchSync(
-        const std::string& group, std::vector<unit8_t>&& data, unit8_t ** resData, long& position) const override;
+        const std::string& group, std::vector<uint8_t>&& data, uint8_t** resData, long& position) const override;
 
     void DispatchPluginError(int32_t callbackId, int32_t errorCode, std::string&& errroMessage) const override;
 
     bool Dump(const std::vector<std::string>& params) override;
 
     void TriggerGarbageCollection() override;
-    
+
     void NotifyFontNodes() override;
 
-    void NotifyAppStorage(contst std::string& key const std::string& value) override;
-
+    void NotifyAppStorage(const std::string& key, const std::string& value) override;
 
     void SetActionCallback(jobject callback);
 
-    void OnFinish() {
-
+    void OnFinish()
+    {
         if (platformEventCallback_) {
             platformEventCallback_->OnFinish();
         }
     }
 
-
-    void OnActionEvent(const std::string& action) const {
-
-        if (actionEventCallback_) {
-
-            actionEventCallback_->OnActionEvent(action);
-        }
-    }
-
-    RefPtr<PlatformBridge> GetMessageBridge() const {
-
+    RefPtr<PlatformBridge> GetMessageBridge() const
+    {
         return messageBridge_;
     }
 
     void UpdateThemeConfig(const ResourceConfiguration& config);
 
-    ResourceConfiguration GetResourceConfiguration() const {
-
+    ResourceConfiguration GetResourceConfiguration() const
+    {
         return resourceInfo_.GetResourceConfiguration();
     }
 
-
-    void SetResourceConfiguration(const ResourceConfiguration& config) {
-
+    void SetResourceConfiguration(const ResourceConfiguration& config)
+    {
         resourceInfo_.SetResourceConfiguration(config);
     }
 
     void UpdateResourceConfiguration(const std::string& jsonStr) override;
 
-    uintptr_t GetMultiModalPtr() const override {
-
-        return reinterpret_cast<unitptr_t>(multiModalPtr_);
+    uintptr_t GetMutilModalPtr() const override
+    {
+        return reinterpret_cast<uintptr_t>(multiModalPtr_);
     }
 
     void UpdateColorMode(ColorMode colorMode);
@@ -195,26 +187,18 @@ public:
     void SetThemeResourceInfo(const std::string& path, int32_t themeId);
     void SetHostClassName(const std::string& name);
     void SetInstanceName(const std::string& name);
-    void ProcessScreenOnEvents() override;
-    void ProcessScreenOffEvents() override;
-
-    void SetViewFirstUpdating(std::chrono::time_point<std::chrono::high_resolution_clock> time) override {
-        aceView_->SetFirstUpdating(time);
+    void SetViewFirstUpdating(std::chrono::time_point<std::chrono::high_resolution_clock> time) override
+    {
+        aceView_->SetFirstUpDating(time);
     }
 
     void SetSessionID(const std::string& sessionID);
-
-    bool IsMainWindow() const override {
-
-        return instanceId_ == abilityId_ || abilityId_ == -1;
-    }
 
     void AttachView(std::unique_ptr<Window> window, AceView* view, double density, int32_t width, int32_t height);
 
     void InitThemeManager();
 
 private:
-
     void InitializeFrontend(bool isArkApp);
 
     void InitializeCallback();
@@ -228,10 +212,9 @@ private:
     RefPtr<PlatformBridge> messageBridge_;
     FrontendType type_ { FrontendType::JSON };
 
-    std::unique_ptr<ActionEventCallback> actionEventCallback_;
     std::unique_ptr<JavaEventCallback> platformEventCallback_;
     WindowModal windowModal_ { WindowModal::NORMAL };
-    ColorScheme colorScheme_ {ColorScheme::SCHEME_LIGHT };
+    ColorScheme colorScheme_ { ColorScheme::SCHEME_LIGHT };
 
     int32_t modalHeight_ = 0;
     uint32_t modalColor_ = 0xff000000;
@@ -241,21 +224,18 @@ private:
 
     std::string instanceName_;
     std::string hostClassName_;
-    RefPtf<SharedImageManager> sharedImageManager_;
+    RefPtr<SharedImageManager> sharedImageManager_;
 
     std::vector<std::function<void()>> screenOnEvents_;
     std::vector<std::function<void()>> screenOffEvents_;
 
     void* multiModalPtr_ = nullptr;
-    int32_t abilityId_ = -1;
-    RefPtf<ThemeManager> themeManager_;
+    RefPtr<ThemeManager> themeManager_;
     std::shared_ptr<fml::ManualResetWaitableEvent> themeLatch_;
-    
-    ACE_DISALLLOW_COPY_AND_MOVE(AceContainer);
-  
+
+    ACE_DISALLOW_COPY_AND_MOVE(AceContainer);
 };
 
-} // namespace
+} // namespace OHOS::Ace::Platform
 
 #endif
-

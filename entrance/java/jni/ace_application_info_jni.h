@@ -17,6 +17,7 @@
 #define FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_ACE_APPLICATION_INFO_JNI_H
 
 #include <memory>
+
 #include "jni.h"
 
 namespace OHOS::Ace::Platform {
@@ -25,22 +26,21 @@ class AceApplicationInfoJni {
 public:
     AceApplicationInfoJni() = delete;
     ~AceApplicationInfoJni() = delete;
-    
+
     static bool Register(const std::shared_ptr<JNIEnv>& env);
 
-    static void SetPackageInfo(JNIEnv* env, jclass myClass, jstring packageName, jint uid,
-                               jboolean isDebug, jboolean needDebugBreakpoint);
+    static void NativeSetPackageInfo(
+        JNIEnv* env, jclass myClass, jstring packageName, jint uid, jboolean isDebug, jboolean needDebugBreakpoint);
     static void NativeInitialize(JNIEnv* env, jclass myclass, jobject object);
-    static void NativeLocaleChanged(JNIEnv* env, jclass myClass, jstring language,
-                                    jstring countryOrRegion, jstring script, jstring keywordsAndValues);
+    static void NativeLocaleChanged(JNIEnv* env, jclass myClass, jstring language, jstring countryOrRegion,
+        jstring script, jstring keywordsAndValues);
     static void NativeSetUserID(JNIEnv* env, jclass myClass, jint userId);
 
     static void NativeSetAccessibilityEnabled(JNIEnv* env, jclass myClass, jboolean enabled);
 
     static void NativeSetProcessName(JNIEnv* env, jclass myClass, jstring processName);
     static void NativeSetupIcuRes(JNIEnv* env, jclass myClass, jstring icuData);
-
-}
+};
 
 } // namespace OHOS::Ace::Platform
 

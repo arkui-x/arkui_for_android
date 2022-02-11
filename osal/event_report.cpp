@@ -50,7 +50,7 @@ void EventReport::ANRRawReport(RawEventType type, int32_t uid, const std::string
                                const std::string& processName, const std::string& msg) {}
 
 void EventReport::ANRShowDialog(int32_t uid, const std::string& packageName,
-                                const std:string& processName, const std::string& msg) {}
+                                const std::string& processName, const std::string& msg) {}
 
 void EventReport::SendEventInner(const EventInfo& eventInfo) {}
 

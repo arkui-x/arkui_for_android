@@ -24,7 +24,7 @@ bool AceTraceEnabled() {
     return ATrace_isEnabled();
 }
 
-bool AceTraceBegin(const char* name) {
+void AceTraceBegin(const char* name) {
     if (name != nullptr) {
         ATrace_beginSection(name);
     } else {
