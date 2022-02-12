@@ -270,7 +270,7 @@ jboolean AceContainerJni::PushPage(JNIEnv* env, jclass clazz, jint instanceId, j
     return HandlePage(env, instanceId, content, params, HandlePageType::PUSH_PAGE);
 }
 
-jboolean NativeOnBackPressed(JNIEnv* env, jclass clazz, jint instanceId)
+jboolean AceContainerJni::NativeOnBackPressed(JNIEnv* env, jclass clazz, jint instanceId)
 {
     auto container = AceEngine::Get().GetContainer(instanceId);
     if (!container) {

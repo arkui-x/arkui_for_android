@@ -27,23 +27,17 @@ class ACE_EXPORT JavaEventCallback {
 public:
     explicit JavaEventCallback(jobject object);
     ~JavaEventCallback() = default;
-    bool Initialize()
-    {
-        return false;
-    }
-    bool OnEvent(int32_t pageId, const std::string& eventId, const std::string& param, std::string& result) const
-    {
-        return false;
-    }
-    void OnFinish() const {}
-    void OnStatusBarBgColorChanged(uint32_t color) {}
+    bool Initialize();
+    bool OnEvent(int32_t pageId, const std::string& eventId, const std::string& param, std::string& result) const;
+    void OnFinish() const;
+    void OnStatusBarBgColorChanged(uint32_t color);
 
 private:
     std::shared_ptr<JNIEnv> env_;
     JniEnvironment::JavaGlobalRef object_;
     jmethodID onEventMethodId_ = nullptr;
     jmethodID onFinishMethodId_ = nullptr;
-    jmethodID OnStatusBarBgColorMethodId_ = nullptr;
+    jmethodID onStatusBarBgColorMethodId_ = nullptr;
 };
 
 } // namespace OHOS::Ace::Platform
