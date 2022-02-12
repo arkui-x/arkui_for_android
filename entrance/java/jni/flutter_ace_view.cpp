@@ -38,55 +38,49 @@
 
 namespace OHOS::Ace::Platform {
 
-void FlutterAceView::RegisterTouchEventCallback(TouchEventCallback&& callback) {
-
+void FlutterAceView::RegisterTouchEventCallback(TouchEventCallback&& callback)
+{
     ACE_DCHECK(callback);
     touchEventCallback_ = std::move(callback);
 }
 
-void FlutterAceView::RegisterKeyEventCallback(KeyEventCallback&& callback) {
-
+void FlutterAceView::RegisterKeyEventCallback(KeyEventCallback&& callback)
+{
     ACE_DCHECK(callback);
     keyEventCallback_ = std::move(callback);
 }
 
-void FlutterAceView::RegisterMouseEventCallback(MouseEventCallback&& callback) {
-
+void FlutterAceView::RegisterMouseEventCallback(MouseEventCallback&& callback)
+{
     ACE_DCHECK(callback);
     mouseEventCallback_ = std::move(callback);
 }
 
-void FlutterAceView::RegisterRotationEventCallback(KeyEventCallback&& callback) {
-
+void FlutterAceView::RegisterRotationEventCallback(RotationEventCallBack&& callback)
+{
     ACE_DCHECK(callback);
     rotationEventCallback_ = std::move(callback);
 }
 
-void FlutterAceView::RegisterCardViewPositionCallback(CardViewPositionCallback&& callback) {
-
-    ACE_DCHECK(callback);
-    cardViewPositionCallback_ = std::move(callback);
-}
-
-void FlutterAceView::Launch() {
-
+void FlutterAceView::Launch()
+{
     LOGD("Launch shell holder");
     if (!viewLaunched_) {
         flutter::RunConfiguration config;
-        shell_holder_->Launch(std::move(config));
+        shellHolder_->Launch(std::move(config));
         viewLaunched_ = true;
     }
 }
 
-void FlutterAceView::SetShellHolder(std::unique_ptr<flutter::AndroidShellHolder> holder) {
-
+void FlutterAceView::SetShellHolder(std::unique_ptr<flutter::AndroidShellHolder> holder)
+{
     shellHolder_ = std::move(holder);
 }
 
-bool FlutterAceView::ProcessTouchEvent(std::unique_ptr<flutter::PointerDataPacket> packet) {
-
+bool FlutterAceView::ProcessTouchEvent(std::unique_ptr<flutter::PointerDataPacket> packet)
+{
     std::vector<TouchEvent> touchEvents;
-    ConvertTouchEvent(packet->data(),touchEvents);
+    ConvertTouchEvent(packet->data(), touchEvents);
     LOGD(" ProcessTouchEvent event size%zu", touchEvents.size());
     bool forbiddenToPlatform = false;
     for (const auto& point : touchEvents) {
@@ -102,26 +96,25 @@ bool FlutterAceView::ProcessTouchEvent(std::unique_ptr<flutter::PointerDataPacke
     return forbiddenToPlatform || (!IsLastPage());
 }
 
-bool FlutterAceView::ProcessMouseEvent(std::unique_ptr<flutter::PointerDataPacket> packet) {
-
+void FlutterAceView::ProcessMouseEvent(std::unique_ptr<flutter::PointerDataPacket> packet)
+{
     MouseEvent mouseEvent;
-    ConvertMouseEvent(packet->data(),mouseEvent);
+    ConvertMouseEvent(packet->data(), mouseEvent);
     LOGD(" ProcessMouseEvent event size");
     if (mouseEventCallback_) {
-            mouseEventCallback_(point);
+        mouseEventCallback_(mouseEvent);
     }
 }
 
-
-bool FlutterAceView::ProcessKeyEvent(int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp, 
-                                     int64_t timeStampStart, int32_t metaKey, int32_t sourceDevice, int32_t deviceId) {
-
+bool FlutterAceView::ProcessKeyEvent(int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp,
+    int64_t timeStampStart, int32_t metaKey, int32_t sourceDevice, int32_t deviceId)
+{
     if (!keyEventCallback_) {
         return false;
     }
-    
-    auto keyEvents = keyEventRecognizer_.GetKeyEvents(keyCode, keyAction, repeatTime, timeStamp, timeStampStart,
-                                                      metaKey, sourceDevice, deviceId);
+
+    auto keyEvents = keyEventRecognizer_.GetKeyEvents(
+        keyCode, keyAction, repeatTime, timeStamp, timeStampStart, metaKey, sourceDevice, deviceId);
     // distribute special event firstly
     // because platform receives a raw event, the special event processing is ignored
     if (keyEvents.size() > 1) {
@@ -130,35 +123,35 @@ bool FlutterAceView::ProcessKeyEvent(int32_t keyCode, int32_t keyAction, int32_t
     return keyEventCallback_(keyEvents.front());
 }
 
-void FlutterAceView::ProcessIdleEvent(int64_t deadline) {
-    
+void FlutterAceView::ProcessIdleEvent(int64_t deadline)
+{
     if (idleCallback_) {
         idleCallback_(deadline);
     }
-} 
+}
 
-bool FlutterAceView::ProcessRotationEvent(float rotationValue) {
-    
+bool FlutterAceView::ProcessRotationEvent(float rotationValue)
+{
     if (!rotationEventCallback_) {
         return false;
     }
-    
+
     RotationEvent event { .value = rotationValue * ROTATION_DIVISOR };
 
-    return rotationEventCallback_(event); 
+    return rotationEventCallback_(event);
 }
 
-bool FlutterAceView::Dump(const std::vector<std::string>& params) {
-
+bool FlutterAceView::Dump(const std::vector<std::string>& params)
+{
     if (params.empty() || params[0] != "-drawcmd") {
         return false;
     }
-    //TODO
+    // TODO
     return false;
 }
 
-bool FlutterAceView::IsLastPage() const {
-
+bool FlutterAceView::IsLastPage() const
+{
     auto container = AceEngine::Get().GetContainer(instanceId_);
     if (!container) {
         return false;
@@ -172,16 +165,14 @@ bool FlutterAceView::IsLastPage() const {
     return context->IsLastPage();
 }
 
-
-
-std::unique_ptr<DrawDelegate> FlutterAceView::GetDrawDelegate() {
-
+std::unique_ptr<DrawDelegate> FlutterAceView::GetDrawDelegate()
+{
     auto drawDelegate = std::make_unique<DrawDelegate>();
-    drawDelegate->SetDrawFrameCallback([this](RefPtr<Flutter::Layer>& layer, const Rect& dirty){
+    drawDelegate->SetDrawFrameCallback([this](RefPtr<Flutter::Layer>& layer, const Rect& dirty) {
         if (!layer) {
             return;
         }
-        RefPtr<Flutter::FlutterSceneBuilder> flutterSceneBuilder = AceType::MakeRefPtf<Flutter::FlutterSceneBuilder>();
+        RefPtr<Flutter::FlutterSceneBuilder> flutterSceneBuilder = AceType::MakeRefPtr<Flutter::FlutterSceneBuilder>();
         layer->AddToScene(*flutterSceneBuilder, 0.0, 0.0);
         auto scene = flutterSceneBuilder->Build();
         if (!flutter::UIDartState::Current()) {
@@ -190,106 +181,22 @@ std::unique_ptr<DrawDelegate> FlutterAceView::GetDrawDelegate() {
         }
         auto window = flutter::UIDartState::Current()->window();
         if (window != nullptr && window->client() != nullptr) {
-            window->client()->Render(scene.get());      
+            window->client()->Render(scene.get());
         }
     });
     return drawDelegate;
 }
 
-
-std::unique_ptr<PlatformWindow> FlutterAceView::GetPlatformWindow() {
+std::unique_ptr<PlatformWindow> FlutterAceView::GetPlatformWindow()
+{
     return PlatformWindow::Create(this);
 }
 
-const void* FlutterAceView::GetNativeWindowById(uint64_t textureId) {
+const void* FlutterAceView::GetNativeWindowById(uint64_t textureId)
+{
     return nullptr;
 }
 
-void FlutterAceView::SetViewCallback(JNIEnv* env, jobject jObject) {
-    
-    if (env == nullptr) {
-        LOGE("env is null");
-        return;
-    }
+void FlutterAceView::SetViewCallback(JNIEnv* env, jobject jObject) {}
 
-    object_ = JniEnvironment::MakeJavaGlobalRef(JniEnvironment::GetInstance().GetJniEnv(), jObject);
-    if (object_ = nullptr) {
-        LOGE("Failed to make global ref ");
-        return;
-    }
-
-    const jclass myClass = env->GetObjectClass(object_.get());
-    if (myClass == nullptr) {
-        LOGE("class is null");
-        return;
-    }
-    
-    updateWindowBlurDrawOp_ = env->GetMethodId(myClass, "updateWindowDrawOp", "()V");
-    if (updateWindowBlurDrawOp_ == nullptr) {
-        LOGE("Failed to get method id : updateWindowDrawOp");
-    }
-
-    updateWindowBlurRegion_ = env->GetMethodId(myClass, "updateWindowBlurRegion", "()V");
-    if (updateWindowBlurRegion_ == nullptr) {
-        LOGE("Failed to get method id : updateWindowBlurRegion");
-    }
-
-    env->DeleteLocalRef(myClass);
-}
-
-
-void FlutterAceView::UpdateWindowBlurRegion(const std::vector<std::vector<float>>& blurRRects) {
-
-    auto env = JniEnvironment::GetInstance().GetJniEnv();
-    if (env == nullptr) {
-        LOGE("Failed to get jni env");
-        return;
-    }
-    if (!updateWindowBlurRegion_) {
-        LOGE("updateWindowBlurRegion_ is null");
-        return;
-    }
-    
-    auto cls = env->FindClass("[F");
-    auto javaBlurRRects = (env)->NewObjectArray(blurRRects.size(), cls, NULL);
-    for(uint32_t i = 0; i < blurRRects.size(); i++) {
-        uint32_t size = blurRRects[i].size();
-        auto tmp = env->NewFloatArray(size);
-        env->SetFloatArrayRegion(tmp, 0, size, &blurRRects[i][0]);
-        env->SetObjectArrayElement(javaBlurRRects, i, tmp);
-        env->DeleteLocalRef(tmp);
-    }
-    
-    env->CallVoidMethod(object_.get(), updateWindowBlurRegion_, javaBlurRRects);
-    if (env->ExceptionCheck()) {
-        LOGE("exception occurred when updateWindowBlurRegion");
-        env->ExceptionDescribe();
-        env->ExceptionClear();
-    }
-}
-
-void FlutterAceView::UpdateWindowBlurDrawOp() {
-
-    auto env = JniEnvironment::GetInstance().GetJniEnv();
-    if (env == nullptr) {
-        LOGE("Failed to get jni env");
-        return;
-    }
-    if (!updateWindowBlurDrawOp_) {
-        LOGE("updateWindowBlurDrawOp_ is null");
-        return;
-    }
-    
-    env->CallVoidMethod(object_.get(), updateWindowBlurDrawOp_);
-    if (env->ExceptionCheck()) {
-        LOGE("exception occurred when updateWindowBlurDrawOp");
-        env->ExceptionDescribe();
-        env->ExceptionClear();
-    }
-}
-
-} // namespace
-
-
-
-
+} // namespace OHOS::Ace::Platform

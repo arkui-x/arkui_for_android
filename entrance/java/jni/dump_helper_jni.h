@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef FOUNDATION_ACE_ADAPTER_ANDROID_COMMON_JNI_DUMP_HELPER_JNI_H
-#define FOUNDATION_ACE_ADAPTER_ANDROID_COMMON_JNI_DUMP_HELPER_JNI_H
+#ifndef FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_DUMP_HELPER_JNI_H
+#define FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_DUMP_HELPER_JNI_H
 
 #include <memory>
 
@@ -22,17 +22,17 @@
 
 namespace OHOS::Ace::Platform {
 
-class DumpHelpJni {
+class DumpHelperJni {
 public:
-    DumpHelpJni() = default;
-    ~DumpHelpJni() = default;
-    
+    DumpHelperJni() = default;
+    ~DumpHelperJni() = default;
+
     static bool Register(const std::shared_ptr<JNIEnv>& env);
 
 private:
     static void Dump(JNIEnv* env, jclass myClass, jstring prefix, jobject fileDescriptor, jobjectArray args);
+};
 
-};    
-} // namespace
+} // namespace OHOS::Ace::Platform
 
-#endif
+#endif // FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_DUMP_HELPER_JNI_H

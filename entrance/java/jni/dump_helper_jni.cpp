@@ -18,7 +18,6 @@
 #include <unistd.h>
 
 #include "adapter/android/entrance/java/jni/jni_environment.h"
-
 #include "base/log/dump_log.h"
 #include "base/log/log.h"
 #include "base/utils/utils.h"
@@ -26,12 +25,12 @@
 
 namespace OHOS::Ace::Platform {
 
-bool DumpHelperJni::Register(const std::shared_ptr<JNIEnv>& env) {
-    
+bool DumpHelperJni::Register(const std::shared_ptr<JNIEnv>& env)
+{
     static const JNINativeMethod methods[] = {
         {
             .name = "nativeDump",
-            .signature = "L(java/lang/String;Ljava/io/FileDescriptor;[Ljava/lang/String;)V",
+            .signature = "(Ljava/lang/String;Ljava/io/FileDescriptor;[Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&Dump),
         },
     };
@@ -51,9 +50,8 @@ bool DumpHelperJni::Register(const std::shared_ptr<JNIEnv>& env) {
     return ret;
 }
 
-
-void DumpHelperJni::Dump(JNIEnv* env, jclass myClass, jstring prefix, jobject fileDescriptor, jobjectArray args) {
-
+void DumpHelperJni::Dump(JNIEnv* env, jclass myClass, jstring prefix, jobject fileDescriptor, jobjectArray args)
+{
     if (!env) {
         LOGE("JNIEnv is null when call dump!");
         return;
@@ -65,12 +63,12 @@ void DumpHelperJni::Dump(JNIEnv* env, jclass myClass, jstring prefix, jobject fi
         return;
     }
 
-    auto descriptorField = env->GetFieldId(classFileDesc, "descripter", "I");
+    auto descriptorField = env->GetFieldID(classFileDesc, "descripter", "I");
     auto fd = env->GetIntField(fileDescriptor, descriptorField);
     jsize size = env->GetArrayLength(args);
     std::vector<std::string> params;
-    for(jsize i = 0; i < size; i++) {
-        jstring arg = (jstring)env->GetObjectArrayElement(args,i);
+    for (jsize i = 0; i < size; i++) {
+        jstring arg = (jstring)env->GetObjectArrayElement(args, i);
         const char* param = env->GetStringUTFChars(arg, nullptr);
         if (param != nullptr) {
             params.push_back(param);
@@ -79,13 +77,13 @@ void DumpHelperJni::Dump(JNIEnv* env, jclass myClass, jstring prefix, jobject fi
     }
 
     if (!params.empty()) {
-        DumpLog::DumpFile file(nullptr,&fclose);
+        DumpLog::DumpFile file(nullptr, &fclose);
         int32_t newFd = dup(fd);
         if (newFd >= 0) {
-            file.reset(fdopen(newFd,"w"));
+            file.reset(fdopen(newFd, "w"));
         }
 
-        if(file) {
+        if (file) {
             DumpLog::GetInstance().SetDumpFile(std::move(file));
             AceEngine::Get().Dump(params);
             DumpLog::GetInstance().Reset();
@@ -94,8 +92,9 @@ void DumpHelperJni::Dump(JNIEnv* env, jclass myClass, jstring prefix, jobject fi
         }
 
         env->DeleteLocalRef(classFileDesc);
-
+    } else {
+        LOGE("Get String failed");
     }
 }
 
-} // namespace
+} // namespace OHOS::Ace::Platform

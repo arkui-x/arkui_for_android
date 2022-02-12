@@ -24,7 +24,7 @@
 
 namespace OHOS::Ace {
 
-class ACE_EXPORT NativeWindowFormSurface {
+class ACE_EXPORT NativeWindowFromSurface {
 public:
     static ANativeWindow* GetWindow(JNIEnv* env, jobject jsurface)
     {

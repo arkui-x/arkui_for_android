@@ -37,10 +37,10 @@ bool JniRegistry::Register()
         return false;
     }
 
-    // if (!DumpHelperJni::Register(jniEnv)) {
-    //     LOGE("JNI Initialize: failed to register DumpHelper");
-    //     return false;
-    // }
+    if (!DumpHelperJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register DumpHelper");
+        return false;
+    }
 
     if (!AceApplicationInfoJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register AceApplicationInfo");
@@ -49,10 +49,10 @@ bool JniRegistry::Register()
 
     fml::jni::InitJavaVM(JniEnvironment::GetInstance().GetVM().get());
 
-    // if (!FlutterAceViewJni::Register(jniEnv)) {
-    //     LOGE("JNI Initialize: failed to register FlutterAceView");
-    //     return false;
-    // }
+    if (!FlutterAceViewJni::RegisterNatives(jniEnv.get())) {
+        LOGE("JNI Initialize: failed to register FlutterAceView");
+        return false;
+    }
 
     if (!flutter::VsyncWaiterAndroid::Register(jniEnv.get())) {
         LOGE("JNI Initialize: failed to register VsyncWaiterAndroid");
