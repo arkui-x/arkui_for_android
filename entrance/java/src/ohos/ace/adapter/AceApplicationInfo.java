@@ -224,7 +224,7 @@ public final class AceApplicationInfo {
         this.localeFallbackCallback = localeFallbackCallback;
     }
 
-    private String getLocalesFallback(String locale, String[] localeList) {
+    private String getLocaleFallback(String locale, String[] localeList) {
         if (localeFallbackCallback != null) {
             return localeFallbackCallback.onLocaleFallback(locale, localeList);
         }

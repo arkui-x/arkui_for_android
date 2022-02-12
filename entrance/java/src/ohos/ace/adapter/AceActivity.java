@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 
  */
 public class AceActivity extends Activity {
-    private static final String LOG_TAG = "AceAbility";
+    private static final String LOG_TAG = "AceActivity";
 
     /**
      * web like js app version

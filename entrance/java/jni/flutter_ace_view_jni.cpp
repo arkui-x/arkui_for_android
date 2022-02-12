@@ -58,7 +58,7 @@ static const JNINativeMethod COMMON_METHODS[] = {
     },
     {
         .name = "nativeSurfaceDestroyed",
-        .signature = "(Lohos/ace/adapter/AceViewAosp;I)J",
+        .signature = "(J)V",
         .fnPtr = reinterpret_cast<void*>(&FlutterAceViewJni::SurfaceDestroyed),
     },
     {
@@ -68,7 +68,7 @@ static const JNINativeMethod COMMON_METHODS[] = {
     },
     {
         .name = "nativeDispatchPointerDataPacket",
-        .signature = "(JLjava/nio/ByteBuffer;I)Z)",
+        .signature = "(JLjava/nio/ByteBuffer;I)Z",
         .fnPtr = reinterpret_cast<void*>(&FlutterAceViewJni::DispatchPointerDataPacket),
     },
     {
@@ -91,11 +91,11 @@ static const JNINativeMethod COMMON_METHODS[] = {
         .signature = "(JJ)V",
         .fnPtr = reinterpret_cast<void*>(&FlutterAceViewJni::UnregisterTexture),
     },
-    {
-        .name = "nativeInitResRegister",
-        .signature = "(Lohos/ace/adapter/AceResourceRegister;)J",
-        .fnPtr = reinterpret_cast<void*>(&FlutterAceViewJni::InitResRegister),
-    },
+    // {
+    //     .name = "nativeInitResRegister",
+    //     .signature = "(Lohos/ace/adapter/AceResourceRegister;)J",
+    //     .fnPtr = reinterpret_cast<void*>(&FlutterAceViewJni::InitResRegister),
+    // },
     {
         .name = "nativeInitCacheFilePath",
         .signature = "(JLjava/lang/String;Ljava/lang/String;)V",
@@ -345,7 +345,7 @@ bool FlutterAceViewJni::RegisterCommonNatives(JNIEnv* env, const jclass myClass)
         LOGE("Failed to find AceView Class");
         return false;
     }
-    return env->RegisterNatives(myClass, COMMON_METHODS, ArraySize(COMMON_METHODS) == 0);
+    return env->RegisterNatives(myClass, COMMON_METHODS, ArraySize(COMMON_METHODS)) == 0;
 }
 
 bool FlutterAceViewJni::RegisterNatives(JNIEnv* env)

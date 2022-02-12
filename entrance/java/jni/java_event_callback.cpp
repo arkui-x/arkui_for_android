@@ -35,7 +35,7 @@ bool JavaEventCallback::Initialize()
         LOGE("JavaEventCallback: fail to get event class");
         return false;
     }
-    onEventMethodId_ = env_->GetMethodID(clazz, "onEvent", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
+    onEventMethodId_ = env_->GetMethodID(clazz, "onEvent", "(ILjava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
     onFinishMethodId_ = env_->GetMethodID(clazz, "onFinish", "()V");
     onStatusBarBgColorMethodId_ = env_->GetMethodID(clazz, "onStatusBarBgColorChanged", "(I)V");
     env_->DeleteLocalRef(clazz);

@@ -48,6 +48,11 @@ jint JNI_OnLoad(JavaVM* vm, void*)
         return RET_FAIL;
     }
 
-    LOGI("JNI Onload: sharedlibrary has been loaded successsfully");
+    if (!OHOS::Ace::Platform::JniRegistry::Register()) {
+        LOGE("JNI Onload: failed to call JniRegistry");
+        return RET_FAIL;
+    }
+
+    LOGI("JNI Onload: sharedlibrary has been loaded successsfully!");
     return OHOS::Ace::Platform::JniEnvironment::GetInstance().Version();
 }

@@ -99,7 +99,7 @@ public class AceContainer {
      * @return the view of container.
      */
     public IAceView getView(float density, int widthPixels, int heightPixels) {
-        if (view != null) {
+        if (view == null) {
             view = viewCreator.createView(instanceId, density);
             view.initDeviceType();
             nativeSetView(instanceId, view.getNativePtr(), density, widthPixels, heightPixels);
@@ -248,7 +248,7 @@ public class AceContainer {
      * @param colorMode app color mode: light or dark
      */
     public void setColorMode(int colorMode) {
-        nativeColorMode(instanceId, colorMode);
+        nativeSetColorMode(instanceId, colorMode);
     }
 
     /**
@@ -314,7 +314,7 @@ public class AceContainer {
 
     private native void nativeSetSemiModalCustomStyle(int instanceId, int windowHeight, int modalColor);
 
-    private native void nativeColorMode(int instanceId, int colorMode);
+    private native void nativeSetColorMode(int instanceId, int colorMode);
 
     private native void nativeSetHostClassName(int instanceId, String hostClassName);
 

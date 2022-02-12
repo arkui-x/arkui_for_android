@@ -204,7 +204,7 @@ bool AceContainerJni::Register()
         return false;
     }
 
-    auto res = jniEnv->RegisterNatives(clazz, methods, ArraySize(methods) == 0);
+    auto res = jniEnv->RegisterNatives(clazz, methods, ArraySize(methods)) == 0;
     jniEnv->DeleteLocalRef(clazz);
     return res;
 }

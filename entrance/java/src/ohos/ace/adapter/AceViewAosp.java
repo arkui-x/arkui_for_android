@@ -350,6 +350,8 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
 
     private native void nativeRegisterTexture(long viewPtr, long textureId, Object surfaceTexture);
 
+    private native void nativeUnregisterTexture(long viewPtr, long textureId);
+
     private native void nativeRegisterSurface(long viewPtr, long textureId, Object surface);
 
     private native void nativeMarkTextureFrameAvailable(long viewPtr, long textureId);
