@@ -69,6 +69,8 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
 
     private View animateView;
 
+    private final AceResourceRegister resRegister;
+
     /**
      * Constructor of AceViewAosp
      * 
@@ -92,6 +94,8 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
         metrics.devicePixelRatio = density;
 
         initCacheFilePath();
+        resRegister = new AceResourceRegister();
+        initResRegister();
     }
 
     protected void createNativePtr(int instanceId) {
@@ -261,6 +265,17 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
         nativeViewPtr = 0L;
     }
 
+    public void initResRegister() {
+        if (nativeViewPtr == 0L) {
+            return;
+        }
+        long resRegisterPtr = nativeInitResRegister(nativeViewPtr, resRegister);
+        if (resRegisterPtr == 0L) {
+            return;
+        }
+        resRegister.setRegisterPtr(resRegisterPtr);
+    }
+
     /**
      * Init cache image and file path
      * 
@@ -355,6 +370,8 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
     private native void nativeRegisterSurface(long viewPtr, long textureId, Object surface);
 
     private native void nativeMarkTextureFrameAvailable(long viewPtr, long textureId);
+
+    private native long nativeInitResRegister(long viewPtr, AceResourceRegister resRegister);
 
     private native void nativeInitCacheFilePath(long viewPtr, String imagePath, String filePath);
 

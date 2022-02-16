@@ -42,10 +42,10 @@ bool JniRegistry::Register()
         return false;
     }
 
-    // if (!DumpHelperJni::Register(jniEnv)) {
-    //     LOGE("JNI Initialize: failed to register DumpHelper");
-    //     return false;
-    // }
+    if (!DumpHelperJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register DumpHelper");
+        return false;
+    }
 
     if (!AceApplicationInfoJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register AceApplicationInfo");

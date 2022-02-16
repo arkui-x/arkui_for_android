@@ -91,11 +91,11 @@ static const JNINativeMethod COMMON_METHODS[] = {
         .signature = "(JJ)V",
         .fnPtr = reinterpret_cast<void*>(&FlutterAceViewJni::UnregisterTexture),
     },
-    // {
-    //     .name = "nativeInitResRegister",
-    //     .signature = "(Lohos/ace/adapter/AceResourceRegister;)J",
-    //     .fnPtr = reinterpret_cast<void*>(&FlutterAceViewJni::InitResRegister),
-    // },
+    {
+        .name = "nativeInitResRegister",
+        .signature = "(JLohos/ace/adapter/AceResourceRegister;)J",
+        .fnPtr = reinterpret_cast<void*>(&FlutterAceViewJni::InitResRegister),
+    },
     {
         .name = "nativeInitCacheFilePath",
         .signature = "(JLjava/lang/String;Ljava/lang/String;)V",
@@ -382,21 +382,18 @@ jlong FlutterAceViewJni::InitResRegister(JNIEnv* env, jobject myObject, jlong vi
         LOGE("env is null");
         return 0;
     }
-    // auto aceResRegister = Referenced::MakeRefPtr<AceResourceRegister>(resRegister);
-    // if (!aceResRegister->Initialize(env)) {
-    //     LOGE("Failed to initialize the AcerResourceRegister")
-    //     EventReport::SendAppStartException(AppStartExcepType::RESOURCE_REGISTER_INIT_ERR);
-    //     return 0;
-    // }
-    // auto viewPtr = JavaLongToPointer<FlutterAceView>(view);
-    // if (viewPtr == nullptr) {
-    //     LOGE("viewPtr is null");
-    //     EventReport::SendAppStartException(AppStartExcepType::VIEW_STATE_ERR);
-    //     return 0;
-    // }
-    // viewPtr->SetPlatformResRegister(aceResRegister);
-    // return PointerToJavaLong(AceType::RawPtr(aceResRegister));
-    return 0;
+    auto aceResRegister = Referenced::MakeRefPtr<AceResourceRegister>(resRegister);
+    if (!aceResRegister->Initialize(env)) {
+        LOGE("Failed to initialize the AcerResourceRegister");
+        return 0;
+    }
+    auto viewPtr = JavaLongToPointer<FlutterAceView>(view);
+    if (viewPtr == nullptr) {
+        LOGE("viewPtr is null");
+        return 0;
+    }
+    viewPtr->SetPlatformResRegister(aceResRegister);
+    return PointerToJavaLong(AceType::RawPtr(aceResRegister));
 }
 
 void FlutterAceViewJni::InitCacheFilePath(

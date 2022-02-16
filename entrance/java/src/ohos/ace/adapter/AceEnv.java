@@ -114,7 +114,7 @@ public final class AceEnv {
     }
 
     public static void dump(String prefix, FileDescriptor fd, PrintWriter writer, String[] args) {
-        // TODO: add dump helper
+        DumpHelper.dump(prefix, fd, writer, args);
     }
 
     public void setupFirstFrameHandler(int platform) {

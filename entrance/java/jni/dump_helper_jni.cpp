@@ -63,7 +63,7 @@ void DumpHelperJni::Dump(JNIEnv* env, jclass myClass, jstring prefix, jobject fi
         return;
     }
 
-    auto descriptorField = env->GetFieldID(classFileDesc, "descripter", "I");
+    auto descriptorField = env->GetFieldID(classFileDesc, "descriptor", "I");
     auto fd = env->GetIntField(fileDescriptor, descriptorField);
     jsize size = env->GetArrayLength(args);
     std::vector<std::string> params;

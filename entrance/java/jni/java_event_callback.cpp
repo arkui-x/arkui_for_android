@@ -61,8 +61,8 @@ bool JavaEventCallback::OnEvent(
     }
     jstring jParam = env->NewStringUTF(param.c_str());
     if (jParam == nullptr) {
-        return false;
         env->DeleteLocalRef(jEventId);
+        return false;
     }
     jstring jResult =
         static_cast<jstring>(env->CallObjectMethod(object_.get(), onEventMethodId_, pageId, jEventId, jParam));

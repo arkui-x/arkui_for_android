@@ -22,15 +22,13 @@ common_java_files = [
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceEnv.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceEventCallback.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/ALog.java",
-  #"$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/DumpHelper.java",
+  "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/DumpHelper.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IAceView.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IAceViewCreator.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/ILogger.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/LibraryLoader.java",
-  #"$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceResourceRegister.java",
-  #"$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceResourcePlugin.java",
-  #"$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IAceOnResourceEvent.java",
-  #"$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IAceOnCallResourceMethod.java",
+  "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceResourceRegister.java",
+  "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceResourcePlugin.java",
 ]
 
 # build common jar
@@ -51,7 +49,7 @@ java_library("ace_platform_android_java") {
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceViewAosp.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceViewCreatorAosp.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceVsyncWaiter.java",
-    #"$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/DownloadManager.java",
+    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/DownloadManager.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/LoggerAosp.java",
   ]
 
