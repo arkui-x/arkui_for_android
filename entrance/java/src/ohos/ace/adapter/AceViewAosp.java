@@ -30,6 +30,8 @@ import android.view.ViewParent;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 
+import ohos.ace.adapter.capability.clipboard.ClipboardPluginAosp;
+
 import java.io.File;
 import java.nio.ByteBuffer;
 
@@ -71,6 +73,8 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
 
     private final AceResourceRegister resRegister;
 
+    private final ClipboardPluginAosp clipboardPlugin;
+
     /**
      * Constructor of AceViewAosp
      * 
@@ -96,6 +100,7 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
         initCacheFilePath();
         resRegister = new AceResourceRegister();
         initResRegister();
+        clipboardPlugin = new ClipboardPluginAosp(context);
     }
 
     protected void createNativePtr(int instanceId) {

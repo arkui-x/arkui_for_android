@@ -19,6 +19,7 @@
 #include "flutter/shell/platform/android/platform_view_android.h"
 #include "flutter/shell/platform/android/vsync_waiter_android.h"
 
+#include "adapter/android/capability/java/jni/clipboard/clipboard_jni.h"
 #include "adapter/android/entrance/java/jni/ace_application_info_jni.h"
 #include "adapter/android/entrance/java/jni/ace_env_jni.h"
 #include "adapter/android/entrance/java/jni/dump_helper_jni.h"
@@ -73,6 +74,13 @@ bool JniRegistry::Register()
         LOGE("JNI Initialize: failed to register AceApplicationInfo");
         return false;
     }
+
+    // register capability plugins
+    if (!ClipboardJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register ClipboardJni");
+        return false;
+    }
+
     return true;
 }
 
