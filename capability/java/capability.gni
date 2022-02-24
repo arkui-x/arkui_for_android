@@ -16,17 +16,29 @@ import("//foundation/ace/ace_engine/ace_config.gni")
 
 # common capability java files
 common_capability_java_files = [
-    "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/clipboard/ClipboardPluginBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/clipboard/ClipboardPluginBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextEditState.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputAction.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputConfiguration.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputDelegate.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputPluginBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputType.java",
 ]
 
 # android capability java files
 android_capability_java_files = [
-    "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/clipboard/ClipboardPluginAosp.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/clipboard/ClipboardPluginAosp.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/InputConnectionWrapper.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputPluginAosp.java",
 ]
 
 # capability cpp files
 capability_cpp_files = [
-    "$ace_root/adapter/android/capability/java/jni/clipboard/clipboard_impl.cpp",
-    "$ace_root/adapter/android/capability/java/jni/clipboard/clipboard_jni.cpp",
-    "$ace_root/adapter/android/capability/java/jni/clipboard/clipboard_proxy_impl.cpp",
+  "$ace_root/adapter/android/capability/java/jni/clipboard/clipboard_impl.cpp",
+  "$ace_root/adapter/android/capability/java/jni/clipboard/clipboard_jni.cpp",
+  "$ace_root/adapter/android/capability/java/jni/clipboard/clipboard_proxy_impl.cpp",
+  "$ace_root/adapter/android/capability/java/jni/editing/text_input_client_handler.cpp",
+  "$ace_root/adapter/android/capability/java/jni/editing/text_input_connection_impl.cpp",
+  "$ace_root/adapter/android/capability/java/jni/editing/text_input_jni.cpp",
+  "$ace_root/adapter/android/capability/java/jni/editing/text_input_plugin.cpp",
 ]

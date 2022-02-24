@@ -29,8 +29,11 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 
 import ohos.ace.adapter.capability.clipboard.ClipboardPluginAosp;
+import ohos.ace.adapter.capability.editing.TextInputPluginAosp;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -75,6 +78,8 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
 
     private final ClipboardPluginAosp clipboardPlugin;
 
+    private final TextInputPluginAosp textInputPlugin;
+
     /**
      * Constructor of AceViewAosp
      * 
@@ -101,6 +106,7 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
         resRegister = new AceResourceRegister();
         initResRegister();
         clipboardPlugin = new ClipboardPluginAosp(context);
+        textInputPlugin = new TextInputPluginAosp(this, instanceId);
     }
 
     protected void createNativePtr(int instanceId) {
@@ -213,6 +219,14 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
             return true;
         }
         return super.onKeyUp(keyCode, event);
+    }
+
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        if (textInputPlugin != null) {
+            return textInputPlugin.createInputConnection(this, outAttrs);
+        }
+        return super.onCreateInputConnection(outAttrs);
     }
 
     @Override

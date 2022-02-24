@@ -20,6 +20,7 @@
 #include "flutter/shell/platform/android/vsync_waiter_android.h"
 
 #include "adapter/android/capability/java/jni/clipboard/clipboard_jni.h"
+#include "adapter/android/capability/java/jni/editing/text_input_jni.h"
 #include "adapter/android/entrance/java/jni/ace_application_info_jni.h"
 #include "adapter/android/entrance/java/jni/ace_env_jni.h"
 #include "adapter/android/entrance/java/jni/dump_helper_jni.h"
@@ -78,6 +79,11 @@ bool JniRegistry::Register()
     // register capability plugins
     if (!ClipboardJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register ClipboardJni");
+        return false;
+    }
+
+    if (!TextInputJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register TextInputJni");
         return false;
     }
 
