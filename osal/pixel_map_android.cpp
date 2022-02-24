@@ -18,9 +18,10 @@
 
 namespace OHOS::Ace {
 
-RefPtr<PixelMap> PixelMap::CreatePixelMap(void* rawPtr) {
+RefPtr<PixelMap> PixelMap::CreatePixelMap(void* rawPtr)
+{
     // Not supported yet
     return nullptr;
 }
 
-}  // namespace OHOS::Ace
+} // namespace OHOS::Ace

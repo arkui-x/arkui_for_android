@@ -12,19 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-#include <android/trace.h>
 
 #include "base/log/ace_trace.h"
+
+#include <android/trace.h>
+
 #include "base/utils/macros.h"
 
 namespace OHOS::Ace {
 
-bool AceTraceEnabled() {
+bool AceTraceEnabled()
+{
     return ATrace_isEnabled();
 }
 
-void AceTraceBegin(const char* name) {
+void AceTraceBegin(const char* name)
+{
     if (name != nullptr) {
         ATrace_beginSection(name);
     } else {
@@ -32,7 +35,8 @@ void AceTraceBegin(const char* name) {
     }
 }
 
-void AceTraceEnd() {
+void AceTraceEnd()
+{
     ATrace_endSection();
 }
 

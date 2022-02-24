@@ -13,40 +13,42 @@
  * limitations under the License.
  */
 
-#include <android/log.h>
-
 #include "base/log/log_wrapper.h"
+
+#include <android/log.h>
 
 namespace OHOS::Ace {
 namespace {
 
 constexpr int LOG_LEVEL[] = { ANDROID_LOG_DEBUG, ANDROID_LOG_INFO, ANDROID_LOG_WARN, ANDROID_LOG_ERROR,
-                              ANDROID_LOG_FATAL};
+    ANDROID_LOG_FATAL };
 
 const char* LOG_TAGS[] = {
     "Ace",
     "JSApp",
 };
 
-}  // namespace
+} // namespace
 
 // Initialize the static member object
 LogLevel LogWrapper::level_ = LogLevel::DEBUG;
 
-char LogWrapper::GetSeparatorCharacter() {
+char LogWrapper::GetSeparatorCharacter()
+{
     return '/';
 }
 
-void LogWrapper::PrintLog(LogDomain domain, LogLevel level, const char* fmt, va_list args) {
+void LogWrapper::PrintLog(LogDomain domain, LogLevel level, const char* fmt, va_list args)
+{
     std::string newFmt(fmt);
     StripFormatString("{public}", newFmt);
-    StripFormatString("{private}",newFmt);
+    StripFormatString("{private}", newFmt);
     __android_log_vprint(
         LOG_LEVEL[static_cast<int>(level)], LOG_TAGS[static_cast<uint32_t>(domain)], newFmt.c_str(), args);
-    
 }
 
-int32_t LogWrapper::GetId() {
+int32_t LogWrapper::GetId()
+{
     return 0;
 }
 

@@ -18,4 +18,4 @@
 
 #include "core/components/theme/resource_adapter.h"
 
-#endif //FOUNDATION_ACE_ADAPTER_AOSP_OSAL_RESOURCE_ADAPTER_IMPL_H
+#endif // FOUNDATION_ACE_ADAPTER_AOSP_OSAL_RESOURCE_ADAPTER_IMPL_H

@@ -17,7 +17,8 @@
 
 namespace OHOS::Ace {
 
-RefPtr<ResourceAdapter> ResourceAdapter::Create() {
+RefPtr<ResourceAdapter> ResourceAdapter::Create()
+{
     return RefPtr<ResourceAdapter>();
 }
 
