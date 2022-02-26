@@ -34,6 +34,8 @@ import android.view.inputmethod.InputConnection;
 
 import ohos.ace.adapter.capability.clipboard.ClipboardPluginAosp;
 import ohos.ace.adapter.capability.editing.TextInputPluginAosp;
+import ohos.ace.adapter.capability.environment.EnvironmentAosp;
+import ohos.ace.adapter.capability.storage.PersistentStorageAosp;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -74,11 +76,15 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
 
     private View animateView;
 
-    private final AceResourceRegister resRegister;
+    private AceResourceRegister resRegister;
 
-    private final ClipboardPluginAosp clipboardPlugin;
+    private ClipboardPluginAosp clipboardPlugin;
 
-    private final TextInputPluginAosp textInputPlugin;
+    private TextInputPluginAosp textInputPlugin;
+
+    private EnvironmentAosp environmentPlugin;
+
+    private PersistentStorageAosp persistentStoragePlugin;
 
     /**
      * Constructor of AceViewAosp
@@ -103,10 +109,8 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
         metrics.devicePixelRatio = density;
 
         initCacheFilePath();
-        resRegister = new AceResourceRegister();
         initResRegister();
-        clipboardPlugin = new ClipboardPluginAosp(context);
-        textInputPlugin = new TextInputPluginAosp(this, instanceId);
+        initPlugins(context);
     }
 
     protected void createNativePtr(int instanceId) {
@@ -285,6 +289,7 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
     }
 
     public void initResRegister() {
+        resRegister = new AceResourceRegister();
         if (nativeViewPtr == 0L) {
             return;
         }
@@ -337,6 +342,13 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
             ((ViewGroup) parent).removeView(animateView);
         }
         animateView = null;
+    }
+
+    private void initPlugins(Context context) {
+        clipboardPlugin = new ClipboardPluginAosp(context);
+        textInputPlugin = new TextInputPluginAosp(this, instanceId);
+        environmentPlugin = new EnvironmentAosp(context);
+        persistentStoragePlugin = new PersistentStorageAosp(context);
     }
 
     private View createAnimateView() {

@@ -27,7 +27,7 @@
 namespace OHOS::Ace::Platform {
 namespace {
 
-static const char* const TEXT_INPUT_PLUGIN_CLASS_NAME = "ohos/ace/capability/editing/TextInputPluginBase";
+static const char* const TEXT_INPUT_PLUGIN_CLASS_NAME = "ohos/ace/adapter/capability/editing/TextInputPluginBase";
 
 static const JNINativeMethod METHODS[] = {
     { "nativeInit", "(I)V", reinterpret_cast<void*>(TextInputJni::NativeInit) },
@@ -64,19 +64,19 @@ bool TextInputJni::needFireChangeEvent_ = true;
 bool TextInputJni::Register(std::shared_ptr<JNIEnv> env)
 {
     if (!env) {
-        LOGW("env is null");
+        LOGW("TextInput JNI: env is null");
         return false;
     }
     jclass cls = env->FindClass(TEXT_INPUT_PLUGIN_CLASS_NAME);
     if (!cls) {
-        LOGW("cls TEXT_INPUT_PLUGIN_CLASS_NAME is null");
+        LOGW("TextInput JNI: TextInputPluginBase not found");
         return false;
     }
 
     bool ret = env->RegisterNatives(cls, METHODS, sizeof(METHODS) / sizeof(METHODS[0])) == 0;
     env->DeleteLocalRef(cls);
     if (!ret) {
-        LOGW("TextInputJni RegisterNatives fail.");
+        LOGW("TextInput JNI: RegisterNatives fail.");
         return false;
     }
     OnJniRegistered();
@@ -91,56 +91,56 @@ void TextInputJni::OnJniRegistered()
 void TextInputJni::NativeInit(JNIEnv* env, jobject jobj, jint instanceId)
 {
     if (env == nullptr) {
-        LOGW("env is null");
+        LOGW("TextInput JNI: env is null");
         return;
     }
 
     if (jobj == nullptr) {
-        LOGW("jobj is null");
+        LOGW("TextInput JNI: jobj is null");
         return;
     }
     auto result = g_jobjects.try_emplace(
         instanceId, JniEnvironment::MakeJavaGlobalRef(JniEnvironment::GetInstance().GetJniEnv(), jobj));
     if (!result.second) {
-        LOGW("instance already exist.");
+        LOGW("TextInput JNI: instance already exist.");
         return;
     }
     // Find classes & methods in Java class.
     jclass cls = env->GetObjectClass(jobj);
     if (cls == nullptr) {
-        LOGE("get object class failed");
+        LOGE("TextInput JNI: get object class failed");
         return;
     }
 
     jclass superCls = env->GetSuperclass(cls);
     if (superCls == nullptr) {
-        LOGE("get super class failed");
+        LOGE("TextInput JNI: get super class failed");
         return;
     }
 
     g_pluginClass.setClient = env->GetMethodID(superCls, METHOD_SET_CLIENT, SIGNATURE_SET_CLIENT);
     if (!g_pluginClass.setClient) {
-        LOGW("setClient method is not exists.");
+        LOGW("TextInput JNI: setClient method is not exists.");
     }
 
     g_pluginClass.clearClient = env->GetMethodID(superCls, METHOD_CLEAR_CLIENT, SIGNATURE_CLEAR_CLIENT);
     if (!g_pluginClass.clearClient) {
-        LOGW("clearClient method is not exists.");
+        LOGW("TextInput JNI: clearClient method is not exists.");
     }
 
     g_pluginClass.setEditingState = env->GetMethodID(superCls, METHOD_SET_EDITING_STATE, SIGNATURE_SET_EDITING_STATE);
     if (!g_pluginClass.setEditingState) {
-        LOGW("setEditingState method is not exists.");
+        LOGW("TextInput JNI: setEditingState method is not exists.");
     }
 
     g_pluginClass.showTextInput = env->GetMethodID(cls, METHOD_SHOW, SIGNATURE_SHOW);
     if (!g_pluginClass.showTextInput) {
-        LOGW("showTextInput method is not exists.");
+        LOGW("TextInput JNI: showTextInput method is not exists.");
     }
 
     g_pluginClass.hideTextInput = env->GetMethodID(cls, METHOD_HIDE, SIGNATURE_HIDE);
     if (!g_pluginClass.hideTextInput) {
-        LOGW("hideTextInput method is not exists.");
+        LOGW("TextInput JNI: hideTextInput method is not exists.");
     }
 
     env->DeleteLocalRef(cls);
@@ -150,18 +150,18 @@ void TextInputJni::NativeInit(JNIEnv* env, jobject jobj, jint instanceId)
 void TextInputJni::UpdateEditingState(JNIEnv* env, jclass clazz, jint clientId, jstring editingState)
 {
     if (env == nullptr) {
-        LOGW("env is null");
+        LOGW("TextInput JNI: env is null");
         return;
     }
 
     if (!editingState) {
-        LOGW("Editing state is null");
+        LOGW("TextInput JNI: Editing state is null");
         return;
     }
     const char* content = env->GetStringUTFChars(editingState, nullptr);
     if (content == nullptr) {
         // May have OutOfMemoryError.
-        LOGW("Failed get string from jstring.");
+        LOGW("TextInput JNI: Failed get string from jstring.");
         return;
     }
 
@@ -169,7 +169,7 @@ void TextInputJni::UpdateEditingState(JNIEnv* env, jclass clazz, jint clientId, 
     env->ReleaseStringUTFChars(editingState, content);
 
     if (!json) {
-        LOGW("Invalid editing state json data.");
+        LOGW("TextInput JNI: Invalid editing state json data.");
         return;
     }
 
@@ -195,7 +195,7 @@ bool TextInputJni::ShowTextInput(bool isFocusViewChanged, int32_t instanceId)
 {
     auto env = JniEnvironment::GetInstance().GetJniEnv();
     if (!env) {
-        LOGW("jni env not ready");
+        LOGW("TextInput JNI: env not ready");
         return false;
     }
 
@@ -212,7 +212,7 @@ bool TextInputJni::SetClient(const int32_t clientId, const TextInputConfiguratio
 {
     auto env = JniEnvironment::GetInstance().GetJniEnv();
     if (!env) {
-        LOGW("jni env not ready");
+        LOGW("TextInput JNI: env not ready");
         return false;
     }
 
@@ -221,10 +221,16 @@ bool TextInputJni::SetClient(const int32_t clientId, const TextInputConfiguratio
         return false;
     }
 
-    jstring jconfig = env->NewStringUTF(config.ToJsonString().c_str());
-    env->CallVoidMethod(jobject->second.get(), g_pluginClass.setClient, clientId, jconfig);
-    if (jconfig) {
-        env->DeleteLocalRef(jconfig);
+    jstring jConfig = env->NewStringUTF(config.ToJsonString().c_str());
+    env->CallVoidMethod(jobject->second.get(), g_pluginClass.setClient, clientId, jConfig);
+    if (jConfig) {
+        env->DeleteLocalRef(jConfig);
+    }
+    if (env->ExceptionCheck()) {
+        LOGE("TextInput JNI: call SetClient has exception");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return false;
     }
     return true;
 }
@@ -233,7 +239,7 @@ bool TextInputJni::HideTextInput(int32_t instanceId)
 {
     auto env = JniEnvironment::GetInstance().GetJniEnv();
     if (!env) {
-        LOGW("jni env not ready");
+        LOGW("TextInput JNI: env not ready");
         return false;
     }
 
@@ -243,6 +249,12 @@ bool TextInputJni::HideTextInput(int32_t instanceId)
     }
 
     env->CallVoidMethod(jobject->second.get(), g_pluginClass.hideTextInput);
+    if (env->ExceptionCheck()) {
+        LOGE("TextInput JNI: call HideTextInput has exception");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return false;
+    }
     return true;
 }
 
@@ -250,7 +262,7 @@ bool TextInputJni::SetEditingState(const TextEditingValue& state, int32_t instan
 {
     auto env = JniEnvironment::GetInstance().GetJniEnv();
     if (!env) {
-        LOGW("jni env not ready");
+        LOGW("TextInput JNI: env not ready");
         return false;
     }
 
@@ -260,10 +272,16 @@ bool TextInputJni::SetEditingState(const TextEditingValue& state, int32_t instan
     }
 
     needFireChangeEvent_ = needFireChangeEvent;
-    jstring jstate = env->NewStringUTF(state.ToJsonString().c_str());
-    env->CallVoidMethod(jobject->second.get(), g_pluginClass.setEditingState, jstate);
-    if (jstate) {
-        env->DeleteLocalRef(jstate);
+    jstring jState = env->NewStringUTF(state.ToJsonString().c_str());
+    env->CallVoidMethod(jobject->second.get(), g_pluginClass.setEditingState, jState);
+    if (jState) {
+        env->DeleteLocalRef(jState);
+    }
+    if (env->ExceptionCheck()) {
+        LOGE("TextInput JNI: call SetEditingState has exception");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return false;
     }
     return true;
 }
@@ -272,7 +290,7 @@ bool TextInputJni::ClearClient(int32_t instanceId)
 {
     auto env = JniEnvironment::GetInstance().GetJniEnv();
     if (!env) {
-        LOGW("jni env not ready");
+        LOGW("TextInput JNI: env not ready");
         return false;
     }
 
@@ -282,6 +300,12 @@ bool TextInputJni::ClearClient(int32_t instanceId)
     }
 
     env->CallVoidMethod(jobject->second.get(), g_pluginClass.clearClient);
+    if (env->ExceptionCheck()) {
+        LOGE("TextInput JNI: call ClearClient has exception");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return false;
+    }
     return true;
 }
 

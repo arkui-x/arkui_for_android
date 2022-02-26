@@ -23,6 +23,8 @@ common_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputDelegate.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputPluginBase.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputType.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/environment/EnvironmentBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/storage/PersistentStorageBase.java",
 ]
 
 # android capability java files
@@ -30,6 +32,8 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/clipboard/ClipboardPluginAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/InputConnectionWrapper.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputPluginAosp.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/environment/EnvironmentAosp.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/storage/PersistentStorageAosp.java",
 ]
 
 # capability cpp files
@@ -41,4 +45,10 @@ capability_cpp_files = [
   "$ace_root/adapter/android/capability/java/jni/editing/text_input_connection_impl.cpp",
   "$ace_root/adapter/android/capability/java/jni/editing/text_input_jni.cpp",
   "$ace_root/adapter/android/capability/java/jni/editing/text_input_plugin.cpp",
+  "$ace_root/adapter/android/capability/java/jni/environment/environment_impl.cpp",
+  "$ace_root/adapter/android/capability/java/jni/environment/environment_jni.cpp",
+  "$ace_root/adapter/android/capability/java/jni/environment/environment_proxy_impl.cpp",
+  "$ace_root/adapter/android/capability/java/jni/storage/storage_impl.cpp",
+  "$ace_root/adapter/android/capability/java/jni/storage/storage_jni.cpp",
+  "$ace_root/adapter/android/capability/java/jni/storage/storage_proxy_impl.cpp",
 ]
