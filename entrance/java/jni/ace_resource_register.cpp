@@ -147,6 +147,8 @@ int64_t AceResourceRegister::CreateResource(const std::string& resourceType, con
         return false;
     }
 
+    LOGI("CreateResource type:%{public}s param:%{public}s", resourceType.c_str(), param.c_str());
+
     bool hasException = false;
     int64_t resourceId = -1;
     jstring jResourceType = env->NewStringUTF(resourceType.c_str());
@@ -166,11 +168,12 @@ int64_t AceResourceRegister::CreateResource(const std::string& resourceType, con
         env->ExceptionClear();
         hasException = true;
     }
-    if (!hasException && jResult) {
+    if (!hasException) {
         resourceId = static_cast<int64_t>(jResult);
     }
     env->DeleteLocalRef(jResourceType);
     env->DeleteLocalRef(jParam);
+    LOGI("CreateResource resourceId:%{public}ld", resourceId);
 
     return resourceId;
 }

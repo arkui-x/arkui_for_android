@@ -18,18 +18,10 @@ package ohos.ace.adapter;
 import java.util.Map;
 
 /**
- * The platform resouce plugin.
+ * The platform resource plugin.
  * 
  */
 public abstract class AceResourcePlugin {
-
-    public interface IAceOnResourceEvent {
-        void onEvent(String eventId, String param);
-    }
-
-    public interface IAceOnCallResourceMethod {
-        String onCall(Map<String, String> param);
-    }
 
     protected AceResourceRegister resRegister;
 
@@ -66,7 +58,7 @@ public abstract class AceResourcePlugin {
     }
 
     /**
-     * Called to register resouce call method
+     * Called to register resource call method
      * 
      * @param method method
      * @param callMethod method call interface
@@ -79,7 +71,7 @@ public abstract class AceResourcePlugin {
     }
 
     /**
-     * Called to register resouce call method
+     * Called to register resource call method
      * 
      * @param methodMap map of method
      */
@@ -93,7 +85,7 @@ public abstract class AceResourcePlugin {
     }
 
     /**
-     * Called to unregister resouce call method
+     * Called to unregister resource call method
      * 
      * @param method method
      */
@@ -106,7 +98,7 @@ public abstract class AceResourcePlugin {
 
 
     /**
-     * Called to unregister resouce call method
+     * Called to unregister resource call method
      * 
      * @param methodMap map of method
      */
@@ -135,7 +127,7 @@ public abstract class AceResourcePlugin {
     }
 
     /**
-     * Get resrouce object by id
+     * Get resource object by id
      * 
      * @param id id of resource object
      * @return
@@ -143,7 +135,7 @@ public abstract class AceResourcePlugin {
     public abstract Object getObject(long id);
 
     /**
-     * Create resouce by param
+     * Create resource by param
      * 
      * @param param param to create plugin
      * @return
@@ -153,7 +145,7 @@ public abstract class AceResourcePlugin {
     /**
      * Release resource by id
      * 
-     * @param id id of resoure
+     * @param id id of resource
      * @return
      */
     public abstract boolean release(long id);
