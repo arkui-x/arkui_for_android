@@ -25,7 +25,10 @@ common_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputType.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/environment/EnvironmentBase.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/storage/PersistentStorageBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/texture/IAceTexture.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/vibrator/VibratorPluginBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoPluginBase.java",
 ]
 
 # android capability java files
@@ -35,7 +38,11 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputPluginAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/environment/EnvironmentAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/storage/PersistentStorageAosp.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/texture/AceTexture.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/texture/AceTexturePluginAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/vibrator/VibratorPluginAosp.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoAosp.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoPluginAosp.java",
 ]
 
 # capability cpp files

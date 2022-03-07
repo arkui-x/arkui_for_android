@@ -15,6 +15,8 @@
 
 package ohos.ace.adapter;
 
+import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -53,7 +55,7 @@ public class AceActivity extends Activity {
 
     private static final String ASSET_PATH = "js/";
 
-    private static final String INSTANCE_DEFALUT_NAME = "default";
+    private static final String INSTANCE_DEFAULT_NAME = "default";
 
     private static final String ASSET_PATH_SHARE = "share";
 
@@ -210,6 +212,7 @@ public class AceActivity extends Activity {
             setContentView((View) aceView);
         }
         aceView.viewCreated();
+        aceView.addResourcePlugin(AceVideoPluginAosp.createRegister(this, getInstanceName()));
     }
 
     private void initAsset() {
@@ -231,7 +234,7 @@ public class AceActivity extends Activity {
 
     private String getInstanceName() {
         if (instanceName == null) {
-            return INSTANCE_DEFALUT_NAME;
+            return INSTANCE_DEFAULT_NAME;
         }
         return instanceName;
     }

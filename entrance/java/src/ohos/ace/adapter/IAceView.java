@@ -120,4 +120,11 @@ public interface IAceView {
      * 
      */
     void viewCreated();
+
+    /**
+     * Called to add resource plugin.
+     * 
+     * @param plugin the plugin
+     */
+    void addResourcePlugin(AceResourcePlugin plugin);
 }

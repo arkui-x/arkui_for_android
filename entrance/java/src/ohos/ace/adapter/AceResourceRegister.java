@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The platform resouce register.
+ * The platform resource register.
  * 
  */
 public final class AceResourceRegister {
@@ -35,20 +35,20 @@ public final class AceResourceRegister {
 
     private Map<String, AceResourcePlugin> pluginMap;
 
-    private Map<String, AceResourcePlugin.IAceOnCallResourceMethod> callMethodMap;
+    private Map<String, IAceOnCallResourceMethod> callMethodMap;
 
-    private AceResourcePlugin.IAceOnResourceEvent callbackHandler;
+    private IAceOnResourceEvent callbackHandler;
 
     private long aceRegisterPtr;
 
     public AceResourceRegister() {
         pluginMap = new HashMap<String, AceResourcePlugin>();
-        callMethodMap = new HashMap<String, AceResourcePlugin.IAceOnCallResourceMethod>();
+        callMethodMap = new HashMap<String, IAceOnCallResourceMethod>();
         callbackHandler = (eventId, param) -> onEvent(eventId, param);
     }
 
     /**
-     * Get the pluing map
+     * Get the plugin map
      * 
      * @return the plugin map
      */
@@ -57,11 +57,11 @@ public final class AceResourceRegister {
     }
 
     /**
-     * Register resouce plugin
+     * Register resource plugin
      * 
      * @param plugin resource plugin
      */
-    public void regitserPlugin(AceResourcePlugin plugin) {
+    public void registerPlugin(AceResourcePlugin plugin) {
         if (plugin == null) {
             ALog.e(LOG_TAG, "null plugin");
             return;
@@ -72,6 +72,7 @@ public final class AceResourceRegister {
                 return;
             }
         }
+        ALog.i(LOG_TAG, "register plugin " + plugin.pluginType());
         pluginMap.put(plugin.pluginType(), plugin);
         plugin.setEventCallback(this, callbackHandler);
     }
@@ -79,7 +80,7 @@ public final class AceResourceRegister {
     /**
      * Register the native ptr
      * 
-     * @param aceRegisterPtr the native ptr of ResrouceRegister
+     * @param aceRegisterPtr the native ptr of ResourceRegister
      */
     public void setRegisterPtr(long aceRegisterPtr) {
         this.aceRegisterPtr = aceRegisterPtr;
@@ -88,22 +89,25 @@ public final class AceResourceRegister {
     /**
      * Create resource with type and params
      * 
-     * @param resourceType type of resouce
+     * @param resourceType type of resource
      * @param param param
      * @return id of resource
      */
     public long createResource(String resourceType, String param) {
+        ALog.i(LOG_TAG, "createResource " + resourceType + " called");
         if (pluginMap.containsKey(resourceType)) {
             AceResourcePlugin plugin = pluginMap.get(resourceType);
             if (plugin != null) {
                 return plugin.create(buildParamMap(param));
+            } else {
+                ALog.e(LOG_TAG, "createResource " + resourceType + " failed!");
             }
         }
         return -1;
     }
 
     /**
-     * Release resrouce by hash
+     * Release resource by hash
      * 
      * @param resourceHash the hash of resource
      * @return result of release
@@ -154,7 +158,7 @@ public final class AceResourceRegister {
      * Get resource object by type and id
      * 
      * @param resourceType type of resource
-     * @param id id of resouce
+     * @param id id of resource
      * @return object or null if resource not found
      */
     public Object getObject(String resourceType, long id) {
@@ -187,7 +191,7 @@ public final class AceResourceRegister {
      * @return result of method return
      */
     public String onCallMethod(String methodId, String param) {
-        AceResourcePlugin.IAceOnCallResourceMethod resourceMethod = null;
+        IAceOnCallResourceMethod resourceMethod = null;
 
         if (callMethodMap.containsKey(methodId)) {
             resourceMethod = callMethodMap.get(methodId);
@@ -205,7 +209,7 @@ public final class AceResourceRegister {
      * @param methodId method id
      * @param callMethod method call interface
      */
-    public void registerCallMethod(String methodId, AceResourcePlugin.IAceOnCallResourceMethod callMethod) {
+    public void registerCallMethod(String methodId, IAceOnCallResourceMethod callMethod) {
         callMethodMap.put(methodId, callMethod);
     }
 
@@ -219,7 +223,7 @@ public final class AceResourceRegister {
     }
 
     /**
-     * Release all plugin resouces
+     * Release all plugin resources
      * 
      */
     public void release() {

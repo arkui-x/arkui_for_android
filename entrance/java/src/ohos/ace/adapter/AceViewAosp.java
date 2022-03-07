@@ -36,25 +36,27 @@ import ohos.ace.adapter.capability.clipboard.ClipboardPluginAosp;
 import ohos.ace.adapter.capability.editing.TextInputPluginAosp;
 import ohos.ace.adapter.capability.environment.EnvironmentAosp;
 import ohos.ace.adapter.capability.storage.PersistentStorageAosp;
+import ohos.ace.adapter.capability.texture.AceTexturePluginAosp;
+import ohos.ace.adapter.capability.texture.IAceTexture;
 import ohos.ace.adapter.capability.vibrator.VibratorPluginAosp;
 
 import java.io.File;
 import java.nio.ByteBuffer;
 
 /**
- * This class is AceView implement and handles the lifecyces of surface.
+ * This class is AceView implement and handles the lifecycle of surface.
  * 
  */
 public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.Callback {
     private static final String LOG_TAG = "AceViewAosp";
 
     /**
-     * Device type default, keep same with native in system properies
+     * Device type default, keep same with native in system properties
      */
     private static final int DEVICE_TYPE_DEFAULT = 0;
 
     /**
-     * Device type tv, keep same with native in system properies
+     * Device type tv, keep same with native in system properties
      */
     private static final int DEVICE_TYPE_TV = 1;
 
@@ -92,9 +94,9 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
     /**
      * Constructor of AceViewAosp
      * 
-     * @param context    Applicaton context
+     * @param context    Application context
      * @param instanceId The id of instance
-     * @param density    The display pexel ratio
+     * @param density    The display pixel ratio
      * @param isWearable If the device is wearable
      */
     public AceViewAosp(Context context, int instanceId, float density, boolean isWearable) {
@@ -278,6 +280,13 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
         activity.addContentView(animateView, MATCH_PARENT);
     }
 
+    @Override
+    public void addResourcePlugin(AceResourcePlugin plugin) {
+        if (resRegister != null) {
+            resRegister.registerPlugin(plugin);
+        }
+    }
+
     /**
      * destroy view and release it surface
      * 
@@ -301,6 +310,37 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
             return;
         }
         resRegister.setRegisterPtr(resRegisterPtr);
+
+        IAceTexture textureImpl = new IAceTexture() {
+            @Override
+            public void registerSurface(long textureId, Object surface) {
+            }
+
+            @Override
+            public void registerTexture(long textureId, Object surfaceTexture) {
+                if (nativeViewPtr == 0L) {
+                    return;
+                }
+                nativeRegisterTexture(nativeViewPtr, textureId, surfaceTexture);
+            }
+
+            @Override
+            public void markTextureFrameAvailable(long textureId) {
+                if (nativeViewPtr == 0L) {
+                    return;
+                }
+                nativeMarkTextureFrameAvailable(nativeViewPtr, textureId);
+            }
+
+            @Override
+            public void unregisterTexture(long textureId) {
+                if (nativeViewPtr == 0L) {
+                    return;
+                }
+                nativeUnregisterTexture(nativeViewPtr, textureId);
+            }
+        };
+        resRegister.registerPlugin(AceTexturePluginAosp.createRegister(textureImpl));
     }
 
     /**
