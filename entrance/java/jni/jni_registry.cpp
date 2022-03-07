@@ -23,6 +23,7 @@
 #include "adapter/android/capability/java/jni/editing/text_input_jni.h"
 #include "adapter/android/capability/java/jni/environment/environment_jni.h"
 #include "adapter/android/capability/java/jni/storage/storage_jni.h"
+#include "adapter/android/capability/java/jni/vibrator/vibrator_jni.h"
 #include "adapter/android/entrance/java/jni/ace_application_info_jni.h"
 #include "adapter/android/entrance/java/jni/ace_env_jni.h"
 #include "adapter/android/entrance/java/jni/dump_helper_jni.h"
@@ -96,6 +97,11 @@ bool JniRegistry::Register()
 
     if (!StorageJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register StorageJni");
+        return false;
+    }
+
+    if (!VibratorJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register VibratorJni");
         return false;
     }
 

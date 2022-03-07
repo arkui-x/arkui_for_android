@@ -36,6 +36,7 @@ import ohos.ace.adapter.capability.clipboard.ClipboardPluginAosp;
 import ohos.ace.adapter.capability.editing.TextInputPluginAosp;
 import ohos.ace.adapter.capability.environment.EnvironmentAosp;
 import ohos.ace.adapter.capability.storage.PersistentStorageAosp;
+import ohos.ace.adapter.capability.vibrator.VibratorPluginAosp;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -85,6 +86,8 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
     private EnvironmentAosp environmentPlugin;
 
     private PersistentStorageAosp persistentStoragePlugin;
+
+    private VibratorPluginAosp vibratorPlugin;
 
     /**
      * Constructor of AceViewAosp
@@ -349,6 +352,7 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
         textInputPlugin = new TextInputPluginAosp(this, instanceId);
         environmentPlugin = new EnvironmentAosp(context);
         persistentStoragePlugin = new PersistentStorageAosp(context);
+        vibratorPlugin = new VibratorPluginAosp(context);
     }
 
     private View createAnimateView() {
