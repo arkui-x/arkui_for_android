@@ -244,7 +244,7 @@ void AceContainer::InitializeCallback()
     };
     aceView_->RegisterRotationEventCallback(rotationEventCallback);
 
-    auto&& viewChangeCallback = [weak](int32_t width, int32_t height) {
+    auto&& viewChangeCallback = [weak](int32_t width, int32_t height, WindowSizeChangeReason reason) {
         ACE_SCOPED_TRACE("ViewChangeCallback(%d, %d)", width, height);
         auto context = weak.Upgrade();
         if (context == nullptr) {
@@ -252,13 +252,13 @@ void AceContainer::InitializeCallback()
             return;
         }
         context->GetTaskExecutor()->PostTask(
-            [weak, width, height]() {
+            [weak, width, height, reason]() {
                 auto context = weak.Upgrade();
                 if (context == nullptr) {
                     LOGE("context is null ");
                     return;
                 }
-                context->OnSurfaceChanged(width, height);
+                context->OnSurfaceChanged(width, height, reason);
             },
             TaskExecutor::TaskType::UI);
     };

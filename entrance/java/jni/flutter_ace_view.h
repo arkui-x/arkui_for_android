@@ -81,7 +81,7 @@ public:
         }
     }
 
-    void RegisterSystemBarHeightChangeCallback(SystemBarHeightChangeCallbak&& callback) override
+    void RegisterSystemBarHeightChangeCallback(SystemBarHeightChangeCallback&& callback) override
     {
         if (callback) {
             systemBarHeightChangeCallback_ = std::move(callback);
@@ -100,6 +100,10 @@ public:
         if (callback) {
             idleCallback_ = std::move(callback);
         }
+    }
+
+    void RegisterDragEventCallback(DragEventCallBack&& callback) override
+    {
     }
 
     void SetPlatformResRegister(const RefPtr<PlatformResRegister>& resRegister)
@@ -127,7 +131,7 @@ public:
     void NotifySurfaceChanged(int32_t width, int32_t height)
     {
         if (viewChangeCallback_) {
-            viewChangeCallback_(width, height);
+            viewChangeCallback_(width, height, WindowSizeChangeReason::RESIZE);
         }
         width_ = width;
         height_ = height;
@@ -165,7 +169,7 @@ private:
     RotationEventCallBack rotationEventCallback_;
     ViewChangeCallback viewChangeCallback_;
     DensityChangeCallback densityChangeCallback_;
-    SystemBarHeightChangeCallbak systemBarHeightChangeCallback_;
+    SystemBarHeightChangeCallback systemBarHeightChangeCallback_;
     SurfaceDestroyCallback surfaceDestroyCallback_;
     IdleCallback idleCallback_;
     KeyEventCallback keyEventCallback_;
