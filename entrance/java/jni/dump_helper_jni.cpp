@@ -77,14 +77,14 @@ void DumpHelperJni::Dump(JNIEnv* env, jclass myClass, jstring prefix, jobject fi
     }
 
     if (!params.empty()) {
-        DumpLog::DumpFile file(nullptr, &fclose);
+        DumpLog::DumpFile* file = nullptr;
         int32_t newFd = dup(fd);
         if (newFd >= 0) {
-            file.reset(fdopen(newFd, "w"));
+            file = new DumpLog::DumpFile(fdopen(newFd, "w"));
         }
 
         if (file) {
-            DumpLog::GetInstance().SetDumpFile(std::move(file));
+            DumpLog::GetInstance().SetDumpFile(file);
             AceEngine::Get().Dump(params);
             DumpLog::GetInstance().Reset();
         } else {

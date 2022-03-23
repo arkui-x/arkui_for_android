@@ -55,6 +55,7 @@ public final class DumpHelper {
 
         if (args.length == 0) {
             printString(fd, "Param length is null" + System.lineSeparator());
+            return;
         }
 
         String help = "";
