@@ -24,12 +24,19 @@ template("ace_osal_android_source_set") {
 
     sources = [
       "ace_trace.cpp",
+      "drag_window.cpp",
       "event_report.cpp",
+      "fake_accessibility_manager.cpp",
+      "frame_report.cpp",
       "log_wrapper.cpp",
       "pixel_map_android.cpp",
       "resource_adapter_impl.cpp",
+      "ressched_report.cpp",
+      "subwindow.cpp",
       "system_properties.cpp",
     ]
+
+    deps = [ "$ace_root/frameworks/core/components/theme:build_theme_code" ]
 
     configs = [ "$ace_root:ace_config" ]
   }
