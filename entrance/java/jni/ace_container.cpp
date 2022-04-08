@@ -31,6 +31,7 @@
 #include "core/common/ace_engine.h"
 #include "core/common/ace_view.h"
 #include "core/common/connect_server_manager.h"
+#include "core/common/container_scope.h"
 #include "core/common/flutter/flutter_asset_manager.h"
 #include "core/common/flutter/flutter_task_executor.h"
 #include "core/common/platform_window.h"
@@ -78,6 +79,7 @@ AceContainer::AceContainer(jint instanceId, FrontendType type, jobject callback)
 void AceContainer::Initialize()
 {
     // For Declarative_js frontend use UI as JS thread, so initializeFrontend after UI thread's creation
+    ContainerScope scope(instanceId_);
     if (type_ != FrontendType::DECLARATIVE_JS) {
         InitializeFrontend(isArk_);
     }
@@ -95,6 +97,7 @@ void AceContainer::Destroy()
         return;
     }
 
+    ContainerScope scope(instanceId_);
     // 1. Destroy Pipeline on UI Thread
     auto weak = AceType::WeakClaim(AceType::RawPtr(pipelineContext_));
     taskExecutor_->PostTask(
@@ -175,6 +178,7 @@ void AceContainer::InitializeCallback()
             return;
         }
 
+        ContainerScope scope(instanceId);
         auto bombId = GetMilliseconds();
         AceEngine::Get().BuriedBomb(instanceId, bombId);
         AceEngine::Get().DefusingBomb(instanceId);
@@ -200,6 +204,7 @@ void AceContainer::InitializeCallback()
             return result;
         }
 
+        ContainerScope scope(instanceId);
         auto bombId = GetMilliseconds();
         AceEngine::Get().BuriedBomb(instanceId, bombId);
         AceEngine::Get().DefusingBomb(instanceId);
@@ -215,6 +220,8 @@ void AceContainer::InitializeCallback()
             LOGE("context is null");
             return;
         }
+
+        ContainerScope scope(instanceId);
         auto bombId = GetMilliseconds();
         AceEngine::Get().BuriedBomb(instanceId, bombId);
         AceEngine::Get().DefusingBomb(instanceId);
@@ -231,26 +238,28 @@ void AceContainer::InitializeCallback()
     };
     aceView_->RegisterMouseEventCallback(mouseEventCallback);
 
-    auto&& rotationEventCallback = [weak](const RotationEvent& event) {
+    auto&& rotationEventCallback = [weak, instanceId](const RotationEvent& event) {
         bool result = false;
         auto context = weak.Upgrade();
         if (context == nullptr) {
             LOGE("context is null");
             return result;
         }
+        ContainerScope scope(instanceId);
         context->GetTaskExecutor()->PostSyncTask(
             [context, event, &result]() { result = context->OnRotationEvent(event); }, TaskExecutor::TaskType::UI);
         return result;
     };
     aceView_->RegisterRotationEventCallback(rotationEventCallback);
 
-    auto&& viewChangeCallback = [weak](int32_t width, int32_t height, WindowSizeChangeReason reason) {
+    auto&& viewChangeCallback = [weak, instanceId](int32_t width, int32_t height, WindowSizeChangeReason reason) {
         ACE_SCOPED_TRACE("ViewChangeCallback(%d, %d)", width, height);
         auto context = weak.Upgrade();
         if (context == nullptr) {
             LOGE("context is null");
             return;
         }
+        ContainerScope scope(instanceId);
         context->GetTaskExecutor()->PostTask(
             [weak, width, height, reason]() {
                 auto context = weak.Upgrade();
@@ -264,13 +273,14 @@ void AceContainer::InitializeCallback()
     };
     aceView_->RegisterViewChangeCallback(viewChangeCallback);
 
-    auto&& densityChangeCallback = [weak](double density) {
+    auto&& densityChangeCallback = [weak, instanceId](double density) {
         ACE_SCOPED_TRACE("DensityChangeCallback(%lf)", density);
         auto context = weak.Upgrade();
         if (context == nullptr) {
             LOGE("context is null");
             return;
         }
+        ContainerScope scope(instanceId);
         context->GetTaskExecutor()->PostTask(
             [weak, density]() {
                 auto context = weak.Upgrade();
@@ -284,13 +294,14 @@ void AceContainer::InitializeCallback()
     };
     aceView_->RegisterDensityChangeCallback(densityChangeCallback);
 
-    auto&& systemBarHeightChangeCallback = [weak](double statusBar, double navigationBar) {
+    auto&& systemBarHeightChangeCallback = [weak, instanceId](double statusBar, double navigationBar) {
         ACE_SCOPED_TRACE("SytemBarHeighChangeCallback(%lf, %lf)", statusBar, navigationBar);
         auto context = weak.Upgrade();
         if (context == nullptr) {
             LOGE("context is null");
             return;
         }
+        ContainerScope scope(instanceId);
         context->GetTaskExecutor()->PostTask(
             [weak, statusBar, navigationBar]() {
                 auto context = weak.Upgrade();
@@ -304,12 +315,14 @@ void AceContainer::InitializeCallback()
     };
     aceView_->RegisterSystemBarHeightChangeCallback(systemBarHeightChangeCallback);
 
-    auto&& surfaceDestroyCallback = [weak]() {
+    auto&& surfaceDestroyCallback = [weak, instanceId]() {
         auto context = weak.Upgrade();
         if (context == nullptr) {
             LOGE("context is nullptr");
             return;
         }
+
+        ContainerScope scope(instanceId);
         context->GetTaskExecutor()->PostTask(
             [weak]() {
                 auto context = weak.Upgrade();
@@ -323,12 +336,14 @@ void AceContainer::InitializeCallback()
     };
     aceView_->RegisterSurfaceDestroyCallback(surfaceDestroyCallback);
 
-    auto&& idleCallback = [weak](int64_t deadline) {
+    auto&& idleCallback = [weak, instanceId](int64_t deadline) {
         auto context = weak.Upgrade();
         if (context == nullptr) {
             LOGE("context is null");
             return;
         }
+
+        ContainerScope scope(instanceId);
         context->GetTaskExecutor()->PostTask(
             [weak, deadline]() {
                 auto context = weak.Upgrade();
@@ -342,12 +357,13 @@ void AceContainer::InitializeCallback()
     };
     aceView_->RegisterIdleCallback(idleCallback);
 
-    auto&& preDrawCallback = [weak]() {
+    auto&& preDrawCallback = [weak, instanceId]() {
         auto context = weak.Upgrade();
         if (context == nullptr) {
             LOGE("context is null while trying to post task to notifyonPreDraw");
             return;
         }
+        ContainerScope scope(instanceId);
         context->GetTaskExecutor()->PostTask(
             [weak]() {
                 auto context = weak.Upgrade();
@@ -361,12 +377,13 @@ void AceContainer::InitializeCallback()
     };
     aceView_->RegisterPreDrawCallback(preDrawCallback);
 
-    auto&& requestFrame = [weak]() {
+    auto&& requestFrame = [weak, instanceId]() {
         auto context = weak.Upgrade();
         if (context == nullptr) {
             LOGE("context is null while trying to post task to requestframe");
             return;
         }
+        ContainerScope scope(instanceId);
         context->RequestFrame();
     };
     aceView_->RegisterRequestFrameCallback(requestFrame);
@@ -389,6 +406,7 @@ void AceContainer::DispatchPluginError(int32_t callbackId, int32_t errorCode, st
     }
 
     auto weakFront = AceType::WeakClaim(AceType::RawPtr(front));
+    ContainerScope scope(instanceId_);
     taskExecutor_->PostTask(
         [weakFront, callbackId, errorCode, errorMessage = std::move(errorMessage)]() mutable {
             auto front = weakFront.Upgrade();
@@ -403,6 +421,7 @@ void AceContainer::DispatchPluginError(int32_t callbackId, int32_t errorCode, st
 
 bool AceContainer::Dump(const std::vector<std::string>& params)
 {
+    ContainerScope scope(instanceId_);
     if (aceView_ && aceView_->Dump(params)) {
         return true;
     }
@@ -425,6 +444,7 @@ void AceContainer::AttachView(
     auto flutterTaskExecutor = AceType::DynamicCast<FlutterTaskExecutor>(taskExecutor_);
     flutterTaskExecutor->InitOtherThreads(state->GetTaskRunners());
 
+    ContainerScope scope(instanceId);
     if (type_ == FrontendType::DECLARATIVE_JS) {
         // for declarative js frontend display ui in js thread
         flutterTaskExecutor->InitJsThread(false);
@@ -464,7 +484,7 @@ void AceContainer::AttachView(
     }
     InitializeCallback();
 
-    auto&& finishEventHandler = [weak = WeakClaim(this)] {
+    auto&& finishEventHandler = [weak = WeakClaim(this), instanceId] {
         auto container = weak.Upgrade();
         if (!container) {
             LOGE("FinishEventHandler container is null");
@@ -475,6 +495,7 @@ void AceContainer::AttachView(
             LOGE("FinishEventHandler context is null");
             return;
         }
+        ContainerScope scope(instanceId);
         context->GetTaskExecutor()->PostTask(
             [weak = WeakPtr<AceContainer>(container)] {
                 auto container = weak.Upgrade();
@@ -488,7 +509,7 @@ void AceContainer::AttachView(
     };
     pipelineContext_->SetFinishEventHandler(finishEventHandler);
 
-    auto&& setStatusBarEventHandler = [weak = WeakClaim(this)](const Color& color) {
+    auto&& setStatusBarEventHandler = [weak = WeakClaim(this), instanceId](const Color& color) {
         auto container = weak.Upgrade();
         if (!container) {
             LOGE("StatusBarEventHandler container is null");
@@ -499,6 +520,7 @@ void AceContainer::AttachView(
             LOGE("StatusBarEventHandler context is null");
             return;
         }
+        ContainerScope scope(instanceId);
         context->GetTaskExecutor()->PostTask(
             [weak, color = color.GetValue()]() {
                 auto container = weak.Upgrade();
@@ -514,12 +536,13 @@ void AceContainer::AttachView(
     };
     pipelineContext_->SetStatusBarEventHandler(setStatusBarEventHandler);
 
-    pipelineContext_->SetGetViewScaleCallback([weak = WeakClaim(this)](float& scaleX, float& scaleY) {
+    pipelineContext_->SetGetViewScaleCallback([weak = WeakClaim(this), instanceId](float& scaleX, float& scaleY) {
         auto container = weak.Upgrade();
         if (!container) {
             LOGE("getViewScale container is null");
             return false;
         }
+        ContainerScope scope(instanceId);
         if (container->aceView_) {
             return container->aceView_->GetScale(scaleX, scaleY);
         }
@@ -565,6 +588,7 @@ void AceContainer::UpdateThemeConfig(const ResourceConfiguration& config)
     if (!pipelineContext_) {
         return;
     }
+    ContainerScope scope(instanceId_);
     auto themeManager = pipelineContext_->GetThemeManager();
     if (!themeManager) {
         return;
@@ -576,6 +600,7 @@ void AceContainer::UpdateResourceConfiguration(const std::string& jsonStr)
 {
     uint32_t updateFlags = 0;
     auto resConfig = resourceInfo_.GetResourceConfiguration();
+    ContainerScope scope(instanceId_);
     if (!resConfig.UpdateFromJsonString(jsonStr, updateFlags) || !updateFlags) {
         return;
     }
@@ -620,6 +645,7 @@ void AceContainer::UpdateResourceConfiguration(const std::string& jsonStr)
 void AceContainer::UpdateColorMode(ColorMode colorMode)
 {
     auto resConfig = resourceInfo_.GetResourceConfiguration();
+    ContainerScope scope(instanceId_);
     SystemProperties::SetColorMode(colorMode);
     if (resConfig.GetColorMode() == colorMode) {
         return;
@@ -657,6 +683,7 @@ void AceContainer::UpdateColorMode(ColorMode colorMode)
 void AceContainer::SetThemeResourceInfo(const std::string& path, int32_t themeId)
 {
     ACE_FUNCTION_TRACE();
+    ContainerScope scope(instanceId_);
     resourceInfo_.SetThemeId(themeId);
     resourceInfo_.SetPackagePath(path);
     ThemeConstants::InitDeviceType();
@@ -686,6 +713,7 @@ void AceContainer::SetThemeResourceInfo(const std::string& path, int32_t themeId
 void AceContainer::InitThemeManager()
 {
     LOGI("Init theme manager");
+    ContainerScope scope(instanceId_);
     // only init global resource here
     if (pipelineContext_ && !pipelineContext_->GetThemeManager() && themeManager_) {
         pipelineContext_->SetThemeManager(themeManager_);
@@ -727,6 +755,7 @@ void AceContainer::SetInstanceName(const std::string& name)
 
 void AceContainer::TriggerGarbageCollection()
 {
+    ContainerScope scope(instanceId_);
     taskExecutor_->PostTask([] { PurgeMallocCache(); }, TaskExecutor::TaskType::UI);
     taskExecutor_->PostTask(
         [frontend = WeakPtr<Frontend>(frontend_)]() {
@@ -741,6 +770,7 @@ void AceContainer::TriggerGarbageCollection()
 
 void AceContainer::NotifyFontNodes()
 {
+    ContainerScope scope(instanceId_);
     if (pipelineContext_) {
         pipelineContext_->NotifyFontNodes();
     }
@@ -748,6 +778,7 @@ void AceContainer::NotifyFontNodes()
 
 void AceContainer::NotifyAppStorage(const std::string& key, const std::string& value)
 {
+    ContainerScope scope(instanceId_);
     if (pipelineContext_) {
         pipelineContext_->NotifyAppStorage(key, value);
     }

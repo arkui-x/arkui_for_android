@@ -115,7 +115,11 @@ bool SystemProperties::IsScoringEnabled(const std::string& name)
 
 bool SystemProperties::GetDebugEnabled()
 {
+#ifdef ACE_DEBUG_LOG
+    return true;
+#else
     return false;
+#endif
 }
 
 bool SystemProperties::IsSyscapExist(const char* cap)

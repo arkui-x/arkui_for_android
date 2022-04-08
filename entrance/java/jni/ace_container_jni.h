@@ -40,7 +40,7 @@ public:
     // static void NativeOnWindowDisplayModeChanged(
     //     JNIEnv* env, jclass clazz, jint instanceId, jboolean isShowInMultiWindow, jstring data);
     static void NativeOnActive(JNIEnv* env, jclass clazz, jint instanceId);
-    static void NativeOnInative(JNIEnv* env, jclass clazz, jint instanceId);
+    static void NativeOnInactive(JNIEnv* env, jclass clazz, jint instanceId);
     static void NativeOnNewRequest(JNIEnv* env, jclass clazz, jint instanceId, jstring data);
     static void NativeOnMemoryLevel(JNIEnv* env, jclass clazz, jint instanceId, jint level);
     static void AddAssetPath(JNIEnv* env, jclass clazz, jint instanceId, jobject assetManager, jstring path);
