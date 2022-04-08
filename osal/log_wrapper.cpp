@@ -17,6 +17,10 @@
 
 #include <android/log.h>
 
+#ifdef ACE_INSTANCE_LOG
+#include "core/common/container.h"
+#endif
+
 namespace OHOS::Ace {
 namespace {
 
@@ -49,7 +53,11 @@ void LogWrapper::PrintLog(LogDomain domain, LogLevel level, const char* fmt, va_
 
 int32_t LogWrapper::GetId()
 {
+#ifdef ACE_INSTANCE_LOG
+    return Container::CurrentId();
+#else
     return 0;
+#endif
 }
 
 } // namespace OHOS::Ace

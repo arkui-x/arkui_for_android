@@ -28,6 +28,7 @@
 #include "base/utils/system_properties.h"
 #include "base/utils/utils.h"
 #include "core/common/ace_engine.h"
+#include "core/common/container_scope.h"
 #include "core/components/calendar/calendar_data_adapter.h"
 #include "core/components/theme/theme_constants.h"
 #include "core/event/event_convertor.h"
@@ -156,13 +157,19 @@ bool FlutterAceView::IsLastPage() const
     if (!container) {
         return false;
     }
-
+    ContainerScope scope(instanceId_);
     auto context = container->GetPipelineContext();
     if (!context) {
         return false;
     }
+    auto taskExecutor = context->GetTaskExecutor();
 
-    return context->IsLastPage();
+    bool isLastPage = false;
+    if (taskExecutor) {
+        taskExecutor->PostSyncTask(
+            [context, &isLastPage]() { isLastPage = context->IsLastPage(); }, TaskExecutor::TaskType::UI);
+    }
+    return isLastPage;
 }
 
 std::unique_ptr<DrawDelegate> FlutterAceView::GetDrawDelegate()
