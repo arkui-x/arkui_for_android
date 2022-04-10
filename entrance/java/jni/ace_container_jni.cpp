@@ -215,6 +215,7 @@ void AceContainerJni::CreateContainer(
     JNIEnv* env, jclass clazz, jint instanceId, jint type, jobject callback, jstring name)
 {
     LOGI("JNI CreateContainer start");
+    Container::UpdateCurrent(INSTANCE_ID_PLATFORM);
     FrontendType frontendType = static_cast<FrontendType>(type);
     auto aceContainer = AceType::MakeRefPtr<AceContainer>(instanceId, frontendType, callback);
     if (env == nullptr) {
