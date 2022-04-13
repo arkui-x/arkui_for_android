@@ -206,7 +206,6 @@ public class AceActivity extends Activity {
     }
 
     private void setAceView() {
-        Context context = getApplicationContext();
         IAceView aceView = container.getView(density, widthPixels, heightPixels);
         if (aceView instanceof View) {
             setContentView((View) aceView);
@@ -216,8 +215,13 @@ public class AceActivity extends Activity {
     }
 
     private void initAsset() {
+        Context context = getApplicationContext();
         container.addAssetPath(getAssets(), ASSET_PATH + getInstanceName());
         container.addAssetPath(getAssets(), ASSET_PATH + ASSET_PATH_SHARE);
+        String apkPath = context.getPackageCodePath();
+        int lastIndex = apkPath.lastIndexOf("/");
+        apkPath = apkPath.substring(0, lastIndex).concat("/lib/arm64");
+        container.setLibPath(apkPath);
     }
 
     /**

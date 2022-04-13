@@ -45,6 +45,7 @@
 #include "core/pipeline/base/element.h"
 #include "core/pipeline/pipeline_context.h"
 #include "frameworks/bridge/card_frontend/card_frontend.h"
+#include "frameworks/bridge/common/utils/engine_helper.h"
 #include "frameworks/bridge/declarative_frontend/declarative_frontend.h"
 #include "frameworks/bridge/js_frontend/engine/common/js_engine_loader.h"
 #include "frameworks/bridge/js_frontend/js_frontend.h"
@@ -131,6 +132,7 @@ void AceContainer::Destroy()
     assetManager_.Reset();
     pipelineContext_.Reset();
     aceView_ = nullptr;
+    EngineHelper::RemoveEngine(instanceId_);
 }
 
 void AceContainer::InitializeFrontend(bool isArkApp)
@@ -139,7 +141,9 @@ void AceContainer::InitializeFrontend(bool isArkApp)
         frontend_ = Frontend::Create();
         auto jsFrontend = AceType::DynamicCast<JsFrontend>(frontend_);
         auto& loader = Framework::JsEngineLoader::Get(nullptr);
-        jsFrontend->SetJsEngine(loader.CreateJsEngine(instanceId_));
+        auto jsEngine = loader.CreateJsEngine(instanceId_);
+        jsFrontend->SetJsEngine(jsEngine);
+        EngineHelper::AddEngine(instanceId_, jsEngine);
         jsFrontend->SetNeedDebugBreakPoint(AceApplicationInfo::GetInstance().IsNeedDebugBreakPoint());
         jsFrontend->SetDebugVersion(AceApplicationInfo::GetInstance().IsDebugVersion());
     } else if (type_ == FrontendType::JS_CARD) {
@@ -149,7 +153,9 @@ void AceContainer::InitializeFrontend(bool isArkApp)
         frontend_ = AceType::MakeRefPtr<DeclarativeFrontend>();
         auto declarativeFrontend = AceType::DynamicCast<DeclarativeFrontend>(frontend_);
         auto& loader = Framework::JsEngineLoader::GetDeclarative(nullptr);
-        declarativeFrontend->SetJsEngine(loader.CreateJsEngine(instanceId_));
+        auto jsEngine = loader.CreateJsEngine(instanceId_);
+        declarativeFrontend->SetJsEngine(jsEngine);
+        EngineHelper::AddEngine(instanceId_, jsEngine);
         declarativeFrontend->SetNeedDebugBreakPoint(AceApplicationInfo::GetInstance().IsNeedDebugBreakPoint());
         declarativeFrontend->SetDebugVersion(AceApplicationInfo::GetInstance().IsDebugVersion());
     } else {
