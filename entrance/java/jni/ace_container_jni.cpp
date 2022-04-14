@@ -190,6 +190,11 @@ bool AceContainerJni::Register()
             .name = "nativeInitResourceManager",
             .signature = "(IILjava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&InitResourceManager),
+        },
+        {
+            .name = "nativeSetLibPath",
+            .signature = "(ILjava/lang/String;)V",
+            .fnPtr = reinterpret_cast<void*>(&SetLibPath),
         }
     };
 
@@ -620,6 +625,38 @@ void AceContainerJni::InitResourceManager(JNIEnv* env, jclass clazz, jint instan
         env->ReleaseStringUTFChars(path, pathStr);
     }
     container->SetThemeResourceInfo(pkgPath, themeId);
+}
+
+void AceContainerJni::SetLibPath(JNIEnv* env, jclass clazz, jint instanceId, jstring path)
+{
+    if (!env) {
+        LOGW("JNI SetLibPath, null env");
+        return;
+    }
+
+    auto container = AceType::DynamicCast<AceContainer>(AceEngine::Get().GetContainer(instanceId));
+    if (!container) {
+        LOGW("JNI SetLibPath, null container");
+        return;
+    }
+
+    auto libPathStr = env->GetStringUTFChars(path, nullptr);
+    std::string libPath;
+    if (libPathStr != nullptr) {
+        libPath = libPathStr;
+        env->ReleaseStringUTFChars(path, libPathStr);
+    }
+
+    RefPtr<FlutterAssetManager> flutterAssetManager;
+    if (container->GetAssetManager()) {
+        flutterAssetManager = AceType::DynamicCast<FlutterAssetManager>(container->GetAssetManager());
+    } else {
+        flutterAssetManager = Referenced::MakeRefPtr<FlutterAssetManager>();
+        container->SetAssetManagerIfNull(flutterAssetManager);
+    }
+    if (flutterAssetManager) {
+        flutterAssetManager->SetLibPath(libPath);
+    }
 }
 
 }; // namespace OHOS::Ace::Platform
