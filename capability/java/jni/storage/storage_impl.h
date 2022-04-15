@@ -25,8 +25,12 @@ public:
     explicit StorageImpl(const RefPtr<TaskExecutor>& taskExecutor);
     ~StorageImpl() override = default;
 
-    void Set(const std::string& key, const std::string& value) override;
-    std::string Get(const std::string& key) override;
+    void SetString(const std::string& key, const std::string& value) override;
+    std::string GetString(const std::string& key) override;
+    void SetDouble(const std::string& key, const double value) override;
+    bool GetDouble(const std::string& key, double& value) override;
+    void SetBoolean(const std::string& key, const bool value) override;
+    bool GetBoolean(const std::string& key, bool& value) override;
     void Clear() override;
     void Delete(const std::string& key) override;
 };
