@@ -38,3 +38,6 @@ platform_deps = [
   "//foundation/ace/ace_engine/adapter/android/entrance/java/jni:ace_common_jni_android",
   "//foundation/ace/ace_engine/adapter/android/osal:ace_osal_android",
 ]
+
+libace_target =
+    "//foundation/ace/ace_engine/adapter/android/build:libace_android"

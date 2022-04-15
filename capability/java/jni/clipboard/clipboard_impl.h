@@ -26,7 +26,7 @@ public:
     ~ClipboardImpl() override = default;
 
     void SetData(const std::string& data) override;
-    void GetData(const std::function<void(const std::string&)>& callback) override;
+    void GetData(const std::function<void(const std::string&)>& callback, bool syncMode = false) override;
     void Clear() override;
 private:
 
