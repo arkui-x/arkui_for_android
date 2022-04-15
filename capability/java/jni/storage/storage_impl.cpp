@@ -21,20 +21,42 @@ namespace OHOS::Ace::Platform {
 
 StorageImpl::StorageImpl(const RefPtr<TaskExecutor>& taskExecutor) : Storage(taskExecutor) {}
 
-void StorageImpl::Set(const std::string& key, const std::string& value)
+void StorageImpl::SetString(const std::string& key, const std::string& value)
 {
     if (taskExecutor_) {
         taskExecutor_->PostSyncTask([key, value] { StorageJni::Set(key, value); }, TaskExecutor::TaskType::JS);
     }
 }
 
-std::string StorageImpl::Get(const std::string& key)
+std::string StorageImpl::GetString(const std::string& key)
 {
     std::string result;
     if (taskExecutor_) {
         taskExecutor_->PostSyncTask([key, &result] { result = StorageJni::Get(key); }, TaskExecutor::TaskType::JS);
     }
     return result;
+}
+
+void StorageImpl::SetDouble(const std::string& key, const double value)
+{
+    // TODO: need implement it
+}
+
+bool StorageImpl::GetDouble(const std::string& key, double& value)
+{
+    // TODO: need implement it
+    return false;
+}
+
+void StorageImpl::SetBoolean(const std::string& key, const bool value)
+{
+    // TODO: need implement it
+}
+
+bool StorageImpl::GetBoolean(const std::string& key, bool& value)
+{
+    // TODO: need implement it
+    return false;
 }
 
 void StorageImpl::Clear()

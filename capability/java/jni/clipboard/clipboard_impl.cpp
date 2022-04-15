@@ -28,7 +28,7 @@ void ClipboardImpl::SetData(const std::string& data)
     }
 }
 
-void ClipboardImpl::GetData(const std::function<void(const std::string&)>& callback)
+void ClipboardImpl::GetData(const std::function<void(const std::string&)>& callback, bool syncMode)
 {
     if (taskExecutor_) {
         taskExecutor_->PostTask([callback, taskExecutor = WeakClaim(RawPtr(
