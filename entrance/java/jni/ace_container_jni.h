@@ -37,10 +37,8 @@ public:
     static void NativeOnShow(JNIEnv* env, jclass clazz, jint instanceId);
     static void NativeOnHide(JNIEnv* env, jclass clazz, jint instanceId);
     static void NativeOnConfigurationUpdated(JNIEnv* env, jclass clazz, jint instanceId, jstring data);
-    // static void NativeOnWindowDisplayModeChanged(
-    //     JNIEnv* env, jclass clazz, jint instanceId, jboolean isShowInMultiWindow, jstring data);
     static void NativeOnActive(JNIEnv* env, jclass clazz, jint instanceId);
-    static void NativeOnInative(JNIEnv* env, jclass clazz, jint instanceId);
+    static void NativeOnInactive(JNIEnv* env, jclass clazz, jint instanceId);
     static void NativeOnNewRequest(JNIEnv* env, jclass clazz, jint instanceId, jstring data);
     static void NativeOnMemoryLevel(JNIEnv* env, jclass clazz, jint instanceId, jint level);
     static void AddAssetPath(JNIEnv* env, jclass clazz, jint instanceId, jobject assetManager, jstring path);
@@ -57,6 +55,7 @@ public:
 
 private:
     static jboolean HandlePage(JNIEnv* env, jint instanceId, jstring content, jstring params, HandlePageType type);
+    static void SetLibPath(JNIEnv* env, jclass clazz, jint instanceId, jstring path);
 };
 
 } // namespace OHOS::Ace::Platform

@@ -160,7 +160,7 @@ jlong FlutterAceViewJni::CreateViewHandle(JNIEnv* env, jclass myClass, jobject v
 
 void FlutterAceViewJni::SurfaceCreated(JNIEnv* env, jobject myObject, jlong view, jobject jsurface)
 {
-    fml::jni::ScopedJavaLocalFrame scoped_local_reference_frame(env);
+    fml::jni::ScopedJavaLocalFrame scopedFrame(env);
     auto window = fml::MakeRefCounted<flutter::AndroidNativeWindow>(NativeWindowFromSurface::GetWindow(env, jsurface));
     auto viewPtr = JavaLongToPointer<FlutterAceView>(view);
     if (viewPtr != nullptr) {

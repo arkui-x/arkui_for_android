@@ -252,6 +252,15 @@ public class AceContainer {
     }
 
     /**
+     * Set the path for loading app lib
+     * 
+     * @param libPath app lib path
+     */
+    public void setLibPath(String libPath) {
+        nativeSetLibPath(instanceId, libPath);
+    }
+
+    /**
      * Set the host class name.
      * 
      * @param hostClassName
@@ -320,8 +329,7 @@ public class AceContainer {
 
     private native void nativeOnConfigurationUpdated(int instanceId, String configData);
 
-    // private native void nativeOnWindowDisplayModeChanged(int instanceId, boolean isShownInMultiWindow,
-    //         String configData);
-
     private native void nativeInitResourceManager(int instanceId, int themeId, String hapPath);
+
+    private native void nativeSetLibPath(int instanceId, String hapPath);
 }

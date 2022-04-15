@@ -27,6 +27,7 @@
 #include "core/common/ace_application_info.h"
 #include "core/common/ace_engine.h"
 #include "core/common/ace_view.h"
+#include "core/common/container_scope.h"
 #include "core/common/flutter/flutter_asset_manager.h"
 #include "core/components/common/layout/constants.h"
 #include "core/pipeline/pipeline_context.h"
@@ -65,6 +66,7 @@ jboolean AceContainerJni::HandlePage(JNIEnv* env, jint instanceId, jstring conte
 
     const char* contentStr = env->GetStringUTFChars(content, nullptr);
     const char* paramsStr = env->GetStringUTFChars(params, nullptr);
+    ContainerScope scope(instanceId);
     if (type == HandlePageType::RUN_PAGE) {
         front->RunPage(0, contentStr != nullptr ? contentStr : "", paramsStr != nullptr ? paramsStr : "");
     } else {
@@ -127,7 +129,7 @@ bool AceContainerJni::Register()
         {
             .name = "nativeOnInactive",
             .signature = "(I)V",
-            .fnPtr = reinterpret_cast<void*>(&NativeOnInative),
+            .fnPtr = reinterpret_cast<void*>(&NativeOnInactive),
         },
         {
             .name = "nativeOnNewRequest",
@@ -188,6 +190,11 @@ bool AceContainerJni::Register()
             .name = "nativeInitResourceManager",
             .signature = "(IILjava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&InitResourceManager),
+        },
+        {
+            .name = "nativeSetLibPath",
+            .signature = "(ILjava/lang/String;)V",
+            .fnPtr = reinterpret_cast<void*>(&SetLibPath),
         }
     };
 
@@ -213,6 +220,7 @@ void AceContainerJni::CreateContainer(
     JNIEnv* env, jclass clazz, jint instanceId, jint type, jobject callback, jstring name)
 {
     LOGI("JNI CreateContainer start");
+    Container::UpdateCurrent(INSTANCE_ID_PLATFORM);
     FrontendType frontendType = static_cast<FrontendType>(type);
     auto aceContainer = AceType::MakeRefPtr<AceContainer>(instanceId, frontendType, callback);
     if (env == nullptr) {
@@ -226,6 +234,7 @@ void AceContainerJni::CreateContainer(
     }
 
     AceEngine::Get().AddContainer(instanceId, aceContainer);
+    ContainerScope scope(instanceId);
     aceContainer->Initialize();
     aceContainer->SetInstanceName(namePtr);
 
@@ -278,6 +287,7 @@ jboolean AceContainerJni::NativeOnBackPressed(JNIEnv* env, jclass clazz, jint in
         return false;
     }
 
+    ContainerScope scope(instanceId);
     auto context = container->GetPipelineContext();
     if (!context) {
         LOGW("JNI Backpressed null context");
@@ -293,6 +303,7 @@ void AceContainerJni::NativeOnShow(JNIEnv* env, jclass clazz, jint instanceId)
         return;
     }
 
+    ContainerScope scope(instanceId);
     auto front = container->GetFrontend();
     if (front) {
         front->UpdateState(Frontend::State::ON_SHOW);
@@ -314,6 +325,7 @@ void AceContainerJni::NativeOnHide(JNIEnv* env, jclass clazz, jint instanceId)
         return;
     }
 
+    ContainerScope scope(instanceId);
     auto front = container->GetFrontend();
     if (front) {
         front->UpdateState(Frontend::State::ON_HIDE);
@@ -337,6 +349,7 @@ void AceContainerJni::NativeOnConfigurationUpdated(JNIEnv* env, jclass clazz, ji
         return;
     }
 
+    ContainerScope scope(instanceId);
     auto front = container->GetFrontend();
     if (!front) {
         return;
@@ -368,10 +381,6 @@ void AceContainerJni::NativeOnConfigurationUpdated(JNIEnv* env, jclass clazz, ji
     env->ReleaseStringUTFChars(data, dataStr);
 }
 
-// void AceContainerJni::NativeOnWindowDisplayModeChanged(
-//     JNIEnv* env, jclass clazz, jint instanceId, jboolean isShowInMultiWindow, jstring data)
-// {}
-
 void AceContainerJni::NativeOnActive(JNIEnv* env, jclass clazz, jint instanceId)
 {
     auto container = AceEngine::Get().GetContainer(instanceId);
@@ -379,19 +388,21 @@ void AceContainerJni::NativeOnActive(JNIEnv* env, jclass clazz, jint instanceId)
         return;
     }
 
+    ContainerScope scope(instanceId);
     auto front = container->GetFrontend();
     if (front) {
         front->OnActive();
     }
 }
 
-void AceContainerJni::NativeOnInative(JNIEnv* env, jclass clazz, jint instanceId)
+void AceContainerJni::NativeOnInactive(JNIEnv* env, jclass clazz, jint instanceId)
 {
     auto container = AceEngine::Get().GetContainer(instanceId);
     if (!container) {
         return;
     }
 
+    ContainerScope scope(instanceId);
     auto front = container->GetFrontend();
     if (front) {
         front->OnInactive();
@@ -405,6 +416,7 @@ void AceContainerJni::NativeOnNewRequest(JNIEnv* env, jclass clazz, jint instanc
         return;
     }
 
+    ContainerScope scope(instanceId);
     auto front = container->GetFrontend();
     if (front) {
         const char* dataStr = env->GetStringUTFChars(data, nullptr);
@@ -423,6 +435,7 @@ void AceContainerJni::NativeOnMemoryLevel(JNIEnv* env, jclass clazz, jint instan
         return;
     }
 
+    ContainerScope scope(instanceId);
     auto front = container->GetFrontend();
     if (front) {
         front->OnMemoryLevel(level);
@@ -442,6 +455,7 @@ void AceContainerJni::AddAssetPath(JNIEnv* env, jclass clazz, jint instanceId, j
         return;
     }
 
+    ContainerScope scope(instanceId);
     LOGI("JNI addAssetPath start");
     auto pathStr = env->GetStringUTFChars(path, nullptr);
     if (pathStr != nullptr) {
@@ -468,6 +482,7 @@ void AceContainerJni::SetView(
         return;
     }
 
+    ContainerScope scope(instanceId);
     auto view = JavaLongToPointer<AceView>(nativePtr);
     if (view == nullptr) {
         LOGE("JNI setView: null view");
@@ -489,6 +504,8 @@ void AceContainerJni::SetFontScale(JNIEnv* env, jclass clazz, jint instanceId, j
         LOGW("JNI setFontScale, null container");
         return;
     }
+
+    ContainerScope scope(instanceId);
     auto config = container->GetResourceConfiguration();
     if (NearEqual(config.GetFontRatio(), fontScale)) {
         return;
@@ -510,6 +527,8 @@ void AceContainerJni::SetWindowStyle(JNIEnv* env, jclass clazz, jint instanceId,
         LOGW("JNI setWindowStyle, null container");
         return;
     }
+
+    ContainerScope scope(instanceId);
     if (windowModal >= static_cast<int32_t>(WindowModal::FIRST_VALUE) &&
         windowModal <= static_cast<int32_t>(WindowModal::LAST_VALUE)) {
         container->SetWindowModal(static_cast<WindowModal>(windowModal));
@@ -528,6 +547,8 @@ void AceContainerJni::SetSemiModalCustomStyle(
         LOGW("JNI setSemiModalCustomStyle, null container");
         return;
     }
+
+    ContainerScope scope(instanceId);
     if (modalHeight > 0) {
         container->SetSemiModalHeight(modalHeight);
     }
@@ -541,6 +562,7 @@ void AceContainerJni::SetColorMode(JNIEnv* env, jclass clazz, jint instanceId, j
         LOGW("JNI setColorMode, null container");
         return;
     }
+    ContainerScope scope(instanceId);
     container->UpdateColorMode(static_cast<ColorMode>(colorMode));
 }
 
@@ -557,6 +579,7 @@ void AceContainerJni::SetHostClassName(JNIEnv* env, jclass clazz, jint instanceI
         return;
     }
 
+    ContainerScope scope(instanceId);
     const char* hostClassNameStr = env->GetStringUTFChars(hostClassName, nullptr);
     container->SetHostClassName(hostClassNameStr != nullptr ? hostClassNameStr : "");
     if (hostClassNameStr != nullptr) {
@@ -567,6 +590,7 @@ void AceContainerJni::SetHostClassName(JNIEnv* env, jclass clazz, jint instanceI
 void AceContainerJni::InitDeviceInfo(JNIEnv* env, jclass clazz, jint instanceId, jint deviceWidth, jint deviceHeight,
     jint orientation, jfloat density, jboolean isRound, jint mcc, jint mnc)
 {
+    ContainerScope scope(instanceId);
     SystemProperties::InitDeviceInfo(deviceWidth, deviceHeight, orientation, density, isRound);
     SystemProperties::InitMccMnc(mcc, mnc);
     auto container = AceType::DynamicCast<AceContainer>(AceEngine::Get().GetContainer(instanceId));
@@ -593,6 +617,7 @@ void AceContainerJni::InitResourceManager(JNIEnv* env, jclass clazz, jint instan
         LOGW("JNI initResourceManager, null container");
         return;
     }
+    ContainerScope scope(instanceId);
     auto pathStr = env->GetStringUTFChars(path, nullptr);
     std::string pkgPath;
     if (pathStr != nullptr) {
@@ -600,6 +625,38 @@ void AceContainerJni::InitResourceManager(JNIEnv* env, jclass clazz, jint instan
         env->ReleaseStringUTFChars(path, pathStr);
     }
     container->SetThemeResourceInfo(pkgPath, themeId);
+}
+
+void AceContainerJni::SetLibPath(JNIEnv* env, jclass clazz, jint instanceId, jstring path)
+{
+    if (!env) {
+        LOGW("JNI SetLibPath, null env");
+        return;
+    }
+
+    auto container = AceType::DynamicCast<AceContainer>(AceEngine::Get().GetContainer(instanceId));
+    if (!container) {
+        LOGW("JNI SetLibPath, null container");
+        return;
+    }
+
+    auto libPathStr = env->GetStringUTFChars(path, nullptr);
+    std::string libPath;
+    if (libPathStr != nullptr) {
+        libPath = libPathStr;
+        env->ReleaseStringUTFChars(path, libPathStr);
+    }
+
+    RefPtr<FlutterAssetManager> flutterAssetManager;
+    if (container->GetAssetManager()) {
+        flutterAssetManager = AceType::DynamicCast<FlutterAssetManager>(container->GetAssetManager());
+    } else {
+        flutterAssetManager = Referenced::MakeRefPtr<FlutterAssetManager>();
+        container->SetAssetManagerIfNull(flutterAssetManager);
+    }
+    if (flutterAssetManager) {
+        flutterAssetManager->SetLibPath(libPath);
+    }
 }
 
 }; // namespace OHOS::Ace::Platform
