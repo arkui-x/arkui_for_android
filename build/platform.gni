@@ -18,6 +18,7 @@ platforms = []
 if (!is_standard_system) {
   android_platform = {
     name = "android"
+    cross_platform_support = true
     config = {
       import("config.gni")
     }
