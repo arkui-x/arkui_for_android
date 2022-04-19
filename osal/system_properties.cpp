@@ -23,6 +23,7 @@ namespace {
 // Device type, same w/ java in AceView
 constexpr int32_t ORIENTATION_PORTRAIT = 1;
 constexpr int32_t ORIENTATION_LANDSCAPE = 2;
+constexpr char UNDEFINED_PARAM[] = "undefined parameter";
 
 } // namespace
 
@@ -51,6 +52,7 @@ bool SystemProperties::accessibilityEnabled_ = false;
 bool SystemProperties::windowAnimationEnabled_ = false;
 int32_t SystemProperties::windowPosX_ = 0;
 int32_t SystemProperties::windowPosY_ = 0;
+bool SystemProperties::debugBoundaryEnabled_ = false;
 
 void SystemProperties::InitDeviceType(DeviceType type)
 {
@@ -125,6 +127,16 @@ bool SystemProperties::GetDebugEnabled()
 bool SystemProperties::IsSyscapExist(const char* cap)
 {
     return false;
+}
+
+std::string SystemProperties::GetLanguage()
+{
+    return UNDEFINED_PARAM;
+}
+
+std::string SystemProperties::GetRegion()
+{
+    return UNDEFINED_PARAM;
 }
 
 } // namespace OHOS::Ace
