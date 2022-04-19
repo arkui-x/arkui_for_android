@@ -26,6 +26,7 @@
 #include "adapter/android/capability/java/jni/vibrator/vibrator_jni.h"
 #include "adapter/android/entrance/java/jni/ace_application_info_jni.h"
 #include "adapter/android/entrance/java/jni/ace_env_jni.h"
+#include "adapter/android/entrance/java/jni/download_manager_jni.h"
 #include "adapter/android/entrance/java/jni/dump_helper_jni.h"
 #include "adapter/android/entrance/java/jni/flutter_ace_view_jni.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
@@ -102,6 +103,10 @@ bool JniRegistry::Register()
 
     if (!VibratorJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register VibratorJni");
+        return false;
+    }
+    if (!DownloadManagerJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register DownloadManager");
         return false;
     }
 
