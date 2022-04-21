@@ -42,6 +42,7 @@ public:
     static void DispatchMouseEvent(JNIEnv* env, jobject myObject, jlong view, jobject buffer, jint position);
     static void RegisterTexture(JNIEnv* env, jobject myObject, jlong view, jlong texture_id, jobject surface_texture);
     static void RegisterSurface(JNIEnv* env, jobject myObject, jlong view, jlong texture_id, jobject surface);
+    static void UnregisterSurface(JNIEnv* env, jobject myObject, jlong view, jlong texture_id);
     static void MarkTextureFrameAvailable(JNIEnv* env, jobject myObject, jlong view, jlong texture_id);
     static void UnregisterTexture(JNIEnv* env, jobject myObject, jlong view, jlong texture_id);
     static jlong InitResRegister(JNIEnv* env, jobject myObject, jlong view, jobject resRegister);

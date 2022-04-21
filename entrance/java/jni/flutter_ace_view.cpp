@@ -201,6 +201,10 @@ std::unique_ptr<PlatformWindow> FlutterAceView::GetPlatformWindow()
 
 const void* FlutterAceView::GetNativeWindowById(uint64_t textureId)
 {
+    auto it = nativeWindowMap_.find(textureId);
+    if (it != nativeWindowMap_.end()) {
+        return it->second;
+    }
     return nullptr;
 }
 
