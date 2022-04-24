@@ -17,7 +17,10 @@ import("//foundation/ace/ace_engine/interfaces/napi/kits/napi_lib.gni")
 
 # libace target
 ohos_shared_library("libace_android") {
-  deps = [ "$ace_root/build:libace_static_android" ]
+  deps = [
+    "$ace_root/build:libace_static_android",
+    "$ace_root/interfaces/native:ace_packages_ndk",
+  ]
   part_name = "ace_engine_cross"
   subsystem_name = "ace"
 }

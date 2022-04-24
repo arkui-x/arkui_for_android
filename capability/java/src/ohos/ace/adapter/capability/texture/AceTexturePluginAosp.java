@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  */
 public class AceTexturePluginAosp extends AceResourcePlugin {
+    private static final String LOG_TAG = "AceTexturePluginAosp";
     private final AtomicLong nextTextureId = new AtomicLong(0L);
 
     private final IAceTexture textureImpl;
@@ -57,8 +58,10 @@ public class AceTexturePluginAosp extends AceResourcePlugin {
      * @return texture id
      */
     public long create(Map<String, String> param) {
-        AceTexture aceTexture = new AceTexture(nextTextureId.get(), textureImpl, getEventCallback());
+        AceTexture aceTexture = new AceTexture(nextTextureId.get(), textureImpl, 
+                                                getEventCallback(), param);
         objectMap.put(nextTextureId.get(), aceTexture);
+        registerCallMethod(aceTexture.getCallMethod());
         return nextTextureId.getAndIncrement();
     }
 
@@ -99,4 +102,3 @@ public class AceTexturePluginAosp extends AceResourcePlugin {
         objectMap.clear();
     }
 }
-

@@ -31,6 +31,7 @@ advance_components_support = true
 form_components_support = false
 js_pa_support = false
 connect_server_support = false
+xcomponent_components_support = true
 
 cflags_cc = [ "-std=c++17" ]
 
@@ -41,3 +42,7 @@ platform_deps = [
 
 libace_target =
     "//foundation/ace/ace_engine/adapter/android/build:libace_android"
+
+if (xcomponent_components_support) {
+  defines += [ "XCOMPONENT_SUPPORTED" ]
+}
