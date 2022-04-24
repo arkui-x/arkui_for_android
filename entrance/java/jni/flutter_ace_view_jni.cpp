@@ -92,6 +92,11 @@ static const JNINativeMethod COMMON_METHODS[] = {
         .fnPtr = reinterpret_cast<void*>(&FlutterAceViewJni::UnregisterTexture),
     },
     {
+        .name = "nativeUnregisterSurface",
+        .signature = "(JJ)V",
+        .fnPtr = reinterpret_cast<void*>(&FlutterAceViewJni::UnregisterSurface),
+    },
+    {
         .name = "nativeInitResRegister",
         .signature = "(JLohos/ace/adapter/AceResourceRegister;)J",
         .fnPtr = reinterpret_cast<void*>(&FlutterAceViewJni::InitResRegister),
@@ -314,7 +319,12 @@ void FlutterAceViewJni::RegisterSurface(JNIEnv* env, jobject myObject, jlong vie
         LOGW("env is null");
         return;
     }
-    // TODO
+
+    auto viewPtr = JavaLongToPointer<FlutterAceView>(view);
+    if (viewPtr != nullptr) {
+        auto nativeWindow = reinterpret_cast<void*>(ANativeWindow_fromSurface(env, surface));
+        viewPtr->RegisterSurface(static_cast<int64_t>(texture_id), nativeWindow);
+    }
 }
 
 void FlutterAceViewJni::MarkTextureFrameAvailable(JNIEnv* env, jobject myObject, jlong view, jlong texture_id)
@@ -336,6 +346,18 @@ void FlutterAceViewJni::UnregisterTexture(JNIEnv* env, jobject myObject, jlong v
         if (platformView) {
             platformView->UnregisterTexture(static_cast<int64_t>(texture_id));
         }
+    }
+}
+
+void FlutterAceViewJni::UnregisterSurface(JNIEnv* env, jobject myObject, jlong view, jlong texture_id)
+{
+    if (env == nullptr) {
+        LOGW("env is null");
+        return;
+    }
+    auto viewPtr = JavaLongToPointer<FlutterAceView>(view);
+    if (viewPtr != nullptr) {
+        viewPtr->UnregisterSurface(static_cast<int64_t>(texture_id));
     }
 }
 

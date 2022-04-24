@@ -291,6 +291,9 @@ public class AceVideoAosp extends AceVideoBase
     public String getPosition(Map<String, String> params) {
         // the current position in milliseconds.
         int position = mediaPlayer.getCurrentPosition();
+        runOnUIThread(() -> {
+            fireGetCurrenttime(position / SECOND_TO_MSEC);
+        });
         return "currentpos=" + position / SECOND_TO_MSEC;
     }
 

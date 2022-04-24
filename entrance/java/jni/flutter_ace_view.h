@@ -158,6 +158,16 @@ public:
         }
     }
 
+    void RegisterSurface(int64_t textureId, void* nativewindow)
+    {
+        nativeWindowMap_.emplace(textureId, nativewindow);
+    }
+
+    void UnregisterSurface(int64_t textureId)
+    {
+        nativeWindowMap_.erase(textureId);
+    }
+
 private:
     bool IsLastPage() const;
     static bool RegisterCommonNatives(JNIEnv* env, const jclass myClass);
@@ -191,6 +201,7 @@ private:
     };
 
     std::unordered_map<int32_t, TouchPointInfo> touchPointInfoMap_;
+    std::unordered_map<int64_t, void*> nativeWindowMap_;
     JniEnvironment::JavaGlobalRef object_;
 
     ACE_DISALLOW_COPY_AND_MOVE(FlutterAceView);

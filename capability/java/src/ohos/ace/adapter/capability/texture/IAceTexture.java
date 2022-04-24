@@ -49,4 +49,11 @@ public interface IAceTexture {
      * @param textureId id
      */
     void unregisterTexture(long textureId);
+
+    /**
+     * Unregister surface to rendering engine.
+     *
+     * @param textureId id
+     */
+    void unregisterSurface(long textureId);
 }

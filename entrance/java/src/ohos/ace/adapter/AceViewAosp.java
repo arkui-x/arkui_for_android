@@ -314,6 +314,10 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
         IAceTexture textureImpl = new IAceTexture() {
             @Override
             public void registerSurface(long textureId, Object surface) {
+                if (nativeViewPtr == 0L) {
+                    return;
+                }
+                nativeRegisterSurface(nativeViewPtr, textureId, surface);
             }
 
             @Override
@@ -338,6 +342,14 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
                     return;
                 }
                 nativeUnregisterTexture(nativeViewPtr, textureId);
+            }
+
+            @Override
+            public void unregisterSurface(long textureId) {
+                if (nativeViewPtr == 0L) {
+                    return;
+                }
+                nativeUnregisterSurface(nativeViewPtr, textureId);
             }
         };
         resRegister.registerPlugin(AceTexturePluginAosp.createRegister(textureImpl));
@@ -443,6 +455,8 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
     private native void nativeUnregisterTexture(long viewPtr, long textureId);
 
     private native void nativeRegisterSurface(long viewPtr, long textureId, Object surface);
+
+    private native void nativeUnregisterSurface(long viewPtr, long textureId);
 
     private native void nativeMarkTextureFrameAvailable(long viewPtr, long textureId);
 
