@@ -50,6 +50,16 @@ public class AceTexture {
      */
     protected final long id;
 
+    private static final String TEXTURE_FLAG = "texture@";
+
+    private static final String EVENT = "event";
+
+    private static final String PARAM_EQUALS = "#HWJS-=-#";
+
+    private static final String PARAM_BEGIN = "#HWJS-?-#";
+
+    private final IAceOnResourceEvent callback;
+
     private boolean hasRegisterTexture = false;
 
     private SurfaceTexture.OnFrameAvailableListener onFrameListener = new SurfaceTexture.OnFrameAvailableListener() {
@@ -65,6 +75,7 @@ public class AceTexture {
         this.surfaceTexture.setOnFrameAvailableListener(onFrameListener);
         this.id = id;
         this.textureImpl = textureImpl;
+        this.callback = callback;
     }
 
     /**
@@ -135,6 +146,7 @@ public class AceTexture {
         }
 
         this.textureImpl.markTextureFrameAvailable(id);
+        callback.onEvent(TEXTURE_FLAG + id + EVENT + PARAM_EQUALS + "markTextureFrameAvailable" + PARAM_BEGIN, "");
     }
 }
 
