@@ -58,17 +58,37 @@ public class TextInputConfiguration {
         if (config == null) {
             return null;
         }
+        int type = 0;
+        int action = 0;
+        boolean obscure = false;
+        String actionLabel = "";
+        boolean autoCorrect = false;
+        String capitalization = "";
+        String keyboardAppearance = "";
+        if (config.has("type")) {
+            type = config.getInt("type");
+        }
+        if (config.has("action")) {
+            action = config.getInt("action");
+        }
+        if (config.has("obscureText")) {
+            obscure = config.getBoolean("obscureText");
+        }
+        if (config.has("actionLabel")) {
+            actionLabel = config.getString("actionLabel");
+        }
+        if (config.has("autoCorrect")) {
+            autoCorrect = config.getBoolean("autoCorrect");
+        }
+        if (config.has("capitalization")) {
+            capitalization = config.getString("capitalization");
+        }
+        if (config.has("keyboardAppearance")) {
+            keyboardAppearance = config.getString("keyboardAppearance");
+        }
 
-        return new TextInputConfiguration(
-            // Currently support text only.
-            TextInputType.of(config.getInt("type")),
-            config.getBoolean("obscureText"),
-            TextInputAction.of(config.getInt("action")),
-            config.getString("actionLabel"),
-            config.getBoolean("autoCorrect"),
-            config.getString("capitalization"),
-            config.getString("keyboardAppearance")
-        );
+        return new TextInputConfiguration(TextInputType.of(type), obscure, TextInputAction.of(action),
+            actionLabel, autoCorrect, capitalization, keyboardAppearance);
     }
 
     /**
