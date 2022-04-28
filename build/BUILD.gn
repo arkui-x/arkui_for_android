@@ -12,8 +12,8 @@
 # limitations under the License.
 
 import("//build/ohos.gni")
-import("//foundation/ace/ace_engine/ace_config.gni")
-import("//foundation/ace/ace_engine/interfaces/napi/kits/napi_lib.gni")
+import("//foundation/arkui/ace_engine/ace_config.gni")
+import("//foundation/arkui/ace_engine/interfaces/napi/kits/napi_lib.gni")
 
 # libace target
 ohos_shared_library("libace_android") {
@@ -22,7 +22,7 @@ ohos_shared_library("libace_android") {
     "$ace_root/interfaces/native:ace_packages_ndk",
   ]
   part_name = "ace_engine_cross"
-  subsystem_name = "ace"
+  subsystem_name = "arkui"
 }
 
 # Install final jar
@@ -33,7 +33,7 @@ ohos_combine_jars("ace_android_adapter_java") {
   ]
 
   part_name = "ace_engine_cross"
-  subsystem_name = "ace"
+  subsystem_name = "arkui"
   jar_path = "${root_out_dir}/ace_android_adapter.jar"
 }
 
