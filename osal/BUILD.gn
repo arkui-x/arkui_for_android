@@ -34,6 +34,7 @@ template("ace_osal_android_source_set") {
       "ressched_report.cpp",
       "subwindow.cpp",
       "system_properties.cpp",
+      "trace_id_impl.cpp",
     ]
 
     deps = [ "$ace_root/frameworks/core/components/theme:build_theme_code" ]
