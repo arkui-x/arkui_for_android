@@ -12,9 +12,9 @@
 # limitations under the License.
 
 import("//build/ohos.gni")
-import("//foundation/ace/ace_engine/ace_config.gni")
+import("//foundation/arkui/ace_engine/ace_config.gni")
 import(
-    "//foundation/ace/ace_engine/adapter/android/capability/java/capability.gni")
+    "//foundation/arkui/ace_engine/adapter/android/capability/java/capability.gni")
 
 template("ace_android_jni_source_set") {
   forward_variables_from(invoker, "*")
