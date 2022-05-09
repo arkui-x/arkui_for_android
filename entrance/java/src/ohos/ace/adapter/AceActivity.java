@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * A base class for the Ability Cross-platform Environment(ACE) to run on
  * Android. This class is inherited from
- * android Activity. It is entrance of lifecycles of android applications.
+ * android Activity. It is entrance of life-cycles of android applications.
  * 
  */
 public class AceActivity extends Activity {
@@ -80,6 +80,20 @@ public class AceActivity extends Activity {
     private AceContainer container = null;
 
     private AceViewCreatorAosp viewCreator = null;
+
+    /**
+     * call when create AceActivity
+     * 
+     * @param savedInstanceState bundle from system
+     * @param version the version of app type, can be one of this:
+     *                VERSION_JS/VERSION_ETS
+     * @param name the instance name
+     */
+    protected void onCreate(Bundle savedInstanceState, int version, String name) {
+        this.version = version;
+        this.instanceName = name;
+        onCreate(savedInstanceState);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
