@@ -46,6 +46,7 @@ import java.nio.ByteBuffer;
 /**
  * This class is AceView implement and handles the lifecycle of surface.
  * 
+ * @since 1
  */
 public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.Callback {
     private static final String LOG_TAG = "AceViewAosp";
@@ -118,6 +119,11 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
         initPlugins(context);
     }
 
+    /**
+     * Create native view and get it's pointer
+     * 
+     * @param instanceId the instance of container
+     */
     protected void createNativePtr(int instanceId) {
         if (nativeViewPtr == 0L) {
             nativeViewPtr = nativeCreateSurfaceHandle(this, instanceId);
@@ -300,6 +306,10 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
         nativeViewPtr = 0L;
     }
 
+    /**
+     * Initialize resource register
+     * 
+     */
     public void initResRegister() {
         resRegister = new AceResourceRegister();
         if (nativeViewPtr == 0L) {

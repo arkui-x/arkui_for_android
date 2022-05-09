@@ -18,6 +18,7 @@ package ohos.ace.adapter;
 /**
  * Log Wrapper for specific platform
  * 
+ * @since 1
  */
 public class ALog {
     private static ILogger logger;

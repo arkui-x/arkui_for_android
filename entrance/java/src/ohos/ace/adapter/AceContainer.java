@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Each instance have its own pipeline and thread models, it can contains
  * multiple pages.
  * 
+ * @since 1
  */
 public class AceContainer {
     private static final String LOG_TAG = "AceContainer";
@@ -68,6 +69,15 @@ public class AceContainer {
 
     private IAceView view;
 
+    /**
+     * constructor of AceContainer
+     * 
+     * @param instanceId id of the container instance
+     * @param type the type of container
+     * @param creator the view creator to create AceView
+     * @param callback the callback interface the receive callback event
+     * @param instanceName the name of current instance
+     */
     public AceContainer(int instanceId, int type, IAceViewCreator creator, AceEventCallback callback,
         String instanceName) {
         this.instanceId = instanceId;
@@ -236,7 +246,7 @@ public class AceContainer {
     /**
      * Update when configuration changed.
      * 
-     * @param configData
+     * @param configData the config info data
      */
     public void onConfigurationUpdated(String configData) {
         nativeOnConfigurationUpdated(instanceId, configData);
@@ -263,7 +273,7 @@ public class AceContainer {
     /**
      * Set the host class name.
      * 
-     * @param hostClassName
+     * @param hostClassName class name of current host class
      */
     public void setHostClassName(String hostClassName) {
         nativeSetHostClassName(instanceId, hostClassName);

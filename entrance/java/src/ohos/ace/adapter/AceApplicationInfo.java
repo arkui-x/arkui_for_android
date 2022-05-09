@@ -20,6 +20,11 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * The info of the running application
+ * 
+ * @since 1
+ */
 public final class AceApplicationInfo {
     private static final String LOG_TAG = "AceApplicationInfo";
 

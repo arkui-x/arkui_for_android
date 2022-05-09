@@ -21,6 +21,7 @@ import android.view.WindowManager;
 /**
  * This class used to hanlde vsync signal.
  * 
+ * @since 1
  */
 public class AceVsyncWaiter {
     private static final float ONE_SECOND_IN_NANO = 1000000000.0f;
@@ -51,6 +52,11 @@ public class AceVsyncWaiter {
         return instance;
     }
 
+    /**
+     * Wait for next vsync
+     * 
+     * @param nativeRef native reference which calling
+     */
     public static void waitForVsync(long nativeRef) {
         Choreographer.getInstance().postFrameCallback(new Choreographer.FrameCallback() {
             @Override

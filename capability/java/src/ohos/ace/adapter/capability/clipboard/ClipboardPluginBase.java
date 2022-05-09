@@ -18,6 +18,7 @@ package ohos.ace.adapter.capability.clipboard;
 /**
  * base interface of clipboard plugin
  * 
+ * @since 1
  */
 public abstract class ClipboardPluginBase {
     /**

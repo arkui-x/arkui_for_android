@@ -24,6 +24,7 @@ import ohos.ace.adapter.ALog;
 /**
  * PersistentStorage implement of android
  *
+ * @since 1
  */
 public class PersistentStorageAosp extends PersistentStorageBase {
     private static final String LOG_TAG = "PersistentStorageAosp";
@@ -34,6 +35,11 @@ public class PersistentStorageAosp extends PersistentStorageBase {
 
     private Context context;
 
+    /**
+     * constructor of PersistentStorage in AOSP platform
+     * 
+     * @param context the context of application
+     */
     public PersistentStorageAosp(Context context) {
         this.context = context;
         if (context == null) {

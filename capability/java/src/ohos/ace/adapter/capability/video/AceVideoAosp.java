@@ -36,8 +36,9 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * This class handles the lifecycle of a mediaplayer.
+ * This class handles the lifecycle of a media player.
  *
+ * @since 1
  */
 public class AceVideoAosp extends AceVideoBase
     implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnSeekCompleteListener,
@@ -75,6 +76,15 @@ public class AceVideoAosp extends AceVideoBase
 
     private HandlerThread handlerThread;
 
+    /**
+     * constructor of AceVideo on AOSP platform
+     * 
+     * @param id the id of plugin
+     * @param name name of plugin
+     * @param surface the surface to render video content
+     * @param context context of application
+     * @param callback resource callback
+     */
     public AceVideoAosp(long id, String name, Surface surface, Context context, IAceOnResourceEvent callback) {
         super(id, callback);
         this.instanceName = name;

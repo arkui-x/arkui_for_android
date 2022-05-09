@@ -21,11 +21,21 @@ import android.content.Context;
 
 import ohos.ace.adapter.ALog;
 
+/**
+ * ClipboardPluginAosp
+ * 
+ * @since 1
+ */
 public class ClipboardPluginAosp extends ClipboardPluginBase {
     private static final String LOG_TAG = "ClipboardPlugin";
 
     private final ClipboardManager clipManager;
 
+    /**
+     * ClipboardPlugin on AOSP platform
+     * 
+     * @param context context of the application
+     */
     public ClipboardPluginAosp(Context context) {
         if (context != null) {
             Object service = context.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -42,6 +52,7 @@ public class ClipboardPluginAosp extends ClipboardPluginBase {
         nativeInit();
     }
 
+    @Override
     public String getData() {
         if (clipManager != null) {
             ClipData clipData = clipManager.getPrimaryClip();
@@ -56,6 +67,7 @@ public class ClipboardPluginAosp extends ClipboardPluginBase {
         return "";
     }
 
+    @Override
     public void setData(String data) {
         if (clipManager != null) {
             ClipData clipData = ClipData.newPlainText(null, data);
@@ -63,6 +75,7 @@ public class ClipboardPluginAosp extends ClipboardPluginBase {
         }
     }
 
+    @Override
     public void clear() {
         if (clipManager != null) {
             clipManager.clearPrimaryClip();

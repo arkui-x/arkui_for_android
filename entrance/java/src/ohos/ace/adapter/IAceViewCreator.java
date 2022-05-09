@@ -18,6 +18,7 @@ package ohos.ace.adapter;
 /**
  * The common interface of AceViewCreator, for creating the AceView
  * 
+ * @since 1
  */
 public interface IAceViewCreator {
     /**

@@ -17,6 +17,11 @@ package ohos.ace.adapter;
 
 import android.util.Log;
 
+/**
+ * Logger implementation in Aosp platform
+ * 
+ * @since 1
+ */
 public class LoggerAosp implements ILogger {
     /**
      * Determines if debug log is permitted output.

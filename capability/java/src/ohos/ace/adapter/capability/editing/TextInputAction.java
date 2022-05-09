@@ -18,6 +18,7 @@ package ohos.ace.adapter.capability.editing;
 /**
  * See C++ TextInputAction
  *
+ * @since 1
  */
 public enum TextInputAction {
     UNSPECIFIED(0),
@@ -31,6 +32,11 @@ public enum TextInputAction {
 
     private int value = 0;
 
+    /**
+     * constructor of TextInputAction
+     * 
+     * @param value action value
+     */
     TextInputAction(int value) {
         this.value = value;
     }

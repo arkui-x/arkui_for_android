@@ -18,6 +18,7 @@ package ohos.ace.adapter;
 /**
  * The event callback interface define from native
  * 
+ * @since 1
  */
 public interface AceEventCallback {
     /**

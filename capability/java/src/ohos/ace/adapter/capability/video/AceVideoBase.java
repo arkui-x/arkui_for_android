@@ -25,6 +25,7 @@ import java.util.Map;
 /**
  * This class handles the lifecycle of a media player.
  *
+ * @since 1
  */
 public abstract class AceVideoBase {
     private static final String LOG_TAG = "AceVideoBase";
@@ -53,6 +54,12 @@ public abstract class AceVideoBase {
 
     private final Map<String, IAceOnCallResourceMethod> callMethodMap;
 
+    /**
+     * base constructor of AceVideo
+     * 
+     * @param id id of plugin
+     * @param callback resource callback
+     */
     public AceVideoBase(long id, IAceOnResourceEvent callback) {
         this.id = id;
         this.isAutoPlay = false;

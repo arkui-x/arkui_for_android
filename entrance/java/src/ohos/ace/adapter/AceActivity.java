@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Android. This class is inherited from
  * android Activity. It is entrance of life-cycles of android applications.
  * 
+ * @since 1
  */
 public class AceActivity extends Activity {
     private static final String LOG_TAG = "AceActivity";
@@ -268,6 +269,14 @@ public class AceActivity extends Activity {
         this.version = version;
     }
 
+    /**
+     * called when native report callback event
+     * 
+     * @param pageId the id of running page
+     * @param callbackId the id of callback event
+     * @param jsonStr the params of callback info
+     * @return the result of callback
+     */
     protected String onCallbackWithReturn(int pageId, String callbackId, String jsonStr) {
         if (callbackId == null || callbackId.isEmpty()) {
             return null;

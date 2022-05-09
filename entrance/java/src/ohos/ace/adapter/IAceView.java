@@ -18,6 +18,7 @@ package ohos.ace.adapter;
 /**
  * The common interface of the AceView
  * 
+ * @since 1
  */
 public interface IAceView {
     /**
@@ -54,34 +55,79 @@ public interface IAceView {
      * view port metrics
      */
     class ViewPortMetrics {
+        /**
+         * the dpi of viewport
+         */
         public float devicePixelRatio = 1.0f;
 
+        /**
+         * the physicial width of viewport
+         */
         public int physicialWidth = 0;
 
+        /**
+         * the physicial height of viewport
+         */
         public int physicialHeight = 0;
 
+        /**
+         * the physicial top padding of viewport
+         */
         public int physicialPaddingTop = 0;
 
+        /**
+         * the physicial right padding of viewport
+         */
         public int physicialPaddingRight = 0;
 
+        /**
+         * the physicial bottom padding of viewport
+         */
         public int physicialPaddingBottom = 0;
 
+        /**
+         * the physicial left padding of viewport
+         */
         public int physicialPaddingLeft = 0;
 
+        /**
+         * the physicial top view inset of viewport
+         */
         public int physicialViewInsetTop = 0;
 
+        /**
+         * the physicial right view inset of viewport
+         */
         public int physicialViewInsetRight = 0;
 
+        /**
+         * the physicial bottom view inset of viewport
+         */
         public int physicialViewInsetBottom = 0;
 
+        /**
+         * the physicial left view inset of viewport
+         */
         public int physicialViewInsetLeft = 0;
 
+        /**
+         * the system top gesture inset of viewport
+         */
         public int systemGestureInsetTop = 0;
 
+        /**
+         * the system right gesture inset of viewport
+         */
         public int systemGestureInsetRight = 0;
 
+        /**
+         * the system bottom gesture inset of viewport
+         */
         public int systemGestureInsetBottom = 0;
 
+        /**
+         * the system left gesture inset of viewport
+         */
         public int systemGestureInsetLeft = 0;
     }
 

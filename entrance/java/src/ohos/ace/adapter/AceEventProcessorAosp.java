@@ -23,6 +23,7 @@ import java.nio.ByteOrder;
 /**
  * process for system touch/key events
  * 
+ * @since 1
  */
 public class AceEventProcessorAosp {
     private static final int PONITER_FIELD_COUNT = 10;
@@ -43,6 +44,12 @@ public class AceEventProcessorAosp {
     private AceEventProcessorAosp() {
     }
 
+    /**
+     * Process system motion events
+     * 
+     * @param event motion event from system
+     * @return whether the event is handled
+     */
     public static ByteBuffer processTouchEvent(MotionEvent event) {
         if (event == null) {
             throw new AssertionError("event is null");

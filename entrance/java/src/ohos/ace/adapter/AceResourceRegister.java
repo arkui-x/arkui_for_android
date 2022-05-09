@@ -21,6 +21,7 @@ import java.util.Map;
 /**
  * The platform resource register.
  * 
+ * @since 1
  */
 public final class AceResourceRegister {
     private static final String LOG_TAG = "AceResourceRegister";

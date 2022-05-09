@@ -15,6 +15,17 @@
 
 package ohos.ace.adapter;
 
+/**
+ * The common interface of resource event
+ * 
+ * @since 1
+ */
 public interface IAceOnResourceEvent {
+    /**
+     * Called when send the resource event to native
+     * 
+     * @param eventId the id of the event
+     * @param param the params of the event
+     */
     void onEvent(String eventId, String param);
 }

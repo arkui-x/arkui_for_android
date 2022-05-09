@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * The class for creating Texture on Android platform.
  *
+ * @since 1
  */
 public class AceTexturePluginAosp extends AceResourcePlugin {
     private static final String LOG_TAG = "AceTexturePluginAosp";

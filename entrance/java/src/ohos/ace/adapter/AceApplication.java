@@ -20,6 +20,7 @@ import android.app.Application;
 /**
  * This class extends from Android Application, the entry of app
  * 
+ * @since 1
  */
 public class AceApplication extends Application {
     private static final String LOG_TAG = "AceApplication";

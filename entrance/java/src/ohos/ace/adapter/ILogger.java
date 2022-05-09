@@ -18,6 +18,7 @@ package ohos.ace.adapter;
 /**
  * Common interface for logging
  * 
+ * @since 1
  */
 public interface ILogger {
     /**

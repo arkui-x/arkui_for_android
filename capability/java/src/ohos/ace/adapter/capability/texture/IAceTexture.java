@@ -18,6 +18,7 @@ package ohos.ace.adapter.capability.texture;
 /**
  * The Texture interface defined from ACE engine.
  *
+ * @since 1
  */
 public interface IAceTexture {
     /**

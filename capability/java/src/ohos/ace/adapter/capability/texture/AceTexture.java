@@ -28,6 +28,7 @@ import ohos.ace.adapter.IAceOnResourceEvent;
 /**
  * This class handles the lifecycle of a surface texture.
  *
+ * @since 1
  */
 public class AceTexture {
     private static final String LOG_TAG = "AceTexture";
@@ -44,7 +45,7 @@ public class AceTexture {
     private static final String TEXTURE_WIDTH_KEY = "textureWidth";
     private static final String TEXTURE_HEIGHT_KEY = "textureHeight";
     private static final String TEXTURE_SET_DEFAULT_SIZE_KEY = "setDefaultSize";
-    private static final String TEXTURE_INIT_PARAM_KEY= "initParam";
+    private static final String TEXTURE_INIT_PARAM_KEY = "initParam";
     private static final String TEXTURE_REGISTER_SURFACE_VALUE = "registerSurface";
 
     /**
@@ -89,6 +90,14 @@ public class AceTexture {
         }
     };
 
+    /**
+     * constructor of AceTexture
+     * 
+     * @param id id of texture
+     * @param textureImpl texture object
+     * @param callback resource callback
+     * @param initParam initialize parameters
+     */
     public AceTexture(long id, IAceTexture textureImpl, IAceOnResourceEvent callback, Map<String, String> initParam) {
         this.surfaceTexture = new SurfaceTexture(0);
         this.surfaceTexture.detachFromGLContext();
@@ -101,8 +110,8 @@ public class AceTexture {
         IAceOnCallResourceMethod callSetTextureSize = (param) -> setTextureSize(param);
         this.callMethodMap.put("texture@" + id + METHOD + PARAM_EQUALS + "setTextureSize" + PARAM_BEGIN, callSetTextureSize);
 
-        if (initParam.containsKey(TEXTURE_INIT_PARAM_KEY) &&
-            initParam.get(TEXTURE_INIT_PARAM_KEY).equals(TEXTURE_REGISTER_SURFACE_VALUE)) {
+        if (initParam.containsKey(TEXTURE_INIT_PARAM_KEY)
+                && initParam.get(TEXTURE_INIT_PARAM_KEY).equals(TEXTURE_REGISTER_SURFACE_VALUE)) {
             registerSurface();
         }
     }
@@ -161,6 +170,10 @@ public class AceTexture {
         }
     }
 
+    /**
+     * Create and register new surface
+     * 
+     */
     public void registerSurface() {
         if (surface == null) {
             surface = new Surface(this.surfaceTexture);

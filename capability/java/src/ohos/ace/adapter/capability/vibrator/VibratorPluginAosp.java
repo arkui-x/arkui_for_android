@@ -24,12 +24,18 @@ import ohos.ace.adapter.ALog;
 /**
  * VibratorPluginAosp is an add-on for handling vibrator.
  *
+ * @since 1
  */
 public class VibratorPluginAosp extends VibratorPluginBase {
     private static final String LOG_TAG = "Ace_Vibrator";
 
     private final Vibrator vibrator;
 
+    /**
+     * constructor of VibratorPlugin in AOSP platform
+     * 
+     * @param context the context of application
+     */
     public VibratorPluginAosp(Context context) {
         if (context != null) {
             Object temp = context.getSystemService(Context.VIBRATOR_SERVICE);

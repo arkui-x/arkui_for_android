@@ -20,9 +20,13 @@ import java.util.Map;
 /**
  * The platform resource plugin.
  * 
+ * @since 1
  */
 public abstract class AceResourcePlugin {
 
+    /**
+     * Object of AceResourceRegister
+     */
     protected AceResourceRegister resRegister;
 
     private final float version;
@@ -31,6 +35,12 @@ public abstract class AceResourcePlugin {
 
     private IAceOnResourceEvent callback;
 
+    /**
+     * Constructor of AceResourcePlugin
+     * 
+     * @param tag plugin tag
+     * @param version plugin version
+     */
     public AceResourcePlugin(final String tag, final float version) {
         this.tag = tag;
         this.version = version;
@@ -130,7 +140,7 @@ public abstract class AceResourcePlugin {
      * Get resource object by id
      * 
      * @param id id of resource object
-     * @return
+     * @return the resource object
      */
     public abstract Object getObject(long id);
 
@@ -138,7 +148,7 @@ public abstract class AceResourcePlugin {
      * Create resource by param
      * 
      * @param param param to create plugin
-     * @return
+     * @return the id of plugin
      */
     public abstract long create(Map<String, String> param);
 
@@ -146,7 +156,7 @@ public abstract class AceResourcePlugin {
      * Release resource by id
      * 
      * @param id id of resource
-     * @return
+     * @return result of operation
      */
     public abstract boolean release(long id);
 

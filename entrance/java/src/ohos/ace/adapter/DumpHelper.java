@@ -26,6 +26,7 @@ import java.util.HashSet;
 /**
  * Dump operate process
  * 
+ * @since 1
  */
 public final class DumpHelper {
     private static final String LOG_TAG = "DumpHelper";
@@ -47,6 +48,14 @@ public final class DumpHelper {
     private DumpHelper() {
     }
 
+    /**
+     * dump the debug information
+     * 
+     * @param prefix prefix string of dump command
+     * @param fd the file descriptor where to dump
+     * @param writer the writer to write dump info
+     * @param args the args of dump command
+     */
     public static void dump(String prefix, FileDescriptor fd, PrintWriter writer, String[] args) {
         if (fd == null || args == null) {
             ALog.w(LOG_TAG, "dump failed, fd pr args is null");
