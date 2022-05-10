@@ -18,6 +18,7 @@ package ohos.ace.adapter.capability.vibrator;
 /**
  * VibratorPluginBase
  *
+ * @since 1
  */
 public abstract class VibratorPluginBase {
     /**

@@ -454,7 +454,6 @@ void FlutterAceViewJni::InitDeviceType(JNIEnv* env, jclass myClass, jint deviceT
     } else {
         SystemProperties::InitDeviceType(DeviceType::PHONE);
     }
-    // TODO
 }
 
 jint FlutterAceViewJni::GetViewBackgoundColor(JNIEnv* env, jobject myObject, jlong view)

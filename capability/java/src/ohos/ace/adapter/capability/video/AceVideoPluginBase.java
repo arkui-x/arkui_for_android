@@ -24,12 +24,17 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * The class for creating VideoPlayer on Android platform.
  *
+ * @since 1
  */
 public abstract class AceVideoPluginBase extends AceResourcePlugin {
     private final AtomicLong nextVideoId = new AtomicLong(0L);
 
     private final Map<Long, AceVideoBase> objectMap;
 
+    /**
+     * constructor of AceVideoPluginBase
+     *
+     */
     public AceVideoPluginBase() {
         // plugin name is video, version is 1.0.
         super("video", 1.0f);

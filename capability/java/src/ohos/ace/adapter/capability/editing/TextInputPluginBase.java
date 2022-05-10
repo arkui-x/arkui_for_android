@@ -23,6 +23,7 @@ import org.json.JSONObject;
 /**
  * TextInputPluginBase
  *
+ * @since 1
  */
 public abstract class TextInputPluginBase {
     private static final String LOG_TAG = "Ace_IME";
@@ -42,6 +43,8 @@ public abstract class TextInputPluginBase {
 
     /**
      * Delegate implement the interface.
+     *
+     * @since 1
      */
     public static class Delegate implements TextInputDelegate {
         @Override

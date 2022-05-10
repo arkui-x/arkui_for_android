@@ -23,11 +23,17 @@ import ohos.ace.adapter.ALog;
 /**
  * EnvironmentAosp
  *
+ * @since 1
  */
 public class EnvironmentAosp extends EnvironmentBase {
     private static final String LOG_TAG = "EnvironmentAosp";
     private Context context;
 
+    /**
+     * constructor of EnvironmentPlugin in AOSP platform
+     *
+     * @param context the context of application
+     */
     public EnvironmentAosp(Context context) {
         this.context = context;
         nativeInit();

@@ -17,7 +17,8 @@ package ohos.ace.adapter;
 
 /**
  * Log Wrapper for specific platform
- * 
+ *
+ * @since 1
  */
 public class ALog {
     private static ILogger logger;
@@ -28,7 +29,7 @@ public class ALog {
 
     /**
      * Set Logger instance.
-     * 
+     *
      * @param log
      */
     public static void setLogger(ILogger log) {
@@ -39,7 +40,7 @@ public class ALog {
 
     /**
      * Determines if debug log is permitted output.
-     * 
+     *
      * @return true if debuggable, false otherwise.
      */
     public static boolean isDebuggable() {
@@ -48,7 +49,7 @@ public class ALog {
 
     /**
      * Log wrapper for print debug log.
-     * 
+     *
      * @param tag message tag
      * @param msg message to print
      */
@@ -61,7 +62,7 @@ public class ALog {
 
     /**
      * Log wrapper for print info log.
-     * 
+     *
      * @param tag message tag
      * @param msg message to print
      */
@@ -74,7 +75,7 @@ public class ALog {
 
     /**
      * Log wrapper for print warning log.
-     * 
+     *
      * @param tag message tag
      * @param msg message to print
      */
@@ -87,7 +88,7 @@ public class ALog {
 
     /**
      * Log wrapper for print error log.
-     * 
+     *
      * @param tag message tag
      * @param msg message to print
      */
@@ -100,7 +101,7 @@ public class ALog {
 
     /**
      * Log wrapper for report jank log.
-     * 
+     *
      * @param tag message tag
      * @param msg message to print
      */

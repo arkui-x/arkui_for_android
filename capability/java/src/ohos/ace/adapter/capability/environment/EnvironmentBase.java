@@ -18,6 +18,7 @@ package ohos.ace.adapter.capability.environment;
 /**
  * EnvironmentBase which config to store environment.
  *
+ * @since 1
  */
 public abstract class EnvironmentBase {
     /**

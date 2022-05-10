@@ -27,6 +27,7 @@ import java.util.Map;
 /**
  * The class for creating VideoPlayer on Android platform.
  *
+ * @since 1
  */
 public class AceVideoPluginAosp extends AceVideoPluginBase {
     private static final String LOG_TAG = "AceVideoPluginAosp";

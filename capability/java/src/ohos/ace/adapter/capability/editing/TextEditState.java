@@ -21,6 +21,7 @@ import org.json.JSONObject;
 /**
  * State of an on-going text editing session.
  *
+ * @since 1
  */
 public class TextEditState {
     private final String text;

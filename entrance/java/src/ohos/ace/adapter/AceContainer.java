@@ -23,7 +23,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Each instance have its own pipeline and thread models, it can contains
  * multiple pages.
- * 
+ *
+ * @since 1
  */
 public class AceContainer {
     private static final String LOG_TAG = "AceContainer";
@@ -68,6 +69,15 @@ public class AceContainer {
 
     private IAceView view;
 
+    /**
+     * constructor of AceContainer
+     *
+     * @param instanceId id of the container instance
+     * @param type the type of container
+     * @param creator the view creator to create AceView
+     * @param callback the callback interface the receive callback event
+     * @param instanceName the name of current instance
+     */
     public AceContainer(int instanceId, int type, IAceViewCreator creator, AceEventCallback callback,
         String instanceName) {
         this.instanceId = instanceId;
@@ -81,7 +91,7 @@ public class AceContainer {
 
     /**
      * Destroy this container.
-     * 
+     *
      */
     public void destroyContainer() {
         nativeDestroyContainer(instanceId);
@@ -92,7 +102,7 @@ public class AceContainer {
 
     /**
      * Get the view which bind to this container
-     * 
+     *
      * @param density density of defalut display
      * @param widthPixels default display width in pixel.
      * @param heightPixels default display height in pixel.
@@ -109,7 +119,7 @@ public class AceContainer {
 
     /**
      * Get the view which bind to this container
-     * 
+     *
      * @return the view of container.
      */
     public IAceView getView() {
@@ -118,7 +128,7 @@ public class AceContainer {
 
     /**
      * Start run page with content
-     * 
+     *
      * @param content content or url for this page.
      * @param params extra params.
      */
@@ -128,7 +138,7 @@ public class AceContainer {
 
     /**
      * Start push page with content
-     * 
+     *
      * @param content content or url for this page.
      * @param params extra params.
      */
@@ -138,7 +148,7 @@ public class AceContainer {
 
     /**
      * Perform the customized behavior when back pressed.
-     * 
+     *
      * @return true if the all behavior has been performed, no need super class do anything.
      */
     public boolean onBackPressed() {
@@ -147,7 +157,7 @@ public class AceContainer {
 
     /**
      * Perform the customized behavior when conatiner on show.
-     * 
+     *
      */
     public void onShow() {
         nativeOnShow(instanceId);
@@ -155,7 +165,7 @@ public class AceContainer {
 
     /**
      * Perform the customized behavior when conatiner on hide.
-     * 
+     *
      */
     public void onHide() {
         nativeOnHide(instanceId);
@@ -163,7 +173,7 @@ public class AceContainer {
 
     /**
      * Perform the customized behavior when conatiner on active.
-     * 
+     *
      */
     public void OnActive() {
         nativeOnActive(instanceId);
@@ -171,7 +181,7 @@ public class AceContainer {
 
     /**
      * Perform the customized behavior when conatiner on inactive.
-     * 
+     *
      */
     public void OnInactive() {
         nativeOnInactive(instanceId);
@@ -179,7 +189,7 @@ public class AceContainer {
 
     /**
      * Init device info to native.
-     * 
+     *
      * @param deviceWitdh the witdh of the device
      * @param deviceHeight the height of the device
      * @param orientation the orientation of the device
@@ -195,7 +205,7 @@ public class AceContainer {
 
     /**
      * Called when the system has determined to trim the memory.
-     * 
+     *
      * @param level Indicates the memory trim level, which shows the current memory usage status
      */
     public void onMemoryLevel(int level) {
@@ -203,8 +213,8 @@ public class AceContainer {
     }
 
     /**
-     * Called when the container is alreay running, new start request.
-     * 
+     * Called when the container is already running, new start request.
+     *
      * @param dataJson the running data for new request
      */
     public void onNewRequest(String dataJson) {
@@ -216,7 +226,7 @@ public class AceContainer {
 
     /**
      * Add asset path to native.
-     * 
+     *
      * @param assetManager the AssetManager object
      * @param path the asset path
      */
@@ -226,7 +236,7 @@ public class AceContainer {
 
     /**
      * Set font scale to native.
-     * 
+     *
      * @param fontScale the font scale factor
      */
     public void setFontScale(float fontScale) {
@@ -235,8 +245,8 @@ public class AceContainer {
 
     /**
      * Update when configuration changed.
-     * 
-     * @param configData
+     *
+     * @param configData the config info data
      */
     public void onConfigurationUpdated(String configData) {
         nativeOnConfigurationUpdated(instanceId, configData);
@@ -244,7 +254,7 @@ public class AceContainer {
 
     /**
      * Set app color mode.
-     * 
+     *
      * @param colorMode app color mode: light or dark
      */
     public void setColorMode(int colorMode) {
@@ -253,7 +263,7 @@ public class AceContainer {
 
     /**
      * Set the path for loading app lib
-     * 
+     *
      * @param libPath app lib path
      */
     public void setLibPath(String libPath) {
@@ -262,16 +272,16 @@ public class AceContainer {
 
     /**
      * Set the host class name.
-     * 
-     * @param hostClassName
+     *
+     * @param hostClassName class name of current host class
      */
     public void setHostClassName(String hostClassName) {
         nativeSetHostClassName(instanceId, hostClassName);
     }
 
     /**
-     * Init native resouce manager.
-     * 
+     * Init native resource manager.
+     *
      * @param hapPath path of hap
      * @param themeId theme id of app
      */
@@ -281,7 +291,7 @@ public class AceContainer {
 
     /**
      * Get instance id of this container
-     * 
+     *
      * @return the instance id of this container
      */
     public int getInstanceId() {

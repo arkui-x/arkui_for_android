@@ -33,6 +33,7 @@ import ohos.ace.adapter.ALog;
 /**
  * Adapt to the platform implementation for receiving IME event.
  *
+ * @since 1
  */
 class InputConnectionWrapper extends BaseInputConnection {
     private static final String LOG_TAG = "Ace_IME";
@@ -53,6 +54,15 @@ class InputConnectionWrapper extends BaseInputConnection {
 
     private int extractedTextRequestToken = 0;
 
+    /**
+     * constructor of InputConnectionWrapper
+     *
+     * @param view the view which need input connection
+     * @param client client id
+     * @param delegate input delegate
+     * @param editable editable text
+     * @param hint hint string
+     */
     InputConnectionWrapper(View view, int client, TextInputDelegate delegate, Editable editable, String hint) {
         super(view, true);
         this.aceView = view;

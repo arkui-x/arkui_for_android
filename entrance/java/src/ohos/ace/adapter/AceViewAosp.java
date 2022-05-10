@@ -45,7 +45,8 @@ import java.nio.ByteBuffer;
 
 /**
  * This class is AceView implement and handles the lifecycle of surface.
- * 
+ *
+ * @since 1
  */
 public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.Callback {
     private static final String LOG_TAG = "AceViewAosp";
@@ -93,7 +94,7 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
 
     /**
      * Constructor of AceViewAosp
-     * 
+     *
      * @param context    Application context
      * @param instanceId The id of instance
      * @param density    The display pixel ratio
@@ -118,6 +119,11 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
         initPlugins(context);
     }
 
+    /**
+     * Create native view and get it's pointer
+     *
+     * @param instanceId the instance of container
+     */
     protected void createNativePtr(int instanceId) {
         if (nativeViewPtr == 0L) {
             nativeViewPtr = nativeCreateSurfaceHandle(this, instanceId);
@@ -289,7 +295,7 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
 
     /**
      * destroy view and release it surface
-     * 
+     *
      */
     public void destroy() {
         if (surfaceState == SURFACE_STATE_UNINITIALIZED) {
@@ -300,6 +306,10 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
         nativeViewPtr = 0L;
     }
 
+    /**
+     * Initialize resource register
+     *
+     */
     public void initResRegister() {
         resRegister = new AceResourceRegister();
         if (nativeViewPtr == 0L) {
@@ -357,7 +367,7 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
 
     /**
      * Init cache image and file path
-     * 
+     *
      */
     public void initCacheFilePath() {
         if (nativeViewPtr == 0L) {
@@ -385,7 +395,7 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
 
     /**
      * Called by native when render first frame.
-     * 
+     *
      */
     public void onFirstFrame() {
         ALog.i(LOG_TAG, "AceView onFirstFrame");

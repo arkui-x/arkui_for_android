@@ -17,7 +17,8 @@ package ohos.ace.adapter;
 
 /**
  * Load library for JNI.
- * 
+ *
+ * @since 1
  */
 public final class LibraryLoader {
     private static final String LOG_TAG = "LibraryLoader";

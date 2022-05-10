@@ -19,10 +19,14 @@ import java.util.Map;
 
 /**
  * The platform resource plugin.
- * 
+ *
+ * @since 1
  */
 public abstract class AceResourcePlugin {
 
+    /**
+     * Object of AceResourceRegister
+     */
     protected AceResourceRegister resRegister;
 
     private final float version;
@@ -31,6 +35,12 @@ public abstract class AceResourcePlugin {
 
     private IAceOnResourceEvent callback;
 
+    /**
+     * Constructor of AceResourcePlugin
+     *
+     * @param tag plugin tag
+     * @param version plugin version
+     */
     public AceResourcePlugin(final String tag, final float version) {
         this.tag = tag;
         this.version = version;
@@ -39,7 +49,7 @@ public abstract class AceResourcePlugin {
 
     /**
      * This is called to set event callback
-     * 
+     *
      * @param resRegister object of AceResourceRegister
      * @param callback fire event interface
      */
@@ -50,7 +60,7 @@ public abstract class AceResourcePlugin {
 
     /**
      * This is called to set event callback.
-     * 
+     *
      * @return the event callback interface
      */
     public IAceOnResourceEvent getEventCallback() {
@@ -59,7 +69,7 @@ public abstract class AceResourcePlugin {
 
     /**
      * Called to register resource call method
-     * 
+     *
      * @param method method
      * @param callMethod method call interface
      */
@@ -72,7 +82,7 @@ public abstract class AceResourcePlugin {
 
     /**
      * Called to register resource call method
-     * 
+     *
      * @param methodMap map of method
      */
     public void registerCallMethod(Map<String, IAceOnCallResourceMethod> methodMap) {
@@ -86,7 +96,7 @@ public abstract class AceResourcePlugin {
 
     /**
      * Called to unregister resource call method
-     * 
+     *
      * @param method method
      */
     public void unregisterCallMethod(String method) {
@@ -99,7 +109,7 @@ public abstract class AceResourcePlugin {
 
     /**
      * Called to unregister resource call method
-     * 
+     *
      * @param methodMap map of method
      */
     public void unregisterCallMethod(Map<String, IAceOnCallResourceMethod> methodMap) {
@@ -110,7 +120,7 @@ public abstract class AceResourcePlugin {
 
     /**
      * Called to get resource plugin type
-     * 
+     *
      * @return type of resource plugin
      */
     public String pluginType() {
@@ -119,7 +129,7 @@ public abstract class AceResourcePlugin {
 
     /**
      * Get resource plugin version.
-     * 
+     *
      * @return version of resource plugin
      */
     public float version() {
@@ -128,31 +138,31 @@ public abstract class AceResourcePlugin {
 
     /**
      * Get resource object by id
-     * 
+     *
      * @param id id of resource object
-     * @return
+     * @return the resource object
      */
     public abstract Object getObject(long id);
 
     /**
      * Create resource by param
-     * 
+     *
      * @param param param to create plugin
-     * @return
+     * @return the id of plugin
      */
     public abstract long create(Map<String, String> param);
 
     /**
      * Release resource by id
-     * 
+     *
      * @param id id of resource
-     * @return
+     * @return result of operation
      */
     public abstract boolean release(long id);
 
     /**
      * Release all resource
-     * 
+     *
      */
     public abstract void release();
 }

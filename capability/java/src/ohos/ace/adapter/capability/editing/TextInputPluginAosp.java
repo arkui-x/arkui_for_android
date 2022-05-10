@@ -32,6 +32,7 @@ import ohos.ace.adapter.ALog;
 /**
  * TextInputPluginAosp is an add-on for handling text input.
  *
+ * @since 1
  */
 public class TextInputPluginAosp extends TextInputPluginBase {
     private static final String LOG_TAG = "Ace_IME";
@@ -50,6 +51,12 @@ public class TextInputPluginAosp extends TextInputPluginBase {
     // Indicate whether need to call IMM restartInput.
     private boolean isRestartInputPending = false;
 
+    /**
+     * constructor of TextInputPlugin on AOSP platform
+     *
+     * @param view the view which request input
+     * @param instanceId id of container instance
+     */
     public TextInputPluginAosp(View view, int instanceId) {
         super(instanceId);
         this.view = view;

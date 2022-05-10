@@ -17,12 +17,13 @@ package ohos.ace.adapter;
 
 /**
  * The event callback interface define from native
- * 
+ *
+ * @since 1
  */
 public interface AceEventCallback {
     /**
      * Event from native with event info
-     * 
+     *
      * @param pageId the page id of the event
      * @param eventId the unique event id
      * @param params the extra params with json format
@@ -32,13 +33,13 @@ public interface AceEventCallback {
 
     /**
      * Called by native when pipeline is finished
-     * 
+     *
      */
     void onFinish();
     
     /**
      * called when status bar background color has changed.
-     * 
+     *
      * @param color new status bar backgournd color
      */
     public void onStatusBarBgColorChanged(int color);

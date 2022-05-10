@@ -35,7 +35,8 @@ import javax.net.ssl.X509TrustManager;
 
 /**
  * a simple download manager to request bytes vir http
- * 
+ *
+ * @since 1
  */
 public class DownloadManager {
     private static final String LOG_TAG = "DownloadManager";
@@ -70,6 +71,12 @@ public class DownloadManager {
     private DownloadManager() {
     }
 
+    /**
+     * Start download with url
+     *
+     * @param urlStr the download url
+     * @return the downloaded content
+     */
     public static byte[] download(String urlStr) {
         initSsl();
         byte[] buff = new byte[UNIT_BYTE_LENGTH];
