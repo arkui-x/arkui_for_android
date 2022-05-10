@@ -35,7 +35,7 @@ import javax.net.ssl.X509TrustManager;
 
 /**
  * a simple download manager to request bytes vir http
- * 
+ *
  * @since 1
  */
 public class DownloadManager {
@@ -73,7 +73,7 @@ public class DownloadManager {
 
     /**
      * Start download with url
-     * 
+     *
      * @param urlStr the download url
      * @return the downloaded content
      */

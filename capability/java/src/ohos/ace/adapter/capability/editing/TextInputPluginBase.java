@@ -43,7 +43,7 @@ public abstract class TextInputPluginBase {
 
     /**
      * Delegate implement the interface.
-     * 
+     *
      * @since 1
      */
     public static class Delegate implements TextInputDelegate {

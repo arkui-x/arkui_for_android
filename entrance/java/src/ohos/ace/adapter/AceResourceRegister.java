@@ -20,7 +20,7 @@ import java.util.Map;
 
 /**
  * The platform resource register.
- * 
+ *
  * @since 1
  */
 public final class AceResourceRegister {
@@ -50,7 +50,7 @@ public final class AceResourceRegister {
 
     /**
      * Get the plugin map
-     * 
+     *
      * @return the plugin map
      */
     public Map<String, AceResourcePlugin> getPluginMap() {
@@ -59,7 +59,7 @@ public final class AceResourceRegister {
 
     /**
      * Register resource plugin
-     * 
+     *
      * @param plugin resource plugin
      */
     public void registerPlugin(AceResourcePlugin plugin) {
@@ -80,7 +80,7 @@ public final class AceResourceRegister {
 
     /**
      * Register the native ptr
-     * 
+     *
      * @param aceRegisterPtr the native ptr of ResourceRegister
      */
     public void setRegisterPtr(long aceRegisterPtr) {
@@ -89,7 +89,7 @@ public final class AceResourceRegister {
 
     /**
      * Create resource with type and params
-     * 
+     *
      * @param resourceType type of resource
      * @param param param
      * @return id of resource
@@ -109,7 +109,7 @@ public final class AceResourceRegister {
 
     /**
      * Release resource by hash
-     * 
+     *
      * @param resourceHash the hash of resource
      * @return result of release
      */
@@ -133,7 +133,7 @@ public final class AceResourceRegister {
 
     /**
      * Get resource object by resource hash
-     * 
+     *
      * @param resourceHash hash of resource
      * @return object or null if resource not found
      */
@@ -157,7 +157,7 @@ public final class AceResourceRegister {
 
     /**
      * Get resource object by type and id
-     * 
+     *
      * @param resourceType type of resource
      * @param id id of resource
      * @return object or null if resource not found
@@ -174,7 +174,7 @@ public final class AceResourceRegister {
 
     /**
      * Fire event to native
-     * 
+     *
      * @param eventId event id
      * @param param param
      */
@@ -186,7 +186,7 @@ public final class AceResourceRegister {
 
     /**
      * Call resource method
-     * 
+     *
      * @param methodId method id
      * @param param param
      * @return result of method return
@@ -206,7 +206,7 @@ public final class AceResourceRegister {
 
     /**
      * Register call methods by id
-     * 
+     *
      * @param methodId method id
      * @param callMethod method call interface
      */
@@ -216,7 +216,7 @@ public final class AceResourceRegister {
 
     /**
      * Unregister call methods by id
-     * 
+     *
      * @param methodId method id
      */
     public void unregisterCallMethod(String methodId) {
@@ -225,7 +225,7 @@ public final class AceResourceRegister {
 
     /**
      * Release all plugin resources
-     * 
+     *
      */
     public void release() {
         for (Map.Entry<String, AceResourcePlugin> entry : pluginMap.entrySet()) {

@@ -22,7 +22,7 @@ import java.nio.ByteOrder;
 
 /**
  * process for system touch/key events
- * 
+ *
  * @since 1
  */
 public class AceEventProcessorAosp {
@@ -46,7 +46,7 @@ public class AceEventProcessorAosp {
 
     /**
      * Process system motion events
-     * 
+     *
      * @param event motion event from system
      * @return whether the event is handled
      */

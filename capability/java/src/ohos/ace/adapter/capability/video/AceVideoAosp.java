@@ -78,7 +78,7 @@ public class AceVideoAosp extends AceVideoBase
 
     /**
      * constructor of AceVideo on AOSP platform
-     * 
+     *
      * @param id the id of plugin
      * @param name name of plugin
      * @param surface the surface to render video content

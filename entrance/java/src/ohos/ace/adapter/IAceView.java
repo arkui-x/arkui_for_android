@@ -17,7 +17,7 @@ package ohos.ace.adapter;
 
 /**
  * The common interface of the AceView
- * 
+ *
  * @since 1
  */
 public interface IAceView {
@@ -133,43 +133,44 @@ public interface IAceView {
 
     /**
      * Get native pointer of aceView
-     * 
+     *
      * @return the NativePtr of AceView
      */
     long getNativePtr();
 
     /**
      * Release native view resources.
-     * 
+     *
      */
     void releaseNativeView();
 
     /**
      * Called when view hide.
-     * 
+     *
      */
     void onHide();
 
     /**
      * Called when view show.
-     * 
+     *
      */
     void onShow();
 
     /**
      * Called for init device type.
+     *
      */
     void initDeviceType();
 
     /**
      * Called then aceView created.
-     * 
+     *
      */
     void viewCreated();
 
     /**
      * Called to add resource plugin.
-     * 
+     *
      * @param plugin the plugin
      */
     void addResourcePlugin(AceResourcePlugin plugin);

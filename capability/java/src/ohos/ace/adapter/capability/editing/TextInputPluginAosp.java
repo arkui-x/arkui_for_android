@@ -53,7 +53,7 @@ public class TextInputPluginAosp extends TextInputPluginBase {
 
     /**
      * constructor of TextInputPlugin on AOSP platform
-     * 
+     *
      * @param view the view which request input
      * @param instanceId id of container instance
      */

@@ -56,7 +56,7 @@ class InputConnectionWrapper extends BaseInputConnection {
 
     /**
      * constructor of InputConnectionWrapper
-     * 
+     *
      * @param view the view which need input connection
      * @param client client id
      * @param delegate input delegate

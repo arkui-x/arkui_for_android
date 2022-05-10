@@ -17,7 +17,7 @@ package ohos.ace.adapter;
 
 /**
  * Load library for JNI.
- * 
+ *
  * @since 1
  */
 public final class LibraryLoader {

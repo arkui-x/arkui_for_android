@@ -92,7 +92,7 @@ public class AceTexture {
 
     /**
      * constructor of AceTexture
-     * 
+     *
      * @param id id of texture
      * @param textureImpl texture object
      * @param callback resource callback
@@ -172,7 +172,7 @@ public class AceTexture {
 
     /**
      * Create and register new surface
-     * 
+     *
      */
     public void registerSurface() {
         if (surface == null) {

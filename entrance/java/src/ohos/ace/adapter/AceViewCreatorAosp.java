@@ -19,7 +19,7 @@ import android.content.Context;
 
 /**
  * The class for creating an AceView on Android Platform.
- * 
+ *
  * @since 1
  */
 public class AceViewCreatorAosp implements IAceViewCreator {
@@ -27,7 +27,7 @@ public class AceViewCreatorAosp implements IAceViewCreator {
 
     /**
      * constructor of AceViewCreator on AOSP platform
-     * 
+     *
      * @param context context of application
      */
     public AceViewCreatorAosp(Context context) {

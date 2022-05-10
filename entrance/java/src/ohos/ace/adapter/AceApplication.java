@@ -19,7 +19,7 @@ import android.app.Application;
 
 /**
  * This class extends from Android Application, the entry of app
- * 
+ *
  * @since 1
  */
 public class AceApplication extends Application {
@@ -27,7 +27,7 @@ public class AceApplication extends Application {
 
     /**
      * Call when Application is created.
-     * 
+     *
      */
     @Override
     public void onCreate() {

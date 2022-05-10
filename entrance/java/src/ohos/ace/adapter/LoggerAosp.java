@@ -19,13 +19,13 @@ import android.util.Log;
 
 /**
  * Logger implementation in Aosp platform
- * 
+ *
  * @since 1
  */
 public class LoggerAosp implements ILogger {
     /**
      * Determines if debug log is permitted output.
-     * 
+     *
      * @return true if debuggable, false otherwise.
      */
     public boolean isDebuggable() {
@@ -34,7 +34,7 @@ public class LoggerAosp implements ILogger {
 
     /**
      * Log wrapper for print debug log.
-     * 
+     *
      * @param tag message tag
      * @param msg message to print
      */
@@ -44,7 +44,7 @@ public class LoggerAosp implements ILogger {
 
     /**
      * Log wrapper for print info log.
-     * 
+     *
      * @param tag message tag
      * @param msg message to print
      */
@@ -54,7 +54,7 @@ public class LoggerAosp implements ILogger {
 
     /**
      * Log wrapper for print warning log.
-     * 
+     *
      * @param tag message tag
      * @param msg message to print
      */
@@ -64,7 +64,7 @@ public class LoggerAosp implements ILogger {
 
     /**
      * Log wrapper for print error log.
-     * 
+     *
      * @param tag message tag
      * @param msg message to print
      */
@@ -74,7 +74,7 @@ public class LoggerAosp implements ILogger {
 
     /**
      * Log wrapper for report jank log.
-     * 
+     *
      * @param tag message tag
      * @param msg message to print
      */

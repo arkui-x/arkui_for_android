@@ -17,20 +17,20 @@ package ohos.ace.adapter;
 
 /**
  * Common interface for logging
- * 
+ *
  * @since 1
  */
 public interface ILogger {
     /**
      * Determines if debug log is permitted output.
-     * 
+     *
      * @return true if debuggable, false otherwise.
      */
     boolean isDebuggable();
 
     /**
      * Log wrapper for print debug log.
-     * 
+     *
      * @param tag message tag
      * @param msg message to print
      */
@@ -38,7 +38,7 @@ public interface ILogger {
 
     /**
      * Log wrapper for print info log.
-     * 
+     *
      * @param tag message tag
      * @param msg message to print
      */
@@ -46,7 +46,7 @@ public interface ILogger {
 
     /**
      * Log wrapper for print warning log.
-     * 
+     *
      * @param tag message tag
      * @param msg message to print
      */
@@ -54,7 +54,7 @@ public interface ILogger {
 
     /**
      * Log wrapper for print error log.
-     * 
+     *
      * @param tag message tag
      * @param msg message to print
      */
@@ -62,7 +62,7 @@ public interface ILogger {
 
     /**
      * Log wrapper for report jank log.
-     * 
+     *
      * @param tag message tag
      * @param msg message to print
      */

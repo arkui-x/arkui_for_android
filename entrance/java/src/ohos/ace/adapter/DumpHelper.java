@@ -25,7 +25,7 @@ import java.util.HashSet;
 
 /**
  * Dump operate process
- * 
+ *
  * @since 1
  */
 public final class DumpHelper {
@@ -50,7 +50,7 @@ public final class DumpHelper {
 
     /**
      * dump the debug information
-     * 
+     *
      * @param prefix prefix string of dump command
      * @param fd the file descriptor where to dump
      * @param writer the writer to write dump info

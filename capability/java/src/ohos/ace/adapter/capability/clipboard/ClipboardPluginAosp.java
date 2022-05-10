@@ -23,7 +23,7 @@ import ohos.ace.adapter.ALog;
 
 /**
  * ClipboardPluginAosp
- * 
+ *
  * @since 1
  */
 public class ClipboardPluginAosp extends ClipboardPluginBase {
@@ -33,7 +33,7 @@ public class ClipboardPluginAosp extends ClipboardPluginBase {
 
     /**
      * ClipboardPlugin on AOSP platform
-     * 
+     *
      * @param context context of the application
      */
     public ClipboardPluginAosp(Context context) {

@@ -33,7 +33,7 @@ public class VibratorPluginAosp extends VibratorPluginBase {
 
     /**
      * constructor of VibratorPlugin in AOSP platform
-     * 
+     *
      * @param context the context of application
      */
     public VibratorPluginAosp(Context context) {

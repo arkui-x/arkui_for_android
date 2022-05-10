@@ -17,13 +17,13 @@ package ohos.ace.adapter;
 
 /**
  * The common interface of AceViewCreator, for creating the AceView
- * 
+ *
  * @since 1
  */
 public interface IAceViewCreator {
     /**
      * This is called to create a specified AceView.
-     * 
+     *
      * @param instanceId the instance id of current view.
      * @param density the device pixel ratio of default display.
      * @return the created AceView instace.

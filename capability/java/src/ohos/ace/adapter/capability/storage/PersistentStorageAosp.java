@@ -37,7 +37,7 @@ public class PersistentStorageAosp extends PersistentStorageBase {
 
     /**
      * constructor of PersistentStorage in AOSP platform
-     * 
+     *
      * @param context the context of application
      */
     public PersistentStorageAosp(Context context) {

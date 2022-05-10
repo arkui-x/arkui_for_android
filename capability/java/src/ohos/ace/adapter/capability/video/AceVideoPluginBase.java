@@ -33,7 +33,7 @@ public abstract class AceVideoPluginBase extends AceResourcePlugin {
 
     /**
      * constructor of AceVideoPluginBase
-     * 
+     *
      */
     public AceVideoPluginBase() {
         // plugin name is video, version is 1.0.

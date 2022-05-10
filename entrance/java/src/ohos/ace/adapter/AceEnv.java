@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The environment for ACE runtime, the bridge between Java and C++
- * 
+ *
  * @since 1
  */
 public final class AceEnv {
@@ -52,7 +52,7 @@ public final class AceEnv {
 
     /**
      * Get instance of current env
-     * 
+     * @return instance of current env
      */
     public static AceEnv getInstance() {
         if (INSTANCE != null) {
@@ -71,7 +71,7 @@ public final class AceEnv {
 
     /**
      * Set library loaded flag
-     * 
+     *
      */
     public void setLibraryLoaded() {
         isLoadSuccess = true;
@@ -79,7 +79,7 @@ public final class AceEnv {
 
     /**
      * Get whether the library is loaded
-     * 
+     *
      * @return the result for library status
      */
     public boolean isLibraryLoaded() {
@@ -88,7 +88,7 @@ public final class AceEnv {
 
     /**
      * Set the view creator
-     * 
+     *
      * @param creator the creator to create AceView
      */
     public static void setViewCreator(IAceViewCreator creator) {
@@ -101,7 +101,7 @@ public final class AceEnv {
 
     /**
      * Set the type of container
-     * 
+     *
      * @param type the type to set
      */
     public static void setContainerType(int type) {
@@ -116,7 +116,7 @@ public final class AceEnv {
 
     /**
      * Create a new container with parameters
-     * 
+     *
      * @param callback the callback interface the receive callback event
      * @param instanceId the id of container instance
      * @param name the name of the container
@@ -135,7 +135,7 @@ public final class AceEnv {
 
     /**
      * Destroy the container
-     * 
+     *
      * @param container the container to destroy
      */
     public static void destroyContainer(AceContainer container) {
@@ -150,8 +150,8 @@ public final class AceEnv {
     }
 
     /**
-     * dump the debug information
-     * 
+     * Dump the debug information
+     *
      * @param prefix prefix string of dump command
      * @param fd the file descriptor where to dump
      * @param writer the writer to write dump info
@@ -162,8 +162,8 @@ public final class AceEnv {
     }
 
     /**
-     * set up first frame handler
-     * 
+     * Set up first frame handler
+     *
      * @param platform current platform type
      */
     public void setupFirstFrameHandler(int platform) {

@@ -56,7 +56,7 @@ public abstract class AceVideoBase {
 
     /**
      * base constructor of AceVideo
-     * 
+     *
      * @param id id of plugin
      * @param callback resource callback
      */

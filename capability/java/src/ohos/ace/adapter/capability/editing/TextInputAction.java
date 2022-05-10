@@ -34,7 +34,7 @@ public enum TextInputAction {
 
     /**
      * constructor of TextInputAction
-     * 
+     *
      * @param value action value
      */
     TextInputAction(int value) {

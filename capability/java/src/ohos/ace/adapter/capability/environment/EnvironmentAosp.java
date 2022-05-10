@@ -31,7 +31,7 @@ public class EnvironmentAosp extends EnvironmentBase {
 
     /**
      * constructor of EnvironmentPlugin in AOSP platform
-     * 
+     *
      * @param context the context of application
      */
     public EnvironmentAosp(Context context) {
