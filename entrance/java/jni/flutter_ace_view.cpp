@@ -147,7 +147,6 @@ bool FlutterAceView::Dump(const std::vector<std::string>& params)
     if (params.empty() || params[0] != "-drawcmd") {
         return false;
     }
-    // TODO
     return false;
 }
 

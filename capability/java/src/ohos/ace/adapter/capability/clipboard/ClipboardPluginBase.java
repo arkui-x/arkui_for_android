@@ -17,26 +17,27 @@ package ohos.ace.adapter.capability.clipboard;
 
 /**
  * base interface of clipboard plugin
- * 
+ *
+ * @since 1
  */
 public abstract class ClipboardPluginBase {
     /**
      * Get data in clipboard
-     * 
+     *
      * @return text in system clipboard
      */
     public abstract String getData();
 
     /**
      * Set data to clipboard
-     * 
+     *
      * @param data data to set
      */
     public abstract void setData(String data);
 
     /**
      * Clear data in clipboard
-     * 
+     *
      */
     public abstract void clear();
 

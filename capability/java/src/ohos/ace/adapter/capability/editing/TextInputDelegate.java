@@ -18,6 +18,7 @@ package ohos.ace.adapter.capability.editing;
 /**
  * TextInputDelegate
  *
+ * @since 1
  */
 public interface TextInputDelegate {
     /**

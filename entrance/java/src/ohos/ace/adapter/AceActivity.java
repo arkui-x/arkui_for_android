@@ -37,8 +37,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * A base class for the Ability Cross-platform Environment(ACE) to run on
  * Android. This class is inherited from
- * android Activity. It is entrance of lifecycles of android applications.
- * 
+ * android Activity. It is entrance of life-cycles of android applications.
+ *
+ * @since 1
  */
 public class AceActivity extends Activity {
     private static final String LOG_TAG = "AceActivity";
@@ -80,6 +81,20 @@ public class AceActivity extends Activity {
     private AceContainer container = null;
 
     private AceViewCreatorAosp viewCreator = null;
+
+    /**
+     * call when create AceActivity
+     *
+     * @param savedInstanceState bundle from system
+     * @param version the version of app type, can be one of this:
+     *                VERSION_JS/VERSION_ETS
+     * @param name the instance name
+     */
+    protected void onCreate(Bundle savedInstanceState, int version, String name) {
+        this.version = version;
+        this.instanceName = name;
+        onCreate(savedInstanceState);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -226,7 +241,7 @@ public class AceActivity extends Activity {
 
     /**
      * set the instance name, should called before super.onCreate()
-     * 
+     *
      * @param name the instance name to set
      */
     public void setInstanceName(String name) {
@@ -245,7 +260,7 @@ public class AceActivity extends Activity {
 
     /**
      * set app type version
-     * 
+     *
      * @param version the version of app type, can be one of this:
      *                VERSION_JS/VERSION_ETS
      */
@@ -254,6 +269,14 @@ public class AceActivity extends Activity {
         this.version = version;
     }
 
+    /**
+     * called when native report callback event
+     *
+     * @param pageId the id of running page
+     * @param callbackId the id of callback event
+     * @param jsonStr the params of callback info
+     * @return the result of callback
+     */
     protected String onCallbackWithReturn(int pageId, String callbackId, String jsonStr) {
         if (callbackId == null || callbackId.isEmpty()) {
             return null;

@@ -18,6 +18,7 @@ package ohos.ace.adapter.capability.storage;
 /**
  * PersistentStorageBase which use perference to store data.
  *
+ * @since 1
  */
 public abstract class PersistentStorageBase {
     /**

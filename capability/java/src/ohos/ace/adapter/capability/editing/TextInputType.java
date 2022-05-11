@@ -18,6 +18,7 @@ package ohos.ace.adapter.capability.editing;
 /**
  * Describes how the keyboard type should be to meet various input type.
  *
+ * @since 1
  */
 public enum TextInputType {
     TEXT(0),

@@ -21,7 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The environment for ACE runtime, the bridge between Java and C++
- * 
+ *
+ * @since 1
  */
 public final class AceEnv {
     private static final String LOG_TAG = "AceEnv";
@@ -49,6 +50,10 @@ public final class AceEnv {
         }
     }
 
+    /**
+     * Get instance of current env
+     * @return instance of current env
+     */
     public static AceEnv getInstance() {
         if (INSTANCE != null) {
             return INSTANCE;
@@ -64,14 +69,28 @@ public final class AceEnv {
         }
     }
 
+    /**
+     * Set library loaded flag
+     *
+     */
     public void setLibraryLoaded() {
         isLoadSuccess = true;
     }
 
+    /**
+     * Get whether the library is loaded
+     *
+     * @return the result for library status
+     */
     public boolean isLibraryLoaded() {
         return isLoadSuccess;
     }
 
+    /**
+     * Set the view creator
+     *
+     * @param creator the creator to create AceView
+     */
     public static void setViewCreator(IAceViewCreator creator) {
         getInstance().setViewCreatorInner(creator);
     }
@@ -80,6 +99,11 @@ public final class AceEnv {
         this.creator = creator;
     }
 
+    /**
+     * Set the type of container
+     *
+     * @param type the type to set
+     */
     public static void setContainerType(int type) {
         getInstance().setContainerTypeInner(type);
     }
@@ -90,6 +114,14 @@ public final class AceEnv {
         }
     }
 
+    /**
+     * Create a new container with parameters
+     *
+     * @param callback the callback interface the receive callback event
+     * @param instanceId the id of container instance
+     * @param name the name of the container
+     * @return the new container
+     */
     public static AceContainer createContainer(AceEventCallback callback, int instanceId, String name) {
         return getInstance().createContainerInner(callback, instanceId, name);
     }
@@ -98,10 +130,14 @@ public final class AceEnv {
         if (creator == null) {
             return null;
         }
-        AceContainer newContainer = new AceContainer(instanceId, containerType, creator, callback, name);
-        return newContainer;
+        return new AceContainer(instanceId, containerType, creator, callback, name);
     }
 
+    /**
+     * Destroy the container
+     *
+     * @param container the container to destroy
+     */
     public static void destroyContainer(AceContainer container) {
         getInstance().destroyContainerInner(container);
     }
@@ -113,10 +149,23 @@ public final class AceEnv {
         container.destroyContainer();
     }
 
+    /**
+     * Dump the debug information
+     *
+     * @param prefix prefix string of dump command
+     * @param fd the file descriptor where to dump
+     * @param writer the writer to write dump info
+     * @param args the args of dump command
+     */
     public static void dump(String prefix, FileDescriptor fd, PrintWriter writer, String[] args) {
         DumpHelper.dump(prefix, fd, writer, args);
     }
 
+    /**
+     * Set up first frame handler
+     *
+     * @param platform current platform type
+     */
     public void setupFirstFrameHandler(int platform) {
         nativeSetupFirstFrameHandler(platform);
     }

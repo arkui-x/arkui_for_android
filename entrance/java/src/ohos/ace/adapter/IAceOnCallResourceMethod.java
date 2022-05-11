@@ -17,6 +17,17 @@ package ohos.ace.adapter;
 
 import java.util.Map;
 
+/**
+ * The common interface of resource onCall event
+ *
+ * @since 1
+ */
 public interface IAceOnCallResourceMethod {
+    /**
+     * Called when native report resource event
+     *
+     * @param param the params of the event
+     * @return the result of of the event
+     */
     String onCall(Map<String, String> param);
 }

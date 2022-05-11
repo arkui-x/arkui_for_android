@@ -21,6 +21,7 @@ import org.json.JSONObject;
 /**
  * TextInputConfiguration for IME.
  *
+ * @since 1
  */
 public class TextInputConfiguration {
     private final TextInputType type;
