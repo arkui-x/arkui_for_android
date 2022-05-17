@@ -15,7 +15,7 @@ import("//build/ohos.gni")
 
 platforms = []
 
-if (!is_standard_system) {
+if (!is_standard_system && target_os == "android") {
   android_platform = {
     name = "android"
     cross_platform_support = true
