@@ -139,4 +139,9 @@ std::string SystemProperties::GetRegion()
     return UNDEFINED_PARAM;
 }
 
+bool SystemProperties::GetDebugBoundaryEnabled()
+{
+    return false;
+}
+
 } // namespace OHOS::Ace
