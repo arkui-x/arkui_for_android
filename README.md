@@ -92,14 +92,5 @@ public void setInstanceName(String name);
 */
 public void setVersion(int version);
 ```
-也可以直接通过基类的onCreate方法进行设置：
-```java
-public class MainActivity extends AceActivity {
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState, VERSION_ETS, "ets-component");
-    }
-}
-```
 经过上述配置，该应用启动时会自动加载对应的ArkUI模块源码执行并渲染显示。

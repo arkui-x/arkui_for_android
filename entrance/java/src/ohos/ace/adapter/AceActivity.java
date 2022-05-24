@@ -82,20 +82,6 @@ public class AceActivity extends Activity {
 
     private AceViewCreatorAosp viewCreator = null;
 
-    /**
-     * call when create AceActivity
-     *
-     * @param savedInstanceState bundle from system
-     * @param version the version of app type, can be one of this:
-     *                VERSION_JS/VERSION_ETS
-     * @param name the instance name
-     */
-    protected void onCreate(Bundle savedInstanceState, int version, String name) {
-        this.version = version;
-        this.instanceName = name;
-        onCreate(savedInstanceState);
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ALog.i(LOG_TAG, "AceActivity onCreate called");
