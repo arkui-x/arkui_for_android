@@ -635,7 +635,7 @@ void AceContainer::UpdateResourceConfiguration(const std::string& jsonStr)
             if (!themeManager || !context) {
                 return;
             }
-            themeManager->ReloadThemes();
+            themeManager->LoadResourceThemes();
             themeManager->ParseSystemTheme();
             themeManager->SetColorScheme(colorScheme);
             context->RefreshRootBgColor();
@@ -674,7 +674,7 @@ void AceContainer::UpdateColorMode(ColorMode colorMode)
             if (!themeManager || !context) {
                 return;
             }
-            themeManager->ReloadThemes();
+            themeManager->LoadResourceThemes();
             themeManager->ParseSystemTheme();
             themeManager->SetColorScheme(colorScheme);
             context->RefreshRootBgColor();
