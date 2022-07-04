@@ -25,6 +25,42 @@ ohos_shared_library("libace_android") {
   subsystem_name = "arkui"
 }
 
+java_library("ace_dev_java") {
+  java_files = [
+    "$flutter_root_new/engine/ace_shell/test/java/ohos/ace/adapter/AceActivity.java",
+    "$flutter_root_new/engine/ace_shell/test/java/ohos/ace/adapter/AceViewAosp.java",
+    "$flutter_root_new/engine/ace_shell/test/java/ohos/ace/adapter/AceVsyncWaiter.java",
+    "$flutter_root_new/engine/ace_shell/test/java/ohos/ace/adapter/LibraryLoader.java",
+  ]
+
+  subsystem_name = "arkui"
+  part_name = "ace_engine_cross"
+}
+
+ohos_source_set("ace_dev_test") {
+  sources = [
+    "$flutter_root_new/engine/ace_shell/test/jni/flutter_ace_view_jni.cpp",
+    "$flutter_root_new/engine/ace_shell/test/jni/flutter_ace_view.cpp",
+    "$flutter_root_new/engine/ace_shell/test/jni/flutter_window.cpp",
+    "$flutter_root_new/engine/ace_shell/test/jni/jni_load.cpp",
+    "$flutter_root_new/engine/ace_shell/test/jni/jni_registry.cpp",
+  ]
+
+  deps = [
+    "$ace_flutter_engine_root_new:third_party_flutter_engine_dev_android",
+  ]
+}
+
+ohos_shared_library("libace_dev") {
+  deps = [
+    ":ace_dev_test",
+    ":ace_dev_java",
+    "$ace_flutter_engine_root_new:third_party_flutter_engine_dev_android",
+  ]
+  subsystem_name = "arkui"
+  part_name = "ace_engine_cross"
+}
+
 # Install final jar
 ohos_combine_jars("ace_android_adapter_java") {
   deps = [
@@ -50,6 +86,7 @@ group("ace_packages") {
   deps = [
     ":ace_android_adapter_java",
     ":libace_android",
+    ":libace_dev",
   ]
 
   deps += common_napi_modules
