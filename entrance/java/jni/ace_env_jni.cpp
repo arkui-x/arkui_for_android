@@ -15,7 +15,11 @@
 
 #include "adapter/android/entrance/java/jni/ace_env_jni.h"
 
+#ifdef NG_BUILD
+#include "ace_shell/shell/platform/android/platform_view_android.h"
+#else
 #include "flutter/shell/platform/android/platform_view_android.h"
+#endif
 
 #include "base/log/log.h"
 #include "base/utils/utils.h"
@@ -24,13 +28,11 @@ namespace OHOS::Ace::Platform {
 
 bool AceEnvJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
-    static const JNINativeMethod methods[] = {
-        {
-            .name = "nativeSetupFirstFrameHandler",
-            .signature = "(I)V",
-            .fnPtr = reinterpret_cast<void*>(&SetupFirstFrameHandler),
-        }
-    };
+    static const JNINativeMethod methods[] = { {
+        .name = "nativeSetupFirstFrameHandler",
+        .signature = "(I)V",
+        .fnPtr = reinterpret_cast<void*>(&SetupFirstFrameHandler),
+    } };
 
     if (!env) {
         LOGE("JNI AceEnv: null java env");
@@ -49,9 +51,11 @@ bool AceEnvJni::Register(const std::shared_ptr<JNIEnv>& env)
 
 void AceEnvJni::SetupFirstFrameHandler(JNIEnv* env, jclass clazz, jint platfrom)
 {
+#ifndef NG_BUILD
     if (!flutter::PlatformViewAndroid::RegisterOnFirstFrame(env, platfrom)) {
         LOGE("JNI AceEnv: register OnFirstFrame failed");
     }
+#endif
 }
 
-} // OHOS::Ace::Platform
+} // namespace OHOS::Ace::Platform

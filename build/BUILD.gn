@@ -50,8 +50,11 @@ group("ace_packages") {
   deps = [
     ":ace_android_adapter_java",
     ":libace_android",
-    "$ace_flutter_engine_root_new:libace_dev",
   ]
+
+  if (enable_ng_build) {
+    deps += [ "$ace_flutter_engine_root_new:libace_dev" ]
+  }
 
   deps += common_napi_modules
 }

@@ -16,9 +16,13 @@
 #include "adapter/android/entrance/java/jni/ace_container.h"
 
 #include "flutter/fml/platform/android/jni_util.h"
-#include "flutter/lib/ui/ui_dart_state.h"
 
-// #include "adapter/android/capability/java/jni/editing/text_input_jni.h"
+#ifdef NG_BUILD
+#include "ace_shell/shell/common/window_manager.h"
+#else
+#include "flutter/lib/ui/ui_dart_state.h"
+#endif
+
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
@@ -445,10 +449,19 @@ void AceContainer::AttachView(
 {
     aceView_ = view;
     auto instanceId = aceView_->GetInstanceId();
+#ifdef NG_BUILD
+    auto flutterWindow = flutter::ace::WindowManager::GetWindow(instanceId);
+    CHECK_NULL_VOID(flutterWindow);
+#else
     auto state = flutter::UIDartState::Current()->GetStateById(instanceId);
     ACE_DCHECK(state != nullptr);
+#endif
     auto flutterTaskExecutor = AceType::DynamicCast<FlutterTaskExecutor>(taskExecutor_);
+#ifdef NG_BUILD
+    flutterTaskExecutor->InitOtherThreads(flutterWindow->GetTaskRunners());
+#else
     flutterTaskExecutor->InitOtherThreads(state->GetTaskRunners());
+#endif
 
     ContainerScope scope(instanceId);
     if (type_ == FrontendType::DECLARATIVE_JS) {
