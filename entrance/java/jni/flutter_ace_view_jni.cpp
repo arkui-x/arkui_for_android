@@ -439,6 +439,8 @@ void FlutterAceViewJni::InitCacheFilePath(
         LOGW("image cache path is null");
     }
 
+#ifndef NG_BUILD
+    // TODO: adapt to ng later
     const char* filePathStr = env->GetStringUTFChars(filePath, nullptr);
     if (filePathStr != nullptr) {
         CalendarDataAdapter::SetCachePath(std::string(filePathStr));
@@ -446,6 +448,7 @@ void FlutterAceViewJni::InitCacheFilePath(
     } else {
         LOGW("file cache path is null");
     }
+#endif
 }
 
 void FlutterAceViewJni::InitDeviceType(JNIEnv* env, jclass myClass, jint deviceType)

@@ -38,6 +38,7 @@
 #include "core/common/container_scope.h"
 #include "core/common/flutter/flutter_asset_manager.h"
 #include "core/common/flutter/flutter_task_executor.h"
+#include "core/common/font_manager.h"
 #include "core/common/platform_window.h"
 #include "core/common/text_field_manager.h"
 #include "core/common/thread_checker.h"
@@ -47,7 +48,11 @@
 #include "core/components/theme/theme_constants.h"
 #include "core/components/theme/theme_manager.h"
 #include "core/pipeline/base/element.h"
+#ifdef NG_BUILD
+#include "core/pipeline_ng/pipeline_context.h"
+#else
 #include "core/pipeline/pipeline_context.h"
+#endif
 #include "frameworks/bridge/card_frontend/card_frontend.h"
 #include "frameworks/bridge/common/utils/engine_helper.h"
 #include "frameworks/bridge/declarative_frontend/declarative_frontend.h"
@@ -483,20 +488,29 @@ void AceContainer::AttachView(
     }
 
     resRegister_ = aceView_->GetPlatformResRegister();
-    pipelineContext_ = AceType::MakeRefPtr<PipelineContext>(
+#ifdef NG_BUILD
+    LOGI("New pipeline version creating...");
+    pipelineContext_ = AceType::MakeRefPtr<NG::PipelineContext>(
         std::move(window), taskExecutor_, assetManager_, resRegister_, frontend_, instanceId);
+#else
+    auto pipelineContext = AceType::MakeRefPtr<PipelineContext>(
+        std::move(window), taskExecutor_, assetManager_, resRegister_, frontend_, instanceId);
+    pipelineContext_ = pipelineContext;
+#endif
 
     pipelineContext_->SetRootSize(density, width, height);
     pipelineContext_->SetTextFieldManager(AceType::MakeRefPtr<TextFieldManager>());
     pipelineContext_->SetIsRightToLeft(AceApplicationInfo::GetInstance().IsRightToLeft());
-    pipelineContext_->SetMessageBridge(messageBridge_);
-    pipelineContext_->SetWindowModal(windowModal_);
-    pipelineContext_->SetModalHeight(modalHeight_);
-    pipelineContext_->SetModalColor(modalColor_);
-    pipelineContext_->SetDrawDelegate(aceView_->GetDrawDelegate());
+#ifndef NG_BUILD
+    pipelineContext->SetMessageBridge(messageBridge_);
+    pipelineContext->SetWindowModal(windowModal_);
+    pipelineContext->SetModalHeight(modalHeight_);
+    pipelineContext->SetModalColor(modalColor_);
+    pipelineContext->SetDrawDelegate(aceView_->GetDrawDelegate());
+    pipelineContext->SetPhotoCachePath(aceView_->GetCachePath());
+#endif
     pipelineContext_->SetFontScale(resourceInfo_.GetResourceConfiguration().GetFontRatio());
     pipelineContext_->SetIsJsCard(type_ == FrontendType::JS_CARD);
-    pipelineContext_->SetPhotoCachePath(aceView_->GetCachePath());
 
     if (resRegister_) {
         resRegister_->SetPipelineContext(pipelineContext_);
@@ -642,7 +656,7 @@ void AceContainer::UpdateResourceConfiguration(const std::string& jsonStr)
     themeManager->UpdateConfig(resConfig);
     taskExecutor_->PostTask(
         [weakThemeManager = WeakPtr<ThemeManager>(themeManager), colorScheme = colorScheme_, config = resConfig,
-            weakContext = WeakPtr<PipelineContext>(pipelineContext_)]() {
+            weakContext = WeakPtr<PipelineBase>(pipelineContext_)]() {
             auto themeManager = weakThemeManager.Upgrade();
             auto context = weakContext.Upgrade();
             if (!themeManager || !context) {
@@ -681,7 +695,7 @@ void AceContainer::UpdateColorMode(ColorMode colorMode)
     themeManager->UpdateConfig(resConfig);
     taskExecutor_->PostTask(
         [weakThemeManager = WeakPtr<ThemeManager>(themeManager), colorScheme = colorScheme_,
-            weakContext = WeakPtr<PipelineContext>(pipelineContext_)]() {
+            weakContext = WeakPtr<PipelineBase>(pipelineContext_)]() {
             auto themeManager = weakThemeManager.Upgrade();
             auto context = weakContext.Upgrade();
             if (!themeManager || !context) {
@@ -790,16 +804,16 @@ void AceContainer::TriggerGarbageCollection()
 void AceContainer::NotifyFontNodes()
 {
     ContainerScope scope(instanceId_);
-    if (pipelineContext_) {
-        pipelineContext_->NotifyFontNodes();
+    if (pipelineContext_ && pipelineContext_->GetFontManager()) {
+        pipelineContext_->GetFontManager()->NotifyVariationNodes();
     }
 }
 
 void AceContainer::NotifyAppStorage(const std::string& key, const std::string& value)
 {
     ContainerScope scope(instanceId_);
-    if (pipelineContext_) {
-        pipelineContext_->NotifyAppStorage(key, value);
+    if (frontend_) {
+        frontend_->NotifyAppStorage(key, value);
     }
 }
 
