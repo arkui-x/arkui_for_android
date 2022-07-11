@@ -203,7 +203,12 @@ std::unique_ptr<DrawDelegate> FlutterAceView::GetDrawDelegate()
 
 std::unique_ptr<PlatformWindow> FlutterAceView::GetPlatformWindow()
 {
+#ifdef NG_BUILD
+    // for ng version, don't need PlatformWindow any more
+    return nullptr;
+#else
     return PlatformWindow::Create(this);
+#endif
 }
 
 const void* FlutterAceView::GetNativeWindowById(uint64_t textureId)

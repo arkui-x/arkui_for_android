@@ -69,6 +69,9 @@ AceContainer::AceContainer(jint instanceId, FrontendType type, jobject callback)
     : messageBridge_(AceType::MakeRefPtr<PlatformBridge>()), type_(type), instanceId_(instanceId)
 {
     ACE_DCHECK(callback);
+#ifdef NG_BUILD
+    SetUseNewPipeline();
+#endif
     auto flutterTaskExecutor = Referenced::MakeRefPtr<FlutterTaskExecutor>();
     flutterTaskExecutor->InitPlatformThread();
     // no need to create JS thread for DELCARATIVE_JS
@@ -147,6 +150,9 @@ void AceContainer::Destroy()
 void AceContainer::InitializeFrontend(bool isArkApp)
 {
     if (type_ == FrontendType::JS) {
+#ifdef NG_BUILD
+        LOGE("NG veriosn not support js frontend yet!");
+#else
         frontend_ = Frontend::Create();
         auto jsFrontend = AceType::DynamicCast<JsFrontend>(frontend_);
         auto& loader = Framework::JsEngineLoader::Get(nullptr);
@@ -155,9 +161,14 @@ void AceContainer::InitializeFrontend(bool isArkApp)
         EngineHelper::AddEngine(instanceId_, jsEngine);
         jsFrontend->SetNeedDebugBreakPoint(AceApplicationInfo::GetInstance().IsNeedDebugBreakPoint());
         jsFrontend->SetDebugVersion(AceApplicationInfo::GetInstance().IsDebugVersion());
+#endif
     } else if (type_ == FrontendType::JS_CARD) {
+#ifdef NG_BUILD
+        LOGE("NG veriosn not support js frontend yet!");
+#else
         AceApplicationInfo::GetInstance().SetCardType();
         frontend_ = AceType::MakeRefPtr<CardFrontend>();
+#endif
     } else if (type_ == FrontendType::DECLARATIVE_JS) {
         frontend_ = AceType::MakeRefPtr<DeclarativeFrontend>();
         auto declarativeFrontend = AceType::DynamicCast<DeclarativeFrontend>(frontend_);

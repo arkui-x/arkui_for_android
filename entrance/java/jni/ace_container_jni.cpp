@@ -30,6 +30,7 @@
 #include "core/common/container_scope.h"
 #include "core/common/flutter/flutter_asset_manager.h"
 #include "core/components/common/layout/constants.h"
+#include "core/components_ng/render/adapter/flutter_window.h"
 #include "core/pipeline/pipeline_context.h"
 
 namespace OHOS::Ace::Platform {
@@ -85,7 +86,7 @@ jboolean AceContainerJni::HandlePage(JNIEnv* env, jint instanceId, jstring conte
 
 bool AceContainerJni::Register()
 {
-    static const JNINativeMethod methods[] = {
+    static const JNINativeMethod methods[] = { // jni methods
         {
             .name = "nativeCreateContainer",
             .signature = "(IILohos/ace/adapter/AceEventCallback;Ljava/lang/String;)V",
@@ -488,12 +489,16 @@ void AceContainerJni::SetView(
         LOGE("JNI setView: null view");
         return;
     }
+#ifdef NG_BUILD
+    std::unique_ptr<Window> window = std::make_unique<NG::FlutterWindow>(container->GetTaskExecutor(), instanceId);
+#else
     auto platformWindow = view->GetPlatformWindow();
     if (!platformWindow) {
         LOGE("JNI setView: null platformWindow");
         return;
     }
     std::unique_ptr<Window> window = std::make_unique<Window>(std::move(platformWindow));
+#endif
     container->AttachView(std::move(window), view, static_cast<double>(density), width, height);
 }
 
