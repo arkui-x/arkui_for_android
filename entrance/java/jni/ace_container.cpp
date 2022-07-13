@@ -70,6 +70,7 @@ AceContainer::AceContainer(jint instanceId, FrontendType type, jobject callback)
 {
     ACE_DCHECK(callback);
 #ifdef NG_BUILD
+    LOGD("AceContainer created use new pipeline");
     SetUseNewPipeline();
 #endif
     auto flutterTaskExecutor = Referenced::MakeRefPtr<FlutterTaskExecutor>();
@@ -466,18 +467,14 @@ void AceContainer::AttachView(
     aceView_ = view;
     auto instanceId = aceView_->GetInstanceId();
 #ifdef NG_BUILD
-    auto flutterWindow = flutter::ace::WindowManager::GetWindow(instanceId);
-    CHECK_NULL_VOID(flutterWindow);
+    auto state = flutter::ace::WindowManager::GetWindow(instanceId);
+    CHECK_NULL_VOID(state);
 #else
     auto state = flutter::UIDartState::Current()->GetStateById(instanceId);
     ACE_DCHECK(state != nullptr);
 #endif
     auto flutterTaskExecutor = AceType::DynamicCast<FlutterTaskExecutor>(taskExecutor_);
-#ifdef NG_BUILD
-    flutterTaskExecutor->InitOtherThreads(flutterWindow->GetTaskRunners());
-#else
     flutterTaskExecutor->InitOtherThreads(state->GetTaskRunners());
-#endif
 
     ContainerScope scope(instanceId);
     if (type_ == FrontendType::DECLARATIVE_JS) {
