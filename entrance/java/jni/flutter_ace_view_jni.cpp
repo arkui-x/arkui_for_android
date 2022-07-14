@@ -131,6 +131,8 @@ static const JNINativeMethod COMMON_METHODS[] = {
     },
 };
 
+static jmethodID gOnFirstFrameMethod = nullptr;
+
 } // namespace
 
 jlong FlutterAceViewJni::CreateAndroidViewHandle(JNIEnv* env, jclass myClass, jobject view, jint instanceId)
@@ -160,11 +162,24 @@ jlong FlutterAceViewJni::CreateViewHandle(JNIEnv* env, jclass myClass, jobject v
             refPtr->ProcessIdleEvent(deadline);
         }
     };
-    auto shell_holder = std::make_unique<flutter::AndroidShellHolder>(settings, java_object, false);
+    auto shellHolder = std::make_unique<flutter::AndroidShellHolder>(settings, java_object, false);
 #else
-    auto shell_holder = std::make_unique<AndroidShellHolder>(settings, id, false);
+    auto shellHolder = std::make_unique<AndroidShellHolder>(settings, id, false);
+    auto viewRef = env->NewGlobalRef(view);
+    shellHolder->SetFirstFrameCallback(
+        [env, viewRef] {
+            if (gOnFirstFrameMethod) {
+                env->CallVoidMethod(viewRef, gOnFirstFrameMethod);
+                if (env->ExceptionCheck()) {
+                    LOGE("Exception occured, call onFirstFrame failed");
+                    env->ExceptionDescribe();
+                    env->ExceptionClear();
+                }
+            }
+            env->DeleteGlobalRef(viewRef);
+        });
 #endif
-    aceView->SetShellHolder(std::move(shell_holder));
+    aceView->SetShellHolder(std::move(shellHolder));
     aceView->IncRefCount();
     return PointerToJavaLong(aceView);
 }
@@ -393,6 +408,10 @@ bool FlutterAceViewJni::RegisterNatives(JNIEnv* env)
     if (!RegisterCommonNatives(env, myClass)) {
         LOGE("Failed to register common natives");
         return false;
+    }
+
+    if (!gOnFirstFrameMethod) {
+        gOnFirstFrameMethod = env->GetMethodID(myClass, "onFirstFrame", "()V");
     }
 
     env->DeleteLocalRef(myClass);
