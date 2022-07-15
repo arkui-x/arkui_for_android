@@ -25,7 +25,7 @@ RefPtr<DragWindow> DragWindow::CreateDragWindow(const std::string& windowName, i
 
 void DragWindow::MoveTo(int32_t x, int32_t y) const {}
 
-void DragWindow::Destory() const {}
+void DragWindow::Destroy() const {}
 
 void DragWindow::DrawPixelMap(const RefPtr<PixelMap>& pixelmap) {}
 
