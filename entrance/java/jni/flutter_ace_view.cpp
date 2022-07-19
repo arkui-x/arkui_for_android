@@ -188,11 +188,11 @@ std::unique_ptr<DrawDelegate> FlutterAceView::GetDrawDelegate()
         RefPtr<Flutter::FlutterSceneBuilder> flutterSceneBuilder = AceType::MakeRefPtr<Flutter::FlutterSceneBuilder>();
         layer->AddToScene(*flutterSceneBuilder, 0.0, 0.0);
         auto scene = flutterSceneBuilder->Build();
-        if (!flutter::UIDartState::Current()) {
+        if (!flutter::UIJavaScriptState::Current()) {
             LOGE("UIDartState is null");
             return;
         }
-        auto window = flutter::UIDartState::Current()->window();
+        auto window = flutter::UIJavaScriptState::Current()->window();
         if (window != nullptr && window->client() != nullptr) {
             window->client()->Render(scene.get());
         }
