@@ -207,7 +207,7 @@ void AceContainer::InitializeCallback()
     ACE_DCHECK(aceView_ && taskExecutor_ && pipelineContext_);
     auto weak = AceType::WeakClaim(AceType::RawPtr(pipelineContext_));
     auto instanceId = aceView_->GetInstanceId();
-    auto&& touchEventCallback = [weak, instanceId](const TouchEvent& event) {
+    auto&& touchEventCallback = [weak, instanceId](const TouchEvent& event, const std::function<void()>& markProcess) {
         auto context = weak.Upgrade();
         if (context == nullptr) {
             LOGE("context is null");
@@ -250,7 +250,7 @@ void AceContainer::InitializeCallback()
     };
     aceView_->RegisterKeyEventCallback(keyEventCallback);
 
-    auto&& mouseEventCallback = [weak, instanceId](const MouseEvent& event) {
+    auto&& mouseEventCallback = [weak, instanceId](const MouseEvent& event, const std::function<void()>& markProcess) {
         auto context = weak.Upgrade();
         if (context == nullptr) {
             LOGE("context is null");

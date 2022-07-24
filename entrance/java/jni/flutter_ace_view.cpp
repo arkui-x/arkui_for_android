@@ -96,7 +96,7 @@ bool FlutterAceView::ProcessTouchEvent(std::unique_ptr<flutter::PointerDataPacke
             continue;
         }
         if (touchEventCallback_) {
-            touchEventCallback_(point);
+            touchEventCallback_(point, nullptr);
         }
     }
     // if it is last page, let os know to quit app
@@ -109,7 +109,7 @@ void FlutterAceView::ProcessMouseEvent(std::unique_ptr<flutter::PointerDataPacke
     ConvertMouseEvent(packet->data(), mouseEvent);
     LOGD(" ProcessMouseEvent event size");
     if (mouseEventCallback_) {
-        mouseEventCallback_(mouseEvent);
+        mouseEventCallback_(mouseEvent, nullptr);
     }
 }
 
