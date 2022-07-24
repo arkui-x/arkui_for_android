@@ -599,7 +599,7 @@ void AceContainerJni::InitDeviceInfo(JNIEnv* env, jclass clazz, jint instanceId,
         return;
     }
     auto config = container->GetResourceConfiguration();
-    config.SetOrientation(SystemProperties::GetDevcieOrientation());
+    config.SetOrientation(SystemProperties::GetDeviceOrientation());
     config.SetDensity(density);
     config.SetDeviceType(SystemProperties::GetDeviceType());
     container->SetResourceConfiguration(config);

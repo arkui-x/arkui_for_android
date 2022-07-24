@@ -18,7 +18,6 @@
 #include "flutter/fml/platform/android/jni_util.h"
 #include "flutter/lib/ui/ui_dart_state.h"
 
-// #include "adapter/android/capability/java/jni/editing/text_input_jni.h"
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
@@ -34,6 +33,7 @@
 #include "core/common/container_scope.h"
 #include "core/common/flutter/flutter_asset_manager.h"
 #include "core/common/flutter/flutter_task_executor.h"
+#include "core/common/font_manager.h"
 #include "core/common/platform_window.h"
 #include "core/common/text_field_manager.h"
 #include "core/common/thread_checker.h"
@@ -177,7 +177,7 @@ void AceContainer::InitializeCallback()
     ACE_DCHECK(aceView_ && taskExecutor_ && pipelineContext_);
     auto weak = AceType::WeakClaim(AceType::RawPtr(pipelineContext_));
     auto instanceId = aceView_->GetInstanceId();
-    auto&& touchEventCallback = [weak, instanceId](const TouchEvent& event) {
+    auto&& touchEventCallback = [weak, instanceId](const TouchEvent& event, const std::function<void()>& markProcess) {
         auto context = weak.Upgrade();
         if (context == nullptr) {
             LOGE("context is null");
@@ -220,7 +220,7 @@ void AceContainer::InitializeCallback()
     };
     aceView_->RegisterKeyEventCallback(keyEventCallback);
 
-    auto&& mouseEventCallback = [weak, instanceId](const MouseEvent& event) {
+    auto&& mouseEventCallback = [weak, instanceId](const MouseEvent& event, const std::function<void()>& markProcess) {
         auto context = weak.Upgrade();
         if (context == nullptr) {
             LOGE("context is null");
@@ -470,20 +470,21 @@ void AceContainer::AttachView(
     }
 
     resRegister_ = aceView_->GetPlatformResRegister();
-    pipelineContext_ = AceType::MakeRefPtr<PipelineContext>(
+    auto pipelineContext = AceType::MakeRefPtr<PipelineContext>(
         std::move(window), taskExecutor_, assetManager_, resRegister_, frontend_, instanceId);
+    pipelineContext_ = pipelineContext;
 
     pipelineContext_->SetRootSize(density, width, height);
     pipelineContext_->SetTextFieldManager(AceType::MakeRefPtr<TextFieldManager>());
     pipelineContext_->SetIsRightToLeft(AceApplicationInfo::GetInstance().IsRightToLeft());
-    pipelineContext_->SetMessageBridge(messageBridge_);
-    pipelineContext_->SetWindowModal(windowModal_);
-    pipelineContext_->SetModalHeight(modalHeight_);
-    pipelineContext_->SetModalColor(modalColor_);
-    pipelineContext_->SetDrawDelegate(aceView_->GetDrawDelegate());
+    pipelineContext->SetMessageBridge(messageBridge_);
+    pipelineContext->SetWindowModal(windowModal_);
+    pipelineContext->SetModalHeight(modalHeight_);
+    pipelineContext->SetModalColor(modalColor_);
+    pipelineContext->SetDrawDelegate(aceView_->GetDrawDelegate());
+    pipelineContext->SetPhotoCachePath(aceView_->GetCachePath());
     pipelineContext_->SetFontScale(resourceInfo_.GetResourceConfiguration().GetFontRatio());
     pipelineContext_->SetIsJsCard(type_ == FrontendType::JS_CARD);
-    pipelineContext_->SetPhotoCachePath(aceView_->GetCachePath());
 
     if (resRegister_) {
         resRegister_->SetPipelineContext(pipelineContext_);
@@ -629,7 +630,7 @@ void AceContainer::UpdateResourceConfiguration(const std::string& jsonStr)
     themeManager->UpdateConfig(resConfig);
     taskExecutor_->PostTask(
         [weakThemeManager = WeakPtr<ThemeManager>(themeManager), colorScheme = colorScheme_, config = resConfig,
-            weakContext = WeakPtr<PipelineContext>(pipelineContext_)]() {
+            weakContext = WeakPtr<PipelineBase>(pipelineContext_)]() {
             auto themeManager = weakThemeManager.Upgrade();
             auto context = weakContext.Upgrade();
             if (!themeManager || !context) {
@@ -668,7 +669,7 @@ void AceContainer::UpdateColorMode(ColorMode colorMode)
     themeManager->UpdateConfig(resConfig);
     taskExecutor_->PostTask(
         [weakThemeManager = WeakPtr<ThemeManager>(themeManager), colorScheme = colorScheme_,
-            weakContext = WeakPtr<PipelineContext>(pipelineContext_)]() {
+            weakContext = WeakPtr<PipelineBase>(pipelineContext_)]() {
             auto themeManager = weakThemeManager.Upgrade();
             auto context = weakContext.Upgrade();
             if (!themeManager || !context) {
@@ -777,16 +778,16 @@ void AceContainer::TriggerGarbageCollection()
 void AceContainer::NotifyFontNodes()
 {
     ContainerScope scope(instanceId_);
-    if (pipelineContext_) {
-        pipelineContext_->NotifyFontNodes();
+    if (pipelineContext_ && pipelineContext_->GetFontManager()) {
+        pipelineContext_->GetFontManager()->NotifyVariationNodes();
     }
 }
 
 void AceContainer::NotifyAppStorage(const std::string& key, const std::string& value)
 {
     ContainerScope scope(instanceId_);
-    if (pipelineContext_) {
-        pipelineContext_->NotifyAppStorage(key, value);
+    if (frontend_) {
+        frontend_->NotifyAppStorage(key, value);
     }
 }
 

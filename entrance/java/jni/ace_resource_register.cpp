@@ -20,7 +20,7 @@
 
 #include "base/log/log.h"
 #include "base/utils/utils.h"
-#include "core/pipeline/pipeline_context.h"
+#include "core/pipeline/pipeline_base.h"
 
 namespace OHOS::Ace::Platform {
 
