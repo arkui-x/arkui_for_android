@@ -55,7 +55,11 @@
 #endif
 #include "frameworks/bridge/card_frontend/card_frontend.h"
 #include "frameworks/bridge/common/utils/engine_helper.h"
+#ifdef NG_BUILD
+#include "frameworks/bridge/declarative_frontend/ng/declarative_frontend_ng.h"
+#else
 #include "frameworks/bridge/declarative_frontend/declarative_frontend.h"
+#endif
 #include "frameworks/bridge/js_frontend/engine/common/js_engine_loader.h"
 #include "frameworks/bridge/js_frontend/js_frontend.h"
 
@@ -171,8 +175,13 @@ void AceContainer::InitializeFrontend(bool isArkApp)
         frontend_ = AceType::MakeRefPtr<CardFrontend>();
 #endif
     } else if (type_ == FrontendType::DECLARATIVE_JS) {
+#ifdef NG_BUILD
+        frontend_ = AceType::MakeRefPtr<DeclarativeFrontendNG>();
+        auto declarativeFrontend = AceType::DynamicCast<DeclarativeFrontendNG>(frontend_);
+#else
         frontend_ = AceType::MakeRefPtr<DeclarativeFrontend>();
         auto declarativeFrontend = AceType::DynamicCast<DeclarativeFrontend>(frontend_);
+#endif
         auto& loader = Framework::JsEngineLoader::GetDeclarative(nullptr);
         auto jsEngine = loader.CreateJsEngine(instanceId_);
         declarativeFrontend->SetJsEngine(jsEngine);
@@ -484,8 +493,11 @@ void AceContainer::AttachView(
         InitializeFrontend(isArk_);
         auto front = GetFrontend();
         if (front) {
-            // SetInstanceName is called in AceContainer::CreateContainer in ace 1.0
+#ifdef NG_BUILD
+            auto jsFront = AceType::DynamicCast<DeclarativeFrontendNG>(front);
+#else
             auto jsFront = AceType::DynamicCast<DeclarativeFrontend>(front);
+#endif
             jsFront->SetInstanceName(GetInstanceName());
             front->UpdateState(Frontend::State::ON_CREATE);
             front->SetJsMessageDispatcher(AceType::Claim(this));
