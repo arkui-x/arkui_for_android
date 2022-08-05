@@ -20,7 +20,7 @@
 #ifdef NG_BUILD
 #include "ace_shell/shell/common/window_manager.h"
 #else
-#include "third_party/flutter/build/lib/ui/ui_javascript_state.h"
+#include "flutter/lib/ui/ui_dart_state.h"
 #endif
 
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
@@ -470,7 +470,7 @@ void AceContainer::AttachView(
     auto state = flutter::ace::WindowManager::GetWindow(instanceId);
     CHECK_NULL_VOID(state);
 #else
-    auto state = flutter::UIJavaScriptState::Current()->GetStateById(instanceId);
+    auto state = flutter::UIDartState::Current()->GetStateById(instanceId);
     ACE_DCHECK(state != nullptr);
 #endif
     auto flutterTaskExecutor = AceType::DynamicCast<FlutterTaskExecutor>(taskExecutor_);
