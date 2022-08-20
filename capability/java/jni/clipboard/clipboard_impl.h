@@ -27,6 +27,9 @@ public:
 
     void SetData(const std::string& data) override;
     void GetData(const std::function<void(const std::string&)>& callback, bool syncMode = false) override;
+    void SetPixelMapData(const RefPtr<PixelMap>& pixmap) override {}
+    void GetPixelMapData(const std::function<void(const RefPtr<PixelMap>&)>& callback,
+        bool syncMode = false) override {}
     void Clear() override;
 private:
 

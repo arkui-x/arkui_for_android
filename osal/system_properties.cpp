@@ -30,6 +30,7 @@ constexpr char UNDEFINED_PARAM[] = "undefined parameter";
 // currently it is unused, use ATrace_isEnabled
 bool SystemProperties::traceEnabled_ = false;
 bool SystemProperties::isRound_ = false;
+bool SystemProperties::isDeviceAccess_ = false;
 int32_t SystemProperties::deviceWidth_ = 0;
 int32_t SystemProperties::deviceHeight_ = 0;
 double SystemProperties::resolution_ = 1.0;
@@ -48,6 +49,7 @@ ColorMode SystemProperties::colorMode_ { ColorMode::LIGHT };
 ScreenShape SystemProperties::screenShape_ { ScreenShape::NOT_ROUND };
 LongScreenType SystemProperties::LongScreen_ { LongScreenType::NOT_LONG };
 bool SystemProperties::rosenBackendEnabled_ = false;
+bool SystemProperties::isHookModeEnabled_ = false;
 bool SystemProperties::accessibilityEnabled_ = false;
 bool SystemProperties::windowAnimationEnabled_ = false;
 bool SystemProperties::debugBoundaryEnabled_ = false;
@@ -140,6 +142,11 @@ std::string SystemProperties::GetRegion()
 bool SystemProperties::GetDebugBoundaryEnabled()
 {
     return false;
+}
+
+std::string SystemProperties::GetPartialUpdatePkg()
+{
+    return "";
 }
 
 } // namespace OHOS::Ace
