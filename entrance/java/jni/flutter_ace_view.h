@@ -63,9 +63,7 @@ public:
         return instanceId_;
     }
 
-    void RegisterCardViewAccessibilityParamsCallback(CardViewAccessibilityParamsCallback&& callback) override
-    {
-    }
+    void RegisterCardViewAccessibilityParamsCallback(CardViewAccessibilityParamsCallback&& callback) override {}
 
     void RegisterViewChangeCallback(ViewChangeCallback&& callback) override
     {
@@ -102,9 +100,9 @@ public:
         }
     }
 
-    void RegisterDragEventCallback(DragEventCallBack&& callback) override
-    {
-    }
+    void RegisterDragEventCallback(DragEventCallBack&& callback) override {}
+
+    void RegisterViewPositionChangeCallback(ViewPositionChangeCallback&& callback) override {}
 
     void SetPlatformResRegister(const RefPtr<PlatformResRegister>& resRegister)
     {
