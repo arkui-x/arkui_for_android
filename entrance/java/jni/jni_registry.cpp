@@ -16,8 +16,14 @@
 #include "adapter/android/entrance/java/jni/jni_registry.h"
 
 #include "flutter/fml/platform/android/jni_util.h"
+
+#ifdef NG_BUILD
+#include "ace_shell/shell/platform/android/platform_view_android.h"
+#include "ace_shell/shell/platform/android/vsync_waiter_android.h"
+#else
 #include "flutter/shell/platform/android/platform_view_android.h"
 #include "flutter/shell/platform/android/vsync_waiter_android.h"
+#endif
 
 #include "adapter/android/capability/java/jni/clipboard/clipboard_jni.h"
 #include "adapter/android/capability/java/jni/editing/text_input_jni.h"
@@ -33,6 +39,12 @@
 #include "base/log/log.h"
 
 namespace OHOS::Ace::Platform {
+
+#ifdef NG_BUILD
+using flutter::ace::VsyncWaiterAndroid;
+#else
+using flutter::VsyncWaiterAndroid;
+#endif
 
 bool JniRegistry::Register()
 {
@@ -65,15 +77,17 @@ bool JniRegistry::Register()
         return false;
     }
 
-    if (!flutter::VsyncWaiterAndroid::Register(jniEnv.get())) {
+    if (!VsyncWaiterAndroid::Register(jniEnv.get())) {
         LOGE("JNI Initialize: failed to register VsyncWaiterAndroid");
         return false;
     }
 
+#ifndef NG_BUILD
     if (!flutter::PlatformViewAndroid::Register(jniEnv.get())) {
         LOGE("JNI Initialize: failed to register PlatformViewAndroid");
         return false;
     }
+#endif
 
     if (!AceApplicationInfoJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register AceApplicationInfo");

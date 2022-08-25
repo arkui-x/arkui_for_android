@@ -35,7 +35,9 @@
 #include "core/event/mouse_event.h"
 #include "core/event/touch_event.h"
 #include "core/image/image_cache.h"
+#ifndef NG_BUILD
 #include "core/pipeline/layers/flutter_scene_builder.h"
+#endif
 
 namespace OHOS::Ace::Platform {
 
@@ -67,13 +69,17 @@ void FlutterAceView::Launch()
 {
     LOGD("Launch shell holder");
     if (!viewLaunched_) {
+#ifdef NG_BUILD
+        shellHolder_->Launch();
+#else
         flutter::RunConfiguration config;
         shellHolder_->Launch(std::move(config));
+#endif
         viewLaunched_ = true;
     }
 }
 
-void FlutterAceView::SetShellHolder(std::unique_ptr<flutter::AndroidShellHolder> holder)
+void FlutterAceView::SetShellHolder(std::unique_ptr<AndroidShellHolder> holder)
 {
     shellHolder_ = std::move(holder);
 }
@@ -178,6 +184,7 @@ std::unique_ptr<DrawDelegate> FlutterAceView::GetDrawDelegate()
         if (!layer) {
             return;
         }
+#ifndef NG_BUILD
         RefPtr<Flutter::FlutterSceneBuilder> flutterSceneBuilder = AceType::MakeRefPtr<Flutter::FlutterSceneBuilder>();
         layer->AddToScene(*flutterSceneBuilder, 0.0, 0.0);
         auto scene = flutterSceneBuilder->Build();
@@ -189,13 +196,19 @@ std::unique_ptr<DrawDelegate> FlutterAceView::GetDrawDelegate()
         if (window != nullptr && window->client() != nullptr) {
             window->client()->Render(scene.get());
         }
+#endif
     });
     return drawDelegate;
 }
 
 std::unique_ptr<PlatformWindow> FlutterAceView::GetPlatformWindow()
 {
+#ifdef NG_BUILD
+    // for ng version, don't need PlatformWindow any more
+    return nullptr;
+#else
     return PlatformWindow::Create(this);
+#endif
 }
 
 const void* FlutterAceView::GetNativeWindowById(uint64_t textureId)
