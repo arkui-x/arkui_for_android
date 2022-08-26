@@ -30,6 +30,8 @@
 #include "core/common/container_scope.h"
 #include "core/common/flutter/flutter_asset_manager.h"
 #include "core/components/common/layout/constants.h"
+#include "core/components_ng/base/frame_node.h"
+#include "core/components_ng/render/adapter/flutter_window.h"
 #include "core/pipeline/pipeline_context.h"
 
 namespace OHOS::Ace::Platform {
@@ -85,7 +87,7 @@ jboolean AceContainerJni::HandlePage(JNIEnv* env, jint instanceId, jstring conte
 
 bool AceContainerJni::Register()
 {
-    static const JNINativeMethod methods[] = {
+    static const JNINativeMethod methods[] = { // JNI methods
         {
             .name = "nativeCreateContainer",
             .signature = "(IILohos/ace/adapter/AceEventCallback;Ljava/lang/String;)V",
