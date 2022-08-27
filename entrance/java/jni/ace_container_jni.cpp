@@ -490,12 +490,16 @@ void AceContainerJni::SetView(
         LOGE("JNI setView: null view");
         return;
     }
+#ifdef NG_BUILD
+    std::unique_ptr<Window> window = std::make_unique<NG::FlutterWindow>(container->GetTaskExecutor(), instanceId);
+#else
     auto platformWindow = view->GetPlatformWindow();
     if (!platformWindow) {
         LOGE("JNI setView: null platformWindow");
         return;
     }
     std::unique_ptr<Window> window = std::make_unique<Window>(std::move(platformWindow));
+#endif
     container->AttachView(std::move(window), view, static_cast<double>(density), width, height);
 }
 
