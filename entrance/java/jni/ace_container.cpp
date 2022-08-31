@@ -16,7 +16,12 @@
 #include "adapter/android/entrance/java/jni/ace_container.h"
 
 #include "flutter/fml/platform/android/jni_util.h"
+
+#ifdef NG_BUILD
+#include "ace_shell/shell/common/window_manager.h"
+#else
 #include "flutter/lib/ui/ui_dart_state.h"
+#endif
 
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
@@ -43,10 +48,18 @@
 #include "core/components/theme/theme_constants.h"
 #include "core/components/theme/theme_manager.h"
 #include "core/pipeline/base/element.h"
+#ifdef NG_BUILD
+#include "core/pipeline_ng/pipeline_context.h"
+#else
 #include "core/pipeline/pipeline_context.h"
+#endif
 #include "frameworks/bridge/card_frontend/card_frontend.h"
 #include "frameworks/bridge/common/utils/engine_helper.h"
+#ifdef NG_BUILD
+#include "frameworks/bridge/declarative_frontend/ng/declarative_frontend_ng.h"
+#else
 #include "frameworks/bridge/declarative_frontend/declarative_frontend.h"
+#endif
 #include "frameworks/bridge/js_frontend/engine/common/js_engine_loader.h"
 #include "frameworks/bridge/js_frontend/js_frontend.h"
 
@@ -60,6 +73,10 @@ AceContainer::AceContainer(jint instanceId, FrontendType type, jobject callback)
     : messageBridge_(AceType::MakeRefPtr<PlatformBridge>()), type_(type), instanceId_(instanceId)
 {
     ACE_DCHECK(callback);
+#ifdef NG_BUILD
+    LOGD("AceContainer created use new pipeline");
+    SetUseNewPipeline();
+#endif
     auto flutterTaskExecutor = Referenced::MakeRefPtr<FlutterTaskExecutor>();
     flutterTaskExecutor->InitPlatformThread();
     // no need to create JS thread for DELCARATIVE_JS
@@ -138,6 +155,9 @@ void AceContainer::Destroy()
 void AceContainer::InitializeFrontend(bool isArkApp)
 {
     if (type_ == FrontendType::JS) {
+#ifdef NG_BUILD
+        LOGE("NG veriosn not support js frontend yet!");
+#else
         frontend_ = Frontend::Create();
         auto jsFrontend = AceType::DynamicCast<JsFrontend>(frontend_);
         auto& loader = Framework::JsEngineLoader::Get(nullptr);
@@ -146,12 +166,22 @@ void AceContainer::InitializeFrontend(bool isArkApp)
         EngineHelper::AddEngine(instanceId_, jsEngine);
         jsFrontend->SetNeedDebugBreakPoint(AceApplicationInfo::GetInstance().IsNeedDebugBreakPoint());
         jsFrontend->SetDebugVersion(AceApplicationInfo::GetInstance().IsDebugVersion());
+#endif
     } else if (type_ == FrontendType::JS_CARD) {
+#ifdef NG_BUILD
+        LOGE("NG veriosn not support js frontend yet!");
+#else
         AceApplicationInfo::GetInstance().SetCardType();
         frontend_ = AceType::MakeRefPtr<CardFrontend>();
+#endif
     } else if (type_ == FrontendType::DECLARATIVE_JS) {
+#ifdef NG_BUILD
+        frontend_ = AceType::MakeRefPtr<DeclarativeFrontendNG>();
+        auto declarativeFrontend = AceType::DynamicCast<DeclarativeFrontendNG>(frontend_);
+#else
         frontend_ = AceType::MakeRefPtr<DeclarativeFrontend>();
         auto declarativeFrontend = AceType::DynamicCast<DeclarativeFrontend>(frontend_);
+#endif
         auto& loader = Framework::JsEngineLoader::GetDeclarative(nullptr);
         auto jsEngine = loader.CreateJsEngine(instanceId_);
         declarativeFrontend->SetJsEngine(jsEngine);
@@ -445,8 +475,13 @@ void AceContainer::AttachView(
 {
     aceView_ = view;
     auto instanceId = aceView_->GetInstanceId();
+#ifdef NG_BUILD
+    auto state = flutter::ace::WindowManager::GetWindow(instanceId);
+    CHECK_NULL_VOID(state);
+#else
     auto state = flutter::UIDartState::Current()->GetStateById(instanceId);
     ACE_DCHECK(state != nullptr);
+#endif
     auto flutterTaskExecutor = AceType::DynamicCast<FlutterTaskExecutor>(taskExecutor_);
     flutterTaskExecutor->InitOtherThreads(state->GetTaskRunners());
 
@@ -458,8 +493,11 @@ void AceContainer::AttachView(
         InitializeFrontend(isArk_);
         auto front = GetFrontend();
         if (front) {
-            // SetInstanceName is called in AceContainer::CreateContainer in ace 1.0
+#ifdef NG_BUILD
+            auto jsFront = AceType::DynamicCast<DeclarativeFrontendNG>(front);
+#else
             auto jsFront = AceType::DynamicCast<DeclarativeFrontend>(front);
+#endif
             jsFront->SetInstanceName(GetInstanceName());
             front->UpdateState(Frontend::State::ON_CREATE);
             front->SetJsMessageDispatcher(AceType::Claim(this));
@@ -470,19 +508,27 @@ void AceContainer::AttachView(
     }
 
     resRegister_ = aceView_->GetPlatformResRegister();
+#ifdef NG_BUILD
+    LOGI("New pipeline version creating...");
+    pipelineContext_ = AceType::MakeRefPtr<NG::PipelineContext>(
+        std::move(window), taskExecutor_, assetManager_, resRegister_, frontend_, instanceId);
+#else
     auto pipelineContext = AceType::MakeRefPtr<PipelineContext>(
         std::move(window), taskExecutor_, assetManager_, resRegister_, frontend_, instanceId);
     pipelineContext_ = pipelineContext;
+#endif
 
     pipelineContext_->SetRootSize(density, width, height);
     pipelineContext_->SetTextFieldManager(AceType::MakeRefPtr<TextFieldManager>());
     pipelineContext_->SetIsRightToLeft(AceApplicationInfo::GetInstance().IsRightToLeft());
+#ifndef NG_BUILD
     pipelineContext->SetMessageBridge(messageBridge_);
     pipelineContext->SetWindowModal(windowModal_);
     pipelineContext->SetModalHeight(modalHeight_);
     pipelineContext->SetModalColor(modalColor_);
     pipelineContext->SetDrawDelegate(aceView_->GetDrawDelegate());
     pipelineContext->SetPhotoCachePath(aceView_->GetCachePath());
+#endif
     pipelineContext_->SetFontScale(resourceInfo_.GetResourceConfiguration().GetFontRatio());
     pipelineContext_->SetIsJsCard(type_ == FrontendType::JS_CARD);
 

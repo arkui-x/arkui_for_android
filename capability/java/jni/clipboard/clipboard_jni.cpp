@@ -97,7 +97,7 @@ void ClipboardJni::NativeInit(JNIEnv* env, jobject object)
         LOGW("Clipborad JNI Init: setData method not found");
     }
 
-    g_pluginMethods.setData = env->GetMethodID(clazz, METHOD_GET_DATA, SIGNATURE_GET_DATA);
+    g_pluginMethods.getData = env->GetMethodID(clazz, METHOD_GET_DATA, SIGNATURE_GET_DATA);
     if (!g_pluginMethods.getData) {
         LOGW("Clipborad JNI Init: getData method not found");
     }

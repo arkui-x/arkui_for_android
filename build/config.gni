@@ -10,6 +10,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+declare_args() {
+  # Enable Ark as android JS engine, set it 'false' to use QuickJS instead
+  enable_ark_android = false
+}
 
 defines = [
   "ANDROID_PLATFORM",
@@ -17,12 +21,22 @@ defines = [
 ]
 
 js_engines = []
-qjs_engine = {
-  engine_name = "qjs"
-  engine_path = "quickjs"
-  engine_defines = [ "USE_QUICKJS_ENGINE" ]
+if (enable_ark_android) {
+  ark_engine = {
+    engine_name = "ark"
+    engine_path = "jsi"
+    engine_defines = [ "USE_ARK_ENGINE" ]
+  }
+  js_engines += [ ark_engine ]
+  build_for_android = true
+} else {
+  qjs_engine = {
+    engine_name = "qjs"
+    engine_path = "quickjs"
+    engine_defines = [ "USE_QUICKJS_ENGINE" ]
+  }
+  js_engines += [ qjs_engine ]
 }
-js_engines += [ qjs_engine ]
 
 use_build_in_js_engine = true
 accessibility_support = false

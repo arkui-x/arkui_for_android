@@ -16,6 +16,9 @@
 #include "adapter/android/entrance/java/jni/flutter_ace_view_jni.h"
 
 #include "flutter/fml/platform/android/jni_weak_ref.h"
+#ifdef NG_BUILD
+#include "flutter/lib/ui/window/viewport_metrics.h"
+#endif
 
 #include "adapter/android/entrance/java/jni/ace_resource_register.h"
 #include "adapter/android/entrance/java/jni/flutter_ace_view.h"
@@ -128,12 +131,13 @@ static const JNINativeMethod COMMON_METHODS[] = {
     },
 };
 
+static jmethodID gOnFirstFrameMethod = nullptr;
+
 } // namespace
 
 jlong FlutterAceViewJni::CreateAndroidViewHandle(JNIEnv* env, jclass myClass, jobject view, jint instanceId)
 {
-    return CreateViewHandle(
-        env, myClass, view, instanceId, static_cast<int32_t>(flutter::AcePlatform::ACE_PLATFORM_ANDROID));
+    return CreateViewHandle(env, myClass, view, instanceId, 0); // 0 is for android platfrom
 }
 
 jlong FlutterAceViewJni::CreateViewHandle(JNIEnv* env, jclass myClass, jobject view, jint instanceId, int32_t platform)
@@ -145,22 +149,39 @@ jlong FlutterAceViewJni::CreateViewHandle(JNIEnv* env, jclass myClass, jobject v
 
     LOGI("Create FlutterAceView");
     auto id = static_cast<int32_t>(instanceId);
-    auto refAceSurface = Referenced::MakeRefPtr<FlutterAceView>(id);
-    FlutterAceView* aceSurface = Referenced::RawPtr(refAceSurface);
-    fml::jni::JavaObjectWeakGlobalRef java_object(env, view);
+    auto refAceView = Referenced::MakeRefPtr<FlutterAceView>(id);
+    FlutterAceView* aceView = Referenced::RawPtr(refAceView);
     flutter::Settings settings;
+#ifndef NG_BUILD
+    fml::jni::JavaObjectWeakGlobalRef java_object(env, view);
     settings.instanceId = id;
     settings.platform = static_cast<flutter::AcePlatform>(platform);
-    settings.idle_notification_callback = [weak = Referenced::WeakClaim(aceSurface)](int64_t deadline) {
+    settings.idle_notification_callback = [weak = Referenced::WeakClaim(aceView)](int64_t deadline) {
         auto refPtr = weak.Upgrade();
         if (refPtr) {
             refPtr->ProcessIdleEvent(deadline);
         }
     };
-    auto shell_holder = std::make_unique<flutter::AndroidShellHolder>(settings, java_object, false);
-    aceSurface->SetShellHolder(std::move(shell_holder));
-    aceSurface->IncRefCount();
-    return PointerToJavaLong(aceSurface);
+    auto shellHolder = std::make_unique<flutter::AndroidShellHolder>(settings, java_object, false);
+#else
+    auto shellHolder = std::make_unique<AndroidShellHolder>(settings, id, false);
+    auto viewRef = env->NewGlobalRef(view);
+    shellHolder->SetFirstFrameCallback(
+        [env, viewRef] {
+            if (gOnFirstFrameMethod) {
+                env->CallVoidMethod(viewRef, gOnFirstFrameMethod);
+                if (env->ExceptionCheck()) {
+                    LOGE("Exception occured, call onFirstFrame failed");
+                    env->ExceptionDescribe();
+                    env->ExceptionClear();
+                }
+            }
+            env->DeleteGlobalRef(viewRef);
+        });
+#endif
+    aceView->SetShellHolder(std::move(shellHolder));
+    aceView->IncRefCount();
+    return PointerToJavaLong(aceView);
 }
 
 void FlutterAceViewJni::SurfaceCreated(JNIEnv* env, jobject myObject, jlong view, jobject jsurface)
@@ -221,21 +242,16 @@ void FlutterAceViewJni::SetViewportMetrics(JNIEnv* env, jobject myObject, jlong 
 {
     LOGI("SetViewPortMetrics");
     const flutter::ViewportMetrics metrics {
-        static_cast<double>(devicePixelRatio),
-        static_cast<double>(physicalWidth),
-        static_cast<double>(physicalHeight),
-        static_cast<double>(physicalPaddingTop),
-        static_cast<double>(physicalPaddingRight),
-        static_cast<double>(physicalPaddingBottom),
-        static_cast<double>(physicalPaddingLeft),
-        static_cast<double>(physicalViewInsetTop),
-        static_cast<double>(physicalViewInsetRight),
-        static_cast<double>(physicalViewInsetBottom),
-        static_cast<double>(physicalViewInsetLeft),
-        static_cast<double>(systemGestureInsetTop),
-        static_cast<double>(systemGestureInsetRight),
-        static_cast<double>(systemGestureInsetBottom),
-        static_cast<double>(systemGestureInsetLeft),
+        static_cast<double>(devicePixelRatio), static_cast<double>(physicalWidth), static_cast<double>(physicalHeight),
+        static_cast<double>(physicalPaddingTop), static_cast<double>(physicalPaddingRight),
+        static_cast<double>(physicalPaddingBottom), static_cast<double>(physicalPaddingLeft),
+        static_cast<double>(physicalViewInsetTop), static_cast<double>(physicalViewInsetRight),
+        static_cast<double>(physicalViewInsetBottom), static_cast<double>(physicalViewInsetLeft),
+        static_cast<double>(systemGestureInsetTop), static_cast<double>(systemGestureInsetRight),
+        static_cast<double>(systemGestureInsetBottom), static_cast<double>(systemGestureInsetLeft),
+#ifdef NG_BUILD
+        0.0, // touch slop
+#endif
     };
     auto viewPtr = JavaLongToPointer<FlutterAceView>(view);
     if (viewPtr != nullptr) {
@@ -394,6 +410,10 @@ bool FlutterAceViewJni::RegisterNatives(JNIEnv* env)
         return false;
     }
 
+    if (!gOnFirstFrameMethod) {
+        gOnFirstFrameMethod = env->GetMethodID(myClass, "onFirstFrame", "()V");
+    }
+
     env->DeleteLocalRef(myClass);
     return true;
 }
@@ -438,6 +458,8 @@ void FlutterAceViewJni::InitCacheFilePath(
         LOGW("image cache path is null");
     }
 
+#ifndef NG_BUILD
+    // TODO: adapt to ng later
     const char* filePathStr = env->GetStringUTFChars(filePath, nullptr);
     if (filePathStr != nullptr) {
         CalendarDataAdapter::SetCachePath(std::string(filePathStr));
@@ -445,6 +467,7 @@ void FlutterAceViewJni::InitCacheFilePath(
     } else {
         LOGW("file cache path is null");
     }
+#endif
 }
 
 void FlutterAceViewJni::InitDeviceType(JNIEnv* env, jclass myClass, jint deviceType)

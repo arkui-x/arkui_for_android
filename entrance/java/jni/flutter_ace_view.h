@@ -18,7 +18,12 @@
 
 #include <memory>
 
+#ifdef NG_BUILD
+#include "ace_shell/shell/platform/android/android_shell_holder.h"
+#include "flutter/lib/ui/window/pointer_data_packet.h"
+#else
 #include "flutter/shell/platform/android/android_shell_holder.h"
+#endif
 #include "jni.h"
 
 #include "adapter/android/entrance/java/jni/jni_environment.h"
@@ -30,6 +35,11 @@
 namespace OHOS::Ace::Platform {
 
 using ReleaseCallback = std::function<void()>;
+#ifdef NG_BUILD
+using flutter::ace::AndroidShellHolder;
+#else
+using flutter::AndroidShellHolder;
+#endif
 
 class FlutterAceView : public AceView, public Referenced {
 public:
@@ -45,8 +55,8 @@ public:
     void RegisterAxisEventCallback(AxisEventCallback&& callback) override {}
 
     void Launch() override;
-    void SetShellHolder(std::unique_ptr<flutter::AndroidShellHolder> holder);
-    flutter::AndroidShellHolder* GetShellHolder() const
+    void SetShellHolder(std::unique_ptr<AndroidShellHolder> holder);
+    AndroidShellHolder* GetShellHolder() const
     {
         return shellHolder_.get();
     }
@@ -170,7 +180,7 @@ private:
     bool IsLastPage() const;
     static bool RegisterCommonNatives(JNIEnv* env, const jclass myClass);
 
-    std::unique_ptr<flutter::AndroidShellHolder> shellHolder_;
+    std::unique_ptr<AndroidShellHolder> shellHolder_;
 
     TouchEventCallback touchEventCallback_;
     MouseEventCallback mouseEventCallback_;
