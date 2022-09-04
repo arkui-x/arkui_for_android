@@ -30,6 +30,7 @@
 #include "adapter/android/capability/java/jni/environment/environment_jni.h"
 #include "adapter/android/capability/java/jni/storage/storage_jni.h"
 #include "adapter/android/capability/java/jni/vibrator/vibrator_jni.h"
+#include "adapter/android/capability/java/jni/plugin/plugin_manager_jni.h"
 #include "adapter/android/entrance/java/jni/ace_application_info_jni.h"
 #include "adapter/android/entrance/java/jni/ace_env_jni.h"
 #include "adapter/android/entrance/java/jni/download_manager_jni.h"
@@ -119,6 +120,12 @@ bool JniRegistry::Register()
         LOGE("JNI Initialize: failed to register VibratorJni");
         return false;
     }
+
+    if (!PluginManagerJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register PluginManagerJni");
+        return false;
+    }
+
     if (!DownloadManagerJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register DownloadManager");
         return false;

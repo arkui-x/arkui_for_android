@@ -27,6 +27,7 @@ common_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/storage/PersistentStorageBase.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/texture/IAceTexture.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/vibrator/VibratorPluginBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/plugin/PluginManager.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoBase.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoPluginBase.java",
 ]
@@ -63,4 +64,5 @@ capability_cpp_files = [
   "$ace_root/adapter/android/capability/java/jni/vibrator/vibrator_impl.cpp",
   "$ace_root/adapter/android/capability/java/jni/vibrator/vibrator_jni.cpp",
   "$ace_root/adapter/android/capability/java/jni/vibrator/vibrator_proxy_impl.cpp",
+  "$ace_root/adapter/android/capability/java/jni/plugin/plugin_manager_jni.cpp",
 ]
