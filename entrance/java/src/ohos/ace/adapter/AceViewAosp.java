@@ -39,6 +39,7 @@ import ohos.ace.adapter.capability.storage.PersistentStorageAosp;
 import ohos.ace.adapter.capability.texture.AceTexturePluginAosp;
 import ohos.ace.adapter.capability.texture.IAceTexture;
 import ohos.ace.adapter.capability.vibrator.VibratorPluginAosp;
+import ohos.ace.adapter.capability.plugin.PluginManager;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -91,6 +92,8 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
     private PersistentStorageAosp persistentStoragePlugin;
 
     private VibratorPluginAosp vibratorPlugin;
+
+    private PluginManager pluginManager;
 
     /**
      * Constructor of AceViewAosp
@@ -415,6 +418,7 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
         environmentPlugin = new EnvironmentAosp(context);
         persistentStoragePlugin = new PersistentStorageAosp(context);
         vibratorPlugin = new VibratorPluginAosp(context);
+        pluginManager = new PluginManager();
     }
 
     private View createAnimateView() {

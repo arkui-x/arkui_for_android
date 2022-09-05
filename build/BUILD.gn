@@ -14,6 +14,7 @@
 import("//build/ohos.gni")
 import("//foundation/arkui/ace_engine/ace_config.gni")
 import("//foundation/arkui/ace_engine/interfaces/napi/kits/napi_lib.gni")
+import("//plugins/plugin_lib.gni")
 
 # libace target
 ohos_shared_library("libace_android") {
@@ -45,6 +46,14 @@ foreach(module, common_napi_libs) {
   common_napi_modules += [ ":$module" ]
 }
 
+common_plugin_modules = []
+foreach(module, common_plugin_libs) {
+  plugin_lib(module) {
+    platform = "android"
+  }
+  common_plugin_modules += [ ":$module" ]
+}
+
 # Install packages
 group("ace_packages") {
   deps = [
@@ -57,4 +66,5 @@ group("ace_packages") {
   }
 
   deps += common_napi_modules
+  deps += common_plugin_modules
 }
