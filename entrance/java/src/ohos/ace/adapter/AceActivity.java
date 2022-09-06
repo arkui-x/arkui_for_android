@@ -15,13 +15,10 @@
 
 package ohos.ace.adapter;
 
-import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -30,9 +27,15 @@ import android.os.Process;
 import android.view.View;
 import android.view.Window;
 
+import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.io.IOException;
+
+import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 
 /**
  * A base class for the Ability Cross-platform Environment(ACE) to run on
@@ -60,7 +63,9 @@ public class AceActivity extends Activity {
 
     private static final String ASSET_PATH_SHARE = "share";
 
-    private static final int THEME_ID_DEFAULT = 117440515;
+    private static final int THEME_ID_LIGHT = 125829967;
+
+    private static final int THEME_ID_DARK = 125829966;
 
     private static final int GRAY_THRESHOLD = 255;
 
@@ -88,7 +93,6 @@ public class AceActivity extends Activity {
         super.onCreate(savedInstanceState);
         Context context = getApplicationContext();
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-
         // for 2.0 version, use DECLARATIVE_JS container type
         if (version == VERSION_ETS) {
             AceEnv.setContainerType(AceContainer.CONTAINER_TYPE_DECLARATIVE_JS);
@@ -154,6 +158,15 @@ public class AceActivity extends Activity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        int currentNightMode = newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        switch (currentNightMode) {
+            case Configuration.UI_MODE_NIGHT_NO:
+                break;
+            case Configuration.UI_MODE_NIGHT_YES:
+                break;
+            default:
+                break;
+        }
     }
 
     @Override
@@ -186,6 +199,7 @@ public class AceActivity extends Activity {
         }
         container.setHostClassName(this.getClass().getName());
         initDeviceInfo();
+        copyOhosThemeFiles();
         initTheme(container);
         initAsset();
         if (version == VERSION_ETS) {
@@ -321,7 +335,9 @@ public class AceActivity extends Activity {
             }
         }
         container.setColorMode(colorMode);
-        container.initResourceManager("", THEME_ID_DEFAULT);
+        int themeId = colorMode == AceContainer.COLOR_MODE_LIGHT ? THEME_ID_LIGHT : THEME_ID_DARK;
+        ALog.i(LOG_TAG, "init theme, color mode :" + colorMode + " themeId :" + themeId);
+        container.initResourceManager(getExternalFilesDir(null).getAbsolutePath(), themeId);
         container.setFontScale(fontScale);
     }
 
@@ -338,5 +354,41 @@ public class AceActivity extends Activity {
             ALog.w(LOG_TAG, "get uid failed, error: " + e.getMessage());
         }
         return uid;
+    }
+
+    private void copyOhosThemeFiles() {
+        copyFilesFromAssets("resources/systemres", getExternalFilesDir(null).getAbsolutePath() + "/systemres");
+        copyFilesFromAssets("resources/appres", getExternalFilesDir(null).getAbsolutePath() + "/appres");
+    }
+
+    private void copyFilesFromAssets(String assetsPath, String savePath) {
+        try {
+            String[] fileNames = getAssets().list(assetsPath);
+            File file = new File(savePath);
+            if (fileNames.length > 0) {
+                if (!file.exists()) {
+                    file.mkdirs();
+                }
+                for (String fileName : fileNames) {
+                    copyFilesFromAssets(assetsPath + "/" + fileName, savePath + "/" + fileName);
+                }
+            } else {
+                if (file.exists()) {
+                    return;
+                }
+                InputStream is = getAssets().open(assetsPath);
+                FileOutputStream fos = new FileOutputStream(file);
+                byte[] buffer = new byte[1024];
+                int byteCount = 0;
+                while ((byteCount = is.read(buffer)) != -1) {
+                    fos.write(buffer, 0, byteCount);
+                }
+                fos.flush();
+                is.close();
+                fos.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
