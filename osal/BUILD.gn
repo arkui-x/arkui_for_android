@@ -31,13 +31,18 @@ template("ace_osal_android_source_set") {
       "log_wrapper.cpp",
       "pixel_map_android.cpp",
       "resource_adapter_impl.cpp",
+      "resource_convertor.cpp",
+      "resource_theme_style.cpp",
       "ressched_report.cpp",
       "subwindow.cpp",
       "system_properties.cpp",
       "trace_id_impl.cpp",
     ]
 
-    deps = [ "$ace_root/frameworks/core/components/theme:build_theme_code" ]
+    deps = [
+      "$ace_root/adapter/android/dependence/resmgr:global_resmgr",
+      "$ace_root/frameworks/core/components/theme:build_theme_code",
+    ]
 
     configs = [ "$ace_root:ace_config" ]
   }
