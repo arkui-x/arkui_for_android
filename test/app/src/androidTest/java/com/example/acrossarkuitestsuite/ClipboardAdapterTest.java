@@ -1,68 +1,86 @@
+/*
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.example.acrossarkuitestsuite;
 
 import android.content.Context;
-import android.content.Intent;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Looper;
 
-import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.*;
 
 import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.capability.clipboard.ClipboardPluginAosp;
 import ohos.ace.adapter.capability.clipboard.ClipboardPluginBase;
 
+import static org.junit.Assert.assertEquals;
+
 /**
- * Instrumented test, which will execute on an Android device.
+ * ClipboardAdapterTest
  *
- * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
+ * @since 1
  */
 @RunWith(AndroidJUnit4.class)
 public class ClipboardAdapterTest {
     private AceEnv aceEnv;
     private Context context;
     private ClipboardPluginBase clipboardPluginBase;
+
+    /**
+     * Do something before test method start
+     */
     @Before
     public void doBefore() {
         this.context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         this.aceEnv = AceEnv.getInstance();
         this.clipboardPluginBase = new ClipboardPluginAosp(this.context);
-        Intent intent = new Intent();
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setClass(context, MainActivity.class);
-        context.startActivity(intent);
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
+    /**
+     * Do something after test method end
+     */
     @After
     public void doAfter() {
         this.clipboardPluginBase.clear();
         this.clipboardPluginBase = null;
-        this.aceEnv = null;
         this.context = null;
     }
 
+    /**
+     * set data to clipboard and get data in clipboard
+     */
     @Test
-    public void test_clipboard_setData() {
-        Log.i("TEST", "test_clipboard_setData");
+    public void setDataAndGetData_0100() {
         this.clipboardPluginBase.setData("test clipboard");
-        String getData = this.clipboardPluginBase.getData();
-        assertEquals("test clipboard", getData);
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            String getData = this.clipboardPluginBase.getData();
+            assertEquals("test clipboard", getData);
+        }, 2000);
     }
 
+    /**
+     * clear data in clipboard
+     */
     @Test
-    public void test_clipboard_clearData() {
+    public void clearData_0100() {
         this.clipboardPluginBase.setData("test clipboard");
         this.clipboardPluginBase.clear();
         assertEquals("", this.clipboardPluginBase.getData());
