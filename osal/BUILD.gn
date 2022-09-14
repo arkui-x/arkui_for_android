@@ -29,6 +29,7 @@ template("ace_osal_android_source_set") {
       "fake_accessibility_manager.cpp",
       "frame_report.cpp",
       "log_wrapper.cpp",
+      "mouse_style_android.cpp",
       "pixel_map_android.cpp",
       "resource_adapter_impl.cpp",
       "ressched_report.cpp",
