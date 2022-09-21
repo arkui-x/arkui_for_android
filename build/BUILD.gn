@@ -64,7 +64,10 @@ group("ace_packages") {
 
   # include ark_js debugger shared library
   if (enable_ark_android) {
-    deps += [ "$ark_toolchain_path/inspector:ark_debugger" ]
+    deps += [
+      "$ark_toolchain_path/inspector:ark_debugger",
+      "//arkcompiler/ets_runtime/ecmascript/tooling:libark_ecma_debugger",
+    ]
   }
 
   if (enable_ng_build) {

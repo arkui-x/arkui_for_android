@@ -53,7 +53,11 @@ public:
 
     void SetJsEngineParam(const std::string& key, const std::string& value);
 
-    void SetDebug(bool isDebugVersion, bool needDebugBreakpoint) override {}
+    void SetDebug(bool isDebugVersion, bool needDebugBreakpoint) override
+    {
+        AceApplicationInfoImpl::GetInstance().isDebugVersion_ = isDebugVersion;
+        AceApplicationInfoImpl::GetInstance().needDebugBreakpoint_ = needDebugBreakpoint;
+    }
 
 private:
 
