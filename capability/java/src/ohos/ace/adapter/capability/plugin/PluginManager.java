@@ -17,6 +17,7 @@ package ohos.ace.adapter.capability.plugin;
 
 import ohos.ace.adapter.ALog;
 
+import android.content.Context;
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 
@@ -28,10 +29,13 @@ import java.lang.reflect.Constructor;
 public class PluginManager {
     private static final String LOG_TAG = "Ace_PluginManager";
 
+    private final Context context;
+
     /**
      * constructor of PluginManager in AOSP platform
      */
-    public PluginManager() {
+    public PluginManager(Context context) {
+        this.context = context;
         nativeInit();
     }
 
@@ -44,9 +48,9 @@ public class PluginManager {
         try {
             ALog.d(LOG_TAG, "init plugin: " + packageName);
             Class pluginClass = Class.forName(packageName);
-            Constructor constructorMethod = pluginClass.getConstructor();
+            Constructor constructorMethod = pluginClass.getConstructor(Context.class);
             // take the object reference in native side
-            Object object = constructorMethod.newInstance();
+            Object object = constructorMethod.newInstance(context);
         } catch (Exception e) {
             ALog.e(LOG_TAG, "init plugin failed: " + e);
         }
