@@ -99,7 +99,7 @@ void AceContainer::Initialize()
     // For Declarative_js frontend use UI as JS thread, so initializeFrontend after UI thread's creation
     ContainerScope scope(instanceId_);
     if (type_ != FrontendType::DECLARATIVE_JS) {
-        InitializeFrontend(isArk_);
+        InitializeFrontend();
     }
 }
 
@@ -152,7 +152,7 @@ void AceContainer::Destroy()
     EngineHelper::RemoveEngine(instanceId_);
 }
 
-void AceContainer::InitializeFrontend(bool isArkApp)
+void AceContainer::InitializeFrontend()
 {
     if (type_ == FrontendType::JS) {
 #ifdef NG_BUILD
@@ -489,8 +489,7 @@ void AceContainer::AttachView(
     if (type_ == FrontendType::DECLARATIVE_JS) {
         // for declarative js frontend display ui in js thread
         flutterTaskExecutor->InitJsThread(false);
-        LOGD(" initialize frontend isArk_= %d", isArk_);
-        InitializeFrontend(isArk_);
+        InitializeFrontend();
         auto front = GetFrontend();
         if (front) {
 #ifdef NG_BUILD
