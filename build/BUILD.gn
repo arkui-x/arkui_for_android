@@ -51,7 +51,8 @@ foreach(module, common_plugin_libs) {
   plugin_lib(module) {
     platform = "android"
   }
-  common_plugin_modules += [ ":$module" ]
+  module_name = string_replace(module, "_", "")
+  common_plugin_modules += [ ":$module_name" ]
 }
 
 # Install packages

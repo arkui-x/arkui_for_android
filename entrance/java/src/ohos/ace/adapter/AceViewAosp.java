@@ -19,6 +19,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.PixelFormat;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -159,6 +160,7 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         surface = holder.getSurface();
+        holder.setFormat(PixelFormat.TRANSLUCENT);
         surfaceWidth = width;
         surfaceHeight = height;
         metrics.physicialWidth = width;
