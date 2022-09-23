@@ -47,7 +47,10 @@ js_pa_support = false
 connect_server_support = false
 xcomponent_components_support = true
 
-cflags_cc = [ "-std=c++17" ]
+cflags_cc = [
+  "-std=c++17",
+  "-Wno-thread-safety-attributes",
+]
 
 platform_deps = [
   "//foundation/arkui/ace_engine/adapter/android/entrance/java/jni:ace_common_jni_android",
