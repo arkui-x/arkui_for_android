@@ -420,7 +420,7 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
         environmentPlugin = new EnvironmentAosp(context);
         persistentStoragePlugin = new PersistentStorageAosp(context);
         vibratorPlugin = new VibratorPluginAosp(context);
-        pluginManager = new PluginManager();
+        pluginManager = new PluginManager(context);
     }
 
     private View createAnimateView() {
