@@ -102,7 +102,7 @@ void PluginManagerJni::RegisterPlugin(RegisterCallback pluginFunc, const std::st
 
     jlong jPluginFunc = reinterpret_cast<int64_t>(pluginFunc);
     jstring jPluginPackageName = env->NewStringUTF(pluginPackageName.c_str());
-    env->CallIntMethod(g_jobject.get(), g_pluginClass.registerPlugin, jPluginFunc, jPluginPackageName);
+    env->CallVoidMethod(g_jobject.get(), g_pluginClass.registerPlugin, jPluginFunc, jPluginPackageName);
 
     if (env->ExceptionCheck()) {
         LOGE("PluginManager JNI: call registerPlugin failed");
@@ -121,7 +121,7 @@ void PluginManagerJni::InitPlugin(const std::string& packageName)
     CHECK_NULL_VOID(g_pluginClass.initPlugin);
 
     jstring jParams = env->NewStringUTF(packageName.c_str());
-    env->CallIntMethod(g_jobject.get(), g_pluginClass.initPlugin, jParams);
+    env->CallVoidMethod(g_jobject.get(), g_pluginClass.initPlugin, jParams);
 
     if (env->ExceptionCheck()) {
         LOGE("PluginManager JNI: call initPlugin failed");
