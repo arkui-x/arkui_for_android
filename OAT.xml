@@ -38,6 +38,9 @@
                 <!--filteritem type="filename" name="*.uvwxyz" desc="Describe the reason for filtering scan results"/-->
                 <!--filteritem type="filepath" name="abcdefg/.*.uvwxyz" desc="Describe the reason for filtering scan results"/-->
                 <!--filteritem type="filepath" name="projectroot/[a-zA-Z0-9]{20,}.sh" desc="Temp files"/-->
+                <filteritem type="filepath" name="test/gradlew" desc="Android工程编译入口脚本，无需添加License头"/>
+                <filteritem type="filepath" name="test/gradlew.bat" desc="Android工程编译入口脚本，无需添加License头"/>
+                <filteritem type="filepath" name="test/runTest.sh" desc="测试入口脚本，无需添加License头"/>
             </filefilter>
             <filefilter name="copyrightPolicyFilter" desc="Filters for copyright header policies">
                 <!--filteritem type="filename" name="*.uvwxyz" desc="Describe the reason for filtering scan results"/-->
