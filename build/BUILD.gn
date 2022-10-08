@@ -15,6 +15,7 @@ import("//build/ohos.gni")
 import("//foundation/arkui/ace_engine/ace_config.gni")
 import("//foundation/arkui/ace_engine/interfaces/napi/kits/napi_lib.gni")
 import("//plugins/plugin_lib.gni")
+import("config.gni")
 
 # libace target
 ohos_shared_library("libace_android") {
@@ -62,6 +63,14 @@ group("ace_packages") {
     ":ace_android_adapter_java",
     ":libace_android",
   ]
+
+  # include ark_js debugger shared library
+  if (enable_ark_android) {
+    deps += [
+      "$ark_toolchain_path/inspector:ark_debugger",
+      "//arkcompiler/ets_runtime/ecmascript/tooling:libark_ecma_debugger",
+    ]
+  }
 
   if (enable_ng_build) {
     deps += [ "$ace_flutter_engine_root_new:libace_dev_android" ]

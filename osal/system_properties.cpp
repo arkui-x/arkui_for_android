@@ -149,4 +149,9 @@ std::string SystemProperties::GetPartialUpdatePkg()
     return "";
 }
 
+int32_t SystemProperties::GetSvgMode()
+{
+    return 0;
+}
+
 } // namespace OHOS::Ace

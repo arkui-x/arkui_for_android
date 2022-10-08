@@ -21,7 +21,7 @@ namespace OHOS::Ace::Platform {
 
 ClipboardImpl::ClipboardImpl(const RefPtr<TaskExecutor>& taskExecutor) : Clipboard(taskExecutor) {}
 
-void ClipboardImpl::SetData(const std::string& data, CopyOptions copyOption)
+void ClipboardImpl::SetData(const std::string& data, CopyOptions copyOption, bool isDragData)
 {
     if (taskExecutor_) {
         taskExecutor_->PostTask([data] { ClipboardJni::SetData(data); }, TaskExecutor::TaskType::PLATFORM);

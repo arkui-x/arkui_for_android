@@ -199,7 +199,7 @@ public:
     void InitThemeManager();
 
 private:
-    void InitializeFrontend(bool isArkApp);
+    void InitializeFrontend();
 
     void InitializeCallback();
 
@@ -220,7 +220,6 @@ private:
     uint32_t modalColor_ = 0xff000000;
     ResourceInfo resourceInfo_;
     int32_t instanceId_ = 0;
-    bool isArk_ = false;
 
     std::string instanceName_;
     std::string hostClassName_;

@@ -33,7 +33,7 @@ template("ace_android_jni_source_set") {
     if (enable_ng_build) {
       deps += [
         "$ace_flutter_engine_root_new:third_party_flutter_engine_dev_$platform",
-        "$ace_flutter_engine_root_new/skia:ace_skia_dev_$platform",
+        "$ace_flutter_engine_root_new/third_party/skia:ace_skia_dev_$platform",
       ]
     } else {
       deps += [
@@ -79,7 +79,7 @@ template("ace_common_jni_source_set") {
     if (enable_ng_build) {
       deps += [
         "$ace_flutter_engine_root_new:third_party_flutter_engine_dev_$platform",
-        "$ace_flutter_engine_root_new/skia:ace_skia_dev_$platform",
+        "$ace_flutter_engine_root_new/third_party/skia:ace_skia_dev_$platform",
       ]
     } else {
       deps += [
