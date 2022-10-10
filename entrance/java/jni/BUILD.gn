@@ -68,6 +68,9 @@ template("ace_common_jni_source_set") {
       "$ace_root/adapter/android/entrance/java/jni/jni_registry.cpp",
     ]
 
+    include_dirs =
+        [ "//base/global/resource_management/interfaces/inner_api/include" ]
+
     sources += capability_cpp_files
 
     if (target_cpu == "arm64") {
