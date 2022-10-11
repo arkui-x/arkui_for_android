@@ -31,7 +31,7 @@
 
 namespace OHOS::Ace::Platform {
 
-class AceApplicationInfoImpl : public AceApplicationInfo {
+class ACE_FORCE_EXPORT AceApplicationInfoImpl : public AceApplicationInfo {
 
 public:
     AceApplicationInfoImpl();
