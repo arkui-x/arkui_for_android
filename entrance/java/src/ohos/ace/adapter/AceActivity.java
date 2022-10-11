@@ -357,8 +357,8 @@ public class AceActivity extends Activity {
     }
 
     private void copyOhosThemeFiles() {
-        copyFilesFromAssets("resources/systemres", getExternalFilesDir(null).getAbsolutePath() + "/systemres");
-        copyFilesFromAssets("resources/appres", getExternalFilesDir(null).getAbsolutePath() + "/appres");
+        copyFilesFromAssets("res/systemres", getExternalFilesDir(null).getAbsolutePath() + "/systemres");
+        copyFilesFromAssets("res/appres", getExternalFilesDir(null).getAbsolutePath() + "/appres");
     }
 
     private void copyFilesFromAssets(String assetsPath, String savePath) {
