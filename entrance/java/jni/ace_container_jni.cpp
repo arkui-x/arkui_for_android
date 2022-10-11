@@ -661,7 +661,7 @@ void AceContainerJni::SetLibPath(JNIEnv* env, jclass clazz, jint instanceId, jst
         container->SetAssetManagerIfNull(flutterAssetManager);
     }
     if (flutterAssetManager) {
-        flutterAssetManager->SetLibPath({ libPath });
+        flutterAssetManager->SetLibPath("default", { libPath });
     }
 }
 

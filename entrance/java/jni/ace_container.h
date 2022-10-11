@@ -113,6 +113,23 @@ public:
         return static_cast<void*>(aceView_);
     }
 
+    int32_t GetViewPosX() const override
+    {
+        return aceView_ ? aceView_->GetPosX() : 0;
+    }
+
+    int32_t GetViewPosY() const override
+    {
+        return aceView_ ? aceView_->GetPosY() : 0;
+    }
+
+    uint32_t GetWindowId() const override
+    {
+        return 0;
+    }
+
+    void SetWindowId(uint32_t windowId) override {}
+
     void SetWindowModal(WindowModal windowModal)
     {
         windowModal_ = windowModal;
