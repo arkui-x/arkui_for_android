@@ -27,10 +27,11 @@
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/utils/noncopyable.h"
 #include "core/common/ace_application_info.h"
+#include "resource_manager.h"
 
 namespace OHOS::Ace::Platform {
 
-class AceApplicationInfoImpl : public AceApplicationInfo {
+class ACE_FORCE_EXPORT AceApplicationInfoImpl : public AceApplicationInfo {
 
 public:
     AceApplicationInfoImpl();
@@ -59,6 +60,16 @@ public:
         AceApplicationInfoImpl::GetInstance().needDebugBreakpoint_ = needDebugBreakpoint;
     }
 
+    std::shared_ptr<Global::Resource::ResourceManager> GetResourceManager()
+    {
+        return resMgr_;
+    }
+
+    void SetResourceManager(std::shared_ptr<Global::Resource::ResourceManager> resMgr)
+    {
+        resMgr_ = resMgr;
+    }
+
 private:
 
     JniEnvironment::JavaGlobalRef object_;
@@ -67,6 +78,8 @@ private:
 
     std::time_t initiateTimeStamp_;
     std::map<std::string, std::string> jsEngineParams_;
+
+    std::shared_ptr<Global::Resource::ResourceManager> resMgr_;
 };
 
 

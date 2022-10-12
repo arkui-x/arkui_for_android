@@ -53,6 +53,7 @@ foreach(module, common_plugin_libs) {
     platform = "android"
   }
   module_name = string_replace(module, "_", "")
+  module_name = string_replace(module_name, "/", "_")
   common_plugin_modules += [ ":$module_name" ]
 }
 
