@@ -23,6 +23,7 @@ template("ace_osal_android_source_set") {
     aosp_deps = [ "shared_library:liblog" ]
 
     sources = [
+      "ace_engine_ext.cpp",
       "ace_trace.cpp",
       "drag_window.cpp",
       "event_report.cpp",
