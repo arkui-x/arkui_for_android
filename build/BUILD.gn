@@ -68,7 +68,7 @@ group("ace_packages") {
   if (enable_ark_android) {
     deps += [
       "$ark_toolchain_path/inspector:ark_debugger",
-      "//arkcompiler/ets_runtime/ecmascript/tooling:libark_ecma_debugger",
+      "$ark_toolchain_path/tooling:libark_ecma_debugger",
     ]
   }
 
