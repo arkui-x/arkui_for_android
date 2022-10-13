@@ -12,7 +12,7 @@
 # limitations under the License.
 declare_args() {
   # Enable Ark as android JS engine, set it 'false' to use QuickJS instead
-  enable_ark_android = false
+  enable_ark_android = true
 }
 
 defines = [
