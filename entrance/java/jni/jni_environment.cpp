@@ -55,7 +55,7 @@ bool JniEnvironment::Initialize(const std::shared_ptr<JavaVM>& javaVM)
 }
 
 // Help to get JNI environment of current thread.
-std::shared_ptr<JNIEnv> JniEnvironment::GetJniEnv(JNIEnv* jniEnv) const
+std::shared_ptr<JNIEnv> JniEnvironment::GetJniEnv(JNIEnv* jniEnv, bool isDetach) const
 {
     if (jniEnv != nullptr) {
         return std::shared_ptr<JNIEnv>(jniEnv, DummyRelease<JNIEnv>);
@@ -75,7 +75,9 @@ std::shared_ptr<JNIEnv> JniEnvironment::GetJniEnv(JNIEnv* jniEnv) const
             return nullptr;
         }
     }
-
+    if (!isDetach) {
+        return std::shared_ptr<JNIEnv>(jniEnv, DummyRelease<JNIEnv>);
+    }
     auto detachFunc = [](JNIEnv*) { JniEnvironment::GetInstance().GetVM()->DetachCurrentThread(); };
     return std::shared_ptr<JNIEnv>(jniEnv, detachFunc);
 }
