@@ -130,7 +130,7 @@ public:
     bool Initialize(const std::shared_ptr<JavaVM>& javaVm);
 
     // Get JNI environment for current thread, if current thread is not attatched to Java VM, attch it.
-    std::shared_ptr<JNIEnv> GetJniEnv(JNIEnv* jniEnv = nullptr) const;
+    std::shared_ptr<JNIEnv> GetJniEnv(JNIEnv* jniEnv = nullptr, bool isDetach = true) const;
 
     std::shared_ptr<JavaVM> GetVM() const
     {
