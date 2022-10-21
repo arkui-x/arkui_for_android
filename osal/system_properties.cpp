@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,14 +20,14 @@
 namespace OHOS::Ace {
 namespace {
 
-// Device type, same w/ java in AceView
+// Device type, same as w/ java in AceView
 constexpr int32_t ORIENTATION_PORTRAIT = 1;
 constexpr int32_t ORIENTATION_LANDSCAPE = 2;
 constexpr char UNDEFINED_PARAM[] = "undefined parameter";
 
 } // namespace
 
-// currently it is unused, use ATrace_isEnabled
+// It is not used currently. Use ATrace_isEnabled instead.
 bool SystemProperties::traceEnabled_ = false;
 bool SystemProperties::isRound_ = false;
 bool SystemProperties::isDeviceAccess_ = false;
@@ -94,14 +94,10 @@ void SystemProperties::SetDeviceOrientation(int32_t orientation)
     }
 }
 
-void SystemProperties::InitDeviceTypeBySystemProperty()
-{
-    // empty.  Android doesn't use this function
-}
+void SystemProperties::InitDeviceTypeBySystemProperty() {}
 
 float SystemProperties::GetFontWeightScale()
 {
-    // To Be Done
     return 1.0f;
 }
 

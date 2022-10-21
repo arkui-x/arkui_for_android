@@ -53,7 +53,7 @@ bool PluginManagerJni::Register(std::shared_ptr<JNIEnv> env)
     bool ret = env->RegisterNatives(cls, METHODS, ArraySize(METHODS)) == 0;
     env->DeleteLocalRef(cls);
     if (!ret) {
-        LOGW("PluginManager JNI: RegisterNatives fail.");
+        LOGW("PluginManager JNI: RegisterNatives failed.");
         return false;
     }
     return true;
@@ -81,7 +81,7 @@ void PluginManagerJni::NativeRegister(JNIEnv* env, jobject jobj, jlong jPluginRe
     CHECK_NULL_VOID(env);
     bool status = reinterpret_cast<RegisterCallback>(jPluginRegisterFunc)(env);
     if (!status) {
-        LOGW("PluginManager NativeRegister JNI: register fail");
+        LOGW("PluginManager NativeRegister JNI: register failed");
         return;
     }
 
@@ -105,7 +105,7 @@ void PluginManagerJni::RegisterPlugin(RegisterCallback pluginFunc, const std::st
     env->CallVoidMethod(g_jobject.get(), g_pluginClass.registerPlugin, jPluginFunc, jPluginPackageName);
 
     if (env->ExceptionCheck()) {
-        LOGE("PluginManager JNI: call registerPlugin failed");
+        LOGE("PluginManager JNI: registerPlugin failed");
         env->ExceptionDescribe();
         env->ExceptionClear();
     }
@@ -124,7 +124,7 @@ void PluginManagerJni::InitPlugin(const std::string& packageName)
     env->CallVoidMethod(g_jobject.get(), g_pluginClass.initPlugin, jParams);
 
     if (env->ExceptionCheck()) {
-        LOGE("PluginManager JNI: call initPlugin failed");
+        LOGE("PluginManager JNI: initPlugin failed");
         env->ExceptionDescribe();
         env->ExceptionClear();
     }

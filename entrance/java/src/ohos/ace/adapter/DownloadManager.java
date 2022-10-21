@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,7 +34,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 /**
- * a simple download manager to request bytes vir http
+ * a simple download manager to request bytes via http
  *
  * @since 1
  */
@@ -106,14 +106,24 @@ public class DownloadManager {
             return NULL_BYTE;
         }
 
-        try (InputStream inputStream = conn.getInputStream();
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+        InputStream inputStream = null;
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            inputStream = conn.getInputStream();
             while ((len = inputStream.read(buff)) != -1) {
                 outputStream.write(buff, 0, len);
             }
             return outputStream.toByteArray();
         } catch (IOException error) {
             ALog.e(LOG_TAG, "read data err:" + error.getMessage());
+            return NULL_BYTE;
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException error) {
+                    ALog.e(LOG_TAG, "InputStream close err:" + error.getMessage());
+                }
+            }
             return NULL_BYTE;
         }
     }

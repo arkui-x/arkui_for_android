@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -57,7 +57,7 @@ class InputConnectionWrapper extends BaseInputConnection {
     /**
      * constructor of InputConnectionWrapper
      *
-     * @param view the view which need input connection
+     * @param view the view that needs input connection
      * @param client client id
      * @param delegate input delegate
      * @param editable editable text
@@ -167,8 +167,9 @@ class InputConnectionWrapper extends BaseInputConnection {
     @Override
     public boolean sendKeyEvent(KeyEvent event) {
         ALog.d(LOG_TAG, "action & keycode: " + event.getAction() + " , " + event.getKeyCode());
+
         // Only care about down event.
-        // Attention: If the key is pressed and hold, multi ACTION_DOWN will be triggered. It is done by IME.
+        // Note: If the key is held down, ACTION_DOWN will be triggered multiple times by IME.
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             if (event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
                 return deleteSelection(event);

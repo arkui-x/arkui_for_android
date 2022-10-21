@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -60,7 +60,7 @@ bool VibratorJni::Register(std::shared_ptr<JNIEnv> env)
     bool ret = env->RegisterNatives(cls, METHODS, sizeof(METHODS) / sizeof(METHODS[0])) == 0;
     env->DeleteLocalRef(cls);
     if (!ret) {
-        LOGW("Vibrator JNI: RegisterNatives fail.");
+        LOGW("Vibrator JNI: RegisterNatives failed.");
         return false;
     }
     OnJniRegistered();
@@ -90,12 +90,12 @@ void VibratorJni::NativeInit(JNIEnv* env, jobject jobj)
 
     g_pluginClass.vibrate = env->GetMethodID(cls, METHOD_VIBRATE, SIGNATURE_VIBRATE);
     if (!g_pluginClass.vibrate) {
-        LOGW("Vibrator JNI: vibrate method is not exists.");
+        LOGW("Vibrator JNI: vibrate method not found.");
     }
 
     g_pluginClass.specifiedVibrate = env->GetMethodID(cls, METHOD_VIBRATE, SPECIFIED_VIBRATE);
     if (!g_pluginClass.specifiedVibrate) {
-        LOGW("Vibrator JNI: vibrate method is not exists.");
+        LOGW("Vibrator JNI: vibrate method not found.");
     }
 
     env->DeleteLocalRef(cls);
@@ -117,7 +117,7 @@ void VibratorJni::Vibrate(int32_t duration)
 
     env->CallVoidMethod(g_jobject.get(), g_pluginClass.vibrate, duration);
     if (env->ExceptionCheck()) {
-        LOGE("Vibrator JNI: occurred for Vibrate");
+        LOGE("Vibrator JNI: occurred in Vibrate");
         env->ExceptionDescribe();
         env->ExceptionClear();
     }
@@ -141,7 +141,7 @@ void VibratorJni::Vibrate(const std::string& effectId)
     env->CallVoidMethod(g_jobject.get(), g_pluginClass.specifiedVibrate, jParams);
 
     if (env->ExceptionCheck()) {
-        LOGE("Vibrator JNI: occurred for Vibrate");
+        LOGE("Vibrator JNI: occurred in Vibrate");
         env->ExceptionDescribe();
         env->ExceptionClear();
     }

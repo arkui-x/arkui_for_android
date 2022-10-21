@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -41,7 +41,7 @@ bool DumpHelperJni::Register(const std::shared_ptr<JNIEnv>& env)
 
     const jclass myClass = env->FindClass("ohos/ace/adapter/DumpHelper");
     if (myClass == nullptr) {
-        LOGE("Failed ot find dumphelper class");
+        LOGE("Failed to find dumphelper class");
         return false;
     }
 
@@ -93,7 +93,7 @@ void DumpHelperJni::Dump(JNIEnv* env, jclass myClass, jstring prefix, jobject fi
 
         env->DeleteLocalRef(classFileDesc);
     } else {
-        LOGE("Get String failed");
+        LOGE("Failed to get string");
     }
 }
 

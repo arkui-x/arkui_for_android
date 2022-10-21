@@ -39,8 +39,7 @@ public class PluginManager {
         nativeInit();
     }
 
-    public void registerPlugin(long pluginRegisterFunc, String pluginPackageName)
-    {
+    public void registerPlugin(long pluginRegisterFunc, String pluginPackageName) {
         nativeRegister(pluginRegisterFunc, pluginPackageName);
     }
 
@@ -49,7 +48,8 @@ public class PluginManager {
             ALog.d(LOG_TAG, "init plugin: " + packageName);
             Class pluginClass = Class.forName(packageName);
             Constructor constructorMethod = pluginClass.getConstructor(Context.class);
-            // take the object reference in native side
+
+            // take the object reference in Native side
             Object object = constructorMethod.newInstance(context);
         } catch (Exception e) {
             ALog.e(LOG_TAG, "init plugin failed: " + e);

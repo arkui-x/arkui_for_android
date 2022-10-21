@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,7 +22,7 @@ package ohos.ace.adapter;
  */
 public interface IAceOnResourceEvent {
     /**
-     * Called when send the resource event to native
+     * Called when a the resource event is send to Native
      *
      * @param eventId the id of the event
      * @param param the params of the event

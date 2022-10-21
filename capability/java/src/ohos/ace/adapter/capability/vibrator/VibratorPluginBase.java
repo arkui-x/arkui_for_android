@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,16 +22,16 @@ package ohos.ace.adapter.capability.vibrator;
  */
 public abstract class VibratorPluginBase {
     /**
-     * vibrator Once.
+     * Run the vibrator with the specified duration.
      *
      * @param duration Duration which set to vibrator.
      */
     public abstract void vibrate(int duration);
 
     /**
-     * vibrator Once.
+     * Run the vibrator with the specified effect ID.
      *
-     * @param effectId EffectId which set to vibrator.
+     * @param effectId Effect ID which set to vibrator.
      */
     public abstract void vibrate(String effectId);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -84,7 +84,7 @@ public class TextInputPluginAosp extends TextInputPluginBase {
      * Creates an InputConnection for IME.
      *
      * @param view The view to connect with IME.
-     * @param outAttrs The configuration for editor.
+     * @param outAttrs The configuration for IME.
      * @return The new InputConnection.
      */
     public InputConnection createInputConnection(View view, EditorInfo outAttrs) {
@@ -153,7 +153,6 @@ public class TextInputPluginAosp extends TextInputPluginBase {
     }
 
     /**
-     * Will be called after clientId and configuration are initialized.
      * Called when clientId and configuration are initialized.
      */
     @Override
@@ -166,7 +165,7 @@ public class TextInputPluginAosp extends TextInputPluginBase {
     }
 
     /**
-     * Set the current input text editing state, for example, text/selection.
+     * Sets the current text editing state, for example, text/selection.
      *
      * @param state The deserialized editing state.
      */
@@ -179,6 +178,7 @@ public class TextInputPluginAosp extends TextInputPluginBase {
         hint = state.getHint();
         if (!isRestartInputPending && state.getText().equals(editable.toString())) {
             applyStateToSelection(state);
+
             // Sync selection with the virtual View.
             if (imm != null) {
                 imm.updateSelection(view, Math.max(Selection.getSelectionStart(editable), 0),
@@ -190,7 +190,7 @@ public class TextInputPluginAosp extends TextInputPluginBase {
             // Text has been changed, update Editable first and update selection.
             editable.replace(0, editable.length(), state.getText());
             applyStateToSelection(state);
-            // According to official doc, when text changed (for example View.setText()), call this method.
+            // Call this method when the input text changes (for example View.setText()).
             if (imm != null) {
                 imm.restartInput(view);
             }
