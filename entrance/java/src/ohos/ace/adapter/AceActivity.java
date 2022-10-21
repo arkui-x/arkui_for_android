@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -93,6 +93,7 @@ public class AceActivity extends Activity {
         super.onCreate(savedInstanceState);
         Context context = getApplicationContext();
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+
         // for 2.0 version, use DECLARATIVE_JS container type
         if (version == VERSION_ETS) {
             AceEnv.setContainerType(AceContainer.CONTAINER_TYPE_DECLARATIVE_JS);
@@ -216,6 +217,7 @@ public class AceActivity extends Activity {
         if (container == null) {
             return;
         }
+
         // Here we load default page.
         container.loadPageContent("", "");
     }
@@ -351,7 +353,7 @@ public class AceActivity extends Activity {
             ApplicationInfo applicationInfo = pm.getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
             uid = applicationInfo.uid;
         } catch (PackageManager.NameNotFoundException e) {
-            ALog.w(LOG_TAG, "get uid failed, error: " + e.getMessage());
+            ALog.e(LOG_TAG, "get uid failed, error: " + e.getMessage());
         }
         return uid;
     }
@@ -362,6 +364,8 @@ public class AceActivity extends Activity {
     }
 
     private void copyFilesFromAssets(String assetsPath, String savePath) {
+        InputStream is = null;
+        FileOutputStream fos = null;
         try {
             String[] fileNames = getAssets().list(assetsPath);
             File file = new File(savePath);
@@ -376,19 +380,33 @@ public class AceActivity extends Activity {
                 if (file.exists()) {
                     return;
                 }
-                InputStream is = getAssets().open(assetsPath);
-                FileOutputStream fos = new FileOutputStream(file);
+                is = getAssets().open(assetsPath);
+                fos = new FileOutputStream(file);
                 byte[] buffer = new byte[1024];
                 int byteCount = 0;
                 while ((byteCount = is.read(buffer)) != -1) {
                     fos.write(buffer, 0, byteCount);
                 }
                 fos.flush();
-                is.close();
-                fos.close();
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

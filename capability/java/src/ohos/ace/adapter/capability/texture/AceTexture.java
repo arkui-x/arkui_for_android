@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -96,7 +96,7 @@ public class AceTexture {
      * @param id id of texture
      * @param textureImpl texture object
      * @param callback resource callback
-     * @param initParam initialize parameters
+     * @param initParam initialization parameters
      */
     public AceTexture(long id, IAceTexture textureImpl, IAceOnResourceEvent callback, Map<String, String> initParam) {
         this.surfaceTexture = new SurfaceTexture(0);
@@ -117,7 +117,7 @@ public class AceTexture {
     }
 
     /**
-     * This is called to get call MethodMap
+     * Get the call method map.
      *
      * @return Map
      */
@@ -150,7 +150,7 @@ public class AceTexture {
     }
 
     /**
-     * This is called to get surface texture.
+     * Get the surface texture.
      *
      * @return SurfaceTexture
      */
@@ -186,7 +186,7 @@ public class AceTexture {
     }
 
     /**
-     * This is called to get surface.
+     * Get the surface.
      *
      * @return Surface
      */
@@ -195,16 +195,16 @@ public class AceTexture {
     }
 
     /**
-     * This is called to get resource id.
+     * Get the resource ID.
      *
-     * @return resource id
+     * @return resource ID
      */
     public long getId() {
         return id;
     }
 
     /**
-     * This is called to release.
+     * Release the surface.
      *
      */
     public void release() {
@@ -218,7 +218,7 @@ public class AceTexture {
     }
 
     /**
-     * SurfaceView do it and nativeView not.
+     * Set the surface texture. This method applies to SurfaceView but not NativeView.
      *
      */
     public void setSurfaceTexture() {
@@ -226,7 +226,7 @@ public class AceTexture {
     }
 
     /**
-     * There is a different logic between SurfaceView and NativeView.
+     * Mark the texture frame. The logic differs between SurfaceView and NativeView.
      *
      */
     public void markTextureFrame() {

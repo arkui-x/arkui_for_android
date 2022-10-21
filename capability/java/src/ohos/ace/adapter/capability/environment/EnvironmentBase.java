@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,9 +22,9 @@ package ohos.ace.adapter.capability.environment;
  */
 public abstract class EnvironmentBase {
     /**
-     * get the accessibility is enable or not
+     * Checks if accessibility is enabled or not.
      *
-     * @return accessibility is enable or not
+     * @return accessibility is enabled or not.
      */
     public abstract String getAccessibilityEnabled();
 

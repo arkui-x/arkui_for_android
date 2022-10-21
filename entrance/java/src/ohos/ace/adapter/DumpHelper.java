@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,7 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 
 /**
- * Dump operate process
+ * Dump process
  *
  * @since 1
  */
@@ -107,9 +107,9 @@ public final class DumpHelper {
         try (FileOutputStream fos = new FileOutputStream(fd)) {
             fos.write(str.getBytes(StandardCharsets.UTF_8));
         } catch (FileNotFoundException ignored) {
-            ALog.w(LOG_TAG, "Dump failed, file not found");
+            ALog.e(LOG_TAG, "Dump failed, file not found");
         } catch (SecurityException | IOException ignored) {
-            ALog.w(LOG_TAG, "Dump failed, security or io exception");
+            ALog.e(LOG_TAG, "Dump failed, security or io exception");
         }
     }
 

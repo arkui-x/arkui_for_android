@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -33,7 +33,7 @@ static const char* const METHOD_GET_ACCESSIBILITY_ENABLED = "getAccessibilityEna
 
 static const char* const SIGNATURE_GET_ACCESSIBILITY_ENABLED = "()Ljava/lang/String;";
 
-// JniEnvironment is used in jvm, EnvironmentJni is for plugin. be careful of these name
+// JniEnvironment is used in JVM, and EnvironmentJni is for plugin. Make sure use the correct name.
 JniEnvironment::JavaGlobalRef g_jobject(nullptr, nullptr);
 
 struct {
@@ -58,7 +58,7 @@ bool EnvironmentJni::Register(std::shared_ptr<JNIEnv> env)
     bool ret = env->RegisterNatives(cls, METHODS, sizeof(METHODS) / sizeof(METHODS[0])) == 0;
     env->DeleteLocalRef(cls);
     if (!ret) {
-        LOGW("Environment JNI: RegisterNatives fail.");
+        LOGW("Environment JNI: RegisterNatives failed.");
         return false;
     }
     OnJniRegistered();
@@ -88,7 +88,7 @@ void EnvironmentJni::NativeInit(JNIEnv* env, jobject jobj)
     g_pluginClass.getAccessibilityEnabled =
         env->GetMethodID(cls, METHOD_GET_ACCESSIBILITY_ENABLED, SIGNATURE_GET_ACCESSIBILITY_ENABLED);
     if (!g_pluginClass.getAccessibilityEnabled) {
-        LOGW("Environment JNI: method is not exists.");
+        LOGW("Environment JNI: method not found.");
     }
     env->DeleteLocalRef(cls);
 }

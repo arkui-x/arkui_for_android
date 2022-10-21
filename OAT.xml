@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright (c) 2021 Huawei Device Co., Ltd.
+<!-- Copyright (c) 2022 Huawei Device Co., Ltd.
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 
-    This is the configuration file template for ArkUI-X Audit Tool, please copy it to your project root dir and modify it refer to ArkUI-X/tools_oat/README.
+    This is the configuration file template for ArkUI-X Audit Tool. Please copy it to your project root dir and modify it by refering to ArkUI-X/tools_oat/README.
 
 -->
 
@@ -34,21 +34,21 @@
                 <!--filteritem type="filepath" name="abcdefg/.*.uvwxyz" desc="Describe the reason for filtering scan results"/-->
                 <!--filteritem type="filepath" name="projectroot/[a-zA-Z0-9]{20,}.sh" desc="Temp files"/-->
             </filefilter>
-            <filefilter name="defaultPolicyFilter" desc="Filters for compatibility，license header policies">
+            <filefilter name="defaultPolicyFilter" desc="Filters for compatibility, license header policies">
                 <!--filteritem type="filename" name="*.uvwxyz" desc="Describe the reason for filtering scan results"/-->
                 <!--filteritem type="filepath" name="abcdefg/.*.uvwxyz" desc="Describe the reason for filtering scan results"/-->
                 <!--filteritem type="filepath" name="projectroot/[a-zA-Z0-9]{20,}.sh" desc="Temp files"/-->
-                <filteritem type="filepath" name="test/gradlew" desc="Android工程编译入口脚本，无需添加License头"/>
-                <filteritem type="filepath" name="test/gradlew.bat" desc="Android工程编译入口脚本，无需添加License头"/>
-                <filteritem type="filepath" name="test/runTest.sh" desc="测试入口脚本，无需添加License头"/>
+                <filteritem type="filepath" name="test/gradlew" desc="Entry script for Android project build. No license header is required"/>
+                <filteritem type="filepath" name="test/gradlew.bat" desc="Entry script for Android project build. No license header is required"/>
+                <filteritem type="filepath" name="test/runTest.sh" desc="Entry script for test. No license header is required"/>
             </filefilter>
             <filefilter name="copyrightPolicyFilter" desc="Filters for copyright header policies">
                 <!--filteritem type="filename" name="*.uvwxyz" desc="Describe the reason for filtering scan results"/-->
                 <!--filteritem type="filepath" name="abcdefg/.*.uvwxyz" desc="Describe the reason for filtering scan results"/-->
                 <!--filteritem type="filepath" name="projectroot/[a-zA-Z0-9]{20,}.sh" desc="Temp files"/-->
-                <filteritem type="filepath" name="test/gradlew" desc="Android工程编译入口脚本，无需添加版权头"/>
-                <filteritem type="filepath" name="test/gradlew.bat" desc="Android工程编译入口脚本，无需添加版权头"/>
-                <filteritem type="filepath" name="test/runTest.sh" desc="测试入口脚本，无需添加版权头"/>
+                <filteritem type="filepath" name="test/gradlew" desc="Entry script for Android project build. No copyright header is required"/>
+                <filteritem type="filepath" name="test/gradlew.bat" desc="Entry script for Android project build. No copyright header is required"/>
+                <filteritem type="filepath" name="test/runTest.sh" desc="Entry script for test. No copyright header is required"/>
             </filefilter>
             <filefilter name="licenseFileNamePolicyFilter" desc="Filters for LICENSE file policies">
                 <!--filteritem type="filename" name="*.uvwxyz" desc="Describe the reason for filtering scan results"/-->
@@ -71,21 +71,21 @@
                 <!--filteritem type="filepath" name="abcdefg/.*.uvwxyz" desc="Describe the reason for filtering scan results"/-->
                 <!--filteritem type="filepath" name="projectroot/[a-zA-Z0-9]{20,}.sh" desc="Temp files"/-->
 				<filteritem type="filename" name="*.jpg|*.png|*.gif|*.pdf" desc="already checked"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp" desc="Android工程模版自带的图片资源"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" desc="Android工程模版自带的图片资源"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-hdpi/ic_launcher.webp" desc="Android工程模版自带的图片资源"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-hdpi/ic_launcher_round.webp" desc="Android工程模版自带的图片资源"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-mdpi/ic_launcher.webp" desc="Android工程模版自带的图片资源"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-mdpi/ic_launcher_round.webp" desc="Android工程模版自带的图片资源"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xhdpi/ic_launcher.webp" desc="Android工程模版自带的图片资源"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xhdpi/ic_launcher_round.webp" desc="Android工程模版自带的图片资源"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xxhdpi/ic_launcher.webp" desc="Android工程模版自带的图片资源"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.webp" desc="Android工程模版自带的图片资源"/>
-                <filteritem type="filepath" name="test/gradle/wrapper/gradle-wrapper.jar" desc="Android工程模版自带的打包工具"/>
-                <filteritem type="filepath" name="test/app/libs/ace_android_adapter.jar" desc="来源于代码仓foundation/arkui/ace_engine/adapter/android"/>
-                <filteritem type="filepath" name="test/app/src/main/jni/arm64-v8a/libace_android.so" desc="来源于代码仓foundation/arkui/ace_engine和foundation/arkui/ace_engine/adapter/android"/>
-                <filteritem type="filepath" name="test/app/src/main/jni/arm64-v8a/libace_napi_quickjs.so" desc="来源于代码仓foundation/arkui/ace_engine"/>
-                <filteritem type="filepath" name="test/app/src/main/jni/arm64-v8a/libace_napi.so" desc="来源于代码仓foundation/arkui/ace_engine"/>
+                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp" desc="Image resources provided by the Android project template"/>
+                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" desc="Image resources provided by the Android project template"/>
+                <filteritem type="filepath" name="test/app/src/main/res/mipmap-hdpi/ic_launcher.webp" desc="Image resources provided by the Android project template"/>
+                <filteritem type="filepath" name="test/app/src/main/res/mipmap-hdpi/ic_launcher_round.webp" desc="Image resources provided by the Android project template"/>
+                <filteritem type="filepath" name="test/app/src/main/res/mipmap-mdpi/ic_launcher.webp" desc="Image resources provided by the Android project template"/>
+                <filteritem type="filepath" name="test/app/src/main/res/mipmap-mdpi/ic_launcher_round.webp" desc="Image resources provided by the Android project template"/>
+                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xhdpi/ic_launcher.webp" desc="Image resources provided by the Android project template"/>
+                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xhdpi/ic_launcher_round.webp" desc="Image resources provided by the Android project template"/>
+                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xxhdpi/ic_launcher.webp" desc="Image resources provided by the Android project template"/>
+                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.webp" desc="Image resources provided by the Android project template"/>
+                <filteritem type="filepath" name="test/gradle/wrapper/gradle-wrapper.jar" desc="Packing tool provided by the Android project template"/>
+                <filteritem type="filepath" name="test/app/libs/ace_android_adapter.jar" desc="Sourced from the code repository: foundation/arkui/ace_engine/adapter/android"/>
+                <filteritem type="filepath" name="test/app/src/main/jni/arm64-v8a/libace_android.so" desc="Sourced from the code repository: foundation/arkui/ace_engine和foundation/arkui/ace_engine/adapter/android"/>
+                <filteritem type="filepath" name="test/app/src/main/jni/arm64-v8a/libace_napi_quickjs.so" desc="Sourced from the code repository: foundation/arkui/ace_engine"/>
+                <filteritem type="filepath" name="test/app/src/main/jni/arm64-v8a/libace_napi.so" desc="Sourced from the code repository: foundation/arkui/ace_engine"/>
             </filefilter>
 
         </filefilterlist>

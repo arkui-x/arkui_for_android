@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -43,9 +43,9 @@ public class AceTexturePluginAosp extends AceResourcePlugin {
     }
 
     /**
-     * This is called to create texture resource register.
+     * Create a texture resource register.
      *
-     * @param textureImpl the interface for texture interact with the engine
+     * @param textureImpl interface for texture interaction with the engine.
      * @return texture plugin
      */
     public static AceTexturePluginAosp createRegister(IAceTexture textureImpl) {
@@ -53,7 +53,7 @@ public class AceTexturePluginAosp extends AceResourcePlugin {
     }
 
     /**
-     * This is called to create texture.
+     * Create a texture.
      *
      * @param param calling param
      * @return texture id
@@ -67,7 +67,7 @@ public class AceTexturePluginAosp extends AceResourcePlugin {
     }
 
     /**
-     * This is called to get AceTexture object by id.
+     * Get AceTexture object by id.
      *
      * @param id id of object
      * @return object or null if id not found
@@ -77,7 +77,7 @@ public class AceTexturePluginAosp extends AceResourcePlugin {
     }
 
     /**
-     * This is called to release AceTexture by id.
+     * Release AceTexture by id.
      *
      * @param id id of object
      * @return result of release
@@ -93,7 +93,7 @@ public class AceTexturePluginAosp extends AceResourcePlugin {
     }
 
     /**
-     * This is called to release all AceTexture.
+     * Release all AceTexture objects.
      *
      */
     public void release() {

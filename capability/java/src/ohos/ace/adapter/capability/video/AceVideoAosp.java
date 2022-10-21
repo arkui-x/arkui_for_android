@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -146,7 +146,7 @@ public class AceVideoAosp extends AceVideoBase
                     assetFd = assetManage.openFd(
                         "js" + File.separator + instanceName + File.separator + param.substring(HAP_SCHEME.length()));
                 } catch (IOException ignored) {
-                    ALog.i(LOG_TAG, "not found asset in instance path, now begin to search asset in share path");
+                    ALog.e(LOG_TAG, "not found asset in instance path, now begin to search asset in share path");
                     assetFd = assetManage.openFd(
                         "js" + File.separator + "share" + File.separator + param.substring(HAP_SCHEME.length()));
                 }
@@ -271,7 +271,7 @@ public class AceVideoAosp extends AceVideoBase
             int msec = Integer.parseInt(params.get(KEY_VALUE)) * SECOND_TO_MSEC;
             mediaPlayer.seekTo(msec);
         } catch (NumberFormatException ignored) {
-            ALog.w(LOG_TAG, "NumberFormatException, seek failed. value = " + params.get(KEY_VALUE));
+            ALog.e(LOG_TAG, "NumberFormatException, seek failed. value = " + params.get(KEY_VALUE));
             return FAIL;
         }
         return SUCCESS;
@@ -323,7 +323,7 @@ public class AceVideoAosp extends AceVideoBase
             }
             return SUCCESS;
         } catch (NumberFormatException ignored) {
-            ALog.w(LOG_TAG, "NumberFormatException");
+            ALog.e(LOG_TAG, "NumberFormatException");
             return FAIL;
         }
     }

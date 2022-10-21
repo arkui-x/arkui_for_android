@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -158,7 +158,7 @@ public abstract class AceVideoBase {
                 speed = Float.parseFloat(params.get("speed"));
             }
         } catch (NumberFormatException ignored) {
-            ALog.w(LOG_TAG, "NumberFormatException");
+            ALog.e(LOG_TAG, "NumberFormatException");
             return "fail";
         }
         return "success";
@@ -329,7 +329,7 @@ public abstract class AceVideoBase {
      */
     public void firePlayStatusChange(boolean isPlaying) {
         callback.onEvent(VIDEO_FLAG + id + EVENT + PARAM_EQUALS + "onplaystatus" + PARAM_BEGIN,
-                    "isplaying=" + (isPlaying ? 1 : 0));
+            "isplaying=" + (isPlaying ? 1 : 0));
     }
 
     /**
@@ -339,7 +339,7 @@ public abstract class AceVideoBase {
      */
     public void fireGetCurrenttime(int value) {
         callback.onEvent(VIDEO_FLAG + id + EVENT + PARAM_EQUALS + "ongetcurrenttime" + PARAM_BEGIN,
-                    "currentpos=" + value);
+            "currentpos=" + value);
     }
 
     /**
