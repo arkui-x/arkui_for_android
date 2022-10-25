@@ -114,7 +114,7 @@ public class DownloadManager {
             }
             return outputStream.toByteArray();
         } catch (IOException error) {
-            ALog.e(LOG_TAG, "read data err:" + error.getMessage());
+            ALog.e(LOG_TAG, "read or write data err:" + error.getMessage());
             return NULL_BYTE;
         } finally {
             if (inputStream != null) {

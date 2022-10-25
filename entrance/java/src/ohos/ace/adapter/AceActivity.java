@@ -348,6 +348,7 @@ public class AceActivity extends Activity {
         try {
             PackageManager pm = context.getPackageManager();
             if (pm == null) {
+                ALog.d(LOG_TAG, "get uid when package manager is null");
                 return uid;
             }
             ApplicationInfo applicationInfo = pm.getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
@@ -390,13 +391,13 @@ public class AceActivity extends Activity {
                 fos.flush();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            ALog.e(LOG_TAG, "read or write data err: " + e.getMessage());
         } finally {
             if (is != null) {
                 try {
                     is.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    ALog.e(LOG_TAG, "InputStream close err: " + e.getMessage());
                 }
             }
 
@@ -404,7 +405,7 @@ public class AceActivity extends Activity {
                 try {
                     fos.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    ALog.e(LOG_TAG, "FileOutputStream close err: " + e.getMessage());
                 }
             }
         }
