@@ -34,6 +34,12 @@ public class AceViewCreatorAosp implements IAceViewCreator {
         this.context = context;
     }
 
+    /**
+     * Create View on AOSP platform
+     *
+     * @param instanceId instance ID of application
+     * @param density density of application
+     */
     @Override
     public IAceView createView(int instanceId, float density) {
         return new AceViewAosp(context, instanceId, density, false);
