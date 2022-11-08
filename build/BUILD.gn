@@ -65,12 +65,10 @@ group("ace_packages") {
   ]
 
   # include ark_js debugger shared library
-  if (enable_ark_android) {
-    deps += [
-      "$ark_toolchain_path/inspector:ark_debugger",
-      "$ark_toolchain_path/tooling:libark_ecma_debugger",
-    ]
-  }
+  deps += [
+    "$ark_toolchain_path/inspector:ark_debugger",
+    "$ark_toolchain_path/tooling:libark_ecma_debugger",
+  ]
 
   if (enable_ng_build) {
     deps += [ "$ace_flutter_engine_root_new:libace_dev_android" ]
