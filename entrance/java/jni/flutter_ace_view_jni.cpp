@@ -175,8 +175,9 @@ jlong FlutterAceViewJni::CreateViewHandle(JNIEnv* env, jclass myClass, jobject v
                     env->ExceptionDescribe();
                     env->ExceptionClear();
                 }
+                gOnFirstFrameMethod = nullptr;
+                env->DeleteGlobalRef(viewRef);
             }
-            env->DeleteGlobalRef(viewRef);
         });
 #endif
     aceView->SetShellHolder(std::move(shellHolder));
