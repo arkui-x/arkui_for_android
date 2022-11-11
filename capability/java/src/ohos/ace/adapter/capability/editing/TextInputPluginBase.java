@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,13 +36,13 @@ public abstract class TextInputPluginBase {
         try {
             nativeInit(instanceId);
         } catch (UnsatisfiedLinkError ignored) {
-            // May on light-weighted devices.
+            // May occurred in light-weighted devices.
             ALog.e(LOG_TAG, "nativeInit method is not found.");
         }
     }
 
     /**
-     * Delegate implement the interface.
+     * Delegate implementation.
      *
      * @since 1
      */
@@ -74,7 +74,7 @@ public abstract class TextInputPluginBase {
     }
 
     /**
-     * Judge is client none.
+     * Check if the client is available.
      *
      * @return whether has client.
      */
@@ -101,7 +101,7 @@ public abstract class TextInputPluginBase {
     }
 
     /**
-     * Register a client with id to identify a client in case of the client changed.
+     * Register a client with an ID to identify a client in the case of a client change.
      *
      * @param client           The client
      * @param serializedConfig The configuration

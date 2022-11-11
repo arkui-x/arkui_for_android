@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -55,7 +55,7 @@ bool JniEnvironment::Initialize(const std::shared_ptr<JavaVM>& javaVM)
 }
 
 // Help to get JNI environment of current thread.
-std::shared_ptr<JNIEnv> JniEnvironment::GetJniEnv(JNIEnv* jniEnv) const
+std::shared_ptr<JNIEnv> JniEnvironment::GetJniEnv(JNIEnv* jniEnv, bool isDetach) const
 {
     if (jniEnv != nullptr) {
         return std::shared_ptr<JNIEnv>(jniEnv, DummyRelease<JNIEnv>);
@@ -75,7 +75,9 @@ std::shared_ptr<JNIEnv> JniEnvironment::GetJniEnv(JNIEnv* jniEnv) const
             return nullptr;
         }
     }
-
+    if (!isDetach) {
+        return std::shared_ptr<JNIEnv>(jniEnv, DummyRelease<JNIEnv>);
+    }
     auto detachFunc = [](JNIEnv*) { JniEnvironment::GetInstance().GetVM()->DetachCurrentThread(); };
     return std::shared_ptr<JNIEnv>(jniEnv, detachFunc);
 }
@@ -104,7 +106,7 @@ JniEnvironment::JavaLocalRef JniEnvironment::MakeJavaLocalRef(
     return JavaLocalRef(jniEnv->NewLocalRef(object), deleter);
 }
 
-// Help to make Java wek reference
+// Help to make Java weak reference
 JniEnvironment::JavaWeakRef JniEnvironment::MakeJavaWeakRef(
     const std::shared_ptr<JNIEnv>& jniEnvIn, jobject object, JavaWeakRefDeleter deleter)
 {

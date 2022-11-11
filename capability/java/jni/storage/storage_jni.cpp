@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -96,22 +96,22 @@ void StorageJni::NativeInit(JNIEnv* env, jobject jobj)
 
     g_pluginClass.set = env->GetMethodID(cls, METHOD_SET, SIGNATURE_SET);
     if (!g_pluginClass.set) {
-        LOGW("Storage JNI: setData method is not exists.");
+        LOGW("Storage JNI: setData method not found.");
     }
 
     g_pluginClass.get = env->GetMethodID(cls, METHOD_GET, SIGNATURE_GET);
     if (!g_pluginClass.get) {
-        LOGW("Storage JNI: getData method is not exists.");
+        LOGW("Storage JNI: getData method not found.");
     }
 
     g_pluginClass.clear = env->GetMethodID(cls, METHOD_CLEAR, SIGNATURE_CLEAR);
     if (!g_pluginClass.clear) {
-        LOGW("Storage JNI: clear method is not exists.");
+        LOGW("Storage JNI: clear method not found.");
     }
 
     g_pluginClass.remove = env->GetMethodID(cls, METHOD_DELETE, SIGNATURE_DELETE);
-    if (!g_pluginClass.clear) {
-        LOGW("Storage JNI: clear method is not exists.");
+    if (!g_pluginClass.remove) {
+        LOGW("Storage JNI: clear method not found.");
     }
 
     env->DeleteLocalRef(cls);

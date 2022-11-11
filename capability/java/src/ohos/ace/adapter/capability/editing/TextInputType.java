@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,14 +16,14 @@
 package ohos.ace.adapter.capability.editing;
 
 /**
- * Describes how the keyboard type should be to meet various input type.
+ * Implementation of keyboard types to meet various input type.
  *
  * @since 1
  */
 public enum TextInputType {
     TEXT(0),
 
-    // Support press Enter key to new line.
+    // Support starting of a new line by pressing Enter.
     MULTILINE(1),
     NUMBER(2),
     PHONE(3),

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,7 +24,7 @@ public abstract class ClipboardPluginBase {
     /**
      * Get data in clipboard
      *
-     * @return text in system clipboard
+     * @return text in clipboard
      */
     public abstract String getData();
 
@@ -37,7 +37,6 @@ public abstract class ClipboardPluginBase {
 
     /**
      * Clear data in clipboard
-     *
      */
     public abstract void clear();
 

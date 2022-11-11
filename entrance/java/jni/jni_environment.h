@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -130,7 +130,7 @@ public:
     bool Initialize(const std::shared_ptr<JavaVM>& javaVm);
 
     // Get JNI environment for current thread, if current thread is not attatched to Java VM, attch it.
-    std::shared_ptr<JNIEnv> GetJniEnv(JNIEnv* jniEnv = nullptr) const;
+    std::shared_ptr<JNIEnv> GetJniEnv(JNIEnv* jniEnv = nullptr, bool isDetach = true) const;
 
     std::shared_ptr<JavaVM> GetVM() const
     {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -57,7 +57,7 @@ void AceApplicationInfoImpl::Initialize(JNIEnv* env, jobject info)
 
     changeLocale_ = env->GetMethodID(objClass, "changeLocale", "(Ljava/lang/String;Ljava/lang/String;)V");
     if (changeLocale_ == nullptr) {
-        LOGE("fail to get method id: changeLocale");
+        LOGE("fail to get the method changeLocale id");
         EventReport::SendAppStartException(AppStartExcepType::JNI_CLASS_ERR);
         return;
     }
@@ -66,7 +66,7 @@ void AceApplicationInfoImpl::Initialize(JNIEnv* env, jobject info)
         env->GetMethodID(objClass, "getLocaleFallback", "(Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;");
 
     if (getLocaleFallback_ == nullptr) {
-        LOGE("fail to get method id: getLocaleFallback");
+        LOGE("fail to get the method getLocaleFallback id");
         EventReport::SendAppStartException(AppStartExcepType::JNI_CLASS_ERR);
         return;
     }

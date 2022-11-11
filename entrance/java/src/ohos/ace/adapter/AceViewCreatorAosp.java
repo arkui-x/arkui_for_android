@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,6 +34,12 @@ public class AceViewCreatorAosp implements IAceViewCreator {
         this.context = context;
     }
 
+    /**
+     * Create View on AOSP platform
+     *
+     * @param instanceId instance ID of application
+     * @param density density of application
+     */
     @Override
     public IAceView createView(int instanceId, float density) {
         return new AceViewAosp(context, instanceId, density, false);

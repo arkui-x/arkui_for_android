@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -76,7 +76,7 @@ bool TextInputJni::Register(std::shared_ptr<JNIEnv> env)
     bool ret = env->RegisterNatives(cls, METHODS, sizeof(METHODS) / sizeof(METHODS[0])) == 0;
     env->DeleteLocalRef(cls);
     if (!ret) {
-        LOGW("TextInput JNI: RegisterNatives fail.");
+        LOGW("TextInput JNI: RegisterNatives failed.");
         return false;
     }
     OnJniRegistered();
@@ -120,27 +120,27 @@ void TextInputJni::NativeInit(JNIEnv* env, jobject jobj, jint instanceId)
 
     g_pluginClass.setClient = env->GetMethodID(superCls, METHOD_SET_CLIENT, SIGNATURE_SET_CLIENT);
     if (!g_pluginClass.setClient) {
-        LOGW("TextInput JNI: setClient method is not exists.");
+        LOGW("TextInput JNI: setClient method not found.");
     }
 
     g_pluginClass.clearClient = env->GetMethodID(superCls, METHOD_CLEAR_CLIENT, SIGNATURE_CLEAR_CLIENT);
     if (!g_pluginClass.clearClient) {
-        LOGW("TextInput JNI: clearClient method is not exists.");
+        LOGW("TextInput JNI: clearClient method not found.");
     }
 
     g_pluginClass.setEditingState = env->GetMethodID(superCls, METHOD_SET_EDITING_STATE, SIGNATURE_SET_EDITING_STATE);
     if (!g_pluginClass.setEditingState) {
-        LOGW("TextInput JNI: setEditingState method is not exists.");
+        LOGW("TextInput JNI: setEditingState method not found.");
     }
 
     g_pluginClass.showTextInput = env->GetMethodID(cls, METHOD_SHOW, SIGNATURE_SHOW);
     if (!g_pluginClass.showTextInput) {
-        LOGW("TextInput JNI: showTextInput method is not exists.");
+        LOGW("TextInput JNI: showTextInput method not found.");
     }
 
     g_pluginClass.hideTextInput = env->GetMethodID(cls, METHOD_HIDE, SIGNATURE_HIDE);
     if (!g_pluginClass.hideTextInput) {
-        LOGW("TextInput JNI: hideTextInput method is not exists.");
+        LOGW("TextInput JNI: hideTextInput method not found.");
     }
 
     env->DeleteLocalRef(cls);

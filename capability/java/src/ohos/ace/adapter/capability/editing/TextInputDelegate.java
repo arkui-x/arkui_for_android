@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,7 +22,7 @@ package ohos.ace.adapter.capability.editing;
  */
 public interface TextInputDelegate {
     /**
-     * When editing state changed, this is called to pass the whole text content and the editing state.
+     * Called to pass the whole text content and the editing state when the editing state changes.
      *
      * @param clientId The client identifier
      * @param text The whole text content
@@ -35,7 +35,7 @@ public interface TextInputDelegate {
         int composingEnd);
 
     /**
-     * Called when the action button clicked, for example, GO / SEARCH
+     * Called when the action button clicked, for example, GO / SEARCH, is clicked.
      *
      * @param clientId The client identifier
      * @param action The action identifier

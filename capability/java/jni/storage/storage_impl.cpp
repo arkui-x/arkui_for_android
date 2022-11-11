@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,25 +37,17 @@ std::string StorageImpl::GetString(const std::string& key)
     return result;
 }
 
-void StorageImpl::SetDouble(const std::string& key, const double value)
-{
-    // TODO: need implement it
-}
+void StorageImpl::SetDouble(const std::string& key, const double value) {}
 
 bool StorageImpl::GetDouble(const std::string& key, double& value)
 {
-    // TODO: need implement it
     return false;
 }
 
-void StorageImpl::SetBoolean(const std::string& key, const bool value)
-{
-    // TODO: need implement it
-}
+void StorageImpl::SetBoolean(const std::string& key, const bool value) {}
 
 bool StorageImpl::GetBoolean(const std::string& key, bool& value)
 {
-    // TODO: need implement it
     return false;
 }
 

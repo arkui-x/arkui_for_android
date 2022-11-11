@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Copyright (c) 2022 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -65,12 +65,10 @@ group("ace_packages") {
   ]
 
   # include ark_js debugger shared library
-  if (enable_ark_android) {
-    deps += [
-      "$ark_toolchain_path/inspector:ark_debugger",
-      "//arkcompiler/ets_runtime/ecmascript/tooling:libark_ecma_debugger",
-    ]
-  }
+  deps += [
+    "$ark_toolchain_path/inspector:ark_debugger",
+    "$ark_toolchain_path/tooling:libark_ecma_debugger",
+  ]
 
   if (enable_ng_build) {
     deps += [ "$ace_flutter_engine_root_new:libace_dev_android" ]
