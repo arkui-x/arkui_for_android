@@ -47,7 +47,7 @@ For details about the source code structure of the ArkUI framework, see [ArkUI-X
 
 ## How to Use<a name="section171384529150"></a>
 
-You can create an ArkUI cross-platform application project by following instructions in [Application Development](https://gitee.com/arkui-x/docs/blob/master/en/application-dev/README.md). During integrated development on the Android platform, let the **Application** and **Activity** classes of the Android application inherit from the base class of ArkUI, and then call the corresponding APIs to set the development paradigm and ArkUI module instance name for the **Activity** instance. The details are as follows:
+You can create an ArkUI cross-platform application project by following instructions in [Application Development](https://gitee.com/arkui-x/docs/blob/master/en/application-dev/README.md). During development on the Android platform, let the **Application** and **Activity** classes of the Android application inherit from the base class of ArkUI, and then call the corresponding APIs to set the development paradigm and ArkUI module instance name for the **Activity** instance. The details are as follows:
 
 Let the **Application** and **Activity** classes of the Android application inherit from the base class of ArkUI. Sample code:
 
