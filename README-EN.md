@@ -10,7 +10,7 @@ The ArkUI framework empowers OpenHarmony UI development by providing a series of
 
 
 **Figure 1** ArkUI framework architecture<a name="fig2606133765017"></a> 
-![](https://gitee.com/openharmony/arkui_ace_engine/blob/master/figures/framework-architecture.png "JS-UI framework architecture")
+![](https://gitee.com/openharmony/arkui_ace_engine/raw/master/figures/JS-UI%E6%A1%86%E6%9E%B6%E6%9E%B6%E6%9E%84.png "JS-UI framework architecture")
 
 The ArkUI framework consists of the application, framework, engine, and porting layers.
 
@@ -34,7 +34,7 @@ Using the APIs provided by the preceding layers, apps developed with the ArkUI f
 
 ## Directory Structure<a name="section1791423143211"></a>
 
-For details about the source code structure of the ArkUI framework, see [ArkUI-X Application Project Structure](https://gitee.com/arkui-x/docs/blob/master/en/framework-dev/quick-start/project-structure-guide.md). The adaptation code for the Android platform is available at **/foundation/arkui/ace\_engine/adapter/android**. The directory structure is as follows:
+For details about the source code structure of the ArkUI framework, see [ArkUI Project Structure and Building](https://gitee.com/arkui-x/docs/blob/master/en/framework-dev/quick-start/project-structure-guide.md). The adaptation code for the Android platform is available at **/foundation/arkui/ace\_engine/adapter/android**. The directory structure is as follows:
 
 ```
 /foundation/arkui/ace_engine/adapter/android
@@ -78,17 +78,17 @@ public class MainActivity extends AceActivity {
 Use the two APIs provided by **AceActivity** to set the ArkUI module instance name and development paradigm for the current **Activity** instance. Sample code:
 ```java
 /**
-* set the instance name, should called before super.onCreate()
+* Set the instance name. This API should be called before super.onCreate().
 * 
-* @param name the instance name to set
+* @param name Instance name to set.
 */
 public void setInstanceName(String name);
 
 /**
-* set arkui app type version
+* Set the ArkUI app type version. This API should be called before super.onCreate().
 * 
-* @param version the version of app type, can be one of this:
-*                VERSION_JS / VERSION_ETS, should called before super.onCreate()
+* @param version Version of app type, which can be VERSION_JS or VERSION_ETS.
+* 
 */
 public void setVersion(int version);
 ```
