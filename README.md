@@ -34,7 +34,7 @@ ArkUI框架包括应用层（Application）、前端框架层（Framework）、�
 
 ## 目录介绍<a name="section1791423143211"></a>
 
-ArkUI开发框架的源代码结构参见 [代码工程结构及构建说明](https://gitee.com/arkui-crossplatform/doc/blob/master/application-dev/quick-start/project-structure-guide.md)  , Android平台的适配代码在/foundation/arkui/ace\_engine/adapter/android下，目录结构如下图所示：
+ArkUI开发框架的源代码结构参见[代码工程结构及构建说明](https://gitee.com/arkui-x/docs/blob/master/zh-cn/framework-dev/quick-start/project-structure-guide.md)，Android平台的适配代码在/foundation/arkui/ace\_engine/adapter/android下，目录结构如下图所示：
 
 ```
 /foundation/arkui/ace_engine/adapter/android
@@ -47,7 +47,7 @@ ArkUI开发框架的源代码结构参见 [代码工程结构及构建说明](ht
 
 ## 使用说明<a name="section171384529150"></a>
 
-参考 [ArkUI跨平台应用构建工具使用指南](https://gitee.com/arkui-crossplatform/doc/blob/master/application-dev/quick-start/how-to-use-ace-tools.md) 可以创建出对应Android平台的项目工程，也可以构建出Android平台可以直接安装运行的apk安装包。该工程遵循Android工程的目录结构，可以通过Android Studio直接打开。
+参考[应用开发者文档](https://gitee.com/arkui-x/docs/blob/master/zh-cn/application-dev/README.md)可以创建出跨平台应用工程，在Android平台集成开发时，Android应用的入口Application和Activity需要继承自ArkUI-X提供的两个基类AceActivity和AceApplication，并调用相应接口传入开发范式类型以及ArkUI模块实例名称，即可构建ArkUI跨Android平台应用，具体如下：
 
 Android应用的入口Application和Activity需要继承自ArkUI提供的基类，具体如下：
 
@@ -69,8 +69,8 @@ public class MainActivity extends AceActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setVersion(VERSION_ETS);
-        setInstanceName("ets-component");
+        setVersion(VERSION_ETS);            // ArkUI开发范式类型，VERSION_JS:兼容JS的类Web开发范式，VERSION_ETS:基于ArkTS的声明式开发范式。
+        setInstanceName("MainAbility");   // ArkUI JSBundle在应用工程assets/js中存放的目录名（即模块实例名）。
         super.onCreate(savedInstanceState);
     }
 }

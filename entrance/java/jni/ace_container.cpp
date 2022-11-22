@@ -46,7 +46,7 @@
 #include "core/common/window.h"
 #include "core/components/theme/app_theme.h"
 #include "core/components/theme/theme_constants.h"
-#include "core/components/theme/theme_manager.h"
+#include "core/components/theme/theme_manager_impl.h"
 #include "core/pipeline/base/element.h"
 #ifdef NG_BUILD
 #include "core/pipeline_ng/pipeline_context.h"
@@ -739,7 +739,7 @@ void AceContainer::SetThemeResourceInfo(const std::string& path, int32_t themeId
     resourceInfo_.SetThemeId(themeId);
     resourceInfo_.SetPackagePath(path);
     ThemeConstants::InitDeviceType();
-    themeManager_ = AceType::MakeRefPtr<ThemeManager>();
+    themeManager_ = AceType::MakeRefPtr<ThemeManagerImpl>();
     if (themeManager_) {
         // init resource, load theme map , do not parse yet
         themeManager_->InitResource(resourceInfo_);
