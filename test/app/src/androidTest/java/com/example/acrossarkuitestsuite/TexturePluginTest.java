@@ -27,7 +27,9 @@ import ohos.ace.adapter.capability.texture.AceTexturePluginAosp;
 import ohos.ace.adapter.capability.texture.IAceTexture;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -95,6 +97,17 @@ public class TexturePluginTest {
     }
 
     /**
+     * invoke method of IAceTexture
+     */
+    @Test
+    public void create_0200() {
+        Map<String, String> param = new HashMap<>();
+        param.put("markTextureFrameAvailable", "0");
+        long result = this.aceTexturePluginAosp.create(param);
+        assertNotEquals(result, -1);
+    }
+
+    /**
      * get object in AceTexture
      */
     @Test
@@ -107,6 +120,15 @@ public class TexturePluginTest {
     }
 
     /**
+     * get object null in AceTexture
+     */
+    @Test
+    public void getObject_0200() {
+        Object object = this.aceTexturePluginAosp.getObject(-1);
+        assertNull(object);
+    }
+
+    /**
      * release object
      */
     @Test
@@ -116,5 +138,17 @@ public class TexturePluginTest {
         long id = this.aceTexturePluginAosp.create(param);
         boolean result = this.aceTexturePluginAosp.release(id);
         assertEquals(result, true);
+    }
+
+    /**
+     * release object
+     */
+    @Test
+    public void release_0200() {
+        Map<String, String> param = new HashMap<>();
+        param.put("markTextureFrameAvailable", "0");
+        long id = this.aceTexturePluginAosp.create(param);
+        boolean result = this.aceTexturePluginAosp.release(-1);
+        assertEquals(result, false);
     }
 }
