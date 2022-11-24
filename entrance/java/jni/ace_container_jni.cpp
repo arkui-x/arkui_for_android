@@ -17,6 +17,7 @@
 
 #include <string>
 
+#include "adapter/android/capability/java/jni/editing/text_input_jni.h"
 #include "adapter/android/entrance/java/jni/ace_container.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
@@ -265,7 +266,9 @@ void AceContainerJni::DestroyContainer(JNIEnv* env, jclass clazz, jint instanceI
         tastExecutor->PostSyncTask([] { LOGI("Wait UI thread..."); }, TaskExecutor::TaskType::UI);
         tastExecutor->PostSyncTask([] { LOGI("Wait JS thread..."); }, TaskExecutor::TaskType::JS);
     }
+    TextInputJni::ReleaseInstance(instanceId);
     AceEngine::Get().RemoveContainer(instanceId);
+    AceEngine::Get().UnRegisterFromWatchDog(instanceId);
     LOGI("JNI DestroyContainer end");
 }
 
