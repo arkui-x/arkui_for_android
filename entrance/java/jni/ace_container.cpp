@@ -133,9 +133,10 @@ void AceContainer::Destroy()
     frontend_.Swap(frontend);
     if (frontend) {
         taskExecutor_->PostTask(
-            [frontend]() {
+            [frontend, id = instanceId_]() {
                 frontend->UpdateState(Frontend::State::ON_DESTROY);
                 frontend->Destroy();
+                EngineHelper::RemoveEngine(id);
             },
             TaskExecutor::TaskType::JS);
     }
@@ -149,7 +150,6 @@ void AceContainer::Destroy()
     assetManager_.Reset();
     pipelineContext_.Reset();
     aceView_ = nullptr;
-    EngineHelper::RemoveEngine(instanceId_);
 }
 
 void AceContainer::InitializeFrontend()
