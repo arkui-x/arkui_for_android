@@ -31,6 +31,7 @@ public:
     void SetPixelMapData(const RefPtr<PixelMap>& pixmap, CopyOptions copyOption = CopyOptions::InApp) override {}
     void GetPixelMapData(const std::function<void(const RefPtr<PixelMap>&)>& callback,
         bool syncMode = false) override {}
+    void HasData(const std::function<void(bool hasData)>& callback) override {};
     void Clear() override;
 private:
 
