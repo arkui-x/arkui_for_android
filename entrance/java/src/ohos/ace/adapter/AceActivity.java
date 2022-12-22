@@ -35,6 +35,9 @@ import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.io.IOException;
 
+import org.json.JSONObject;
+import org.json.JSONException;
+
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 
 /**
@@ -63,9 +66,23 @@ public class AceActivity extends Activity {
 
     private static final String ASSET_PATH_SHARE = "share";
 
-    private static final int THEME_ID_LIGHT = 125829967;
+    private static final String COLOR_MODE_KEY = "colorMode";
 
-    private static final int THEME_ID_DARK = 125829966;
+    private static final String COLOR_MODE_LIGHT = "light";
+
+    private static final String COLOR_MODE_DARK = "dark";
+
+    private static final String ORI_MODE_KEY = "orientation";
+
+    private static final String ORI_MODE_LANDSCAPE = "LANDSCAPE";
+
+    private static final String ORI_MODE_PORTRAIT = "PORTRAIT";
+
+    private static final String DENSITY_KEY = "densityDpi";
+
+    private static final int THEME_ID_LIGHT = 117440515;
+
+    private static final int THEME_ID_DARK = 117440516;
 
     private static final int GRAY_THRESHOLD = 255;
 
@@ -159,14 +176,38 @@ public class AceActivity extends Activity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        int currentNightMode = newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        switch (currentNightMode) {
-            case Configuration.UI_MODE_NIGHT_NO:
-                break;
-            case Configuration.UI_MODE_NIGHT_YES:
-                break;
-            default:
-                break;
+        try {
+            JSONObject json = new JSONObject();
+            int currentNightMode = newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+            switch (currentNightMode) {
+                case Configuration.UI_MODE_NIGHT_NO:
+                    container.setColorMode(AceContainer.COLOR_MODE_LIGHT);
+                    json.put(COLOR_MODE_KEY, COLOR_MODE_LIGHT);
+                    break;
+                case Configuration.UI_MODE_NIGHT_YES:
+                    container.setColorMode(AceContainer.COLOR_MODE_DARK);
+                    json.put(COLOR_MODE_KEY, COLOR_MODE_DARK);
+                    break;
+                default:
+                    break;
+            }
+            int orientationMode = newConfig.orientation;
+            switch (orientationMode) {
+                case Configuration.ORIENTATION_LANDSCAPE:
+                    json.put(ORI_MODE_KEY, ORI_MODE_LANDSCAPE);
+                    break;
+                case Configuration.ORIENTATION_PORTRAIT:
+                    json.put(ORI_MODE_KEY, ORI_MODE_PORTRAIT);
+                    break;
+                default:
+                    break;
+            }
+            int den = newConfig.densityDpi;
+            json.put(DENSITY_KEY, den);
+            container.onConfigurationUpdated(json.toString());
+        } catch (JSONException ignored) {
+            ALog.e(LOG_TAG, "failed parse editing config json");
+            return;
         }
     }
 

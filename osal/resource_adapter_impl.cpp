@@ -14,16 +14,19 @@
  */
 
 #include "adapter/android/osal/resource_adapter_impl.h"
+
+#include <dirent.h>
+
 #include "adapter/android/osal/resource_convertor.h"
 #include "adapter/android/osal/resource_theme_style.h"
-#include "core/components/theme/theme_attributes.h"
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
+#include "base/utils/system_properties.h"
+#include "core/components/theme/theme_attributes.h"
 
 namespace OHOS::Ace {
 
 namespace {
 constexpr char DELIMITER[] = "/";
-} // namespace
 
 const char* PATTERN_MAP[] = {
     THEME_PATTERN_BUTTON,
@@ -68,11 +71,27 @@ const char* PATTERN_MAP[] = {
     THEME_PATTERN_TEXT,
     THEME_PATTERN_TEXTFIELD,
     THEME_PATTERN_TEXT_OVERLAY,
-    THEME_PATTERN_VIDEO
+    THEME_PATTERN_VIDEO,
+    THEME_PATTERN_ICON
 };
 
-constexpr uint32_t THEME_ID_LIGHT = 125829967;
-constexpr uint32_t THEME_ID_DARK = 125829966;
+constexpr uint32_t THEME_ID_LIGHT = 117440515;
+constexpr uint32_t THEME_ID_DARK = 117440516;
+constexpr uint32_t OHOS_THEME_ID = 125829872; // ohos_theme
+
+bool IsDirExist(const std::string& path)
+{
+    char realPath[PATH_MAX] = { 0x00 };
+    if (realpath(path.c_str(), realPath) == nullptr) {
+        return false;
+    }
+    DIR *dir = opendir(realPath);
+    if (dir) {
+        closedir(dir);
+        return true;
+    }
+    return false;
+}
 
 void CheckThemeId(int32_t& themeId)
 {
@@ -85,6 +104,23 @@ void CheckThemeId(int32_t& themeId)
                   : THEME_ID_DARK;
 }
 
+DimensionUnit ParseDimensionUnit(const std::string& unit)
+{
+    if (unit == "px") {
+        return DimensionUnit::PX;
+    } else if (unit == "fp") {
+        return DimensionUnit::FP;
+    } else if (unit == "lpx") {
+        return DimensionUnit::LPX;
+    } else if (unit == "%") {
+        return DimensionUnit::PERCENT;
+    } else {
+        return DimensionUnit::VP;
+    }
+};
+
+} // namespace
+
 RefPtr<ResourceAdapter> ResourceAdapter::Create()
 {
     return AceType::MakeRefPtr<ResourceAdapterImpl>();
@@ -95,26 +131,35 @@ void ResourceAdapterImpl::Init(const ResourceInfo& resourceInfo)
     std::string packagePath = resourceInfo.GetPackagePath();
     auto resConfig = ConvertConfigToGlobal(resourceInfo.GetResourceConfiguration());
     std::shared_ptr<Global::Resource::ResourceManager> newResMgr(Global::Resource::CreateResourceManager());
+    if (!newResMgr) {
+        LOGW("create resource manager from Global::Resource::CreateResourceManager() failed!");
+    }
     std::string appResIndexPath = packagePath + DELIMITER + "appres" + DELIMITER + "resources.index";
     auto appResRet = newResMgr->AddResource(appResIndexPath.c_str());
     std::string sysResIndexPath = packagePath + DELIMITER + "systemres" + DELIMITER + "resources.index";
     auto sysResRet = newResMgr->AddResource(sysResIndexPath.c_str());
     auto configRet = newResMgr->UpdateResConfig(*resConfig);
     LOGI("AddAppRes result=%{public}d, AddSysRes result=%{public}d,  UpdateResConfig result=%{public}d, "
-         "ori=%{public}d, dpi=%{public}d, device=%{public}d",
+         "ori=%{public}d, dpi=%{public}d, device=%{public}d, colorMode=%{public}d,",
         appResRet, sysResRet, configRet, resConfig->GetDirection(), resConfig->GetScreenDensity(),
-        resConfig->GetDeviceType());
+        resConfig->GetDeviceType(), resConfig->GetColorMode());
     resourceManager_ = newResMgr;
-    packagePathStr_ = packagePath;
+    packagePathStr_ = IsDirExist(packagePath) ? packagePath : std::string();
 
     Platform::AceApplicationInfoImpl::GetInstance().SetResourceManager(newResMgr);
 }
 
 void ResourceAdapterImpl::UpdateConfig(const ResourceConfiguration& config)
 {
+    LOGI("UpdateConfig ori=%{public}d, dpi=%{public}d, device=%{public}d, "
+        "colorMode=%{public}d,",
+        config.GetOrientation(), config.GetDensity(), config.GetDeviceType(),
+        config.GetColorMode());
     auto resConfig = ConvertConfigToGlobal(config);
-    LOGI("UpdateConfig ori=%{public}d, dpi=%{public}d, device=%{public}d",
-        resConfig->GetDirection(), resConfig->GetScreenDensity(), resConfig->GetDeviceType());
+    LOGI("UpdateConfig ori=%{public}d, dpi=%{public}d, device=%{public}d, "
+        "colorMode=%{public}d, inputDevice=%{public}d",
+        resConfig->GetDirection(), resConfig->GetScreenDensity(), resConfig->GetDeviceType(),
+        resConfig->GetColorMode(), resConfig->GetInputDevice());
     resourceManager_->UpdateResConfig(*resConfig);
 }
 
@@ -126,7 +171,9 @@ RefPtr<ThemeStyle> ResourceAdapterImpl::GetTheme(int32_t themeId)
 
     LOGI("theme themeId=%{public}d, ret=%{public}d, attr size=%{public}zu",
         themeId, ret, theme->rawAttrs_.size());
-
+    if (!ret) {
+        ret = resourceManager_->GetThemeById(OHOS_THEME_ID, theme->rawAttrs_);
+    }
     std::string OHFlag = "ohos_"; // fit with resource/base/theme.json and pattern.json
     for (uint64_t i = 0; i < sizeof(PATTERN_MAP) / sizeof(PATTERN_MAP[0]); i++) {
         ResourceThemeStyle::RawAttrMap attrMap;
@@ -178,18 +225,19 @@ Color ResourceAdapterImpl::GetColor(uint32_t resId)
 Dimension ResourceAdapterImpl::GetDimension(uint32_t resId)
 {
     float dimensionFloat = 0.0f;
+    std::string unit;
     if (resourceManager_) {
-        auto state = resourceManager_->GetFloatById(resId, dimensionFloat);
+        auto state = resourceManager_->GetFloatById(resId, dimensionFloat, unit);
         if (state != Global::Resource::SUCCESS) {
             LOGE("GetDimension error, id=%{public}u", resId);
         }
     }
-    return Dimension(static_cast<double>(dimensionFloat));
+    return Dimension(static_cast<double>(dimensionFloat), ParseDimensionUnit(unit));
 }
 
 std::string ResourceAdapterImpl::GetString(uint32_t resId)
 {
-    std::string strResult;
+    std::string strResult = "";
     if (resourceManager_) {
         auto state = resourceManager_->GetStringById(resId, strResult);
         if (state != Global::Resource::SUCCESS) {
@@ -257,8 +305,8 @@ std::vector<uint32_t> ResourceAdapterImpl::GetIntArray(uint32_t resId) const
         }
     }
     std::vector<uint32_t> result;
-    std::transform(
-        intVectorResult.begin(), intVectorResult.end(), result.begin(), [](int x) { return static_cast<uint32_t>(x); });
+    std::transform(intVectorResult.begin(), intVectorResult.end(), result.begin(),
+        [](int x) { return static_cast<uint32_t>(x); });
     return result;
 }
 
@@ -276,7 +324,10 @@ bool ResourceAdapterImpl::GetBoolean(uint32_t resId) const
 
 std::string ResourceAdapterImpl::GetMediaPath(uint32_t resId)
 {
-    std::string mediaPath;
+    if (resourceManager_ == nullptr) {
+        return "";
+    }
+    std::string mediaPath = "";
     if (resourceManager_) {
         auto state = resourceManager_->GetMediaById(resId, mediaPath);
         if (state != Global::Resource::SUCCESS) {
