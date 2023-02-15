@@ -455,7 +455,7 @@ void AceContainer::DispatchPluginError(int32_t callbackId, int32_t errorCode, st
         TaskExecutor::TaskType::BACKGROUND);
 }
 
-bool AceContainer::Dump(const std::vector<std::string>& params)
+bool AceContainer::Dump(const std::vector<std::string>& params, std::vector<std::string>& info)
 {
     ContainerScope scope(instanceId_);
     if (aceView_ && aceView_->Dump(params)) {

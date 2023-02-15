@@ -85,7 +85,6 @@ void DumpHelperJni::Dump(JNIEnv* env, jclass myClass, jstring prefix, jobject fi
 
         if (file) {
             DumpLog::GetInstance().SetDumpFile(file);
-            AceEngine::Get().Dump(params);
             DumpLog::GetInstance().Reset();
         } else {
             LOGE("Failed to open fd as file");

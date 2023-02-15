@@ -32,4 +32,9 @@ int32_t MouseStyleAndroid::GetPointerStyle(int32_t windowId, int32_t& pointerSty
     return -1;
 }
 
+bool MouseStyleAndroid::ChangePointerStyle(int32_t windowId, MouseFormat mouseFormat) const
+{
+    return false;
+}
+
 } // namespace OHOS::Ace

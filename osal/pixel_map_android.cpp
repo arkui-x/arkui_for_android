@@ -24,4 +24,10 @@ RefPtr<PixelMap> PixelMap::CreatePixelMap(void* rawPtr)
     return nullptr;
 }
 
+RefPtr<PixelMap> PixelMap::ConvertSkImageToPixmap(
+    const uint32_t* colors, uint32_t colorLength, int32_t width, int32_t height)
+{
+    return nullptr;
+}
+
 } // namespace OHOS::Ace

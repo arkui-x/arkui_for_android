@@ -32,7 +32,7 @@ advance_components_support = true
 form_components_support = false
 js_pa_support = false
 connect_server_support = false
-xcomponent_components_support = true
+xcomponent_components_support = false
 
 cflags_cc = [
   "-std=c++17",
