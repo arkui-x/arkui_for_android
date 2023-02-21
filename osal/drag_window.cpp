@@ -23,6 +23,12 @@ RefPtr<DragWindow> DragWindow::CreateDragWindow(const std::string& windowName, i
     return nullptr;
 }
 
+RefPtr<DragWindow> DragWindow::CreateTextDragWindow(
+    const std::string& windowName, int32_t x, int32_t y, uint32_t width, uint32_t height)
+{
+    return nullptr;
+}
+
 void DragWindow::MoveTo(int32_t x, int32_t y) const {}
 
 void DragWindow::Destroy() const {}

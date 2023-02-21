@@ -51,7 +51,7 @@ public:
         return assetProvider_->IsValid();
     }
 
-    std::string GetAssetPath(const std::string& assetName) override
+    std::string GetAssetPath(const std::string& assetName, bool isAddHapPath) override
     {
         // TODO: need implement it
         return "";
