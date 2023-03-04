@@ -139,7 +139,7 @@ public:
     void NotifySurfaceChanged(int32_t width, int32_t height)
     {
         if (viewChangeCallback_) {
-            viewChangeCallback_(width, height, WindowSizeChangeReason::RESIZE);
+            viewChangeCallback_(width, height, WindowSizeChangeReason::RESIZE, nullptr);
         }
         width_ = width;
         height_ = height;
