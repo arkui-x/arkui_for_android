@@ -288,7 +288,8 @@ void AceContainer::InitializeCallback()
     };
     aceView_->RegisterRotationEventCallback(rotationEventCallback);
 
-    auto&& viewChangeCallback = [weak, instanceId](int32_t width, int32_t height, WindowSizeChangeReason reason) {
+    auto&& viewChangeCallback = [weak, instanceId](int32_t width, int32_t height, WindowSizeChangeReason reason,
+        const std::shared_ptr<Rosen::RSTransaction> rsTransaction) {
         ACE_SCOPED_TRACE("ViewChangeCallback(%d, %d)", width, height);
         auto context = weak.Upgrade();
         if (context == nullptr) {
@@ -297,13 +298,13 @@ void AceContainer::InitializeCallback()
         }
         ContainerScope scope(instanceId);
         context->GetTaskExecutor()->PostTask(
-            [weak, width, height, reason]() {
+            [weak, width, height, reason, rsTransaction]() {
                 auto context = weak.Upgrade();
                 if (context == nullptr) {
                     LOGE("context is null ");
                     return;
                 }
-                context->OnSurfaceChanged(width, height, reason);
+                context->OnSurfaceChanged(width, height, reason, rsTransaction);
             },
             TaskExecutor::TaskType::UI);
     };
