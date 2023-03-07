@@ -68,7 +68,13 @@
 #endif
 
 namespace OHOS::Ace::Platform {
-
+namespace {
+const std::string ORI_MODE_KEY { "orientation" };
+const std::string ORI_MODE_PORTRAIT { "PORTRAIT" };
+const std::string ORI_MODE_LANDSCAPE { "LANDSCAPE" };
+const std::string DENSITY_KEY = { "densityDpi" };
+constexpr double DPI_BASE = { 160.0f };
+}
 AceContainer::AceContainer(jint instanceId, FrontendType type, jobject callback)
     : messageBridge_(AceType::MakeRefPtr<PlatformBridge>()), type_(type), instanceId_(instanceId)
 {
@@ -133,9 +139,10 @@ void AceContainer::Destroy()
     frontend_.Swap(frontend);
     if (frontend) {
         taskExecutor_->PostTask(
-            [frontend]() {
+            [frontend, id = instanceId_]() {
                 frontend->UpdateState(Frontend::State::ON_DESTROY);
                 frontend->Destroy();
+                EngineHelper::RemoveEngine(id);
             },
             TaskExecutor::TaskType::JS);
     }
@@ -149,7 +156,6 @@ void AceContainer::Destroy()
     assetManager_.Reset();
     pipelineContext_.Reset();
     aceView_ = nullptr;
-    EngineHelper::RemoveEngine(instanceId_);
 }
 
 void AceContainer::InitializeFrontend()
@@ -654,14 +660,38 @@ void AceContainer::UpdateResourceConfiguration(const std::string& jsonStr)
     uint32_t updateFlags = 0;
     auto resConfig = resourceInfo_.GetResourceConfiguration();
     ContainerScope scope(instanceId_);
-    if (!resConfig.UpdateFromJsonString(jsonStr, updateFlags) || !updateFlags) {
+    if (!resConfig.UpdateFromJsonString(jsonStr, updateFlags)) {
         return;
     }
     resourceInfo_.SetResourceConfiguration(resConfig);
     if (!ResourceConfiguration::TestFlag(updateFlags, ResourceConfiguration::COLOR_MODE_UPDATED_FLAG)) {
         SystemProperties::SetColorMode(resConfig.GetColorMode());
         if (frontend_) {
+            frontend_->FlushReload();
             frontend_->SetColorMode(resConfig.GetColorMode());
+        }
+    }
+
+    std::unique_ptr<JsonValue> jsonConfig = JsonUtil::ParseJsonString(jsonStr);
+    if (jsonConfig->Contains(ORI_MODE_KEY)) {
+        auto oriMode = jsonConfig->GetValue(ORI_MODE_KEY);
+        if (oriMode && oriMode->IsString()) {
+            auto strOriMode = oriMode->GetString();
+            if (strOriMode == ORI_MODE_PORTRAIT &&
+                resConfig.GetOrientation() != DeviceOrientation::PORTRAIT) {
+                resConfig.SetOrientation(DeviceOrientation::PORTRAIT);
+            } else if (strOriMode == ORI_MODE_LANDSCAPE &&
+                resConfig.GetOrientation() != DeviceOrientation::LANDSCAPE) {
+                resConfig.SetOrientation(DeviceOrientation::LANDSCAPE);
+            }
+        }
+    }
+    if (jsonConfig->Contains(DENSITY_KEY)) {
+        auto jsonDensity = jsonConfig->GetValue(DENSITY_KEY);
+        if (jsonDensity && jsonDensity->IsNumber()) {
+            double densityDpi = jsonDensity->GetInt();
+            double density = densityDpi / DPI_BASE;
+            resConfig.SetDensity(density);
         }
     }
 
@@ -685,9 +715,8 @@ void AceContainer::UpdateResourceConfiguration(const std::string& jsonStr)
             themeManager->LoadResourceThemes();
             themeManager->ParseSystemTheme();
             themeManager->SetColorScheme(colorScheme);
-            context->RefreshRootBgColor();
-            context->UpdateFontWeightScale();
-            context->SetFontScale(config.GetFontRatio());
+            context->NotifyConfigurationChange();
+            context->FlushReload();
         },
         TaskExecutor::TaskType::UI);
     if (frontend_) {
@@ -702,6 +731,12 @@ void AceContainer::UpdateColorMode(ColorMode colorMode)
     SystemProperties::SetColorMode(colorMode);
     if (resConfig.GetColorMode() == colorMode) {
         return;
+    }
+
+    if (colorMode == ColorMode::DARK) {
+        SetColorScheme(ColorScheme::SCHEME_DARK);
+    } else {
+        SetColorScheme(ColorScheme::SCHEME_LIGHT);
     }
     resConfig.SetColorMode(colorMode);
     resourceInfo_.SetResourceConfiguration(resConfig);
@@ -725,9 +760,12 @@ void AceContainer::UpdateColorMode(ColorMode colorMode)
             themeManager->ParseSystemTheme();
             themeManager->SetColorScheme(colorScheme);
             context->RefreshRootBgColor();
+            context->FlushReload();
         },
         TaskExecutor::TaskType::UI);
     if (frontend_) {
+        LOGI("AceContainer::UpdateConfiguration frontend MarkNeedUpdate");
+        frontend_->FlushReload();
         frontend_->SetColorMode(colorMode);
         frontend_->RebuildAllPages();
     }

@@ -77,6 +77,18 @@ public class ClipboardAdapterTest {
     }
 
     /**
+     * not set data to clipboard and get null data in clipboard
+     */
+    @Test
+    public void setDataAndGetData_0200() {
+        this.clipboardPluginBase.setData("");
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            String getData = this.clipboardPluginBase.getData();
+            assertEquals("", getData);
+        }, 2000);
+    }
+
+    /**
      * clear data in clipboard
      */
     @Test
