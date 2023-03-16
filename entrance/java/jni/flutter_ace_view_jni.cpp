@@ -16,6 +16,8 @@
 #include "adapter/android/entrance/java/jni/flutter_ace_view_jni.h"
 
 #include "flutter/fml/platform/android/jni_weak_ref.h"
+#include "core/common/container.h"
+#include "core/common/container_scope.h"
 #ifdef NG_BUILD
 #include "flutter/lib/ui/window/viewport_metrics.h"
 #endif
@@ -151,6 +153,7 @@ jlong FlutterAceViewJni::CreateViewHandle(JNIEnv* env, jclass myClass, jobject v
     auto id = static_cast<int32_t>(instanceId);
     auto refAceView = Referenced::MakeRefPtr<FlutterAceView>(id);
     FlutterAceView* aceView = Referenced::RawPtr(refAceView);
+#ifndef ENABLE_ROSEN_BACKEND
     flutter::Settings settings;
 #ifndef NG_BUILD
     fml::jni::JavaObjectWeakGlobalRef java_object(env, view);
@@ -166,27 +169,28 @@ jlong FlutterAceViewJni::CreateViewHandle(JNIEnv* env, jclass myClass, jobject v
 #else
     auto shellHolder = std::make_unique<AndroidShellHolder>(settings, id, false);
     auto viewRef = env->NewGlobalRef(view);
-    shellHolder->SetFirstFrameCallback(
-        [env, viewRef] {
-            if (gOnFirstFrameMethod) {
-                env->CallVoidMethod(viewRef, gOnFirstFrameMethod);
-                if (env->ExceptionCheck()) {
-                    LOGE("Exception occured, call onFirstFrame failed");
-                    env->ExceptionDescribe();
-                    env->ExceptionClear();
-                }
-                gOnFirstFrameMethod = nullptr;
-                env->DeleteGlobalRef(viewRef);
+    shellHolder->SetFirstFrameCallback([env, viewRef] {
+        if (gOnFirstFrameMethod) {
+            env->CallVoidMethod(viewRef, gOnFirstFrameMethod);
+            if (env->ExceptionCheck()) {
+                LOGE("Exception occured, call onFirstFrame failed");
+                env->ExceptionDescribe();
+                env->ExceptionClear();
             }
-        });
+            gOnFirstFrameMethod = nullptr;
+            env->DeleteGlobalRef(viewRef);
+        }
+    });
 #endif
     aceView->SetShellHolder(std::move(shellHolder));
+#endif
     aceView->IncRefCount();
     return PointerToJavaLong(aceView);
 }
 
 void FlutterAceViewJni::SurfaceCreated(JNIEnv* env, jobject myObject, jlong view, jobject jsurface)
 {
+#ifndef ENABLE_ROSEN_BACKEND
     fml::jni::ScopedJavaLocalFrame scopedFrame(env);
     auto window = fml::MakeRefCounted<flutter::AndroidNativeWindow>(NativeWindowFromSurface::GetWindow(env, jsurface));
     auto viewPtr = JavaLongToPointer<FlutterAceView>(view);
@@ -196,6 +200,20 @@ void FlutterAceViewJni::SurfaceCreated(JNIEnv* env, jobject myObject, jlong view
             platformView->NotifyCreated(std::move(window));
         }
     }
+#else
+    auto viewPtr = JavaLongToPointer<FlutterAceView>(view);
+    if (viewPtr != nullptr && viewPtr->GetRsWindow()) {
+        viewPtr->GetRsWindow()->CreateSurfaceNode(NativeWindowFromSurface::GetWindow(env, jsurface));
+        ContainerScope scope(viewPtr->GetInstanceId());
+        auto container = Container::Current();
+        CHECK_NULL_VOID(container);
+        auto pipeline = container->GetPipelineContext();
+        CHECK_NULL_VOID(pipeline);
+        auto* window = pipeline->GetWindow();
+        CHECK_NULL_VOID(window);
+        window->Init();
+    }
+#endif
 }
 
 void FlutterAceViewJni::SurfaceChanged(
@@ -206,10 +224,12 @@ void FlutterAceViewJni::SurfaceChanged(
     ACE_DCHECK(viewPtr != nullptr);
     if (viewPtr != nullptr) {
         viewPtr->NotifySurfaceChanged(width, height);
+#ifndef ENABLE_ROSEN_BACKEND
         auto platformView = viewPtr->GetShellHolder()->GetPlatformView();
         if (platformView) {
             platformView->NotifyChanged(SkISize::Make(width, height));
         }
+#endif
     }
 }
 
@@ -219,10 +239,12 @@ void FlutterAceViewJni::SurfaceDestroyed(JNIEnv* env, jobject myObject, jlong vi
     ACE_DCHECK(viewPtr != nullptr);
     if (viewPtr != nullptr) {
         viewPtr->NotifySurfaceDestroyed();
+#ifndef ENABLE_ROSEN_BACKEND
         auto platformView = viewPtr->GetShellHolder()->GetPlatformView();
         if (platformView) {
             platformView->NotifyDestroyed();
         }
+#endif
     }
 }
 
@@ -259,10 +281,12 @@ void FlutterAceViewJni::SetViewportMetrics(JNIEnv* env, jobject myObject, jlong 
         viewPtr->NotifyDensityChanged(static_cast<double>(devicePixelRatio));
         viewPtr->NotifySystemBarHeightChanged(
             static_cast<double>(physicalPaddingTop), static_cast<double>(physicalViewInsetBottom));
+#ifndef ENABLE_ROSEN_BACKEND
         auto platformView = viewPtr->GetShellHolder()->GetPlatformView();
         if (platformView) {
             platformView->SetViewportMetrics(metrics);
         }
+#endif
     }
 }
 
@@ -316,6 +340,7 @@ void FlutterAceViewJni::DispatchMouseEvent(JNIEnv* env, jobject myObject, jlong 
 void FlutterAceViewJni::RegisterTexture(
     JNIEnv* env, jobject myObject, jlong view, jlong texture_id, jobject surface_texture)
 {
+#ifndef ENABLE_ROSEN_BACKEND
     if (env == nullptr) {
         LOGW("env is null");
         return;
@@ -328,6 +353,7 @@ void FlutterAceViewJni::RegisterTexture(
                 static_cast<int64_t>(texture_id), fml::jni::JavaObjectWeakGlobalRef(env, surface_texture));
         }
     }
+#endif
 }
 
 void FlutterAceViewJni::RegisterSurface(JNIEnv* env, jobject myObject, jlong view, jlong texture_id, jobject surface)
@@ -346,6 +372,7 @@ void FlutterAceViewJni::RegisterSurface(JNIEnv* env, jobject myObject, jlong vie
 
 void FlutterAceViewJni::MarkTextureFrameAvailable(JNIEnv* env, jobject myObject, jlong view, jlong texture_id)
 {
+#ifndef ENABLE_ROSEN_BACKEND
     auto viewPtr = JavaLongToPointer<FlutterAceView>(view);
     if (viewPtr != nullptr) {
         auto platformView = viewPtr->GetShellHolder()->GetPlatformView();
@@ -353,10 +380,12 @@ void FlutterAceViewJni::MarkTextureFrameAvailable(JNIEnv* env, jobject myObject,
             platformView->MarkTextureFrameAvailable(static_cast<int64_t>(texture_id));
         }
     }
+#endif
 }
 
 void FlutterAceViewJni::UnregisterTexture(JNIEnv* env, jobject myObject, jlong view, jlong texture_id)
 {
+#ifndef ENABLE_ROSEN_BACKEND
     auto viewPtr = JavaLongToPointer<FlutterAceView>(view);
     if (viewPtr != nullptr) {
         auto platformView = viewPtr->GetShellHolder()->GetPlatformView();
@@ -364,6 +393,7 @@ void FlutterAceViewJni::UnregisterTexture(JNIEnv* env, jobject myObject, jlong v
             platformView->UnregisterTexture(static_cast<int64_t>(texture_id));
         }
     }
+#endif
 }
 
 void FlutterAceViewJni::UnregisterSurface(JNIEnv* env, jobject myObject, jlong view, jlong texture_id)

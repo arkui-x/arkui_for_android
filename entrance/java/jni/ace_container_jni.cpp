@@ -35,6 +35,11 @@
 #include "core/components_ng/render/adapter/flutter_window.h"
 #include "core/pipeline/pipeline_context.h"
 
+#ifdef ENABLE_ROSEN_BACKEND
+#include "adapter/android/entrance/java/jni/flutter_ace_view.h"
+#include "core/components_ng/render/adapter/rosen_window.h"
+#endif
+
 namespace OHOS::Ace::Platform {
 
 namespace {
@@ -493,6 +498,15 @@ void AceContainerJni::SetView(
         LOGE("JNI setView: null view");
         return;
     }
+#ifdef ENABLE_ROSEN_BACKEND
+    auto* flutterView = static_cast<FlutterAceView*>(view);
+    auto threadModel = flutterView->GetThreadModel();
+    CHECK_NULL_VOID(threadModel);
+    sptr<Rosen::Window> rsWindow(new Rosen::Window(threadModel->GetTaskRunners()));
+
+    flutterView->SetRSWinodw(rsWindow);
+    auto window = std::make_shared<NG::RosenWindow>(rsWindow, container->GetTaskExecutor(), instanceId);
+#else
 #ifdef NG_BUILD
     std::unique_ptr<Window> window = std::make_unique<NG::FlutterWindow>(container->GetTaskExecutor(), instanceId);
 #else
@@ -502,6 +516,7 @@ void AceContainerJni::SetView(
         return;
     }
     std::unique_ptr<Window> window = std::make_unique<Window>(std::move(platformWindow));
+#endif
 #endif
     container->AttachView(std::move(window), view, static_cast<double>(density), width, height);
 }
