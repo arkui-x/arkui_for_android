@@ -45,10 +45,21 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/vibrator/VibratorPluginAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoPluginAosp.java",
+
+  # bridge files
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeErrorCode.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeManager.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgePlugin.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/IMessageListener.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/IMethodResult.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/MethodData.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/ParameterHelper.java",
 ]
 
 # capability cpp files
 capability_cpp_files = [
+  "$ace_root/adapter/android/capability/java/jni/bridge/bridge_jni.cpp",
+  "$ace_root/adapter/android/capability/java/jni/bridge/bridge_manager.cpp",
   "$ace_root/adapter/android/capability/java/jni/clipboard/clipboard_impl.cpp",
   "$ace_root/adapter/android/capability/java/jni/clipboard/clipboard_jni.cpp",
   "$ace_root/adapter/android/capability/java/jni/clipboard/clipboard_proxy_impl.cpp",

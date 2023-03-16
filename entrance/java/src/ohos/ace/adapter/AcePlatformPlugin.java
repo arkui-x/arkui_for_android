@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
+import ohos.ace.adapter.capability.bridge.BridgeManager;
 import ohos.ace.adapter.capability.clipboard.ClipboardPluginAosp;
 import ohos.ace.adapter.capability.editing.TextInputPluginAosp;
 import ohos.ace.adapter.capability.environment.EnvironmentAosp;
@@ -62,6 +63,8 @@ public class AcePlatformPlugin {
         persistentStoragePlugin = new PersistentStorageAosp(context);
         vibratorPlugin = new VibratorPluginAosp(context);
         pluginManager = new PluginManager(context);
+        BridgeManager bridgeManager = BridgeManager.getInstance();
+        bridgeManager.nativeInit();
     }
 
     /**
