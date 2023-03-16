@@ -41,10 +41,26 @@ ohos_combine_jars("ace_android_adapter_java") {
 
 common_napi_modules = []
 foreach(module, common_napi_libs) {
-  ace_napi_lib(module) {
-    platform = "android"
+  module_path_names = []
+  module_path_names = string_split(module, "/")
+  prefix_dir = module_path_names[0]
+
+  module_path = prefix_dir
+  if (prefix_dir != module) {
+    module_path = module_path_names[1]
   }
-  common_napi_modules += [ ":$module" ]
+
+  module_name_ext = string_replace(module_path, "_", "")
+
+  module_name = string_replace(module, "_", "")
+  module_name = string_replace(module_name, "/", "_")
+  ohos_shared_library(module_name) {
+    deps = [ "$ace_root/interfaces/napi/kits/${module_path}:${module_name_ext}_static_android" ]
+
+    part_name = "ace_engine_cross"
+    subsystem_name = "arkui"
+  }
+  common_napi_modules += [ ":$module_name" ]
 }
 
 common_plugin_modules = []
