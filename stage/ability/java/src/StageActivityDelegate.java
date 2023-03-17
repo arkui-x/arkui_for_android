@@ -17,12 +17,9 @@ package ohos.stage.ability.adapter;
 
 import android.util.Log;
 
-/**
- * This class is the connection between stage activity and native layer.
- */
 public class StageActivityDelegate {
     private static final String LOG_TAG = "StageActivityDelegate";
-    public StageActivityDelegate()  {
+    public StageActivityDelegate() {
         Log.i(LOG_TAG, "StageActivityDelegate()");
     }
 

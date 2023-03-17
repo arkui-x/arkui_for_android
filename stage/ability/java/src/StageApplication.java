@@ -100,7 +100,7 @@ public class StageApplication extends Application {
                 return;
             }
             for (int i = 0; i < list.length; i++) {
-                if(list[i].contains(".")){
+                if (list[i].contains(".")) {
                     assetsList.add(path + "/" + list[i]);
                 }
                 String subPath;
@@ -124,7 +124,7 @@ public class StageApplication extends Application {
     }
     private void createStagePath() {
         String filesDir = getApplicationContext().getFilesDir().getPath();
-        String[] fileDirNames= {TEMP_DIR, FILES_DIR, PREFERENCE_DIR, DATABASE_DIR};
+        String[] fileDirNames = {TEMP_DIR, FILES_DIR, PREFERENCE_DIR, DATABASE_DIR};
         for (int i = 0; i < fileDirNames.length; i++) {
             makeNewDir(filesDir + fileDirNames[i]);
         }

@@ -30,7 +30,6 @@
 namespace OHOS {
 namespace AbilityRuntime {
 namespace Platform {
-
 class ACE_EXPORT AssetProvider : public Ace::FlutterAssetProvider {
     DECLARE_ACE_TYPE(AssetProvider, Ace::FlutterAssetProvider);
 
