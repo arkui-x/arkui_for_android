@@ -79,8 +79,8 @@ private:
     ContentStartAbilityCallback onStartAbility_;
 };
 
-UIContentImpl::UIContentImpl(OHOS::AbilityRuntime::Platform::Context* context, NativeEngine* runtime) :
-    runtime_(reinterpret_cast<void*>(runtime))
+UIContentImpl::UIContentImpl(OHOS::AbilityRuntime::Platform::Context* context, NativeEngine* runtime)
+    : runtime_(reinterpret_cast<void*>(runtime))
 {
     CHECK_NULL_VOID(context);
     const auto& obj = context->GetBindingObject();
@@ -148,7 +148,6 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
         LOGI("hapPath:%{public}s", hapPath.c_str());
         // first use hap provider
         if (flutterAssetManager && !hapPath.empty()) {
-            // auto asset = context->GetAssetManager();
             jobject asset;
             auto env = JniEnvironment::GetInstance().GetJniEnv();
 
@@ -485,9 +484,6 @@ void UIContentImpl::SetNextFrameLayoutCallback(std::function<void()>&& callback)
 
 void UIContentImpl::NotifyMemoryLevel(int32_t level)
 {
-    // level = 0: MEMORY_LEVEL_MODERATE;
-    // level = 1: MEMORY_LEVEL_LOW;
-    // level = 2: MEMORY_LEVEL_CRITICAL;
     LOGI("Receive Memory level notification, level: %{public}d", level);
     auto container = Platform::AceContainerSG::GetContainer(instanceId_);
     CHECK_NULL_VOID(container);

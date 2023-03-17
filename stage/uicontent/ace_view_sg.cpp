@@ -15,9 +15,6 @@
 
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
 
-// #include "flutter/fml/message_loop.h"
-// #include "flutter/shell/platform/ohos/platform_task_runner_adapter.h"
-
 #include "adapter/android/entrance/java/jni/ace_resource_register.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "adapter/android/entrance/java/jni/native_window_surface.h"

@@ -726,7 +726,7 @@ bool AceContainerSG::OnBackPressed(int32_t instanceId)
     auto context = DynamicCast<NG::PipelineContext>(baseContext);
 #else
     auto context = DynamicCast<PipelineContext>(baseContext);
-#endif  
+#endif
     CHECK_NULL_RETURN(context, false);
     if (context->PopPageStackOverlay()) {
         return true;
@@ -912,7 +912,8 @@ bool AceContainerSG::RunPage(int32_t instanceId, int32_t pageId, const std::stri
     return false;
 }
 
-void AceContainerSG::SetResPaths(const std::string& hapResPath, const std::string& sysResPath, const ColorMode& colorMode)
+void AceContainerSG::SetResPaths(const std::string& hapResPath,
+    const std::string& sysResPath, const ColorMode& colorMode)
 {
     LOGI("SetResPaths, Use hap path to load resource");
     resourceInfo_.SetHapPath(hapResPath);

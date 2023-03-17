@@ -22,7 +22,7 @@ public class AppModeConfig {
 
     private static String appMode = "stage";  // stage or fa
 
-    private AppModeConfig() { }
+    private AppModeConfig() {}
 
     public static void setAppMode(String mode) {
         appMode = mode;

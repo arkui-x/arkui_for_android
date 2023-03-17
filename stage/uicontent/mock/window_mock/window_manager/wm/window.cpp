@@ -16,14 +16,11 @@
 
 namespace OHOS {
 namespace Rosen {
-Window::Window(const std::shared_ptr<WindowOption>& option) {
-
-}
+Window::Window(const std::shared_ptr<WindowOption>& option) {}
 
 uint32_t Window::GetWindowId() const
 {
     return 1;
 }
-
 }
 }

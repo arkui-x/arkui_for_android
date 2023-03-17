@@ -42,7 +42,7 @@ public:
     {
 #ifdef ENABLE_ROSEN_BACKEND
         threadModel_ = FlutterThreadModel::CreateThreadModel(false, true, false);
-#endif  
+#endif
     }
     ~AceViewSG() override = default;
 
@@ -121,20 +121,20 @@ public:
     }
 
 #ifdef ENABLE_ROSEN_BACKEND
-    // void SetSurfaceNode(std::shared_ptr<Rosen::RSSurfaceNode> surfaceNode)
-    // {
-    //     surfaceNode_ = surfaceNode;
-    //     if (uiDirector_) {
-    //         uiDirector_->SetRSSurfaceNode(surfaceNode_);
-    //     }
-    // }
-    // void SetUIDirector(std::shared_ptr<Rosen::RSUIDirector> uiDirector)
-    // {
-    //     uiDirector_ = uiDirector;
-    //     if (uiDirector_ && surfaceNode_) {
-    //         uiDirector_->SetRSSurfaceNode(surfaceNode_);
-    //     }
-    // }
+    void SetSurfaceNode(std::shared_ptr<Rosen::RSSurfaceNode> surfaceNode)
+    {
+        surfaceNode_ = surfaceNode;
+        if (uiDirector_) {
+            uiDirector_->SetRSSurfaceNode(surfaceNode_);
+        }
+    }
+    void SetUIDirector(std::shared_ptr<Rosen::RSUIDirector> uiDirector)
+    {
+        uiDirector_ = uiDirector;
+        if (uiDirector_ && surfaceNode_) {
+            uiDirector_->SetRSSurfaceNode(surfaceNode_);
+        }
+    }
     void SetRSWinodw(sptr<Rosen::Window> window)
     {
         rsWinodw_ = std::move(window);

@@ -87,5 +87,4 @@ void JniAppModeConfig::SetAppMode(JNIEnv* env, jclass myclass, jstring str)
         LOGE("%{public}s platform not found, initialization of jni failed", appMode);
     }
 }
-
 } // namespace OHOS::Ace::Platform

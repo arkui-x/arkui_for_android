@@ -30,7 +30,5 @@ public:
     static bool Register();
     static void SetAppMode(JNIEnv* env, jclass myclass, jstring str);
 };
-
 } // namespace OHOS::Ace::Platform
-
 #endif // FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_APP_MODE_CONFIG_H

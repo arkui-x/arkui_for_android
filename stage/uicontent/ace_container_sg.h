@@ -40,7 +40,8 @@ class AceContainerSG : public Container, public JsMessageDispatcher {
     DECLARE_ACE_TYPE(AceContainerSG, Container, JsMessageDispatcher);
 
 public:
-    AceContainerSG(int32_t instanceId, FrontendType type, std::weak_ptr<OHOS::AbilityRuntime::Platform::Context> runtimeContext,
+    AceContainerSG(int32_t instanceId, FrontendType type,
+        std::weak_ptr<OHOS::AbilityRuntime::Platform::Context> runtimeContext,
         std::weak_ptr<OHOS::AppExecFwk::AbilityInfo> abilityInfo, std::unique_ptr<PlatformEventCallback> callback,
         bool useCurrentEventRunner = false);
 
@@ -257,36 +258,36 @@ private:
     void InitThemeManager();
     void SetupRootElement();
 
-    AceView* aceView_{ nullptr };
+    AceView* aceView_ { nullptr };
     RefPtr<TaskExecutor> taskExecutor_;
     RefPtr<AssetManager> assetManager_;
     RefPtr<PlatformResRegister> resRegister_;
     RefPtr<PipelineBase> pipelineContext_;
     RefPtr<Frontend> frontend_;
     RefPtr<PlatformBridge> messageBridge_;
-    FrontendType type_{ FrontendType::JSON };
+    FrontendType type_ { FrontendType::JSON };
 
     std::unique_ptr<PlatformEventCallback> platformEventCallback_;
-    WindowModal windowModal_{ WindowModal::NORMAL };
-    ColorScheme colorScheme_{ ColorScheme::SCHEME_LIGHT };
+    WindowModal windowModal_ { WindowModal::NORMAL };
+    ColorScheme colorScheme_ { ColorScheme::SCHEME_LIGHT };
 
     ResourceInfo resourceInfo_;
-    int32_t instanceId_{ 0 };
+    int32_t instanceId_ { 0 };
 
     std::string instanceName_;
     std::string hostClassName_;
 
-    void* multiModalPtr_{ nullptr };
+    void* multiModalPtr_ { nullptr };
     RefPtr<ThemeManager> themeManager_;
 
     // for stage mode
-    uint32_t windowId_{ OHOS::Rosen::INVALID_WINDOW_ID };
+    uint32_t windowId_ { OHOS::Rosen::INVALID_WINDOW_ID };
     std::weak_ptr<OHOS::AbilityRuntime::Platform::Context> runtimeContext_;
     std::weak_ptr<OHOS::AppExecFwk::AbilityInfo> abilityInfo_;
-    void* sharedRuntime_{ nullptr };
+    void* sharedRuntime_ { nullptr };
     std::string pageProfile_;
-    bool useCurrentEventRunner_{ false };
-    int32_t pageId_{ 0 };
+    bool useCurrentEventRunner_ { false };
+    int32_t pageId_ { 0 };
     bool useStageModel_ = false;
 
     ACE_DISALLOW_COPY_AND_MOVE(AceContainerSG);
