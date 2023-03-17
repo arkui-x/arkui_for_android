@@ -34,6 +34,7 @@
 #include "adapter/android/capability/java/jni/plugin/plugin_manager_jni.h"
 #include "adapter/android/entrance/java/jni/ace_application_info_jni.h"
 #include "adapter/android/entrance/java/jni/ace_env_jni.h"
+#include "adapter/android/entrance/java/jni/ace_platform_plugin_jni.h"
 #include "adapter/android/entrance/java/jni/download_manager_jni.h"
 #include "adapter/android/entrance/java/jni/dump_helper_jni.h"
 #include "adapter/android/entrance/java/jni/flutter_ace_view_jni.h"
@@ -48,7 +49,7 @@ using flutter::ace::VsyncWaiterAndroid;
 using flutter::VsyncWaiterAndroid;
 #endif
 
-bool JniRegistry::Register()
+bool JniRegistry::Register(bool isStageMode)
 {
     // Get JNI environment of current thread.
     auto jniEnv = JniEnvironment::GetInstance().GetJniEnv();
@@ -57,9 +58,16 @@ bool JniRegistry::Register()
         return false;
     }
 
-    if (!AceEnvJni::Register(jniEnv)) {
-        LOGE("JNI Initialize: failed to register AceEnvJni");
-        return false;
+    if (!isStageMode) {
+        if (!AceEnvJni::Register(jniEnv)) {
+            LOGE("JNI Initialize: failed to register AceEnvJni");
+            return false;
+        }
+
+        if (!AceApplicationInfoJni::Register(jniEnv)) {
+            LOGE("JNI Initialize: failed to register AceApplicationInfo");
+            return false;
+        }
     }
 
     if (!DumpHelperJni::Register(jniEnv)) {
@@ -67,16 +75,13 @@ bool JniRegistry::Register()
         return false;
     }
 
-    if (!AceApplicationInfoJni::Register(jniEnv)) {
-        LOGE("JNI Initialize: failed to register AceApplicationInfo");
-        return false;
-    }
-
     fml::jni::InitJavaVM(JniEnvironment::GetInstance().GetVM().get());
 
-    if (!FlutterAceViewJni::RegisterNatives(jniEnv.get())) {
-        LOGE("JNI Initialize: failed to register FlutterAceView");
-        return false;
+    if (!isStageMode) {
+        if (!FlutterAceViewJni::RegisterNatives(jniEnv.get())) {
+            LOGE("JNI Initialize: failed to register FlutterAceView");
+            return false;
+        }
     }
 
     if (!VsyncWaiterAndroid::Register(jniEnv.get())) {
@@ -91,9 +96,11 @@ bool JniRegistry::Register()
     }
 #endif
 
-    if (!AceApplicationInfoJni::Register(jniEnv)) {
-        LOGE("JNI Initialize: failed to register AceApplicationInfo");
-        return false;
+    if (!isStageMode) {
+        if (!AceApplicationInfoJni::Register(jniEnv)) {
+            LOGE("JNI Initialize: failed to register AceApplicationInfo");
+            return false;
+        }
     }
 
     // register capability plugins
@@ -134,6 +141,11 @@ bool JniRegistry::Register()
 
     if (!GrantResultJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register GrantResultJni");
+        return false;
+    }
+
+    if (!AcePlatformPluginJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register AcePlatformPluginJni");
         return false;
     }
 

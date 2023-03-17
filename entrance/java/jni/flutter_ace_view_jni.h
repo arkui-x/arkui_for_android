@@ -45,7 +45,6 @@ public:
     static void UnregisterSurface(JNIEnv* env, jobject myObject, jlong view, jlong texture_id);
     static void MarkTextureFrameAvailable(JNIEnv* env, jobject myObject, jlong view, jlong texture_id);
     static void UnregisterTexture(JNIEnv* env, jobject myObject, jlong view, jlong texture_id);
-    static jlong InitResRegister(JNIEnv* env, jobject myObject, jlong view, jobject resRegister);
     static void InitCacheFilePath(JNIEnv* env, jobject myObject, jlong view, jstring imagePath, jstring filePath);
     static void InitDeviceType(JNIEnv* env, jclass myClass, jint deviceType);
     static jint GetViewBackgoundColor(JNIEnv* env, jobject myObject, jlong view);

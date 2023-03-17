@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,19 +12,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "window.h"
 
-#ifndef FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_JNI_REGISTRY_H
-#define FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_JNI_REGISTRY_H
+namespace OHOS {
+namespace Rosen {
+Window::Window(const std::shared_ptr<WindowOption>& option) {
 
-#include "base/utils/macros.h"
+}
 
-namespace OHOS::Ace::Platform {
+uint32_t Window::GetWindowId() const
+{
+    return 1;
+}
 
-class ACE_EXPORT JniRegistry {
-public:
-    static bool Register(bool isStageMode = false);
-};
-
-} // namespace OHOS::Ace::Platform
-
-#endif // FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_JNI_REGISTRY_H
+}
+}

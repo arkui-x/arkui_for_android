@@ -134,15 +134,23 @@ void ResourceAdapterImpl::Init(const ResourceInfo& resourceInfo)
     if (!newResMgr) {
         LOGW("create resource manager from Global::Resource::CreateResourceManager() failed!");
     }
-    std::string appResIndexPath = packagePath + DELIMITER + "appres" + DELIMITER + "resources.index";
+
+    auto hapPath = resourceInfo.GetHapPath();
+    std::string appResIndexPath = hapPath.empty() ? packagePath + DELIMITER + "appres" + DELIMITER + "resources.index" :
+        hapPath + DELIMITER + "resources.index";
+    LOGI("appResIndexPath: %s", appResIndexPath.c_str());
     auto appResRet = newResMgr->AddResource(appResIndexPath.c_str());
+
     std::string sysResIndexPath = packagePath + DELIMITER + "systemres" + DELIMITER + "resources.index";
+    LOGI("sysResIndexPath: %s", sysResIndexPath.c_str());
     auto sysResRet = newResMgr->AddResource(sysResIndexPath.c_str());
+
     auto configRet = newResMgr->UpdateResConfig(*resConfig);
     LOGI("AddAppRes result=%{public}d, AddSysRes result=%{public}d,  UpdateResConfig result=%{public}d, "
          "ori=%{public}d, dpi=%{public}d, device=%{public}d, colorMode=%{public}d,",
         appResRet, sysResRet, configRet, resConfig->GetDirection(), resConfig->GetScreenDensity(),
         resConfig->GetDeviceType(), resConfig->GetColorMode());
+
     resourceManager_ = newResMgr;
     packagePathStr_ = IsDirExist(packagePath) ? packagePath : std::string();
 

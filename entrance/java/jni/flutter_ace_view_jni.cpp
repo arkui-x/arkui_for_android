@@ -100,11 +100,6 @@ static const JNINativeMethod COMMON_METHODS[] = {
         .fnPtr = reinterpret_cast<void*>(&FlutterAceViewJni::UnregisterSurface),
     },
     {
-        .name = "nativeInitResRegister",
-        .signature = "(JLohos/ace/adapter/AceResourceRegister;)J",
-        .fnPtr = reinterpret_cast<void*>(&FlutterAceViewJni::InitResRegister),
-    },
-    {
         .name = "nativeInitCacheFilePath",
         .signature = "(JLjava/lang/String;Ljava/lang/String;)V",
         .fnPtr = reinterpret_cast<void*>(&FlutterAceViewJni::InitCacheFilePath),
@@ -417,26 +412,6 @@ bool FlutterAceViewJni::RegisterNatives(JNIEnv* env)
 
     env->DeleteLocalRef(myClass);
     return true;
-}
-
-jlong FlutterAceViewJni::InitResRegister(JNIEnv* env, jobject myObject, jlong view, jobject resRegister)
-{
-    if (env == nullptr) {
-        LOGE("env is null");
-        return 0;
-    }
-    auto aceResRegister = Referenced::MakeRefPtr<AceResourceRegister>(resRegister);
-    if (!aceResRegister->Initialize(env)) {
-        LOGE("Failed to initialize the AcerResourceRegister");
-        return 0;
-    }
-    auto viewPtr = JavaLongToPointer<FlutterAceView>(view);
-    if (viewPtr == nullptr) {
-        LOGE("viewPtr is null");
-        return 0;
-    }
-    viewPtr->SetPlatformResRegister(aceResRegister);
-    return PointerToJavaLong(AceType::RawPtr(aceResRegister));
 }
 
 void FlutterAceViewJni::InitCacheFilePath(

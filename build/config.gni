@@ -41,6 +41,8 @@ cflags_cc = [
 
 platform_deps = [
   "//foundation/arkui/ace_engine/adapter/android/entrance/java/jni:ace_common_jni_android",
+  "//foundation/arkui/ace_engine/adapter/android/stage/ability/java/jni:stage_android_jni_android",
+  "//foundation/arkui/ace_engine/adapter/android/stage/uicontent:ace_uicontent_android",
   "//foundation/arkui/ace_engine/adapter/android/osal:ace_osal_android",
 ]
 

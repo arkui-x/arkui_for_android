@@ -40,6 +40,7 @@ import org.json.JSONException;
 
 import ohos.ace.adapter.capability.grantresult.GrantResult;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
+import ohos.ace.adapter.AppModeConfig;;
 
 /**
  * A base class for the Ability Cross-platform Environment(ACE) to run on
@@ -87,6 +88,8 @@ public class AceActivity extends Activity {
 
     private static final int GRAY_THRESHOLD = 255;
 
+    private static final String APP_MODE = "fa";
+
     private static final AtomicInteger ID_GENERATOR = new AtomicInteger(1);
 
     private String instanceName;
@@ -118,7 +121,10 @@ public class AceActivity extends Activity {
         }
         viewCreator = new AceViewCreatorAosp(this);
         AceEnv.setViewCreator(viewCreator);
+        AceEnv.getInstance();
+        AppModeConfig.setAppMode(APP_MODE);
         AceEnv.getInstance().setupFirstFrameHandler(AceEnv.ACE_PLATFORM_ANDROID);
+        
         boolean isDebug = (context.getApplicationInfo() != null)
                 && ((context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0);
 
