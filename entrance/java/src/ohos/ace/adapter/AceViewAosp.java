@@ -33,14 +33,8 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
-import ohos.ace.adapter.capability.clipboard.ClipboardPluginAosp;
-import ohos.ace.adapter.capability.editing.TextInputPluginAosp;
-import ohos.ace.adapter.capability.environment.EnvironmentAosp;
-import ohos.ace.adapter.capability.storage.PersistentStorageAosp;
 import ohos.ace.adapter.capability.texture.AceTexturePluginAosp;
 import ohos.ace.adapter.capability.texture.IAceTexture;
-import ohos.ace.adapter.capability.vibrator.VibratorPluginAosp;
-import ohos.ace.adapter.capability.plugin.PluginManager;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -82,19 +76,7 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
 
     private View animateView;
 
-    private AceResourceRegister resRegister;
-
-    private ClipboardPluginAosp clipboardPlugin;
-
-    private TextInputPluginAosp textInputPlugin;
-
-    private EnvironmentAosp environmentPlugin;
-
-    private PersistentStorageAosp persistentStoragePlugin;
-
-    private VibratorPluginAosp vibratorPlugin;
-
-    private PluginManager pluginManager;
+    private AcePlatformPlugin platformPlugin;
 
     /**
      * Constructor of AceViewAosp
@@ -119,8 +101,7 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
         metrics.devicePixelRatio = density;
 
         initCacheFilePath();
-        initResRegister();
-        initPlugins(context);
+        initPlatformPlugin(context, instanceId);
     }
 
     /**
@@ -243,8 +224,8 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        if (textInputPlugin != null) {
-            return textInputPlugin.createInputConnection(this, outAttrs);
+        if (platformPlugin != null) {
+            return platformPlugin.onCreateInputConnection(this, outAttrs);
         }
         return super.onCreateInputConnection(outAttrs);
     }
@@ -294,8 +275,8 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
 
     @Override
     public void addResourcePlugin(AceResourcePlugin plugin) {
-        if (resRegister != null) {
-            resRegister.registerPlugin(plugin);
+        if (platformPlugin != null) {
+            platformPlugin.addResourcePlugin(plugin);
         }
     }
 
@@ -313,19 +294,14 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
     }
 
     /**
-     * Initialize resource register
+     * Initialize platform plugins
      *
      */
-    public void initResRegister() {
-        resRegister = new AceResourceRegister();
+    public void initPlatformPlugin(Context context, int instanceId) {
         if (nativeViewPtr == 0L) {
+            ALog.e(LOG_TAG, "initPlatformPlugin nativeViewPtr null");
             return;
         }
-        long resRegisterPtr = nativeInitResRegister(nativeViewPtr, resRegister);
-        if (resRegisterPtr == 0L) {
-            return;
-        }
-        resRegister.setRegisterPtr(resRegisterPtr);
 
         IAceTexture textureImpl = new IAceTexture() {
             @Override
@@ -368,7 +344,11 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
                 nativeUnregisterSurface(nativeViewPtr, textureId);
             }
         };
-        resRegister.registerPlugin(AceTexturePluginAosp.createRegister(textureImpl));
+
+        platformPlugin = new AcePlatformPlugin(context, instanceId, this, nativeViewPtr);
+        if (platformPlugin != null) {
+            platformPlugin.addResourcePlugin(AceTexturePluginAosp.createRegister(textureImpl));
+        }
     }
 
     /**
@@ -413,15 +393,6 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
             ((ViewGroup) parent).removeView(animateView);
         }
         animateView = null;
-    }
-
-    private void initPlugins(Context context) {
-        clipboardPlugin = new ClipboardPluginAosp(context);
-        textInputPlugin = new TextInputPluginAosp(this, instanceId);
-        environmentPlugin = new EnvironmentAosp(context);
-        persistentStoragePlugin = new PersistentStorageAosp(context);
-        vibratorPlugin = new VibratorPluginAosp(context);
-        pluginManager = new PluginManager(context);
     }
 
     private View createAnimateView() {
@@ -476,8 +447,6 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
     private native void nativeUnregisterSurface(long viewPtr, long textureId);
 
     private native void nativeMarkTextureFrameAvailable(long viewPtr, long textureId);
-
-    private native long nativeInitResRegister(long viewPtr, AceResourceRegister resRegister);
 
     private native void nativeInitCacheFilePath(long viewPtr, String imagePath, String filePath);
 

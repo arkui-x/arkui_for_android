@@ -15,10 +15,9 @@
 
 #include "jni.h"
 
-#include "adapter/android/entrance/java/jni/ace_container_jni.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
-#include "adapter/android/entrance/java/jni/jni_registry.h"
 #include "base/log/log.h"
+#include "jni_app_mode_config.h"
 
 namespace {
 
@@ -43,13 +42,9 @@ jint JNI_OnLoad(JavaVM* vm, void*)
         LOGE("JNI Onload: failed to initialize JniEnvironment");
         return RET_FAIL;
     }
-    if (!OHOS::Ace::Platform::AceContainerJni::Register()) {
-        LOGE("JNI Onload: failed to register AceContainer");
-        return RET_FAIL;
-    }
 
-    if (!OHOS::Ace::Platform::JniRegistry::Register()) {
-        LOGE("JNI Onload: failed to call JniRegistry");
+    if (!OHOS::Ace::Platform::JniAppModeConfig::Register()) {
+        LOGE("JNI Onload: failed to register JniAppModeConfig");
         return RET_FAIL;
     }
 
