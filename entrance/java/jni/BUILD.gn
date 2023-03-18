@@ -41,6 +41,9 @@ template("ace_android_jni_source_set") {
         "$ace_flutter_engine_root/skia:ace_skia_$platform",
       ]
     }
+    if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
+      deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client" ]
+    }
   }
 }
 
@@ -88,6 +91,12 @@ template("ace_common_jni_source_set") {
       deps += [
         "$ace_flutter_engine_root:third_party_flutter_engine_$platform",
         "$ace_flutter_engine_root/skia:ace_skia_$platform",
+      ]
+    }
+    if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
+      deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client" ]
+      sources += [
+        "$ace_root/adapter/android/entrance/java/jni/virtual_rs_window.cpp",
       ]
     }
   }

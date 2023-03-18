@@ -69,20 +69,24 @@ void FlutterAceView::Launch()
 {
     LOGD("Launch shell holder");
     if (!viewLaunched_) {
+#ifndef ENABLE_ROSEN_BACKEND
 #ifdef NG_BUILD
         shellHolder_->Launch();
 #else
         flutter::RunConfiguration config;
         shellHolder_->Launch(std::move(config));
 #endif
+#endif
         viewLaunched_ = true;
     }
 }
 
+#ifndef ENABLE_ROSEN_BACKEND
 void FlutterAceView::SetShellHolder(std::unique_ptr<AndroidShellHolder> holder)
 {
     shellHolder_ = std::move(holder);
 }
+#endif
 
 bool FlutterAceView::ProcessTouchEvent(std::unique_ptr<flutter::PointerDataPacket> packet)
 {
@@ -179,6 +183,7 @@ bool FlutterAceView::IsLastPage() const
 
 std::unique_ptr<DrawDelegate> FlutterAceView::GetDrawDelegate()
 {
+#ifndef ENABLE_ROSEN_BACKEND
     auto drawDelegate = std::make_unique<DrawDelegate>();
     drawDelegate->SetDrawFrameCallback([this](RefPtr<Flutter::Layer>& layer, const Rect& dirty) {
         if (!layer) {
@@ -199,6 +204,9 @@ std::unique_ptr<DrawDelegate> FlutterAceView::GetDrawDelegate()
 #endif
     });
     return drawDelegate;
+#else
+    return nullptr;
+#endif
 }
 
 std::unique_ptr<PlatformWindow> FlutterAceView::GetPlatformWindow()

@@ -289,6 +289,7 @@ public class AceViewAosp extends SurfaceView implements IAceView, SurfaceHolder.
         }
         Activity activity = (Activity) getContext();
         activity.addContentView(animateView, MATCH_PARENT);
+        onFirstFrame();
     }
 
     @Override

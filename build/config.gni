@@ -33,6 +33,7 @@ form_components_support = false
 js_pa_support = false
 connect_server_support = false
 xcomponent_components_support = false
+enable_rosen_backend = true
 
 cflags_cc = [
   "-std=c++17",
@@ -49,4 +50,9 @@ libace_target =
 
 if (xcomponent_components_support) {
   defines += [ "XCOMPONENT_SUPPORTED" ]
+}
+
+if (defined(enable_rosen_backend) && enable_rosen_backend) {
+  defines += [ "ENABLE_ROSEN_BACKEND" ]
+  defines += [ "VIRTUAL_RS_WINDOW" ]
 }

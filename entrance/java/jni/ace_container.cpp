@@ -14,6 +14,7 @@
  */
 
 #include "adapter/android/entrance/java/jni/ace_container.h"
+#include <memory>
 
 #include "flutter/fml/platform/android/jni_util.h"
 
@@ -48,11 +49,7 @@
 #include "core/components/theme/theme_constants.h"
 #include "core/components/theme/theme_manager_impl.h"
 #include "core/pipeline/base/element.h"
-#ifdef NG_BUILD
 #include "core/pipeline_ng/pipeline_context.h"
-#else
-#include "core/pipeline/pipeline_context.h"
-#endif
 #include "frameworks/bridge/card_frontend/card_frontend.h"
 #include "frameworks/bridge/common/utils/engine_helper.h"
 #ifdef NG_BUILD
@@ -67,6 +64,12 @@
 #include "core/event/multimodal/fake_multimodal_subscriber.h"
 #endif
 
+#ifdef ENABLE_ROSEN_BACKEND
+#include "render_service_client/core/ui/rs_ui_director.h"
+
+#include "adapter/android/entrance/java/jni/flutter_ace_view.h"
+#endif
+
 namespace OHOS::Ace::Platform {
 namespace {
 const std::string ORI_MODE_KEY { "orientation" };
@@ -74,15 +77,12 @@ const std::string ORI_MODE_PORTRAIT { "PORTRAIT" };
 const std::string ORI_MODE_LANDSCAPE { "LANDSCAPE" };
 const std::string DENSITY_KEY = { "densityDpi" };
 constexpr double DPI_BASE = { 160.0f };
-}
+} // namespace
 AceContainer::AceContainer(jint instanceId, FrontendType type, jobject callback)
     : messageBridge_(AceType::MakeRefPtr<PlatformBridge>()), type_(type), instanceId_(instanceId)
 {
     ACE_DCHECK(callback);
-#ifdef NG_BUILD
-    LOGD("AceContainer created use new pipeline");
     SetUseNewPipeline();
-#endif
     auto flutterTaskExecutor = Referenced::MakeRefPtr<FlutterTaskExecutor>();
     flutterTaskExecutor->InitPlatformThread();
     // no need to create JS thread for DELCARATIVE_JS
@@ -295,7 +295,7 @@ void AceContainer::InitializeCallback()
     aceView_->RegisterRotationEventCallback(rotationEventCallback);
 
     auto&& viewChangeCallback = [weak, instanceId](int32_t width, int32_t height, WindowSizeChangeReason reason,
-        const std::shared_ptr<Rosen::RSTransaction> rsTransaction) {
+                                    const std::shared_ptr<Rosen::RSTransaction> rsTransaction) {
         ACE_SCOPED_TRACE("ViewChangeCallback(%d, %d)", width, height);
         auto context = weak.Upgrade();
         if (context == nullptr) {
@@ -478,10 +478,16 @@ bool AceContainer::Dump(const std::vector<std::string>& params, std::vector<std:
 }
 
 void AceContainer::AttachView(
-    std::unique_ptr<Window> window, AceView* view, double density, int32_t width, int32_t height)
+    std::shared_ptr<Window> window, AceView* view, double density, int32_t width, int32_t height)
 {
     aceView_ = view;
     auto instanceId = aceView_->GetInstanceId();
+#ifdef ENABLE_ROSEN_BACKEND
+    auto* flutterView = static_cast<Platform::FlutterAceView*>(aceView_);
+    CHECK_NULL_VOID(flutterView);
+    auto flutterTaskExecutor = AceType::DynamicCast<FlutterTaskExecutor>(taskExecutor_);
+    flutterTaskExecutor->InitOtherThreads(flutterView->GetThreadModel());
+#else
 #ifdef NG_BUILD
     auto state = flutter::ace::WindowManager::GetWindow(instanceId);
     CHECK_NULL_VOID(state);
@@ -491,6 +497,7 @@ void AceContainer::AttachView(
 #endif
     auto flutterTaskExecutor = AceType::DynamicCast<FlutterTaskExecutor>(taskExecutor_);
     flutterTaskExecutor->InitOtherThreads(state->GetTaskRunners());
+#endif
 
     ContainerScope scope(instanceId);
     if (type_ == FrontendType::DECLARATIVE_JS) {
@@ -514,27 +521,16 @@ void AceContainer::AttachView(
     }
 
     resRegister_ = aceView_->GetPlatformResRegister();
-#ifdef NG_BUILD
     LOGI("New pipeline version creating...");
     pipelineContext_ = AceType::MakeRefPtr<NG::PipelineContext>(
         std::move(window), taskExecutor_, assetManager_, resRegister_, frontend_, instanceId);
-#else
-    auto pipelineContext = AceType::MakeRefPtr<PipelineContext>(
-        std::move(window), taskExecutor_, assetManager_, resRegister_, frontend_, instanceId);
-    pipelineContext_ = pipelineContext;
-#endif
 
     pipelineContext_->SetRootSize(density, width, height);
     pipelineContext_->SetTextFieldManager(AceType::MakeRefPtr<TextFieldManager>());
     pipelineContext_->SetIsRightToLeft(AceApplicationInfo::GetInstance().IsRightToLeft());
-#ifndef NG_BUILD
-    pipelineContext->SetMessageBridge(messageBridge_);
-    pipelineContext->SetWindowModal(windowModal_);
-    pipelineContext->SetModalHeight(modalHeight_);
-    pipelineContext->SetModalColor(modalColor_);
-    pipelineContext->SetDrawDelegate(aceView_->GetDrawDelegate());
-    pipelineContext->SetPhotoCachePath(aceView_->GetCachePath());
-#endif
+    pipelineContext_->SetMessageBridge(messageBridge_);
+    pipelineContext_->SetWindowModal(windowModal_);
+    pipelineContext_->SetDrawDelegate(aceView_->GetDrawDelegate());
     pipelineContext_->SetFontScale(resourceInfo_.GetResourceConfiguration().GetFontRatio());
     pipelineContext_->SetIsJsCard(type_ == FrontendType::JS_CARD);
 
@@ -609,6 +605,19 @@ void AceContainer::AttachView(
     });
 
     InitThemeManager();
+#ifdef ENABLE_ROSEN_BACKEND
+    taskExecutor_->PostTask(
+        [weak = WeakClaim(this)]() {
+            auto container = weak.Upgrade();
+            CHECK_NULL_VOID(container);
+            auto pipelineContext = AceType::DynamicCast<PipelineContext>(container->pipelineContext_);
+            CHECK_NULL_VOID(pipelineContext);
+            auto* window = pipelineContext->GetWindow();
+            CHECK_NULL_VOID(window);
+            pipelineContext->SetRSUIDirector(window->GetRSUIDirector());
+        },
+        TaskExecutor::TaskType::UI);
+#endif
 
     auto weakContext = AceType::WeakClaim(AceType::RawPtr(pipelineContext_));
     taskExecutor_->PostTask(
@@ -677,11 +686,9 @@ void AceContainer::UpdateResourceConfiguration(const std::string& jsonStr)
         auto oriMode = jsonConfig->GetValue(ORI_MODE_KEY);
         if (oriMode && oriMode->IsString()) {
             auto strOriMode = oriMode->GetString();
-            if (strOriMode == ORI_MODE_PORTRAIT &&
-                resConfig.GetOrientation() != DeviceOrientation::PORTRAIT) {
+            if (strOriMode == ORI_MODE_PORTRAIT && resConfig.GetOrientation() != DeviceOrientation::PORTRAIT) {
                 resConfig.SetOrientation(DeviceOrientation::PORTRAIT);
-            } else if (strOriMode == ORI_MODE_LANDSCAPE &&
-                resConfig.GetOrientation() != DeviceOrientation::LANDSCAPE) {
+            } else if (strOriMode == ORI_MODE_LANDSCAPE && resConfig.GetOrientation() != DeviceOrientation::LANDSCAPE) {
                 resConfig.SetOrientation(DeviceOrientation::LANDSCAPE);
             }
         }

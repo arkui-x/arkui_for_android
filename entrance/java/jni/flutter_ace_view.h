@@ -29,22 +29,37 @@
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/utils/noncopyable.h"
 #include "core/common/ace_view.h"
+#include "core/common/flutter/flutter_thread_model.h"
 #include "core/common/platform_res_register.h"
 #include "core/event/key_event_recognizer.h"
+
+#ifdef ENABLE_ROSEN_BACKEND
+#include "render_service_client/core/ui/rs_surface_node.h"
+#include "render_service_client/core/ui/rs_ui_director.h"
+
+#include "adapter/android/entrance/java/jni/virtual_rs_window.h"
+#endif
 
 namespace OHOS::Ace::Platform {
 
 using ReleaseCallback = std::function<void()>;
+#ifndef ENABLE_ROSEN_BACKEND
 #ifdef NG_BUILD
 using flutter::ace::AndroidShellHolder;
 #else
 using flutter::AndroidShellHolder;
 #endif
+#endif
 
 class FlutterAceView : public AceView, public Referenced {
 public:
     FlutterAceView() : object_(nullptr, nullptr) {};
-    explicit FlutterAceView(int32_t id) : instanceId_(id), object_(nullptr, nullptr) {}
+    explicit FlutterAceView(int32_t id) : instanceId_(id), object_(nullptr, nullptr)
+    {
+#ifdef ENABLE_ROSEN_BACKEND
+        threadModel_ = FlutterThreadModel::CreateThreadModel(false, true, false);
+#endif
+    }
     ~FlutterAceView() override = default;
 
     void RegisterTouchEventCallback(TouchEventCallback&& callback) override;
@@ -55,11 +70,18 @@ public:
     void RegisterAxisEventCallback(AxisEventCallback&& callback) override {}
 
     void Launch() override;
+#ifdef ENABLE_ROSEN_BACKEND
+    FlutterThreadModel* GetThreadModel()
+    {
+        return threadModel_.get();
+    }
+#else
     void SetShellHolder(std::unique_ptr<AndroidShellHolder> holder);
     AndroidShellHolder* GetShellHolder() const
     {
         return shellHolder_.get();
     }
+#endif
 
     bool ProcessTouchEvent(std::unique_ptr<flutter::PointerDataPacket> packet);
     void ProcessMouseEvent(std::unique_ptr<flutter::PointerDataPacket> packet);
@@ -176,11 +198,38 @@ public:
         nativeWindowMap_.erase(textureId);
     }
 
+#ifdef ENABLE_ROSEN_BACKEND
+    void SetSurfaceNode(std::shared_ptr<Rosen::RSSurfaceNode> surfaceNode)
+    {
+        surfaceNode_ = surfaceNode;
+        if (uiDirector_) {
+            uiDirector_->SetRSSurfaceNode(surfaceNode_);
+        }
+    }
+    void SetUIDirector(std::shared_ptr<Rosen::RSUIDirector> uiDirector)
+    {
+        uiDirector_ = uiDirector;
+        if (uiDirector_ && surfaceNode_) {
+            uiDirector_->SetRSSurfaceNode(surfaceNode_);
+        }
+    }
+    void SetRSWinodw(sptr<Rosen::Window> window)
+    {
+        rsWinodw_ = std::move(window);
+    }
+    sptr<Rosen::Window> GetRsWindow()
+    {
+        return rsWinodw_;
+    }
+#endif
+
 private:
     bool IsLastPage() const;
     static bool RegisterCommonNatives(JNIEnv* env, const jclass myClass);
 
+#ifndef ENABLE_ROSEN_BACKEND
     std::unique_ptr<AndroidShellHolder> shellHolder_;
+#endif
 
     TouchEventCallback touchEventCallback_;
     MouseEventCallback mouseEventCallback_;
@@ -211,6 +260,13 @@ private:
     std::unordered_map<int32_t, TouchPointInfo> touchPointInfoMap_;
     std::unordered_map<int64_t, void*> nativeWindowMap_;
     JniEnvironment::JavaGlobalRef object_;
+
+#ifdef ENABLE_ROSEN_BACKEND
+    std::shared_ptr<Rosen::RSSurfaceNode> surfaceNode_;
+    std::shared_ptr<Rosen::RSUIDirector> uiDirector_;
+    std::unique_ptr<FlutterThreadModel> threadModel_;
+    sptr<Rosen::Window> rsWinodw_;
+#endif
 
     ACE_DISALLOW_COPY_AND_MOVE(FlutterAceView);
 };

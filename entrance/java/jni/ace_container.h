@@ -211,7 +211,7 @@ public:
 
     void SetSessionID(const std::string& sessionID);
 
-    void AttachView(std::unique_ptr<Window> window, AceView* view, double density, int32_t width, int32_t height);
+    void AttachView(std::shared_ptr<Window> window, AceView* view, double density, int32_t width, int32_t height);
 
     void InitThemeManager();
 
