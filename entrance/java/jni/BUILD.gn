@@ -27,6 +27,7 @@ template("ace_android_jni_source_set") {
       "$ace_root/adapter/android/entrance/java/jni/flutter_ace_view.cpp",
       "$ace_root/adapter/android/entrance/java/jni/flutter_ace_view_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/ace_platform_plugin_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/window_view_jni.cpp",
     ]
 
     deps = [ "$ace_root/frameworks/core/components/theme:build_theme_code" ]
@@ -54,7 +55,14 @@ template("ace_common_jni_source_set") {
 
   ohos_source_set(target_name) {
     defines += invoker.defines
-    configs = [ "$ace_root:ace_config" ]
+    configs = [
+      "$ace_root:ace_config",
+      "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/kits/native/ability:abilitykit_native_config",
+      "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/inner_api/hilog:ability_cross_platform_hilog_config",
+      "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/kits/native/appkit:appkit_native_config",
+      "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/inner_api/jsruntime:jsruntime_config",
+      "//foundation/appframework/arkui/uicontent:uicontent_config",
+    ]
 
     sources = [
       "$ace_root/adapter/android/entrance/java/jni/ace_application_info_impl.cpp",
