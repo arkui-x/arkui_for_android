@@ -19,7 +19,6 @@
 #include <memory>
 
 #include "interfaces/inner_api/ace/viewport_config.h"
-#include "wm/window.h"
 
 #include "base/memory/referenced.h"
 #include "base/utils/noncopyable.h"
@@ -167,8 +166,8 @@ private:
     RefPtr<PlatformResRegister> resRegister_;
 
 #ifdef ENABLE_ROSEN_BACKEND
-    // std::shared_ptr<Rosen::RSSurfaceNode> surfaceNode_;
-    // std::shared_ptr<Rosen::RSUIDirector> uiDirector_;
+    std::shared_ptr<Rosen::RSSurfaceNode> surfaceNode_;
+    std::shared_ptr<Rosen::RSUIDirector> uiDirector_;
     std::unique_ptr<FlutterThreadModel> threadModel_;
     sptr<Rosen::Window> rsWinodw_;
 #endif

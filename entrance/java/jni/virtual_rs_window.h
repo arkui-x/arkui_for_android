@@ -26,7 +26,7 @@
 
 namespace OHOS {
 namespace Rosen {
-
+constexpr uint32_t INVALID_WINDOW_ID = 0;
 using OnCallback = std::function<void(int64_t)>;
 struct VsyncCallback {
     OnCallback onCallback;
