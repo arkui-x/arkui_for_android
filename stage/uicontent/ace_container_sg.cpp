@@ -23,6 +23,7 @@
 
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
+#include "adapter/android/stage/uicontent/ace_view_sg.h"
 #include "base/log/ace_trace.h"
 #include "base/log/event_report.h"
 #include "base/log/log.h"
@@ -56,8 +57,8 @@
 
 #ifdef ENABLE_ROSEN_BACKEND
 #include "render_service_client/core/ui/rs_ui_director.h"
+#include "core/components_ng/render/adapter/rosen_window.h"
 #endif
-#include "adapter/android/stage/uicontent/ace_view_sg.h"
 
 namespace OHOS::Ace::Platform {
 namespace {
@@ -497,9 +498,9 @@ void AceContainerSG::SetView(
     auto* aceView = static_cast<AceViewSG*>(view);
     auto threadModel = aceView->GetThreadModel();
     CHECK_NULL_VOID(threadModel);
-    sptr<Rosen::Window> rsWindow(new Rosen::Window(threadModel->GetTaskRunners()));
-    aceView->SetRSWinodw(rsWindow);
-    auto window = std::make_shared<NG::RosenWindow>(rsWindow, container->GetTaskExecutor(), view->GetInstanceId());
+    sptr<Rosen::Window> rsWindowPtr(new Rosen::Window(threadModel->GetTaskRunners()));
+    aceView->SetRSWinodw(rsWindowPtr);
+    auto window = std::make_unique<NG::RosenWindow>(rsWindowPtr, container->GetTaskExecutor(), view->GetInstanceId());
 #else
 #ifdef NG_BUILD
     std::unique_ptr<Window> window = std::make_unique<NG::FlutterWindow>(container->GetTaskExecutor(), instanceId);
@@ -522,7 +523,7 @@ void AceContainerSG::AttachView(
     auto instanceId = aceView_->GetInstanceId();
 #ifdef ENABLE_ROSEN_BACKEND
     auto* aceView = static_cast<Platform::AceViewSG*>(aceView_);
-    CHECK_NULL_VOID(flutterView);
+    CHECK_NULL_VOID(aceView);
     auto flutterTaskExecutor = AceType::DynamicCast<FlutterTaskExecutor>(taskExecutor_);
     flutterTaskExecutor->InitOtherThreads(aceView->GetThreadModel());
 #else
@@ -563,6 +564,22 @@ void AceContainerSG::AttachView(
     InitializeEventHandler();
     SetGetViewScaleCallback();
     InitThemeManager();
+
+#ifdef ENABLE_ROSEN_BACKEND
+#ifndef NG_BUILD
+    taskExecutor_->PostTask(
+        [weak = WeakClaim(this)]() {
+            auto container = weak.Upgrade();
+            CHECK_NULL_VOID(container);
+            auto pipelineContext = AceType::DynamicCast<PipelineContext>(container->pipelineContext_);
+            CHECK_NULL_VOID(pipelineContext);
+            auto* window = pipelineContext->GetWindow();
+            CHECK_NULL_VOID(window);
+            pipelineContext->SetRSUIDirector(window->GetRSUIDirector());
+        },
+        TaskExecutor::TaskType::UI);
+#endif
+#endif
     SetupRootElement();
 
     aceView_->Launch();

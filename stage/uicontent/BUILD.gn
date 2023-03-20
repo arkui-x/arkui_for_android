@@ -37,7 +37,6 @@ template("ace_uicontent_android_source_set") {
       "//foundation/arkui/napi",
       "//third_party/flutter/engine",
       "//foundation/appframework/arkui/uicontent",
-      "$window_cross_platform_path/window_manager",
     ]
 
     deps = [
@@ -64,8 +63,6 @@ template("ace_uicontent_android_source_set") {
 
     if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
       deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client" ]
-    } else {
-      deps += [ "$window_cross_platform_path/window_manager/wm:libwm" ]
     }
 
     configs = [

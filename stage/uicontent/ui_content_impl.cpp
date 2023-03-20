@@ -126,6 +126,19 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
 
     auto context = context_.lock();
     CHECK_NULL_VOID(context);
+#ifdef ENABLE_ROSEN_BACKEND
+#ifndef NG_BUILD
+    std::shared_ptr<OHOS::Rosen::RSUIDirector> rsUiDirector;
+    if (SystemProperties::GetRosenBackendEnabled()) {
+        rsUiDirector = OHOS::Rosen::RSUIDirector::Create();
+        if (rsUiDirector) {
+            rsUiDirector->SetRSSurfaceNode(window->GetSurfaceNode());
+            rsUiDirector->SetCacheDir(context->GetCacheDir());
+            rsUiDirector->Init();
+        }
+    }
+#endif
+#endif
     auto abilityContext =
         OHOS::AbilityRuntime::Platform::Context::ConvertTo<OHOS::AbilityRuntime::Platform::AbilityContext>(context);
     std::shared_ptr<OHOS::AppExecFwk::AbilityInfo> info;
@@ -230,15 +243,6 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     std::string sysResPath { "" };
     abilityContext->GetPlatformResourcePaths(hapResPath, sysResPath);
     container->SetResPaths(hapResPath, sysResPath, SystemProperties::GetColorMode());
-
-    if (window_->IsDecorEnable()) {
-        LOGI("Container modal is enabled.");
-        container->SetWindowModal(WindowModal::CONTAINER_MODAL);
-    }
-    if (window_->IsFocused()) {
-        LOGI("UIContentImpl: focus again");
-        Focus();
-    }
 
     auto aceView = Platform::AceViewSG::CreateView(instanceId_);
     if (!window_) {

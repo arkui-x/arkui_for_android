@@ -20,7 +20,7 @@
 #include <memory>
 
 #include "ability_context.h"
-#include "wm/window.h"
+#include "adapter/android/entrance/java/jni/virtual_rs_window.h"
 
 #include "adapter/android/entrance/java/jni/ace_resource_register.h"
 #include "adapter/android/stage/uicontent/platform_event_callback.h"
