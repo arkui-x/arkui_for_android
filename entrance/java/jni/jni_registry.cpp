@@ -39,6 +39,7 @@
 #include "adapter/android/entrance/java/jni/dump_helper_jni.h"
 #include "adapter/android/entrance/java/jni/flutter_ace_view_jni.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
+#include "adapter/android/entrance/java/jni/window_view_jni.h"
 #include "base/log/log.h"
 
 namespace OHOS::Ace::Platform {
@@ -82,6 +83,11 @@ bool JniRegistry::Register(bool isStageMode)
             LOGE("JNI Initialize: failed to register FlutterAceView");
             return false;
         }
+    }
+
+    if (!WindowViewJni::RegisterNatives(jniEnv.get())) {
+        LOGE("JNI Initialize: failed to register WindowViewJni");
+        return false;
     }
 
     if (!VsyncWaiterAndroid::Register(jniEnv.get())) {

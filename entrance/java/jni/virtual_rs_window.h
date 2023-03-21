@@ -22,9 +22,23 @@
 #include "refbase.h"
 #include "render_service_client/core/ui/rs_surface_node.h"
 
+#include "adapter/android/entrance/java/jni/window_view_jni.h"
+#include "base/log/log.h"
 #include "base/utils/noncopyable.h"
 
+class NativeValue;
+class NativeEngine;
+
 namespace OHOS {
+namespace AbilityRuntime::Platform {
+class Context;
+class Ability;
+}
+
+namespace Ace::Platform {
+class UIContent;
+}
+
 namespace Rosen {
 constexpr uint32_t INVALID_WINDOW_ID = 0;
 using OnCallback = std::function<void(int64_t)>;
@@ -32,14 +46,50 @@ struct VsyncCallback {
     OnCallback onCallback;
 };
 
+enum class WindowState : uint32_t {
+    STATE_INITIAL,
+    STATE_CREATED,
+    STATE_SHOWN,
+    STATE_HIDDEN,
+    STATE_FROZEN,
+    STATE_UNFROZEN,
+    STATE_DESTROYED,
+    STATE_BOTTOM = STATE_DESTROYED, // Add state type after STATE_DESTROYED is not allowed
+};
+
+enum class WindowSizeChangeReason : uint32_t {
+    UNDEFINED = 0,
+    MAXIMIZE,
+    RECOVER,
+    ROTATION,
+    DRAG,
+    DRAG_START,
+    DRAG_END,
+    RESIZE,
+    MOVE,
+    HIDE,
+    TRANSFORM,
+    CUSTOM_ANIMATION_SHOW,
+    FULL_TO_SPLIT,
+    SPLIT_TO_FULL,
+    END,
+};
+
 class Window : public RefBase {
 public:
     explicit Window(const flutter::TaskRunners& taskRunners);
+    explicit Window(std::shared_ptr<AbilityRuntime::Platform::Context> context);
     ~Window() override = default;
 
     virtual void RequestVsync(const std::shared_ptr<VsyncCallback>& vsyncCallback);
 
     void CreateSurfaceNode(void* nativeWindow);
+    void NotifySurfaceChanged(int32_t width, int32_t height);
+    void NotifySurfaceDestroyed();
+
+    int SetUIContent(const std::string& contentInfo, NativeEngine* engine,
+        NativeValue* storage, bool isdistributed, AbilityRuntime::Platform::Ability* ability);
+    void SetWindowView(JNIEnv* env, jobject windowView);
 
     std::shared_ptr<RSSurfaceNode> GetSurfaceNode() const
     {
@@ -49,6 +99,12 @@ public:
 private:
     std::shared_ptr<RSSurfaceNode> surfaceNode_;
     std::shared_ptr<flutter::VsyncWaiter> vsyncWaiter_;
+
+    jobject windowView_;
+    std::shared_ptr<AbilityRuntime::Platform::Context> context_;
+    std::unique_ptr<OHOS::Ace::Platform::UIContent> uiContent_;
+
+    WindowState state_ { WindowState::STATE_INITIAL };
 
     DISALLOW_COPY_AND_MOVE(Window);
 };
