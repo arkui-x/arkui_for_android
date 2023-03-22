@@ -38,6 +38,7 @@ import java.io.IOException;
 import org.json.JSONObject;
 import org.json.JSONException;
 
+import ohos.ace.adapter.capability.grantresult.GrantResult;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 
 /**
@@ -382,6 +383,21 @@ public class AceActivity extends Activity {
         ALog.i(LOG_TAG, "init theme, color mode :" + colorMode + " themeId :" + themeId);
         container.initResourceManager(getExternalFilesDir(null).getAbsolutePath(), themeId);
         container.setFontScale(fontScale);
+    }
+
+    /**
+     * Callback for the result from requesting permissions.
+     *
+     * @param requestCode The request code passed in {@link #requestPermissions(String[], int)}.
+     * @param permissions permissions The requested permissions. Never null.
+     * @param grantResults grantResults The grant results for the corresponding permissions
+     *     which is either {@link android.content.pm.PackageManager#PERMISSION_GRANTED}
+     *     or {@link android.content.pm.PackageManager#PERMISSION_DENIED}. Never null.
+     */
+    public synchronized void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        Context context = getApplicationContext();
+        GrantResult grantResultsClass = new GrantResult(context);
+        grantResultsClass.onRequestPremissionCallback(permissions, grantResults);
     }
 
     private int getUid(Context context) {
