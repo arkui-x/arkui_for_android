@@ -108,6 +108,10 @@ public class AceActivity extends Activity {
 
     private AceViewCreatorAosp viewCreator = null;
 
+    public int getActivityId() {
+        return this.activityId;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ALog.i(LOG_TAG, "AceActivity onCreate called");

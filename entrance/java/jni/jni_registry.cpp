@@ -25,6 +25,7 @@
 #include "flutter/shell/platform/android/vsync_waiter_android.h"
 #endif
 
+#include "adapter/android/capability/java/jni/bridge/bridge_jni.h"
 #include "adapter/android/capability/java/jni/clipboard/clipboard_jni.h"
 #include "adapter/android/capability/java/jni/editing/text_input_jni.h"
 #include "adapter/android/capability/java/jni/environment/environment_jni.h"
@@ -142,6 +143,11 @@ bool JniRegistry::Register(bool isStageMode)
 
     if (!DownloadManagerJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register DownloadManager");
+        return false;
+    }
+    
+    if (!BridgeJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register BridgeJni");
         return false;
     }
 
