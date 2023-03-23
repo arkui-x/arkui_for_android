@@ -39,12 +39,17 @@ namespace Ace::Platform {
 class UIContent;
 }
 
+namespace AppExecFwk {
+class EventHandler;
+}
+
 namespace Rosen {
 constexpr uint32_t INVALID_WINDOW_ID = 0;
 using OnCallback = std::function<void(int64_t)>;
 struct VsyncCallback {
     OnCallback onCallback;
 };
+class VSyncReceiver;
 
 enum class WindowState : uint32_t {
     STATE_INITIAL,
@@ -77,9 +82,15 @@ enum class WindowSizeChangeReason : uint32_t {
 
 class Window : public RefBase {
 public:
+    static std::shared_ptr<Window> Create(
+        std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context, JNIEnv* env, jobject windowView);
+
     explicit Window(const flutter::TaskRunners& taskRunners);
     explicit Window(std::shared_ptr<AbilityRuntime::Platform::Context> context);
     ~Window() override = default;
+
+    bool CreateVSyncReceiver(std::shared_ptr<AppExecFwk::EventHandler> handler);
+    void RequestNextVsync(std::function<void(int64_t, void*)> callback);
 
     virtual void RequestVsync(const std::shared_ptr<VsyncCallback>& vsyncCallback);
 
@@ -97,12 +108,22 @@ public:
     }
 
 private:
+    void DelayNotifyUIContentIfNeeded();
+
+    int32_t surfaceWidth_ = 0;
+    int32_t surfaceHeight_ = 0;
     std::shared_ptr<RSSurfaceNode> surfaceNode_;
     std::shared_ptr<flutter::VsyncWaiter> vsyncWaiter_;
 
     jobject windowView_;
     std::shared_ptr<AbilityRuntime::Platform::Context> context_;
     std::unique_ptr<OHOS::Ace::Platform::UIContent> uiContent_;
+
+    std::shared_ptr<VSyncReceiver> receiver_ = nullptr;
+
+    bool delayNotifySurfaceCreated_ = false;
+    bool delayNotifySurfaceChanged_ = false;
+    bool delayNotifySurfaceDestroyed_ = false;
 
     WindowState state_ { WindowState::STATE_INITIAL };
 

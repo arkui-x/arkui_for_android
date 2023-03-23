@@ -16,14 +16,20 @@
 #include "adapter/android/entrance/java/jni/virtual_rs_window.h"
 
 #include <memory>
-#include "ability_context.h"
-#include "ability.h"
 #include "base/log/log.h"
 #include "flutter/shell/platform/android/vsync_waiter_android.h"
 #include "foundation/appframework/arkui/uicontent/ui_content.h"
 #include "shell/common/vsync_waiter.h"
+#include "transaction/rs_interfaces.h"
 
 namespace OHOS::Rosen {
+std::shared_ptr<Window> Window::Create(
+    std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context, JNIEnv* env, jobject windowView)
+{
+    auto window = std::make_shared<Window>(context);
+    window->SetWindowView(env, windowView);
+    return window;
+}
 
 Window::Window(const flutter::TaskRunners& taskRunners)
     : vsyncWaiter_(std::make_shared<flutter::VsyncWaiterAndroid>(taskRunners))
@@ -39,6 +45,33 @@ void Window::RequestVsync(const std::shared_ptr<VsyncCallback>& vsyncCallback)
     });
 }
 
+bool Window::CreateVSyncReceiver(std::shared_ptr<AppExecFwk::EventHandler> handler)
+{
+    if (receiver_) {
+        return true;
+    }
+    auto& rsClient = Rosen::RSInterfaces::GetInstance();
+    receiver_ = rsClient.CreateVSyncReceiver("Window_Andorid", handler);
+    VsyncError ret = receiver_->Init();
+    if (ret) {
+        LOGE("Window_Andorid: vsync receiver init failed: %{public}d", ret);
+        return false;
+    }
+    return true;
+}
+
+void Window::RequestNextVsync(std::function<void(int64_t, void*)> callback)
+{
+    if (!receiver_) {
+        return;
+    }
+    VSyncReceiver::FrameCallback fcb = {
+        .userData_ = this,
+        .callback_ = callback,
+    };
+    receiver_->RequestNextVSync(fcb);
+}
+
 void Window::CreateSurfaceNode(void* nativeWindow)
 {
     struct Rosen::RSSurfaceNodeConfig rsSurfaceNodeConfig = { .SurfaceNodeName = "arkui-x_surface",
@@ -46,11 +79,12 @@ void Window::CreateSurfaceNode(void* nativeWindow)
     surfaceNode_ = Rosen::RSSurfaceNode::Create(rsSurfaceNodeConfig);
 
     if (!uiContent_) {
-        LOGE("Window Notify uiContent_ Surface Created, uiContent_ is nullptr!");
-        return;
+        LOGW("Window Notify uiContent_ Surface Created, uiContent_ is nullptr, delay notify.");
+        delayNotifySurfaceCreated_ = true;
+    } else {
+        LOGI("Window Notify uiContent_ Surface Created");
+        uiContent_->NotifySurfaceCreated();
     }
-    LOGI("Window Notify uiContent_ Surface Created");
-    uiContent_->NotifySurfaceCreated();
 }
 
 void Window::NotifySurfaceChanged(int32_t width, int32_t height)
@@ -59,9 +93,21 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height)
         LOGE("Window Notify Surface Changed, surfaceNode_ is nullptr!");
         return;
     }
-    LOGI("Window Notify Surface Changed");
-    surfaceNode_->SetBoundsWidth(width);
-    surfaceNode_->SetBoundsHeight(height);
+    LOGI("Window Notify Surface Changed wh:[%{public}d, %{public}d]", width, height);
+    surfaceWidth_ = width;
+    surfaceHeight_ = height;
+    surfaceNode_->SetBoundsWidth(surfaceWidth_);
+    surfaceNode_->SetBoundsHeight(surfaceHeight_);
+
+    if (!uiContent_) {
+        LOGW("Window Notify uiContent_ Surface Created, uiContent_ is nullptr, delay notify.");
+        delayNotifySurfaceChanged_ = true;
+    } else {
+        LOGI("Window Notify uiContent_ Surface Created");
+        Ace::ViewportConfig config;
+        config.SetSize(surfaceWidth_, surfaceHeight_);
+        uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE);
+    }
 }
 
 void Window::NotifySurfaceDestroyed()
@@ -69,11 +115,41 @@ void Window::NotifySurfaceDestroyed()
     surfaceNode_ = nullptr;
 
     if (!uiContent_) {
-        LOGE("Window Notify Surface Destroyed, uiContent_ is nullptr!");
+        LOGW("Window Notify Surface Destroyed, uiContent_ is nullptr, delay notify.");
+        delayNotifySurfaceDestroyed_ = true;
+    } else {
+        LOGI("Window Notify uiContent_ Surface Destroyed");
+        uiContent_->NotifySurfaceDestroyed();
+    }
+}
+
+void Window::DelayNotifyUIContentIfNeeded()
+{
+    if (!uiContent_) {
+        LOGE("Window Delay Notify uiContent_ is nullptr!");
         return;
     }
-    LOGI("Window Notify uiContent_ Surface Destroyed");
-    uiContent_->NotifySurfaceDestroyed();
+
+    if (delayNotifySurfaceCreated_) {
+        LOGI("Window Delay Notify uiContent_ Surface Created");
+        uiContent_->NotifySurfaceCreated();
+        delayNotifySurfaceCreated_ = false;
+    }
+
+    if (delayNotifySurfaceChanged_) {
+        LOGI("Window Delay Notify uiContent_ Surface Changed wh:[%{public}d, %{public}d]",
+            surfaceWidth_, surfaceHeight_);
+        Ace::ViewportConfig config;
+        config.SetSize(surfaceWidth_, surfaceHeight_);
+        uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE);
+        delayNotifySurfaceChanged_ = false;
+    }
+
+    if (delayNotifySurfaceDestroyed_) {
+        LOGI("Window Delay Notify uiContent_ Surface Destroyed");
+        uiContent_->NotifySurfaceDestroyed();
+        delayNotifySurfaceDestroyed_ = false;
+    }
 }
 
 int Window::SetUIContent(const std::string& contentInfo,
@@ -99,6 +175,7 @@ int Window::SetUIContent(const std::string& contentInfo,
         uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::UNDEFINED);
     }
 
+    DelayNotifyUIContentIfNeeded();
     return 0;
 }
 
