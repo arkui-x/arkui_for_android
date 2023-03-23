@@ -30,11 +30,12 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
 
     private long nativeWindowPtr = 0L;
 
-    private Surface delayNotifyCreateSurface = null;
+    private int surfaceWidth = 0;
+    private int surfaceHeight = 0;
 
+    private Surface delayNotifyCreateSurface = null;
     private boolean delayNotifySurfaceChanged = false;
-    private int delayNotifyChangedWidth = 0;
-    private int delayNotifyChangedHeight = 0;
+    private boolean delayNotifySurfaceDestroyed = false;
 
     /**
      * Constructor of AceViewAosp
@@ -58,47 +59,67 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
      */
     public void registerWindow(long windowHandle) {
         nativeWindowPtr = windowHandle;
+        delayNotifyIfNeeded();
+    }
+
+    private void delayNotifyIfNeeded() {
+        if (nativeWindowPtr == 0L) {
+            ALog.e(LOG_TAG, "delay notify, nativeWindow is invalid!");
+            return;
+        }
 
         if (delayNotifyCreateSurface != null) {
+            ALog.i(LOG_TAG, "delay notify surfaceCreated");
             nativeSurfaceCreated(nativeWindowPtr, delayNotifyCreateSurface);
             delayNotifyCreateSurface = null;
         }
 
         if (delayNotifySurfaceChanged) {
-            nativeSurfaceChanged(nativeWindowPtr, delayNotifyChangedWidth, delayNotifyChangedHeight);
+            ALog.i(LOG_TAG,
+                    "delay notify surface changed w=" + surfaceWidth + " h=" + surfaceHeight);
+            nativeSurfaceChanged(nativeWindowPtr, surfaceWidth, surfaceHeight);
             delayNotifySurfaceChanged = false;
-            delayNotifyChangedWidth = 0;
-            delayNotifyChangedHeight = 0;
+        }
+
+        if (delayNotifySurfaceDestroyed) {
+            ALog.i(LOG_TAG, "delay notify surfaceDestroyed");
+            nativeSurfaceDestroyed(nativeWindowPtr);
+            delayNotifySurfaceDestroyed = false;
         }
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        ALog.i(LOG_TAG, "surfaceCreated");
         Surface surface = holder.getSurface();
         if (nativeWindowPtr == 0L) {
+            ALog.w(LOG_TAG, "surfaceCreated nativeWindow not ready, delay notify");
             delayNotifyCreateSurface = surface;
         } else {
+            ALog.i(LOG_TAG, "surfaceCreated");
             nativeSurfaceCreated(nativeWindowPtr, surface);
         }
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        ALog.i(LOG_TAG, "surface changed w=" + width + " h=" + height);
-
+        surfaceWidth = width;
+        surfaceHeight = height;
         if (nativeWindowPtr == 0L) {
-            delayNotifyChangedWidth = width;
-            delayNotifyChangedHeight = height;
+            ALog.w(LOG_TAG, "surfaceChanged nativeWindow not ready, delay notify");
+            delayNotifySurfaceChanged = true;
         } else {
-            nativeSurfaceChanged(nativeWindowPtr, width, height);
+            ALog.i(LOG_TAG, "surfaceChanged w=" + surfaceWidth + " h=" + surfaceHeight);
+            nativeSurfaceChanged(nativeWindowPtr, surfaceWidth, surfaceHeight);
         }
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        ALog.d(LOG_TAG, "surfaceDestroyed");
-        if (nativeWindowPtr != 0L) {
+        if (nativeWindowPtr == 0L) {
+            ALog.w(LOG_TAG, "surfaceDestroyed nativeWindow not ready, delay notify");
+            delayNotifySurfaceDestroyed = true;
+        } else {
+            ALog.i(LOG_TAG, "surfaceDestroyed");
             nativeSurfaceDestroyed(nativeWindowPtr);
         }
     }
