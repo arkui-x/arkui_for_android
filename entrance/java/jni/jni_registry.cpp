@@ -161,6 +161,11 @@ bool JniRegistry::Register(bool isStageMode)
         return false;
     }
 
+    if (!GrantResultJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register GrantResultJni");
+        return false;
+    }
+
     return true;
 }
 
