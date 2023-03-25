@@ -28,18 +28,6 @@
 namespace OHOS {
 namespace AbilityRuntime {
 namespace Platform {
-
-// class JsWindowView {
-// public:
-//     JsWindowView() : object { nullptr, nullptr } {}
-//     ~JsWindowView() = default;
-//     JsWindowView& operator=(JsWindowView const&)  = default;
-//     // JsWindowView(JsWindowView&&) {}
-//     JsWindowView& operator=(JsWindowView&&)  = default;
-//     std::string instanceName { "" };
-//     Ace::Platform::JniEnvironment::JavaGlobalRef object;
-// };
-
 class WindowViewAdapter {
 public:
     WindowViewAdapter();
