@@ -45,6 +45,16 @@ static const JNINativeMethod COMMON_METHODS[] = {
         .signature = "(J)V",
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::SurfaceDestroyed),
     },
+    {
+        .name = "nativeDispatchPointerDataPacket",
+        .signature = "(JLjava/nio/ByteBuffer;I)Z",
+        .fnPtr = reinterpret_cast<void*>(&WindowViewJni::DispatchPointerDataPacket),
+    },
+    {
+        .name = "nativeDispatchKeyEvent",
+        .signature = "(JIIIJJ)Z",
+        .fnPtr = reinterpret_cast<void*>(&WindowViewJni::DispatchKeyEvent),
+    },
 };
 } // namespace
 
@@ -83,6 +93,37 @@ void WindowViewJni::RegisterWindow(JNIEnv* env, void* window, jobject windowView
 void WindowViewJni::UnRegisterWindow(JNIEnv* env, jobject windowView)
 {
     env->CallVoidMethod(windowView, gUnRegisterWindowMethodID);
+}
+
+jboolean WindowViewJni::DispatchPointerDataPacket(
+    JNIEnv* env, jobject myObject, jlong view, jobject buffer, jint position)
+{
+    if (env == nullptr) {
+        LOGW("env is null");
+        return false;
+    }
+
+    uint8_t* data = static_cast<uint8_t*>(env->GetDirectBufferAddress(buffer));
+    std::vector<uint8_t> packet(data, data + position);
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(view);
+    if (windowPtr == nullptr) {
+        LOGE("DispatchPointerDataPacket window is nullptr");
+        return false;
+    }
+
+    return windowPtr->ProcessPointerEvent(packet);
+}
+
+jboolean WindowViewJni::DispatchKeyEvent(JNIEnv* env, jobject myObject, jlong view, jint keyCode, jint action,
+    jint repeatTime, jlong timeStamp, jlong timeStampStart)
+{
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(view);
+    if (windowPtr == nullptr) {
+        LOGE("DispatchKeyEvent window is nullptr");
+        return false;
+    }
+
+    return windowPtr->ProcessKeyEvent(keyCode, action, repeatTime, timeStamp, timeStampStart);
 }
 
 bool WindowViewJni::RegisterCommonNatives(JNIEnv* env, const jclass myClass)

@@ -31,6 +31,10 @@ public:
     static void RegisterWindow(JNIEnv* env, void* window, jobject windowView);
     static void UnRegisterWindow(JNIEnv* env, jobject windowView);
 
+    static jboolean DispatchPointerDataPacket(JNIEnv* env, jobject myObject, jlong view, jobject buffer, jint position);
+    static jboolean DispatchKeyEvent(JNIEnv* env, jobject myObject, jlong view, jint keyCode, jint action,
+        jint repeatTime, jlong timeStamp, jlong timeStampStart);
+
 private:
     static bool RegisterCommonNatives(JNIEnv* env, const jclass myClass);
     ACE_DISALLOW_COPY_AND_MOVE(WindowViewJni);

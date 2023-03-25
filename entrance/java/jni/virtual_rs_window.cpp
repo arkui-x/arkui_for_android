@@ -130,6 +130,23 @@ void Window::NotifySurfaceDestroyed()
     }
 }
 
+bool Window::ProcessPointerEvent(const std::vector<uint8_t>& data)
+{
+    if (!uiContent_) {
+        return false;
+    }
+    return uiContent_->ProcessPointerEvent(data);
+}
+
+bool Window::ProcessKeyEvent(int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp,
+    int64_t timeStampStart)
+{
+    if (!uiContent_) {
+        return false;
+    }
+    return uiContent_->ProcessKeyEvent(keyCode, keyAction, repeatTime, timeStamp, timeStampStart);
+}
+
 void Window::DelayNotifyUIContentIfNeeded()
 {
     if (!uiContent_) {
