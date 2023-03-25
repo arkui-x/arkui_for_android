@@ -241,7 +241,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
 
     std::string hapResPath { "" };
     std::string sysResPath { "" };
-    abilityContext->GetPlatformResourcePaths(hapResPath, sysResPath);
+    abilityContext->GetResourcePaths(hapResPath, sysResPath);
     container->SetResPaths(hapResPath, sysResPath, SystemProperties::GetColorMode());
 
     auto aceView = Platform::AceViewSG::CreateView(instanceId_);

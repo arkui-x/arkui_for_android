@@ -60,6 +60,16 @@ bool JniStageApplicationDelegate::Register(const std::shared_ptr<JNIEnv>& env)
             .signature = "(Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&SetFileDir),
         },
+        {
+            .name = "nativeSetResourcesFilePrefixPath",
+            .signature = "(Ljava/lang/String;)V",
+            .fnPtr = reinterpret_cast<void*>(&SetResourcesFilePrefixPath),
+        },
+        {
+            .name = "nativeSetPidAndUid",
+            .signature = "(II)V",
+            .fnPtr = reinterpret_cast<void*>(&SetPidAndUid),
+        },
     };
 
     if (!env) {
@@ -145,6 +155,24 @@ void JniStageApplicationDelegate::SetFileDir(JNIEnv* env, jclass myclass, jstrin
         StageAssetProvider::GetInstance()->SetFileDir(filesDir);
         env->ReleaseStringUTFChars(str, filesDir);
     }
+}
+
+void JniStageApplicationDelegate::SetResourcesFilePrefixPath(JNIEnv* env, jclass myclass, jstring str)
+{
+    if (env == nullptr) {
+        LOGE("env is nullptr");
+        return;
+    }
+    auto path = env->GetStringUTFChars(str, nullptr);
+    if (path != nullptr) {
+        StageAssetProvider::GetInstance()->SetResourcesFilePrefixPath(path);
+        env->ReleaseStringUTFChars(str, path);
+    }
+}
+
+void JniStageApplicationDelegate::SetPidAndUid(JNIEnv* env, jclass myclass, jint pid, jint uid)
+{
+    AppMain::GetInstance()->SetPidAndUid(pid, uid);
 }
 } // namespace Platform
 } // namespace AbilityRuntime

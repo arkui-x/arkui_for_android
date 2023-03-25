@@ -87,6 +87,8 @@ public:
     std::string GetFilesDir() const;
     std::string GetDatabaseDir() const;
     std::string GetPreferencesDir() const;
+    void GetResIndexPath(const std::string& moduleName, std::string& appResIndexPath, std::string& sysResIndexPath);
+    void SetResourcesFilePrefixPath(const std::string& resourcesFilePrefixPath);
 
 private:
     std::string appPath_ { "" };
@@ -94,13 +96,13 @@ private:
     std::mutex allFilePathMutex_;
     std::map<std::string, Ace::RefPtr<AssetProvider>> assetProviders_;
     std::mutex assetProvidersMutex_;
-    JNIEnv* env_;
     Ace::Platform::JniEnvironment::JavaGlobalRef assetManager_;
     std::string cacheDir_ { "" };
     std::string tempDir_ { "" };
     std::string filesDir_ { "" };
     std::string databaseDir_ { "" };
     std::string preferenceDir_ { "" };
+    std::string resourcesFilePrefixPath_ { "" };
     static std::shared_ptr<StageAssetProvider> instance_;
     static std::mutex mutex_;
 };

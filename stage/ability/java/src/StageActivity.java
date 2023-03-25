@@ -15,18 +15,18 @@
 
 package ohos.stage.ability.adapter;
 
+import android.content.ComponentName;
 import android.app.Activity;
 import android.os.Bundle;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 import android.util.Log;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import android.content.res.AssetManager;
+import android.content.Intent;
+import ohos.ace.adapter.WindowView;
 
 /**
  * A base class for the Ability Cross-platform Environment to run on
@@ -46,11 +46,18 @@ public class StageActivity extends Activity {
 
     private StageActivityDelegate activityDelegate = null;
 
+    private WindowView windowView = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(LOG_TAG, "StageActivity onCreate called");
         super.onCreate(savedInstanceState);
         activityDelegate = new StageActivityDelegate();
+        activityDelegate.attachStageActivity(this);
+
+        windowView = new WindowView(this);
+        setContentView(windowView);
+        activityDelegate.SetWindowView(getInstanceName(), windowView);
         activityDelegate.dispatchOnCreate(getInstanceName());
     }
 
@@ -65,6 +72,13 @@ public class StageActivity extends Activity {
         Log.i(LOG_TAG, "StageActivity onResume called");
         super.onResume();
         activityDelegate.dispatchOnForeground(getInstanceName());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        Log.i(LOG_TAG, "StageActivity onNewIntent called");
+        super.onNewIntent(intent);
+        activityDelegate.dispatchOnNewWant(getInstanceName());
     }
 
     @Override
@@ -113,84 +127,23 @@ public class StageActivity extends Activity {
         return instanceName;
     }
 
-    /**
-     * copy the resources from all modules
-     */
-    private void copyAllModuleResources() {
-        String rootDirectory = "arkui-x";
-        AssetManager assets = getAssets();
-        String moduleResourcesDirectory = "";
-        String moduleResourcesIndex = "";
-        List<String> moduleResources = new ArrayList<>();
-        try {
-            String[] list = assets.list(rootDirectory);
-            for (String name: list) {
-                if ("systemres".equals(name)) {
-                    moduleResources.add(name);
-                } else {
-                    moduleResourcesDirectory = name + "/" + "resources";
-                    moduleResourcesIndex = name + "/" + "resources.index";
-                    moduleResources.add(moduleResourcesDirectory);
-                    moduleResources.add(moduleResourcesIndex);
-                }
-            }
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "read resources err: " + e.getMessage());
+    public void startActivity(String bundleName, String activityName) {
+        Log.i(LOG_TAG, "startActivity called, bundleName: " + bundleName + ", activityName: " + activityName);
+        Intent intent = new Intent();
+        String packageName = getApplicationContext().getPackageName();
+        Log.i(LOG_TAG, "Current package name: " + packageName);
+        ComponentName componentName = null;
+        if (packageName == bundleName) {
+            componentName = new ComponentName(getBaseContext(), activityName);
+        } else {
+            componentName = new ComponentName(bundleName, activityName);
         }
-        for (String resourcesName : moduleResources) {
-            copyFilesFromAssets(rootDirectory + "/" + resourcesName,
-                getExternalFilesDir(null).getAbsolutePath() + "/" + resourcesName);
-        }
+        intent.setComponent(componentName);
+        this.startActivity(intent);
     }
 
-    /**
-     * copy the file to the destination path
-     * @param assetsPath the path in the assets directory
-     * @param savePath the destination path for the copy
-     */
-    private void copyFilesFromAssets(String assetsPath, String savePath) {
-        InputStream is = null;
-        FileOutputStream fos = null;
-        try {
-            String[] fileNames = getAssets().list(assetsPath);
-            File file = new File(savePath);
-            if (fileNames.length > 0) {
-                if (!file.exists()) {
-                    file.mkdirs();
-                }
-                for (String fileName : fileNames) {
-                    copyFilesFromAssets(assetsPath + "/" + fileName, savePath + "/" + fileName);
-                }
-            } else {
-                if (file.exists()) {
-                    return;
-                }
-                is = getAssets().open(assetsPath);
-                fos = new FileOutputStream(file);
-                byte[] buffer = new byte[1024];
-                int byteCount = 0;
-                while ((byteCount = is.read(buffer)) != -1) {
-                    fos.write(buffer, 0, byteCount);
-                }
-                fos.flush();
-            }
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "read or write data err: " + e.getMessage());
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    Log.e(LOG_TAG, "InputStream close err: " + e.getMessage());
-                }
-            }
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    Log.e(LOG_TAG, "FileOutputStream close err: " + e.getMessage());
-                }
-            }
-        }
+    public void finish() {
+        Log.i(LOG_TAG, "StageActivity finish called");
+        super.finish();
     }
 }
