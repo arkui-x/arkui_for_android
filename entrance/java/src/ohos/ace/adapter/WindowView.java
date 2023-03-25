@@ -16,9 +16,13 @@
 package ohos.ace.adapter;
 
 import android.content.Context;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import java.nio.ByteBuffer;
 
 /**
  * This class is AceView implement and handles the lifecycle of surface.
@@ -49,6 +53,7 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
 
     private void initView() {
         ALog.i(LOG_TAG, "WindowView created");
+        setFocusableInTouchMode(true);
         getHolder().addCallback(this);
     }
 
@@ -131,10 +136,56 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (nativeWindowPtr == 0L) {
+            return super.onTouchEvent(event);
+        }
+
+        try {
+            ByteBuffer packet = AceEventProcessorAosp.processTouchEvent(event);
+            nativeDispatchPointerDataPacket(nativeWindowPtr, packet, packet.position());
+            return true;
+        } catch (AssertionError error) {
+            ALog.e(LOG_TAG, "process touch event failed: " + error.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (nativeWindowPtr == 0L) {
+            return super.onKeyDown(keyCode, event);
+        }
+
+        if (nativeDispatchKeyEvent(nativeWindowPtr, event.getKeyCode(), event.getAction(), event.getRepeatCount(),
+                event.getEventTime(), event.getDownTime())) {
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (nativeWindowPtr == 0L) {
+            return super.onKeyUp(keyCode, event);
+        }
+
+        if (nativeDispatchKeyEvent(nativeWindowPtr, event.getKeyCode(), event.getAction(), event.getRepeatCount(),
+                event.getEventTime(), event.getDownTime())) {
+            return true;
+        }
+        return super.onKeyUp(keyCode, event);
+    }
+
     private native void nativeSurfaceCreated(long viewPtr, Surface surface);
 
     private native void nativeSurfaceChanged(long viewPtr, int width, int height);
 
     private native void nativeSurfaceDestroyed(long viewPtr);
 
+    private native boolean nativeDispatchPointerDataPacket(long viewPtr, ByteBuffer buffer, int position);
+
+    private native boolean nativeDispatchKeyEvent(long viewPtr, int keyCode, int action, int repeatTime, long timeStamp,
+            long timeStampStart);
 }
