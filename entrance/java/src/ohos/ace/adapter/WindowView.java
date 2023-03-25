@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,7 +38,7 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     private boolean delayNotifySurfaceDestroyed = false;
 
     /**
-     * Constructor of AceViewAosp
+     * Constructor of WindowView
      *
      * @param context Application context
      */
@@ -60,6 +60,13 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     public void registerWindow(long windowHandle) {
         nativeWindowPtr = windowHandle;
         delayNotifyIfNeeded();
+    }
+
+    /**
+     * Called by native to unregister Window Handle.
+     */
+    public void unRegisterWindow() {
+        nativeWindowPtr = 0L;
     }
 
     private void delayNotifyIfNeeded() {

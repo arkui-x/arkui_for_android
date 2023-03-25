@@ -29,6 +29,7 @@ public:
     static void SurfaceChanged(JNIEnv* env, jobject myObject, jlong view, jint width, jint height);
     static void SurfaceDestroyed(JNIEnv* env, jobject myObject, jlong view);
     static void RegisterWindow(JNIEnv* env, void* window, jobject windowView);
+    static void UnRegisterWindow(JNIEnv* env, jobject windowView);
 
 private:
     static bool RegisterCommonNatives(JNIEnv* env, const jclass myClass);

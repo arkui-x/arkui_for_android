@@ -87,7 +87,7 @@ public:
 
     explicit Window(const flutter::TaskRunners& taskRunners);
     explicit Window(std::shared_ptr<AbilityRuntime::Platform::Context> context);
-    ~Window() override = default;
+    ~Window() override;
 
     bool CreateVSyncReceiver(std::shared_ptr<AppExecFwk::EventHandler> handler);
     void RequestNextVsync(std::function<void(int64_t, void*)> callback);
@@ -100,7 +100,6 @@ public:
 
     int SetUIContent(const std::string& contentInfo, NativeEngine* engine,
         NativeValue* storage, bool isdistributed, AbilityRuntime::Platform::Ability* ability);
-    void SetWindowView(JNIEnv* env, jobject windowView);
 
     std::shared_ptr<RSSurfaceNode> GetSurfaceNode() const
     {
@@ -108,6 +107,9 @@ public:
     }
 
 private:
+    void SetWindowView(JNIEnv* env, jobject windowView);
+    void ReleaseWindowView();
+
     void DelayNotifyUIContentIfNeeded();
 
     int32_t surfaceWidth_ = 0;
@@ -115,7 +117,7 @@ private:
     std::shared_ptr<RSSurfaceNode> surfaceNode_;
     std::shared_ptr<flutter::VsyncWaiter> vsyncWaiter_;
 
-    jobject windowView_;
+    jobject windowView_ = nullptr;
     std::shared_ptr<AbilityRuntime::Platform::Context> context_;
     std::unique_ptr<OHOS::Ace::Platform::UIContent> uiContent_;
 
