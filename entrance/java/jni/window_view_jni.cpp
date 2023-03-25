@@ -24,6 +24,7 @@
 namespace OHOS::Ace::Platform {
 namespace {
 static jmethodID gRegisterWindowMethodID;
+static jmethodID gUnRegisterWindowMethodID;
 
 static const JNINativeMethod ANDROID_METHODS[] = {
     {
@@ -79,6 +80,11 @@ void WindowViewJni::RegisterWindow(JNIEnv* env, void* window, jobject windowView
     env->CallVoidMethod(windowView, gRegisterWindowMethodID, windowHandle);
 }
 
+void WindowViewJni::UnRegisterWindow(JNIEnv* env, jobject windowView)
+{
+    env->CallVoidMethod(windowView, gUnRegisterWindowMethodID);
+}
+
 bool WindowViewJni::RegisterCommonNatives(JNIEnv* env, const jclass myClass)
 {
     if (myClass == nullptr) {
@@ -113,6 +119,7 @@ bool WindowViewJni::RegisterNatives(JNIEnv* env)
     }
 
     gRegisterWindowMethodID = env->GetMethodID(myClass, "registerWindow", "(J)V");
+    gUnRegisterWindowMethodID = env->GetMethodID(myClass, "unRegisterWindow", "()V");
 
     env->DeleteLocalRef(myClass);
     return true;

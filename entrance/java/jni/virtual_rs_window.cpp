@@ -16,6 +16,8 @@
 #include "adapter/android/entrance/java/jni/virtual_rs_window.h"
 
 #include <memory>
+
+#include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/log/log.h"
 #include "flutter/shell/platform/android/vsync_waiter_android.h"
 #include "foundation/appframework/arkui/uicontent/ui_content.h"
@@ -37,6 +39,11 @@ Window::Window(const flutter::TaskRunners& taskRunners)
 
 Window::Window(std::shared_ptr<AbilityRuntime::Platform::Context> context) : context_(context)
 {}
+
+Window::~Window()
+{
+    ReleaseWindowView();
+}
 
 void Window::RequestVsync(const std::shared_ptr<VsyncCallback>& vsyncCallback)
 {
@@ -181,7 +188,26 @@ int Window::SetUIContent(const std::string& contentInfo,
 
 void Window::SetWindowView(JNIEnv* env, jobject windowView)
 {
-    windowView_ = windowView;
+    if (windowView == nullptr) {
+        LOGE("Window::SetWindowView: jobject of WindowView is nullptr!");
+        return;
+    }
+    if (windowView_ != nullptr) {
+        LOGW("Window::SetWindowView: windowView_ has already been set!");
+        return;
+    }
+    windowView_ = env->NewGlobalRef(windowView);
     Ace::Platform::WindowViewJni::RegisterWindow(env, this, windowView);
 }
-}; // namespace OHOS::Rosen
+
+void Window::ReleaseWindowView()
+{
+    if (windowView_ == nullptr) {
+        return;
+    }
+    auto jniEnv = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
+    Ace::Platform::WindowViewJni::UnRegisterWindow(jniEnv.get(), windowView_);
+    Ace::Platform::JniEnvironment::DeleteJavaGlobalRef(windowView_);
+    windowView_ = nullptr;
+}
+} // namespace OHOS::Rosen
