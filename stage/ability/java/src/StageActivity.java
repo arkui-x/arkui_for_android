@@ -50,7 +50,7 @@ public class StageActivity extends Activity {
         activityDelegate = new StageActivityDelegate();
         activityDelegate.attachStageActivity(this);
 
-        windowView = new WindowView(this, activityId);
+        windowView = new WindowView(this);
         setContentView(windowView);
         activityDelegate.setWindowView(getInstanceName(), windowView);
         activityDelegate.dispatchOnCreate(getInstanceName());
