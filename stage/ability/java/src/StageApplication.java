@@ -158,7 +158,7 @@ public class StageApplication extends Application {
         List<String> moduleResources = new ArrayList<>();
         try {
             String[] list = assets.list(rootDirectory);
-            for (String name: list) {
+            for (String name : list) {
                 if ("systemres".equals(name)) {
                     moduleResources.add(name);
                 } else {

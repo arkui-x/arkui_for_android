@@ -53,7 +53,7 @@ public class StageActivityDelegate {
         nativeDispatchOnBackground(instanceName);
     }
 
-    public void SetWindowView(String instanceName, WindowView windowView) {
+    public void setWindowView(String instanceName, WindowView windowView) {
         Log.i(LOG_TAG, "SetWindowView called");
         nativeSetWindowView(instanceName, windowView);
     }

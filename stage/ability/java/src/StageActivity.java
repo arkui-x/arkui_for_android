@@ -18,13 +18,8 @@ package ohos.stage.ability.adapter;
 import android.content.ComponentName;
 import android.app.Activity;
 import android.os.Bundle;
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 import android.util.Log;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import android.content.res.AssetManager;
 import android.content.Intent;
 import ohos.ace.adapter.WindowView;
 
@@ -55,9 +50,9 @@ public class StageActivity extends Activity {
         activityDelegate = new StageActivityDelegate();
         activityDelegate.attachStageActivity(this);
 
-        windowView = new WindowView(this);
+        windowView = new WindowView(this, activityId);
         setContentView(windowView);
-        activityDelegate.SetWindowView(getInstanceName(), windowView);
+        activityDelegate.setWindowView(getInstanceName(), windowView);
         activityDelegate.dispatchOnCreate(getInstanceName());
     }
 
