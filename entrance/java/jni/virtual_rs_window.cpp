@@ -47,9 +47,25 @@ Window::~Window()
 
 void Window::RequestVsync(const std::shared_ptr<VsyncCallback>& vsyncCallback)
 {
-    vsyncWaiter_->AsyncWaitForVsync([vsyncCallback](fml::TimePoint frameStart, fml::TimePoint frameTarget) {
-        vsyncCallback->onCallback(frameStart.ToEpochDelta().ToNanoseconds());
-    });
+    // stage model
+    if (receiver_) {
+        auto callback = [vsyncCallback](int64_t timestamp, void*) {
+            vsyncCallback->onCallback(timestamp);
+        };
+        VSyncReceiver::FrameCallback fcb = {
+            .userData_ = this,
+            .callback_ = callback,
+        };
+        receiver_->RequestNextVSync(fcb);
+        return;
+    }
+
+    // fa model
+    if (vsyncWaiter_) {
+        vsyncWaiter_->AsyncWaitForVsync([vsyncCallback](fml::TimePoint frameStart, fml::TimePoint frameTarget) {
+            vsyncCallback->onCallback(frameStart.ToEpochDelta().ToNanoseconds());
+        });
+    }
 }
 
 bool Window::CreateVSyncReceiver(std::shared_ptr<AppExecFwk::EventHandler> handler)
@@ -112,6 +128,7 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height)
     } else {
         LOGI("Window Notify uiContent_ Surface Created");
         Ace::ViewportConfig config;
+        config.SetDensity(3.0f);
         config.SetSize(surfaceWidth_, surfaceHeight_);
         uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE);
     }
@@ -164,6 +181,7 @@ void Window::DelayNotifyUIContentIfNeeded()
         LOGI("Window Delay Notify uiContent_ Surface Changed wh:[%{public}d, %{public}d]",
             surfaceWidth_, surfaceHeight_);
         Ace::ViewportConfig config;
+        config.SetDensity(3.0f);
         config.SetSize(surfaceWidth_, surfaceHeight_);
         uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE);
         delayNotifySurfaceChanged_ = false;
@@ -190,14 +208,7 @@ int Window::SetUIContent(const std::string& contentInfo,
     // make uiContent available after Initialize/Restore
     uiContent_ = std::move(uiContent);
 
-    if (state_ == WindowState::STATE_SHOWN) {
-        // UIContent may be nullptr when show window, need to notify again when window is shown
-        uiContent_->Foreground();
-        OHOS::Ace::ViewportConfig config;
-        float virtualPixelRatio = 1.0;
-        config.SetDensity(virtualPixelRatio);
-        uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::UNDEFINED);
-    }
+    uiContent_->Foreground();
 
     DelayNotifyUIContentIfNeeded();
     return 0;

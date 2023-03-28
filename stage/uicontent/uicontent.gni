@@ -11,6 +11,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ability_runtime_cross_platform_path = "//foundation/appframework/ability/ability_runtime/cross_platform"
-
-window_cross_platform_path = "//foundation/arkui/ace_engine/adapter/android/stage/uicontent/mock/window_mock"
+ability_runtime_cross_platform_path =
+    "//foundation/appframework/ability/ability_runtime/cross_platform"

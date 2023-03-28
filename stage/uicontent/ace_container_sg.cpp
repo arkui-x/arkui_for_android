@@ -15,14 +15,9 @@
 
 #include "adapter/android/stage/uicontent/ace_container_sg.h"
 
-#ifdef NG_BUILD
-#include "ace_shell/shell/common/window_manager.h"
-#else
-#include "flutter/lib/ui/ui_dart_state.h"
-#endif
-
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
+#include "adapter/android/entrance/java/jni/ace_platform_plugin_jni.h"
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
 #include "base/log/ace_trace.h"
 #include "base/log/event_report.h"
@@ -44,21 +39,21 @@
 #include "core/components/theme/app_theme.h"
 #include "core/components/theme/theme_constants.h"
 #include "core/components/theme/theme_manager_impl.h"
-#include "core/pipeline/base/element.h"
-#ifdef NG_BUILD
-#include "core/pipeline_ng/pipeline_context.h"
-#else
-#include "core/pipeline/pipeline_context.h"
-#endif
-#include "frameworks/bridge/common/utils/engine_helper.h"
-#include "frameworks/bridge/declarative_frontend/declarative_frontend.h"
-#include "frameworks/bridge/js_frontend/engine/common/js_engine_loader.h"
-#include "frameworks/bridge/js_frontend/js_frontend.h"
-
 #ifdef ENABLE_ROSEN_BACKEND
-#include "render_service_client/core/ui/rs_ui_director.h"
 #include "core/components_ng/render/adapter/rosen_window.h"
 #endif
+#include "core/pipeline/base/element.h"
+#include "core/pipeline_ng/pipeline_context.h"
+#include "event_handler.h"
+#include "event_runner.h"
+#ifdef NG_BUILD
+#include "frameworks/bridge/declarative_frontend/ng/declarative_frontend_ng.h"
+#else
+#include "frameworks/bridge/declarative_frontend/declarative_frontend.h"
+#endif
+#include "frameworks/bridge/common/utils/engine_helper.h"
+#include "frameworks/bridge/js_frontend/engine/common/js_engine_loader.h"
+#include "frameworks/bridge/js_frontend/js_frontend.h"
 
 namespace OHOS::Ace::Platform {
 namespace {
@@ -79,20 +74,23 @@ AceContainerSG::AceContainerSG(int32_t instanceId, FrontendType type,
       useCurrentEventRunner_(useCurrentEventRunner)
 {
     ACE_DCHECK(callback);
+
     SetUseNewPipeline();
 
+    useStageModel_ = true;
+
     auto flutterTaskExecutor = Referenced::MakeRefPtr<FlutterTaskExecutor>();
-    flutterTaskExecutor->InitPlatformThread(useCurrentEventRunner_);
-    // no need to create JS thread for DELCARATIVE_JS
-    if (type_ != FrontendType::DECLARATIVE_JS) {
+    flutterTaskExecutor->InitPlatformThread(useCurrentEventRunner_, useStageModel_);
+
+    if (type_ == FrontendType::DECLARATIVE_JS) {
+        GetSettings().useUIAsJSThread = true;
+    } else {
         flutterTaskExecutor->InitJsThread();
     }
+
     taskExecutor_ = flutterTaskExecutor;
-    CHECK_RUN_ON(PLATFORM);
 
     platformEventCallback_ = std::move(callback);
-
-    useStageModel_ = true;
 }
 
 void AceContainerSG::Initialize()
@@ -183,15 +181,10 @@ void AceContainerSG::InitPiplineContext(std::unique_ptr<Window> window, double d
     LOGI("init piplinecontext start.");
     ACE_DCHECK(aceView_ && window && taskExecutor_ && assetManager_ && resRegister_ && frontend_);
     auto instanceId = aceView_->GetInstanceId();
-#ifdef NG_BUILD
     LOGI("New pipeline version creating...");
     pipelineContext_ = AceType::MakeRefPtr<NG::PipelineContext>(
         std::move(window), taskExecutor_, assetManager_, resRegister_, frontend_, instanceId);
-#else
-    auto pipelineContext = AceType::MakeRefPtr<PipelineContext>(
-        std::move(window), taskExecutor_, assetManager_, resRegister_, frontend_, instanceId);
-    pipelineContext_ = pipelineContext;
-#endif
+
     pipelineContext_->SetRootSize(density, width, height);
     pipelineContext_->SetTextFieldManager(AceType::MakeRefPtr<TextFieldManager>());
     pipelineContext_->SetIsRightToLeft(AceApplicationInfo::GetInstance().IsRightToLeft());
@@ -377,14 +370,6 @@ void AceContainerSG::InitializeCallback()
             TaskExecutor::TaskType::UI);
     };
     aceView_->RegisterPreDrawCallback(preDrawCallback);
-
-    auto&& requestFrame = [weak, instanceId]() {
-        auto context = weak.Upgrade();
-        CHECK_NULL_VOID(context);
-        ContainerScope scope(instanceId);
-        context->RequestFrame();
-    };
-    aceView_->RegisterRequestFrameCallback(requestFrame);
 }
 
 void AceContainerSG::InitializeEventHandler()
@@ -494,26 +479,16 @@ void AceContainerSG::SetView(
     CHECK_NULL_VOID(view);
     auto container = AceType::DynamicCast<AceContainerSG>(AceEngine::Get().GetContainer(view->GetInstanceId()));
     CHECK_NULL_VOID(container);
+
 #ifdef ENABLE_ROSEN_BACKEND
     auto* aceView = static_cast<AceViewSG*>(view);
-    auto threadModel = aceView->GetThreadModel();
-    CHECK_NULL_VOID(threadModel);
-    sptr<Rosen::Window> rsWindowPtr(new Rosen::Window(threadModel->GetTaskRunners()));
-    aceView->SetRSWinodw(rsWindowPtr);
-    auto window = std::make_unique<NG::RosenWindow>(rsWindowPtr, container->GetTaskExecutor(), view->GetInstanceId());
-#else
-#ifdef NG_BUILD
-    std::unique_ptr<Window> window = std::make_unique<NG::FlutterWindow>(container->GetTaskExecutor(), instanceId);
-#else
-    auto platformWindow = view->GetPlatformWindow();
-    if (!platformWindow) {
-        LOGE("JNI setView: null platformWindow");
-        return;
-    }
-    std::unique_ptr<Window> window = std::make_unique<Window>(std::move(platformWindow));
-#endif
-#endif
+    CHECK_NULL_VOID(aceView);
+    auto eventHandler = std::make_shared<OHOS::AppExecFwk::EventHandler>(OHOS::AppExecFwk::EventRunner::Current());
+    rsWindow->CreateVSyncReceiver(eventHandler);
+    aceView->SetRSWinodw(rsWindow);
+    auto window = std::make_unique<NG::RosenWindow>(rsWindow, container->GetTaskExecutor(), view->GetInstanceId());
     container->AttachView(std::move(window), view, density, width, height);
+#endif
 }
 
 void AceContainerSG::AttachView(
@@ -525,19 +500,9 @@ void AceContainerSG::AttachView(
     auto* aceView = static_cast<Platform::AceViewSG*>(aceView_);
     CHECK_NULL_VOID(aceView);
     auto flutterTaskExecutor = AceType::DynamicCast<FlutterTaskExecutor>(taskExecutor_);
+    CHECK_NULL_VOID(flutterTaskExecutor);
     flutterTaskExecutor->InitOtherThreads(aceView->GetThreadModel());
-#else
-#ifdef NG_BUILD
-    auto state = flutter::ace::WindowManager::GetWindow(instanceId);
-    CHECK_NULL_VOID(state);
-#else
-    auto state = flutter::UIDartState::Current()->GetStateById(instanceId);
-    ACE_DCHECK(state != nullptr);
 #endif
-    auto flutterTaskExecutor = AceType::DynamicCast<FlutterTaskExecutor>(taskExecutor_);
-    flutterTaskExecutor->InitOtherThreads(state->GetTaskRunners());
-#endif
-
     ContainerScope scope(instanceId);
     if (type_ == FrontendType::DECLARATIVE_JS) {
         // for declarative js frontend display ui in js thread
@@ -555,7 +520,12 @@ void AceContainerSG::AttachView(
             front->SetJsMessageDispatcher(AceType::Claim(this));
         }
     }
+
+    auto resResgister = AcePlatformPluginJni::GetResRegister(instanceId);
+    auto* aceViewSG = static_cast<AceViewSG*>(aceView_);
+    aceViewSG->SetPlatformResRegister(resResgister);
     resRegister_ = aceView_->GetPlatformResRegister();
+
     InitPiplineContext(std::move(window), density, width, height);
     if (resRegister_) {
         resRegister_->SetPipelineContext(pipelineContext_);
@@ -564,22 +534,6 @@ void AceContainerSG::AttachView(
     InitializeEventHandler();
     SetGetViewScaleCallback();
     InitThemeManager();
-
-#ifdef ENABLE_ROSEN_BACKEND
-#ifndef NG_BUILD
-    taskExecutor_->PostTask(
-        [weak = WeakClaim(this)]() {
-            auto container = weak.Upgrade();
-            CHECK_NULL_VOID(container);
-            auto pipelineContext = AceType::DynamicCast<PipelineContext>(container->pipelineContext_);
-            CHECK_NULL_VOID(pipelineContext);
-            auto* window = pipelineContext->GetWindow();
-            CHECK_NULL_VOID(window);
-            pipelineContext->SetRSUIDirector(window->GetRSUIDirector());
-        },
-        TaskExecutor::TaskType::UI);
-#endif
-#endif
     SetupRootElement();
 
     aceView_->Launch();
@@ -656,7 +610,7 @@ void AceContainerSG::InitThemeManager()
     auto initThemeManagerTask = [pipelineContext = pipelineContext_, assetManager = assetManager_,
                                     colorScheme = colorScheme_, resourceInfo = resourceInfo_]() {
         ACE_SCOPED_TRACE("OHOS::LoadThemes()");
-        LOGD("UIContent load theme");
+        LOGI("UIContent load theme");
         ThemeConstants::InitDeviceType();
         auto themeManager = AceType::MakeRefPtr<ThemeManagerImpl>();
         pipelineContext->SetThemeManager(themeManager);
@@ -676,12 +630,14 @@ void AceContainerSG::InitThemeManager()
 void AceContainerSG::SetupRootElement()
 {
     LOGI("Setup Root Element.");
+    ContainerScope scope(instanceId_);
     auto weakContext = AceType::WeakClaim(AceType::RawPtr(pipelineContext_));
     auto setupRootElementTask = [weakContext]() {
-        LOGI("execute SetupRootElement task on ui thread.");
+        LOGI("execute SetupRootElement task start.");
         auto context = weakContext.Upgrade();
         CHECK_NULL_VOID(context);
         context->SetupRootElement();
+        LOGI("execute SetupRootElement task end.");
     };
 
     if (GetSettings().usePlatformAsUIThread) {
@@ -739,11 +695,8 @@ bool AceContainerSG::OnBackPressed(int32_t instanceId)
 
     ContainerScope scope(instanceId);
     auto baseContext = container->GetPipelineContext();
-#ifdef NG_BUILD
     auto context = DynamicCast<NG::PipelineContext>(baseContext);
-#else
-    auto context = DynamicCast<PipelineContext>(baseContext);
-#endif
+
     CHECK_NULL_RETURN(context, false);
     if (context->PopPageStackOverlay()) {
         return true;
