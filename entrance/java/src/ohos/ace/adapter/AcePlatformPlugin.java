@@ -54,8 +54,8 @@ public class AcePlatformPlugin {
      */
     public AcePlatformPlugin(Context context, int instanceId, View view, long nativeViewPtr) {
         ALog.i(LOG_TAG, "AcePlatformPlugin created");
-        
-        initResRegister(nativeViewPtr);
+
+        initResRegister(nativeViewPtr, instanceId);
 
         clipboardPlugin = new ClipboardPluginAosp(context);
         textInputPlugin = new TextInputPluginAosp(view, instanceId);
@@ -82,13 +82,13 @@ public class AcePlatformPlugin {
      * Initialize resource register
      *
      */
-    private void initResRegister(long nativeViewPtr) {
+    private void initResRegister(long nativeViewPtr, int instanceId) {
         resRegister = new AceResourceRegister();
         if (nativeViewPtr == 0L) {
             ALog.e(LOG_TAG, "initResRegister nativeViewPtr is null");
             return;
         }
-        long resRegisterPtr = nativeInitResRegister(nativeViewPtr, resRegister);
+        long resRegisterPtr = nativeInitResRegister(nativeViewPtr, resRegister, instanceId);
         if (resRegisterPtr == 0L) {
             return;
         }
@@ -102,5 +102,5 @@ public class AcePlatformPlugin {
         return null;
     }
 
-    private native long nativeInitResRegister(long viewPtr, AceResourceRegister resRegister);
+    private native long nativeInitResRegister(long viewPtr, AceResourceRegister resRegister, int instanceId);
 }

@@ -17,9 +17,11 @@
 #define FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_ACE_PLATFORM_PLUGIN_JNI_H
 
 #include <memory>
+#include <map>
 
 #include "jni.h"
 
+#include "adapter/android/entrance/java/jni/ace_resource_register.h"
 #include "base/utils/noncopyable.h"
 
 namespace OHOS::Ace::Platform {
@@ -30,7 +32,9 @@ public:
 
     static bool Register(const std::shared_ptr<JNIEnv>& env);
 
-    static jlong InitResRegister(JNIEnv* env, jobject myObject, jlong view, jobject resRegister);
+    static jlong InitResRegister(JNIEnv* env, jobject myObject, jlong view, jobject resRegister, jint instanceId);
+
+    static RefPtr<AceResourceRegister> GetResRegister(int32_t instanceId);
 
 private:
     ACE_DISALLOW_COPY_AND_MOVE(AcePlatformPluginJni);

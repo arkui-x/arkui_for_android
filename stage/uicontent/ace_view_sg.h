@@ -28,9 +28,6 @@
 
 #ifdef ENABLE_ROSEN_BACKEND
 #include "core/common/flutter/flutter_thread_model.h"
-#include "render_service_client/core/ui/rs_surface_node.h"
-#include "render_service_client/core/ui/rs_ui_director.h"
-
 #include "adapter/android/entrance/java/jni/virtual_rs_window.h"
 #endif
 
@@ -40,7 +37,7 @@ public:
     explicit AceViewSG(int32_t id) : instanceId_(id)
     {
 #ifdef ENABLE_ROSEN_BACKEND
-        threadModel_ = FlutterThreadModel::CreateThreadModel(false, true, false);
+        threadModel_ = FlutterThreadModel::CreateThreadModel(true, false, false);
 #endif
     }
     ~AceViewSG() override = default;
@@ -120,20 +117,6 @@ public:
     }
 
 #ifdef ENABLE_ROSEN_BACKEND
-    void SetSurfaceNode(std::shared_ptr<Rosen::RSSurfaceNode> surfaceNode)
-    {
-        surfaceNode_ = surfaceNode;
-        if (uiDirector_) {
-            uiDirector_->SetRSSurfaceNode(surfaceNode_);
-        }
-    }
-    void SetUIDirector(std::shared_ptr<Rosen::RSUIDirector> uiDirector)
-    {
-        uiDirector_ = uiDirector;
-        if (uiDirector_ && surfaceNode_) {
-            uiDirector_->SetRSSurfaceNode(surfaceNode_);
-        }
-    }
     void SetRSWinodw(sptr<Rosen::Window> window)
     {
         rsWinodw_ = std::move(window);
@@ -166,8 +149,6 @@ private:
     RefPtr<PlatformResRegister> resRegister_;
 
 #ifdef ENABLE_ROSEN_BACKEND
-    std::shared_ptr<Rosen::RSSurfaceNode> surfaceNode_;
-    std::shared_ptr<Rosen::RSUIDirector> uiDirector_;
     std::unique_ptr<FlutterThreadModel> threadModel_;
     sptr<Rosen::Window> rsWinodw_;
 #endif

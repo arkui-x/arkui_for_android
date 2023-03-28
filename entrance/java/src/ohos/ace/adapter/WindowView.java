@@ -41,20 +41,35 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     private boolean delayNotifySurfaceChanged = false;
     private boolean delayNotifySurfaceDestroyed = false;
 
+    private int instanceId = 0;
+    private AcePlatformPlugin platformPlugin;
+
     /**
      * Constructor of WindowView
      *
      * @param context Application context
+     * @param instanceId the instance id
      */
-    public WindowView(Context context) {
+    public WindowView(Context context, int instanceId) {
         super(context);
         initView();
+        initPlatformPlugin(context, instanceId);
     }
 
     private void initView() {
         ALog.i(LOG_TAG, "WindowView created");
         setFocusableInTouchMode(true);
         getHolder().addCallback(this);
+    }
+
+    /**
+     * Initialize platform plugins
+     *
+     * @param context Application context
+     * @param instanceId the instance id
+     */
+    public void initPlatformPlugin(Context context, int instanceId) {
+        platformPlugin = new AcePlatformPlugin(context, instanceId, this, 0L);
     }
 
     /**

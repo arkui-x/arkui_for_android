@@ -156,7 +156,7 @@ bool AceViewSG::DispatchTouchEvent(const std::vector<uint8_t>& data)
 {
     std::vector<TouchEvent> touchEvents;
     ConvertTouchEvent(data, touchEvents);
-    LOGD(" ProcessTouchEvent event size%zu", touchEvents.size());
+    LOGI(" ProcessTouchEvent event size%zu", touchEvents.size());
     bool forbiddenToPlatform = false;
     for (const auto& point : touchEvents) {
         if (point.type == TouchType::UNKNOWN) {
@@ -178,13 +178,7 @@ bool AceViewSG::IsLastPage() const
     ContainerScope scope(instanceId_);
     auto context = container->GetPipelineContext();
     CHECK_NULL_RETURN_NOLOG(context, false);
-    auto taskExecutor = context->GetTaskExecutor();
-    bool isLastPage = false;
-    if (taskExecutor) {
-        taskExecutor->PostSyncTask(
-            [context, &isLastPage]() { isLastPage = context->IsLastPage(); }, TaskExecutor::TaskType::UI);
-    }
-    return isLastPage;
+    return context->IsLastPage();
 }
 
 bool AceViewSG::DispatchKeyEvent(const KeyEventInfo& eventInfo)

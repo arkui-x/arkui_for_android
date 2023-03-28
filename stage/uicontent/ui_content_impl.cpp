@@ -24,6 +24,7 @@
 #include "js_runtime_utils.h"
 #include "res_config.h"
 #include "resource_manager.h"
+#include "stage_asset_manager.h"
 
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
@@ -126,19 +127,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
 
     auto context = context_.lock();
     CHECK_NULL_VOID(context);
-#ifdef ENABLE_ROSEN_BACKEND
-#ifndef NG_BUILD
-    std::shared_ptr<OHOS::Rosen::RSUIDirector> rsUiDirector;
-    if (SystemProperties::GetRosenBackendEnabled()) {
-        rsUiDirector = OHOS::Rosen::RSUIDirector::Create();
-        if (rsUiDirector) {
-            rsUiDirector->SetRSSurfaceNode(window->GetSurfaceNode());
-            rsUiDirector->SetCacheDir(context->GetCacheDir());
-            rsUiDirector->Init();
-        }
-    }
-#endif
-#endif
+
     auto abilityContext =
         OHOS::AbilityRuntime::Platform::Context::ConvertTo<OHOS::AbilityRuntime::Platform::AbilityContext>(context);
     std::shared_ptr<OHOS::AppExecFwk::AbilityInfo> info;
@@ -158,16 +147,19 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     LOGI("Initialize UIContent isModelJson:%{public}s", isModelJson ? "true" : "false");
     if (isModelJson) {
         auto hapPath = info != nullptr ? info->hapPath : "";
+        hapPath = hapPath.empty() ? "arkui-x/" + moduleName + "/" : hapPath;
         LOGI("hapPath:%{public}s", hapPath.c_str());
         // first use hap provider
         if (flutterAssetManager && !hapPath.empty()) {
-            jobject asset;
+            auto assetManager = context->GetAssetManager();
+            CHECK_NULL_VOID(assetManager);
             auto env = JniEnvironment::GetInstance().GetJniEnv();
 
-            std::vector<std::string> hapAssetPaths { "", "ets/", "ets/share", "resources/base/profile/" };
+            std::vector<std::string> hapAssetPaths { "", "ets", "ets/share", "resources/base/profile" };
             for (const auto& path : hapAssetPaths) {
                 auto apkAssetProvider = AceType::MakeRefPtr<ApkAssetProvider>(
-                    std::make_unique<flutter::APKAssetProvider>(env.get(), asset, hapPath + path));
+                    std::make_unique<flutter::APKAssetProvider>(env.get(),
+                        assetManager->GetJavaAssetManager(), hapPath + path));
                 flutterAssetManager->PushBack(std::move(apkAssetProvider));
             }
         }
@@ -206,7 +198,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
                 }
             },
             [](const std::string& address) { LOGI("start ability with url = %{private}s", address.c_str()); }),
-        false);
+        true);
 
     CHECK_NULL_VOID(container);
     AceEngine::Get().AddContainer(instanceId_, container);
@@ -296,6 +288,9 @@ void UIContentImpl::InitAceInfoFromResConfig()
             auto script = localeInfo->getScript();
             AceApplicationInfo::GetInstance().SetLocale((language == nullptr) ? "" : language,
                 (region == nullptr) ? "" : region, (script == nullptr) ? "" : script, "");
+        } else {
+            LOGI("localeInfo is nullptr, set localeInfo to default");
+            AceApplicationInfo::GetInstance().SetLocale("", "", "", "");
         }
         if (resConfig->GetColorMode() == OHOS::Global::Resource::ColorMode::DARK) {
             SystemProperties::SetColorMode(ColorMode::DARK);
