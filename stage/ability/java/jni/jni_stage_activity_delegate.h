@@ -29,10 +29,13 @@ public:
     ~JniStageActivityDelegate() = delete;
 
     static bool Register(const std::shared_ptr<JNIEnv>& env);
+    static void AttachStageActivity(JNIEnv* env, jclass myclass, jstring jinstanceName, jobject object);
     static void DispatchOnCreate(JNIEnv* env, jclass myclass, jstring str);
     static void DispatchOnDestroy(JNIEnv* env, jclass myclass, jstring str);
     static void DispatchOnForeground(JNIEnv* env, jclass myclass, jstring str);
     static void DispatchOnBackground(JNIEnv* env, jclass myclass, jstring str);
+    static void DispatchOnNewWant(JNIEnv* env, jclass myclass, jstring str);
+    static void SetWindowView(JNIEnv* env, jclass myclass, jstring str, jobject jwindowView);
 };
 } // namespace Platform
 } // namespace AbilityRuntime

@@ -16,6 +16,9 @@
 package ohos.stage.ability.adapter;
 
 import android.app.Application;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.os.Process;
 import android.util.Log;
 import ohos.ace.adapter.AceEnv;
 import android.content.Context;
@@ -24,6 +27,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import ohos.ace.adapter.AppModeConfig;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.FileOutputStream;
+import ohos.ace.adapter.ALog;
+import ohos.ace.adapter.LoggerAosp;
+import java.util.Locale;
 
 /**
  * This class extends from Android Application, the entry of app
@@ -51,6 +60,7 @@ public class StageApplication extends Application {
     public void onCreate() {
         Log.i(LOG_TAG, "StageApplication onCreate called");
         super.onCreate();
+        ALog.setLogger(new LoggerAosp());
         AceEnv.getInstance();
         AppModeConfig.setAppMode("stage");
         initApplication();
@@ -58,15 +68,22 @@ public class StageApplication extends Application {
 
     public void initApplication() {
         appDelegate = new StageApplicationDelegate();
+        appDelegate.setPidAndUid(Process.myPid(), getUid(this));
 
         Context context = getApplicationContext();
         String apkPath = context.getPackageCodePath();
         appDelegate.setHapPath(apkPath);
         appDelegate.setNativeAssetManager(getAssets());
+
         appDelegate.setAssetsFileRelativePath(routerTraverseAssets(ASSETS_SUB_PATH));
         createStagePath();
 
-        // 4.cp resource
+        copyAllModuleResources();
+        appDelegate.setResourcesFilePrefixPath(getExternalFilesDir((String)null).getAbsolutePath());
+
+        appDelegate.setLocale(
+            Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(), Locale.getDefault().getScript());
+
         appDelegate.launchApplication();
     }
 
@@ -122,6 +139,7 @@ public class StageApplication extends Application {
             dir.mkdirs();
         }
     }
+
     private void createStagePath() {
         String filesDir = getApplicationContext().getFilesDir().getPath();
         String[] fileDirNames = {TEMP_DIR, FILES_DIR, PREFERENCE_DIR, DATABASE_DIR};
@@ -131,5 +149,102 @@ public class StageApplication extends Application {
         appDelegate.setFileDir(filesDir);
         String cacheDir = getApplicationContext().getCacheDir().getPath();
         appDelegate.setCacheDir(cacheDir);
+    }
+
+    /**
+     * copy the resources from all modules
+     */
+    private void copyAllModuleResources() {
+        String rootDirectory = "arkui-x";
+        AssetManager assets = getAssets();
+        String moduleResourcesDirectory = "";
+        String moduleResourcesIndex = "";
+        List<String> moduleResources = new ArrayList<>();
+        try {
+            String[] list = assets.list(rootDirectory);
+            for (String name : list) {
+                if ("systemres".equals(name)) {
+                    moduleResources.add(name);
+                } else {
+                    moduleResourcesDirectory = name + "/" + "resources";
+                    moduleResourcesIndex = name + "/" + "resources.index";
+                    moduleResources.add(moduleResourcesDirectory);
+                    moduleResources.add(moduleResourcesIndex);
+                }
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "read resources err: " + e.getMessage());
+        }
+        for (String resourcesName : moduleResources) {
+            copyFilesFromAssets(rootDirectory + "/" + resourcesName,
+                getExternalFilesDir(null).getAbsolutePath() + "/" + resourcesName);
+        }
+    }
+
+    /**
+     * copy the file to the destination path
+     * @param assetsPath the path in the assets directory
+     * @param savePath the destination path for the copy
+     */
+    private void copyFilesFromAssets(String assetsPath, String savePath) {
+        InputStream is = null;
+        FileOutputStream fos = null;
+        try {
+            String[] fileNames = getAssets().list(assetsPath);
+            File file = new File(savePath);
+            if (fileNames.length > 0) {
+                if (!file.exists()) {
+                    file.mkdirs();
+                }
+                for (String fileName : fileNames) {
+                    copyFilesFromAssets(assetsPath + "/" + fileName, savePath + "/" + fileName);
+                }
+            } else {
+                if (file.exists()) {
+                    return;
+                }
+                is = getAssets().open(assetsPath);
+                fos = new FileOutputStream(file);
+                byte[] buffer = new byte[1024];
+                int byteCount = 0;
+                while ((byteCount = is.read(buffer)) != -1) {
+                    fos.write(buffer, 0, byteCount);
+                }
+                fos.flush();
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "read or write data err: " + e.getMessage());
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    Log.e(LOG_TAG, "InputStream close err: " + e.getMessage());
+                }
+            }
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    Log.e(LOG_TAG, "FileOutputStream close err: " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    private int getUid(Context context) {
+        int uid = 0;
+        try {
+            PackageManager pm = context.getPackageManager();
+            if (pm == null) {
+                Log.d(LOG_TAG, "get uid when package manager is null");
+                return uid;
+            }
+            ApplicationInfo applicationInfo = pm.getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
+            uid = applicationInfo.uid;
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(LOG_TAG, "get uid failed, error: " + e.getMessage());
+        }
+        return uid;
     }
 }

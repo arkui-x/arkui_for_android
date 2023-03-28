@@ -15,7 +15,9 @@
 
 #include "jni_stage_activity_delegate.h"
 
+#include "ability_context_adapter.h"
 #include "app_main.h"
+#include "window_view_adapter.h"
 
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/utils/utils.h"
@@ -27,6 +29,11 @@ bool JniStageActivityDelegate::Register(const std::shared_ptr<JNIEnv>& env)
 {
     LOGI("JniStageActivityDelegate register start.");
     static const JNINativeMethod methods[] = {
+        {
+            .name = "nativeAttachStageActivity",
+            .signature = "(Ljava/lang/String;Lohos/stage/ability/adapter/StageActivity;)V",
+            .fnPtr = reinterpret_cast<void*>(&AttachStageActivity),
+        },
         {
             .name = "nativeDispatchOnCreate",
             .signature = "(Ljava/lang/String;)V",
@@ -47,6 +54,16 @@ bool JniStageActivityDelegate::Register(const std::shared_ptr<JNIEnv>& env)
             .signature = "(Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&DispatchOnBackground),
         },
+        {
+            .name = "nativeDispatchOnNewWant",
+            .signature = "(Ljava/lang/String;)V",
+            .fnPtr = reinterpret_cast<void*>(&DispatchOnNewWant),
+        },
+        {
+            .name = "nativeSetWindowView",
+            .signature = "(Ljava/lang/String;Lohos/ace/adapter/WindowView;)V",
+            .fnPtr = reinterpret_cast<void*>(&SetWindowView),
+        },
     };
 
     if (!env) {
@@ -62,6 +79,22 @@ bool JniStageActivityDelegate::Register(const std::shared_ptr<JNIEnv>& env)
     bool ret = env->RegisterNatives(clazz, methods, Ace::ArraySize(methods)) == 0;
     env->DeleteLocalRef(clazz);
     return ret;
+}
+
+void JniStageActivityDelegate::AttachStageActivity(JNIEnv* env, jclass myclass, jstring jinstanceName, jobject object)
+{
+    if (env == nullptr) {
+        LOGE("JNI StageActivityDelegate: null java env");
+        return;
+    }
+
+    auto instanceName = env->GetStringUTFChars(jinstanceName, nullptr);
+    if (instanceName == nullptr) {
+        LOGE("instanceName is nullptr");
+        return;
+    }
+    AbilityContextAdapter::GetInstance()->AddStageActivity(instanceName, object);
+    env->ReleaseStringUTFChars(jinstanceName, instanceName);
 }
 
 void JniStageActivityDelegate::DispatchOnCreate(JNIEnv* env, jclass myclass, jstring str)
@@ -118,6 +151,37 @@ void JniStageActivityDelegate::DispatchOnBackground(JNIEnv* env, jclass myclass,
         AppMain::GetInstance()->DispatchOnBackground(instanceName);
         env->ReleaseStringUTFChars(str, instanceName);
     }
+}
+
+void JniStageActivityDelegate::DispatchOnNewWant(JNIEnv* env, jclass myclass, jstring str)
+{
+    LOGI("JNI DispatchOnNewWant is called.");
+    if (env == nullptr) {
+        LOGE("env is nullptr");
+        return;
+    }
+    auto instanceName = env->GetStringUTFChars(str, nullptr);
+    if (instanceName != nullptr) {
+        AppMain::GetInstance()->DispatchOnNewWant(instanceName);
+        env->ReleaseStringUTFChars(str, instanceName);
+    }
+}
+
+void JniStageActivityDelegate::SetWindowView(JNIEnv* env, jclass myclass, jstring str, jobject jwindowView)
+{
+    LOGI("JNI SetWindowView is called.");
+    if (env == nullptr) {
+        LOGE("env is nullptr");
+        return;
+    }
+
+    auto instanceName = env->GetStringUTFChars(str, nullptr);
+    if (instanceName == nullptr) {
+        LOGE("instanceName is nullptr");
+        return;
+    }
+    WindowViewAdapter::GetInstance()->AddWindowView(instanceName, jwindowView);
+    env->ReleaseStringUTFChars(str, instanceName);
 }
 } // namespace Platform
 } // namespace AbilityRuntime

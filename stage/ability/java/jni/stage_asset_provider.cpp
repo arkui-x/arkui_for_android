@@ -30,6 +30,9 @@ const std::string FILES_DIR = "/files";
 const std::string PREFERENCE_DIR = "/preference";
 const std::string DATABASE_DIR = "/database";
 const std::string ASSETS_DIR = "/assets";
+const std::string RESOURCES_INDEX_NAME = "resources.index";
+const std::string SYSTEM_RES_INDEX_NAME = "systemres";
+const std::string SEPARATOR = "/";
 } // namespace
 std::shared_ptr<StageAssetProvider> StageAssetProvider::instance_ = nullptr;
 std::mutex StageAssetProvider::mutex_;
@@ -66,7 +69,6 @@ void StageAssetProvider::SetAssetsFileRelativePaths(const std::string& path)
 
 void StageAssetProvider::SetAssetManager(JNIEnv* env, jobject assetManager)
 {
-    env_ = env;
     assetManager_ = Ace::Platform::JniEnvironment::MakeJavaGlobalRef(
         Ace::Platform::JniEnvironment::GetInstance().GetJniEnv(), assetManager);
 }
@@ -203,8 +205,8 @@ Ace::RefPtr<AssetProvider> StageAssetProvider::CreateAndFindAssetProvider(const 
         return finder->second;
     }
 
-    auto assetProvider = Ace::AceType::MakeRefPtr<AssetProvider>(
-        std::make_unique<flutter::APKAssetProvider>(env_, assetManager_.get(), path));
+    auto assetProvider = Ace::AceType::MakeRefPtr<AssetProvider>(std::make_unique<flutter::APKAssetProvider>(
+        Ace::Platform::JniEnvironment::GetInstance().GetJniEnv().get(), assetManager_.get(), path));
     assetProviders_.emplace(path, assetProvider);
     return assetProvider;
 }
@@ -252,6 +254,30 @@ std::string StageAssetProvider::GetDatabaseDir() const
 std::string StageAssetProvider::GetPreferencesDir() const
 {
     return preferenceDir_;
+}
+
+void StageAssetProvider::GetResIndexPath(
+    const std::string& moduleName, std::string& appResIndexPath, std::string& sysResIndexPath)
+{
+    std::lock_guard<std::mutex> lock(allFilePathMutex_);
+    std::string tModuleName = moduleName + SEPARATOR;
+    for (auto& path : allFilePath_) {
+        if (path.find(RESOURCES_INDEX_NAME) == std::string::npos) {
+            continue;
+        }
+
+        auto fisrtPos = path.find_first_of('/');
+        if (path.find(tModuleName) != std::string::npos) {
+            appResIndexPath = resourcesFilePrefixPath_ + path.substr(fisrtPos, path.size());
+        } else if (path.find(SYSTEM_RES_INDEX_NAME) != std::string::npos) {
+            sysResIndexPath = resourcesFilePrefixPath_ + path.substr(fisrtPos, path.size());
+        }
+    }
+}
+
+void StageAssetProvider::SetResourcesFilePrefixPath(const std::string& resourcesFilePrefixPath)
+{
+    resourcesFilePrefixPath_ = resourcesFilePrefixPath;
 }
 } // namespace Platform
 } // namespace AbilityRuntime

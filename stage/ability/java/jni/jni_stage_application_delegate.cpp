@@ -17,6 +17,7 @@
 
 #include "app_main.h"
 #include "foundation/arkui/ace_engine/adapter/android/entrance/java/jni/apk_asset_provider.h"
+#include "stage_application_info_adapter.h"
 #include "stage_asset_provider.h"
 
 #include "adapter/android/entrance/java/jni/jni_environment.h"
@@ -60,7 +61,21 @@ bool JniStageApplicationDelegate::Register(const std::shared_ptr<JNIEnv>& env)
             .signature = "(Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&SetFileDir),
         },
-    };
+        {
+            .name = "nativeSetResourcesFilePrefixPath",
+            .signature = "(Ljava/lang/String;)V",
+            .fnPtr = reinterpret_cast<void*>(&SetResourcesFilePrefixPath),
+        },
+        {
+            .name = "nativeSetPidAndUid",
+            .signature = "(II)V",
+            .fnPtr = reinterpret_cast<void*>(&SetPidAndUid),
+        },
+        {
+            .name = "nativeSetLocale",
+            .signature = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+            .fnPtr = reinterpret_cast<void*>(&SetLocale),
+        } };
 
     if (!env) {
         LOGE("JNI StageApplicationDelegate: null java env");
@@ -145,6 +160,53 @@ void JniStageApplicationDelegate::SetFileDir(JNIEnv* env, jclass myclass, jstrin
         StageAssetProvider::GetInstance()->SetFileDir(filesDir);
         env->ReleaseStringUTFChars(str, filesDir);
     }
+}
+
+void JniStageApplicationDelegate::SetResourcesFilePrefixPath(JNIEnv* env, jclass myclass, jstring str)
+{
+    if (env == nullptr) {
+        LOGE("env is nullptr");
+        return;
+    }
+    auto path = env->GetStringUTFChars(str, nullptr);
+    if (path != nullptr) {
+        StageAssetProvider::GetInstance()->SetResourcesFilePrefixPath(path);
+        env->ReleaseStringUTFChars(str, path);
+    }
+}
+
+void JniStageApplicationDelegate::SetPidAndUid(JNIEnv* env, jclass myclass, jint pid, jint uid)
+{
+    AppMain::GetInstance()->SetPidAndUid(pid, uid);
+}
+
+void JniStageApplicationDelegate::SetLocale(
+    JNIEnv* env, jclass myclass, jstring jlanguage, jstring jcountry, jstring jscript)
+{
+    if (env == nullptr) {
+        LOGE("env is nullptr");
+        return;
+    }
+
+    auto language = env->GetStringUTFChars(jlanguage, nullptr);
+    if (language == nullptr) {
+        LOGE("language is nullptr");
+        return;
+    }
+
+    auto country = env->GetStringUTFChars(jcountry, nullptr);
+    if (country == nullptr) {
+        LOGE("country is nullptr");
+        return;
+    }
+
+    auto script = env->GetStringUTFChars(jscript, nullptr);
+    if (script == nullptr) {
+        LOGE("script is nullptr");
+        return;
+    }
+
+    StageApplicationInfoAdapter::GetInstance()->SetLocale(language, country, script);
 }
 } // namespace Platform
 } // namespace AbilityRuntime

@@ -16,11 +16,16 @@
 package ohos.stage.ability.adapter;
 
 import android.util.Log;
+import ohos.ace.adapter.WindowView;
 
 public class StageActivityDelegate {
     private static final String LOG_TAG = "StageActivityDelegate";
     public StageActivityDelegate() {
         Log.i(LOG_TAG, "StageActivityDelegate()");
+    }
+
+    public void attachStageActivity(String instanceName, StageActivity object) {
+        nativeAttachStageActivity(instanceName, object);
     }
 
     public void dispatchOnCreate(String instanceName) {
@@ -33,6 +38,11 @@ public class StageActivityDelegate {
         nativeDispatchOnDestroy(instanceName);
     }
 
+    public void dispatchOnNewWant(String instanceName) {
+        Log.i(LOG_TAG, "dispatchOnNewWant called");
+        nativeDispatchOnNewWant(instanceName);
+    }
+
     public void dispatchOnForeground(String instanceName) {
         Log.i(LOG_TAG, "DispatchOnForeground called");
         nativeDispatchOnForeground(instanceName);
@@ -43,8 +53,16 @@ public class StageActivityDelegate {
         nativeDispatchOnBackground(instanceName);
     }
 
+    public void setWindowView(String instanceName, WindowView windowView) {
+        Log.i(LOG_TAG, "SetWindowView called");
+        nativeSetWindowView(instanceName, windowView);
+    }
+
+    private native void nativeAttachStageActivity(String instanceName, StageActivity object);
     private native void nativeDispatchOnCreate(String instanceName);
     private native void nativeDispatchOnDestroy(String instanceName);
     private native void nativeDispatchOnForeground(String instanceName);
     private native void nativeDispatchOnBackground(String instanceName);
+    private native void nativeDispatchOnNewWant(String instanceName);
+    private native void nativeSetWindowView(String instanceName, WindowView windowView);
 }
