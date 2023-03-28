@@ -117,6 +117,8 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+        setFocusable(true);
+        requestFocus();
         Surface surface = holder.getSurface();
         if (nativeWindowPtr == 0L) {
             ALog.w(LOG_TAG, "surfaceCreated nativeWindow not ready, delay notify");
@@ -149,6 +151,64 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
             ALog.i(LOG_TAG, "surfaceDestroyed");
             nativeSurfaceDestroyed(nativeWindowPtr);
         }
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        if (nativeWindowPtr == 0L) {
+            ALog.w(LOG_TAG, "onWindowFocusChanged: nativeWindow is null");
+            return;
+        }
+        ALog.i(LOG_TAG, "onWindowFocusChanged");
+        nativeOnWindowFocusChanged(nativeWindowPtr, hasWindowFocus);
+    }
+
+    /**
+     * Notify nativeWindow foreground.
+     */
+    public void foreground() {
+        if (nativeWindowPtr == 0L) {
+            ALog.w(LOG_TAG, "foreground: nativeWindow is null");
+            return;
+        }
+        ALog.i(LOG_TAG, "foreground called");
+        nativeForeground(nativeWindowPtr);
+    }
+
+    /**
+     * Notify nativeWindow background.
+     */
+    public void background() {
+        if (nativeWindowPtr == 0L) {
+            ALog.w(LOG_TAG, "background: nativeWindow is null");
+            return;
+        }
+        ALog.i(LOG_TAG, "background called");
+        nativeBackground(nativeWindowPtr);
+    }
+
+    /**
+     * Notify nativeWindow destroy.
+     */
+    public void destroy() {
+        if (nativeWindowPtr == 0L) {
+            ALog.w(LOG_TAG, "destroy: nativeWindow is null");
+            return;
+        }
+        ALog.i(LOG_TAG, "destroy called");
+        nativeDestroy(nativeWindowPtr);
+    }
+
+    /**
+     * Notify nativeWindow backPressed.
+     */
+    public void backPressed() {
+        if (nativeWindowPtr == 0L) {
+            ALog.w(LOG_TAG, "backPressed: nativeWindow is null");
+            return;
+        }
+        ALog.i(LOG_TAG, "backPressed called");
+        nativeBackPressed(nativeWindowPtr);
     }
 
     @Override
@@ -198,6 +258,16 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     private native void nativeSurfaceChanged(long viewPtr, int width, int height);
 
     private native void nativeSurfaceDestroyed(long viewPtr);
+
+    private native void nativeOnWindowFocusChanged(long windowPtr, boolean hasWindowFocus);
+
+    private native void nativeForeground(long windowPtr);
+
+    private native void nativeBackground(long windowPtr);
+
+    private native void nativeDestroy(long windowPtr);
+
+    private native void nativeBackPressed(long windowPtr);
 
     private native boolean nativeDispatchPointerDataPacket(long viewPtr, ByteBuffer buffer, int position);
 

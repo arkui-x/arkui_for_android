@@ -25,14 +25,21 @@ class WindowViewJni {
 public:
     static bool RegisterNatives(JNIEnv* env);
 
-    static void SurfaceCreated(JNIEnv* env, jobject myObject, jlong view, jobject jsurface);
-    static void SurfaceChanged(JNIEnv* env, jobject myObject, jlong view, jint width, jint height);
-    static void SurfaceDestroyed(JNIEnv* env, jobject myObject, jlong view);
+    static void SurfaceCreated(JNIEnv* env, jobject myObject, jlong window, jobject jsurface);
+    static void SurfaceChanged(JNIEnv* env, jobject myObject, jlong window, jint width, jint height);
+    static void SurfaceDestroyed(JNIEnv* env, jobject myObject, jlong window);
     static void RegisterWindow(JNIEnv* env, void* window, jobject windowView);
     static void UnRegisterWindow(JNIEnv* env, jobject windowView);
 
-    static jboolean DispatchPointerDataPacket(JNIEnv* env, jobject myObject, jlong view, jobject buffer, jint position);
-    static jboolean DispatchKeyEvent(JNIEnv* env, jobject myObject, jlong view, jint keyCode, jint action,
+    static void OnWindowFocusChanged(JNIEnv* env, jobject myObject, jlong window, jboolean hasWindowFocus);
+    static void Foreground(JNIEnv* env, jobject myObject, jlong window);
+    static void Background(JNIEnv* env, jobject myObject, jlong window);
+    static void Destroy(JNIEnv* env, jobject myObject, jlong window);
+
+    static void BackPressed(JNIEnv* env, jobject myObject, jlong window);
+    static jboolean DispatchPointerDataPacket(
+        JNIEnv* env, jobject myObject, jlong window, jobject buffer, jint position);
+    static jboolean DispatchKeyEvent(JNIEnv* env, jobject myObject, jlong window, jint keyCode, jint action,
         jint repeatTime, jlong timeStamp, jlong timeStampStart);
 
 private:

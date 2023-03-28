@@ -147,9 +147,64 @@ void Window::NotifySurfaceDestroyed()
     }
 }
 
+void Window::WindowFocusChanged(bool hasWindowFocus)
+{
+    if (!uiContent_) {
+        LOGW("Window::Focus uiContent_ is nullptr");
+        return;
+    }
+    if (hasWindowFocus) {
+        LOGI("Window: notify uiContent Focus");
+        uiContent_->Focus();
+    } else {
+        LOGI("Window: notify uiContent UnFocus");
+        uiContent_->UnFocus();
+    }
+}
+
+void Window::Foreground()
+{
+    if (!uiContent_) {
+        LOGW("Window::Foreground uiContent_ is nullptr");
+        return;
+    }
+    LOGI("Window: notify uiContent Foreground");
+    uiContent_->Foreground();
+}
+
+void Window::Background()
+{
+    if (!uiContent_) {
+        LOGW("Window::Background uiContent_ is nullptr");
+        return;
+    }
+    LOGI("Window: notify uiContent Background");
+    uiContent_->Background();
+}
+
+void Window::Destroy()
+{
+    if (!uiContent_) {
+        LOGW("Window::Destroy uiContent_ is nullptr");
+        return;
+    }
+    LOGI("Window: notify uiContent Destroy");
+    uiContent_->Destroy();
+}
+
+bool Window::ProcessBackPressed()
+{
+    if (!uiContent_) {
+        LOGW("Window::ProcessBackPressed uiContent_ is nullptr");
+        return false;
+    }
+    return uiContent_->ProcessBackPressed();
+}
+
 bool Window::ProcessPointerEvent(const std::vector<uint8_t>& data)
 {
     if (!uiContent_) {
+        LOGW("Window::ProcessPointerEvent uiContent_ is nullptr");
         return false;
     }
     return uiContent_->ProcessPointerEvent(data);
@@ -159,6 +214,7 @@ bool Window::ProcessKeyEvent(int32_t keyCode, int32_t keyAction, int32_t repeatT
     int64_t timeStampStart)
 {
     if (!uiContent_) {
+        LOGW("Window::ProcessKeyEvent uiContent_ is nullptr");
         return false;
     }
     return uiContent_->ProcessKeyEvent(keyCode, keyAction, repeatTime, timeStamp, timeStampStart);

@@ -67,6 +67,7 @@ public class StageActivity extends Activity {
         Log.i(LOG_TAG, "StageActivity onResume called");
         super.onResume();
         activityDelegate.dispatchOnForeground(getInstanceName());
+        windowView.foreground();
     }
 
     @Override
@@ -87,6 +88,7 @@ public class StageActivity extends Activity {
         Log.i(LOG_TAG, "StageActivity onStop called");
         super.onStop();
         activityDelegate.dispatchOnBackground(getInstanceName());
+        windowView.background();
     }
 
     @Override
@@ -94,11 +96,13 @@ public class StageActivity extends Activity {
         Log.i(LOG_TAG, "StageActivity onDestroy called");
         super.onDestroy();
         activityDelegate.dispatchOnDestroy(getInstanceName());
+        windowView.destroy();
     }
 
     @Override
     public void onBackPressed() {
         Log.i(LOG_TAG, "StageActivity onBackPressed called");
+        windowView.backPressed();
     }
 
     /**

@@ -46,6 +46,31 @@ static const JNINativeMethod COMMON_METHODS[] = {
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::SurfaceDestroyed),
     },
     {
+        .name = "nativeOnWindowFocusChanged",
+        .signature = "(JZ)V",
+        .fnPtr = reinterpret_cast<void*>(&WindowViewJni::OnWindowFocusChanged),
+    },
+    {
+        .name = "nativeForeground",
+        .signature = "(J)V",
+        .fnPtr = reinterpret_cast<void*>(&WindowViewJni::Foreground),
+    },
+    {
+        .name = "nativeBackground",
+        .signature = "(J)V",
+        .fnPtr = reinterpret_cast<void*>(&WindowViewJni::Background),
+    },
+    {
+        .name = "nativeDestroy",
+        .signature = "(J)V",
+        .fnPtr = reinterpret_cast<void*>(&WindowViewJni::Destroy),
+    },
+    {
+        .name = "nativeBackPressed",
+        .signature = "(J)V",
+        .fnPtr = reinterpret_cast<void*>(&WindowViewJni::BackPressed),
+    },
+    {
         .name = "nativeDispatchPointerDataPacket",
         .signature = "(JLjava/nio/ByteBuffer;I)Z",
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::DispatchPointerDataPacket),
@@ -68,17 +93,17 @@ void WindowViewJni::SurfaceCreated(JNIEnv* env, jobject myObject, jlong window, 
 }
 
 void WindowViewJni::SurfaceChanged(
-    JNIEnv* env, jobject myObject, jlong view, jint width, jint height)
+    JNIEnv* env, jobject myObject, jlong window, jint width, jint height)
 {
-    auto windowPtr = JavaLongToPointer<Rosen::Window>(view);
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
     if (windowPtr != nullptr) {
         windowPtr->NotifySurfaceChanged(width, height);
     }
 }
 
-void WindowViewJni::SurfaceDestroyed(JNIEnv* env, jobject myObject, jlong view)
+void WindowViewJni::SurfaceDestroyed(JNIEnv* env, jobject myObject, jlong window)
 {
-    auto windowPtr = JavaLongToPointer<Rosen::Window>(view);
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
     if (windowPtr != nullptr) {
         windowPtr->NotifySurfaceDestroyed();
     }
@@ -95,8 +120,48 @@ void WindowViewJni::UnRegisterWindow(JNIEnv* env, jobject windowView)
     env->CallVoidMethod(windowView, gUnRegisterWindowMethodID);
 }
 
+void WindowViewJni::OnWindowFocusChanged(JNIEnv* env, jobject myObject, jlong window, jboolean hasWindowFocus)
+{
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
+    if (windowPtr != nullptr) {
+        windowPtr->WindowFocusChanged(hasWindowFocus);
+    }
+}
+
+void WindowViewJni::Foreground(JNIEnv* env, jobject myObject, jlong window)
+{
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
+    if (windowPtr != nullptr) {
+        windowPtr->Foreground();
+    }
+}
+
+void WindowViewJni::Background(JNIEnv* env, jobject myObject, jlong window)
+{
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
+    if (windowPtr != nullptr) {
+        windowPtr->Background();
+    }
+}
+
+void WindowViewJni::Destroy(JNIEnv* env, jobject myObject, jlong window)
+{
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
+    if (windowPtr != nullptr) {
+        windowPtr->Destroy();
+    }
+}
+
+void WindowViewJni::BackPressed(JNIEnv* env, jobject myObject, jlong window)
+{
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
+    if (windowPtr != nullptr) {
+        windowPtr->ProcessBackPressed();
+    }
+}
+
 jboolean WindowViewJni::DispatchPointerDataPacket(
-    JNIEnv* env, jobject myObject, jlong view, jobject buffer, jint position)
+    JNIEnv* env, jobject myObject, jlong window, jobject buffer, jint position)
 {
     if (env == nullptr) {
         LOGW("env is null");
@@ -105,7 +170,7 @@ jboolean WindowViewJni::DispatchPointerDataPacket(
 
     uint8_t* data = static_cast<uint8_t*>(env->GetDirectBufferAddress(buffer));
     std::vector<uint8_t> packet(data, data + position);
-    auto windowPtr = JavaLongToPointer<Rosen::Window>(view);
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
     if (windowPtr == nullptr) {
         LOGE("DispatchPointerDataPacket window is nullptr");
         return false;
@@ -114,10 +179,10 @@ jboolean WindowViewJni::DispatchPointerDataPacket(
     return windowPtr->ProcessPointerEvent(packet);
 }
 
-jboolean WindowViewJni::DispatchKeyEvent(JNIEnv* env, jobject myObject, jlong view, jint keyCode, jint action,
+jboolean WindowViewJni::DispatchKeyEvent(JNIEnv* env, jobject myObject, jlong window, jint keyCode, jint action,
     jint repeatTime, jlong timeStamp, jlong timeStampStart)
 {
-    auto windowPtr = JavaLongToPointer<Rosen::Window>(view);
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
     if (windowPtr == nullptr) {
         LOGE("DispatchKeyEvent window is nullptr");
         return false;

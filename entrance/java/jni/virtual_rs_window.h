@@ -51,17 +51,6 @@ struct VsyncCallback {
 };
 class VSyncReceiver;
 
-enum class WindowState : uint32_t {
-    STATE_INITIAL,
-    STATE_CREATED,
-    STATE_SHOWN,
-    STATE_HIDDEN,
-    STATE_FROZEN,
-    STATE_UNFROZEN,
-    STATE_DESTROYED,
-    STATE_BOTTOM = STATE_DESTROYED, // Add state type after STATE_DESTROYED is not allowed
-};
-
 enum class WindowSizeChangeReason : uint32_t {
     UNDEFINED = 0,
     MAXIMIZE,
@@ -98,6 +87,13 @@ public:
     void NotifySurfaceChanged(int32_t width, int32_t height);
     void NotifySurfaceDestroyed();
 
+    void WindowFocusChanged(bool hasWindowFocus);
+    void Foreground();
+    void Background();
+    void Destroy();
+
+    // event process
+    bool ProcessBackPressed();
     bool ProcessPointerEvent(const std::vector<uint8_t>& data);
     bool ProcessKeyEvent(
         int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp = 0, int64_t timeStampStart = 0);
@@ -130,8 +126,6 @@ private:
     bool delayNotifySurfaceCreated_ = false;
     bool delayNotifySurfaceChanged_ = false;
     bool delayNotifySurfaceDestroyed_ = false;
-
-    WindowState state_ { WindowState::STATE_INITIAL };
 
     DISALLOW_COPY_AND_MOVE(Window);
 };
