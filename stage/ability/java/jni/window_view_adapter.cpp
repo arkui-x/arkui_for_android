@@ -24,7 +24,6 @@ namespace AbilityRuntime {
 namespace Platform {
 std::shared_ptr<WindowViewAdapter> WindowViewAdapter::instance_ = nullptr;
 std::mutex WindowViewAdapter::mutex_;
-std::unordered_map<std::string, Ace::Platform::JniEnvironment::JavaGlobalRef> g_jobjects;
 WindowViewAdapter::WindowViewAdapter() {}
 
 WindowViewAdapter::~WindowViewAdapter() {}
@@ -41,23 +40,21 @@ std::shared_ptr<WindowViewAdapter> WindowViewAdapter::GetInstance()
     return instance_;
 }
 
-void WindowViewAdapter::SetWindowView(const std::string& instanceName, jobject windowView)
+void WindowViewAdapter::AddWindowView(const std::string& instanceName, jobject windowView)
 {
-    std::lock_guard<std::mutex> lock(jWindowViewMutex_);
     auto env = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
     if (env == nullptr) {
         LOGE("env is nullptr");
         return;
     }
-    g_jobjects.emplace(instanceName, Ace::Platform::JniEnvironment::MakeJavaGlobalRef(env, windowView));
+    jobjects_.emplace(instanceName, Ace::Platform::JniEnvironment::MakeJavaGlobalRef(env, windowView));
 }
 
 jobject WindowViewAdapter::GetWindowView(const std::string& instanceName)
 {
     LOGI("Get window view, instancename: %{public}s", instanceName.c_str());
-    std::lock_guard<std::mutex> lock(jWindowViewMutex_);
-    auto finder = g_jobjects.find(instanceName);
-    if (finder != g_jobjects.end()) {
+    auto finder = jobjects_.find(instanceName);
+    if (finder != jobjects_.end()) {
         return finder->second.get();
     }
     return nullptr;
@@ -66,6 +63,15 @@ jobject WindowViewAdapter::GetWindowView(const std::string& instanceName)
 std::shared_ptr<JNIEnv> WindowViewAdapter::GetJniEnv()
 {
     return Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
+}
+
+void WindowViewAdapter::RemoveWindowView(const std::string& instanceName)
+{
+    LOGI("Remove window view, instancename: %{public}s", instanceName.c_str());
+    auto finder = jobjects_.find(instanceName);
+    if (finder != jobjects_.end()) {
+        jobjects_.erase(finder);
+    }
 }
 } // namespace Platform
 } // namespace AbilityRuntime

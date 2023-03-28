@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.FileOutputStream;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.LoggerAosp;
+import java.util.Locale;
 
 /**
  * This class extends from Android Application, the entry of app
@@ -79,6 +80,9 @@ public class StageApplication extends Application {
 
         copyAllModuleResources();
         appDelegate.setResourcesFilePrefixPath(getExternalFilesDir((String)null).getAbsolutePath());
+
+        appDelegate.setLocale(
+            Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(), Locale.getDefault().getScript());
 
         appDelegate.launchApplication();
     }

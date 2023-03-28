@@ -35,6 +35,7 @@ template("stage_android_jni_source_set") {
       "$ace_root/adapter/android/stage/ability/java/jni/jni_stage_activity_delegate.cpp",
       "$ace_root/adapter/android/stage/ability/java/jni/jni_stage_application_delegate.cpp",
       "$ace_root/adapter/android/stage/ability/java/jni/jni_stage_registry.cpp",
+      "$ace_root/adapter/android/stage/ability/java/jni/stage_application_info_adapter.cpp",
       "$ace_root/adapter/android/stage/ability/java/jni/stage_asset_provider.cpp",
       "$ace_root/adapter/android/stage/ability/java/jni/window_view_adapter.cpp",
     ]

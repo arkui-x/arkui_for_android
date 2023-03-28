@@ -48,7 +48,7 @@ public class StageActivity extends Activity {
         Log.i(LOG_TAG, "StageActivity onCreate called");
         super.onCreate(savedInstanceState);
         activityDelegate = new StageActivityDelegate();
-        activityDelegate.attachStageActivity(this);
+        activityDelegate.attachStageActivity(getInstanceName(), this);
 
         windowView = new WindowView(this);
         setContentView(windowView);

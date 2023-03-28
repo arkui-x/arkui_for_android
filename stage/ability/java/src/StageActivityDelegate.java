@@ -24,8 +24,8 @@ public class StageActivityDelegate {
         Log.i(LOG_TAG, "StageActivityDelegate()");
     }
 
-    public void attachStageActivity(StageActivity object) {
-        nativeAttachStageActivity(object);
+    public void attachStageActivity(String instanceName, StageActivity object) {
+        nativeAttachStageActivity(instanceName, object);
     }
 
     public void dispatchOnCreate(String instanceName) {
@@ -58,7 +58,7 @@ public class StageActivityDelegate {
         nativeSetWindowView(instanceName, windowView);
     }
 
-    private native void nativeAttachStageActivity(StageActivity object);
+    private native void nativeAttachStageActivity(String instanceName, StageActivity object);
     private native void nativeDispatchOnCreate(String instanceName);
     private native void nativeDispatchOnDestroy(String instanceName);
     private native void nativeDispatchOnForeground(String instanceName);

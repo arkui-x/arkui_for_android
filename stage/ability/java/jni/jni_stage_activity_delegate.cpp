@@ -31,7 +31,7 @@ bool JniStageActivityDelegate::Register(const std::shared_ptr<JNIEnv>& env)
     static const JNINativeMethod methods[] = {
         {
             .name = "nativeAttachStageActivity",
-            .signature = "(Lohos/stage/ability/adapter/StageActivity;)V",
+            .signature = "(Ljava/lang/String;Lohos/stage/ability/adapter/StageActivity;)V",
             .fnPtr = reinterpret_cast<void*>(&AttachStageActivity),
         },
         {
@@ -81,13 +81,20 @@ bool JniStageActivityDelegate::Register(const std::shared_ptr<JNIEnv>& env)
     return ret;
 }
 
-void JniStageActivityDelegate::AttachStageActivity(JNIEnv* env, jclass myclass, jobject object)
+void JniStageActivityDelegate::AttachStageActivity(JNIEnv* env, jclass myclass, jstring jinstanceName, jobject object)
 {
     if (env == nullptr) {
         LOGE("JNI StageActivityDelegate: null java env");
         return;
     }
-    AbilityContextAdapter::GetInstance()->SetStageActivity(object);
+
+    auto instanceName = env->GetStringUTFChars(jinstanceName, nullptr);
+    if (instanceName == nullptr) {
+        LOGE("instanceName is nullptr");
+        return;
+    }
+    AbilityContextAdapter::GetInstance()->AddStageActivity(instanceName, object);
+    env->ReleaseStringUTFChars(jinstanceName, instanceName);
 }
 
 void JniStageActivityDelegate::DispatchOnCreate(JNIEnv* env, jclass myclass, jstring str)
@@ -173,7 +180,7 @@ void JniStageActivityDelegate::SetWindowView(JNIEnv* env, jclass myclass, jstrin
         LOGE("instanceName is nullptr");
         return;
     }
-    WindowViewAdapter::GetInstance()->SetWindowView(instanceName, jwindowView);
+    WindowViewAdapter::GetInstance()->AddWindowView(instanceName, jwindowView);
     env->ReleaseStringUTFChars(str, instanceName);
 }
 } // namespace Platform

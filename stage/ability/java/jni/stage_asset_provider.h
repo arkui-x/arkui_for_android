@@ -91,18 +91,18 @@ public:
     void SetResourcesFilePrefixPath(const std::string& resourcesFilePrefixPath);
 
 private:
-    std::string appPath_ { "" };
+    std::string appPath_;
     std::vector<std::string> allFilePath_;
     std::mutex allFilePathMutex_;
     std::map<std::string, Ace::RefPtr<AssetProvider>> assetProviders_;
     std::mutex assetProvidersMutex_;
     Ace::Platform::JniEnvironment::JavaGlobalRef assetManager_;
-    std::string cacheDir_ { "" };
-    std::string tempDir_ { "" };
-    std::string filesDir_ { "" };
-    std::string databaseDir_ { "" };
-    std::string preferenceDir_ { "" };
-    std::string resourcesFilePrefixPath_ { "" };
+    std::string cacheDir_;
+    std::string tempDir_;
+    std::string filesDir_;
+    std::string databaseDir_;
+    std::string preferenceDir_;
+    std::string resourcesFilePrefixPath_;
     static std::shared_ptr<StageAssetProvider> instance_;
     static std::mutex mutex_;
 };

@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <mutex>
+#include <unordered_map>
 
 #include "jni.h"
 #include "jni_environment.h"
@@ -32,16 +33,15 @@ public:
     ~AbilityContextAdapter();
 
     static std::shared_ptr<AbilityContextAdapter> GetInstance();
-    void SetStageActivity(jobject stageActivity);
-    void StartAbility(const AAFwk::Want& want);
-    void TerminateSelf();
+    void AddStageActivity(const std::string& instanceName, jobject stageActivity);
+    void RemoveStageActivity(const std::string& instanceName);
+    void StartAbility(const std::string& instanceName, const AAFwk::Want& want);
+    void TerminateSelf(const std::string& instanceName);
 
 private:
     static std::shared_ptr<AbilityContextAdapter> instance_;
     static std::mutex mutex_;
-    Ace::Platform::JniEnvironment::JavaGlobalRef object_;
-    jmethodID startActivityMethod_ = nullptr;
-    jmethodID finishMethod_ = nullptr;
+    std::unordered_map<std::string, Ace::Platform::JniEnvironment::JavaGlobalRef> jobjects_;
 };
 } // namespace Platform
 } // namespace AbilityRuntime

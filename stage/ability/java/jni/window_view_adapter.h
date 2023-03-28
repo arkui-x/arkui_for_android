@@ -34,14 +34,15 @@ public:
     ~WindowViewAdapter();
 
     static std::shared_ptr<WindowViewAdapter> GetInstance();
-    void SetWindowView(const std::string& instanceName, jobject windowView);
+    void AddWindowView(const std::string& instanceName, jobject windowView);
     jobject GetWindowView(const std::string& instanceName);
     std::shared_ptr<JNIEnv> GetJniEnv();
+    void RemoveWindowView(const std::string& instanceName);
 
 private:
     static std::shared_ptr<WindowViewAdapter> instance_;
     static std::mutex mutex_;
-    std::mutex jWindowViewMutex_;
+    std::unordered_map<std::string, Ace::Platform::JniEnvironment::JavaGlobalRef> jobjects_;
 };
 } // namespace Platform
 } // namespace AbilityRuntime

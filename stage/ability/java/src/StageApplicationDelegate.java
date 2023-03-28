@@ -63,6 +63,10 @@ public class StageApplicationDelegate {
         nativeSetPidAndUid(pid, uid);
     }
 
+    public void setLocale(String language, String country, String script) {
+        nativeSetLocale(language, country, script);
+    }
+
     private native void nativeSetAssetManager(Object assetManager);
     private native void nativeSetHapPath(String hapPath);
     private native void nativeLaunchApplication();
@@ -71,4 +75,5 @@ public class StageApplicationDelegate {
     private native void nativeSetFileDir(String filesDir);
     private native void nativeSetResourcesFilePrefixPath(String path);
     private native void nativeSetPidAndUid(int pid, int uid);
+    private native void nativeSetLocale(String language, String country, String script);
 }
