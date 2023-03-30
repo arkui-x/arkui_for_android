@@ -41,6 +41,8 @@ import org.json.JSONObject;
 
 /**
  * This class extends from Android Application, the entry of app
+ *
+ * @since 1
  */
 public class StageApplication extends Application {
     private static final String LOG_TAG = "StageApplication";
@@ -265,6 +267,8 @@ public class StageApplication extends Application {
 
     /**
      * Call when Application is on configuration changed.
+     *
+     * @param newConfig the configuration.
      */
     @Override
     public void onConfigurationChanged(Configuration newConfig) {

@@ -20,6 +20,8 @@ import android.util.Log;
 
 /**
  * This class is responsible for communicating with the stage application delegate jni.
+ *
+ * @since 1
  */
 public class StageApplicationDelegate {
     private static final String LOG_TAG = "StageApplicationDelegate";

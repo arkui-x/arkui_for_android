@@ -20,6 +20,8 @@ import ohos.ace.adapter.WindowView;
 
 /**
  * This class is responsible for communicating with the stage activity delegate jni.
+ *
+ * @since 1
  */
 public class StageActivityDelegate {
     private static final String LOG_TAG = "StageActivityDelegate";

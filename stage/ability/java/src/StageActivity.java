@@ -29,6 +29,8 @@ import ohos.ace.adapter.WindowView;
  * A base class for the Ability Cross-platform Environment of the stage model to run on Android.
  * This class is inherited from android Activity.
  * It is entrance of life-cycles of android applications.
+ *
+ * @since 1
  */
 public class StageActivity extends Activity {
     private static final String LOG_TAG = "StageActivity";

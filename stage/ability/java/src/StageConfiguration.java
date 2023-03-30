@@ -21,6 +21,8 @@ import org.json.JSONException;
 
 /**
  * This class is responsible for the stage model configuration transformation.
+ *
+ * @since 1
  */
 public class StageConfiguration {
     private static final String LOG_TAG = "StageConfiguration";
