@@ -439,7 +439,6 @@ void UIContentImpl::UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRunti
 void UIContentImpl::UpdateViewportConfig(const ViewportConfig& config, OHOS::Rosen::WindowSizeChangeReason reason)
 {
     LOGI("UIContentImpl: UpdateViewportConfig %{public}s", config.ToString().c_str());
-        LOGI("UIContentImpl: UpdateViewportConfig %{public}s", config.ToString().c_str());
     SystemProperties::SetResolution(config.Density());
     SystemProperties::SetDeviceOrientation(config.Height() >= config.Width() ? 0 : 1);
     auto container = Platform::AceContainerSG::GetContainer(instanceId_);
@@ -513,5 +512,12 @@ void UIContentImpl::NotifySurfaceDestroyed()
     auto aceView = static_cast<Platform::AceViewSG*>(container->GetView());
     CHECK_NULL_VOID(aceView);
     aceView->NotifySurfaceDestroyed();
+}
+
+std::unique_ptr<UIContent> UIContent::Create(OHOS::AbilityRuntime::Platform::Context* context, NativeEngine* runtime)
+{
+    std::unique_ptr<UIContent> content;
+    content.reset(new UIContentImpl(context, runtime));
+    return content;
 }
 } // namespace OHOS::Ace::Platform
