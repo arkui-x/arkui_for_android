@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-#include "jni_stage_registry.h"
+#include "stage_registry_jni.h"
 
-#include "jni_stage_activity_delegate.h"
-#include "jni_stage_application_delegate.h"
+#include "stage_activity_delegate_jni.h"
+#include "stage_application_delegate_jni.h"
 
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/log/log.h"
@@ -24,7 +24,7 @@
 namespace OHOS {
 namespace AbilityRuntime {
 namespace Platform {
-bool JniStageRegistry::Register()
+bool StageRegistryJni::Register()
 {
     auto jniEnv = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
     if (!jniEnv) {
@@ -32,13 +32,13 @@ bool JniStageRegistry::Register()
         return false;
     }
 
-    if (!JniStageApplicationDelegate::Register(jniEnv)) {
-        LOGE("JNI Initialize: failed to register JniStageApplicationDelegate");
+    if (!StageApplicationDelegateJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register StageApplicationDelegateJni");
         return false;
     }
 
-    if (!JniStageActivityDelegate::Register(jniEnv)) {
-        LOGE("JNI Initialize: failed to register JniStageActivityDelegate");
+    if (!StageActivityDelegateJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register StageActivityDelegateJni");
         return false;
     }
     return true;

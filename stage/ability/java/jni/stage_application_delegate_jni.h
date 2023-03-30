@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef FOUNDATION_ACE_ADAPTER_ANDROID_STAGE_ABILITY_JAVA_JNI_JNI_STAGE_APPLICATION_DELEGATE_H
-#define FOUNDATION_ACE_ADAPTER_ANDROID_STAGE_ABILITY_JAVA_JNI_JNI_STAGE_APPLICATION_DELEGATE_H
+#ifndef FOUNDATION_ACE_ADAPTER_ANDROID_STAGE_ABILITY_JAVA_JNI_STAGE_APPLICATION_DELEGATE_JNI_H
+#define FOUNDATION_ACE_ADAPTER_ANDROID_STAGE_ABILITY_JAVA_JNI_STAGE_APPLICATION_DELEGATE_JNI_H
 
 #include <memory>
 
@@ -23,10 +23,10 @@
 namespace OHOS {
 namespace AbilityRuntime {
 namespace Platform {
-class JniStageApplicationDelegate {
+class StageApplicationDelegateJni {
 public:
-    JniStageApplicationDelegate() = delete;
-    ~JniStageApplicationDelegate() = delete;
+    StageApplicationDelegateJni() = delete;
+    ~StageApplicationDelegateJni() = delete;
 
     static bool Register(const std::shared_ptr<JNIEnv>& env);
     static void SetNativeAssetManager(JNIEnv* env, jclass myclass, jobject assetManager);
@@ -44,4 +44,4 @@ public:
 } // namespace Platform
 } // namespace AbilityRuntime
 } // namespace OHOS
-#endif // FOUNDATION_ACE_ADAPTER_ANDROID_STAGE_ABILITY_JAVA_JNI_JNI_STAGE_APPLICATION_DELEGATE_H
+#endif // FOUNDATION_ACE_ADAPTER_ANDROID_STAGE_ABILITY_JAVA_JNI_STAGE_APPLICATION_DELEGATE_JNI_H

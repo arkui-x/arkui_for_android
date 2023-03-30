@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "jni_stage_activity_delegate.h"
+#include "stage_activity_delegate_jni.h"
 
 #include "ability_context_adapter.h"
 #include "app_main.h"
@@ -25,9 +25,9 @@
 namespace OHOS {
 namespace AbilityRuntime {
 namespace Platform {
-bool JniStageActivityDelegate::Register(const std::shared_ptr<JNIEnv>& env)
+bool StageActivityDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
-    LOGI("JniStageActivityDelegate register start.");
+    LOGI("StageActivityDelegateJni register start.");
     static const JNINativeMethod methods[] = {
         {
             .name = "nativeAttachStageActivity",
@@ -81,7 +81,7 @@ bool JniStageActivityDelegate::Register(const std::shared_ptr<JNIEnv>& env)
     return ret;
 }
 
-void JniStageActivityDelegate::AttachStageActivity(JNIEnv* env, jclass myclass, jstring jinstanceName, jobject object)
+void StageActivityDelegateJni::AttachStageActivity(JNIEnv* env, jclass myclass, jstring jinstanceName, jobject object)
 {
     if (env == nullptr) {
         LOGE("JNI StageActivityDelegate: null java env");
@@ -97,7 +97,7 @@ void JniStageActivityDelegate::AttachStageActivity(JNIEnv* env, jclass myclass, 
     env->ReleaseStringUTFChars(jinstanceName, instanceName);
 }
 
-void JniStageActivityDelegate::DispatchOnCreate(JNIEnv* env, jclass myclass, jstring str)
+void StageActivityDelegateJni::DispatchOnCreate(JNIEnv* env, jclass myclass, jstring str)
 {
     LOGI("JNI DispatchOnCreate is called.");
     if (env == nullptr) {
@@ -111,7 +111,7 @@ void JniStageActivityDelegate::DispatchOnCreate(JNIEnv* env, jclass myclass, jst
     }
 }
 
-void JniStageActivityDelegate::DispatchOnDestroy(JNIEnv* env, jclass myclass, jstring str)
+void StageActivityDelegateJni::DispatchOnDestroy(JNIEnv* env, jclass myclass, jstring str)
 {
     LOGI("JNI DispatchOnDestroy is called.");
     if (env == nullptr) {
@@ -125,7 +125,7 @@ void JniStageActivityDelegate::DispatchOnDestroy(JNIEnv* env, jclass myclass, js
     }
 }
 
-void JniStageActivityDelegate::DispatchOnForeground(JNIEnv* env, jclass myclass, jstring str)
+void StageActivityDelegateJni::DispatchOnForeground(JNIEnv* env, jclass myclass, jstring str)
 {
     LOGI("JNI DispatchOnForeground is called.");
     if (env == nullptr) {
@@ -139,7 +139,7 @@ void JniStageActivityDelegate::DispatchOnForeground(JNIEnv* env, jclass myclass,
     }
 }
 
-void JniStageActivityDelegate::DispatchOnBackground(JNIEnv* env, jclass myclass, jstring str)
+void StageActivityDelegateJni::DispatchOnBackground(JNIEnv* env, jclass myclass, jstring str)
 {
     LOGI("JNI DispatchOnBackground is called.");
     if (env == nullptr) {
@@ -153,7 +153,7 @@ void JniStageActivityDelegate::DispatchOnBackground(JNIEnv* env, jclass myclass,
     }
 }
 
-void JniStageActivityDelegate::DispatchOnNewWant(JNIEnv* env, jclass myclass, jstring str)
+void StageActivityDelegateJni::DispatchOnNewWant(JNIEnv* env, jclass myclass, jstring str)
 {
     LOGI("JNI DispatchOnNewWant is called.");
     if (env == nullptr) {
@@ -167,7 +167,7 @@ void JniStageActivityDelegate::DispatchOnNewWant(JNIEnv* env, jclass myclass, js
     }
 }
 
-void JniStageActivityDelegate::SetWindowView(JNIEnv* env, jclass myclass, jstring str, jobject jwindowView)
+void StageActivityDelegateJni::SetWindowView(JNIEnv* env, jclass myclass, jstring str, jobject jwindowView)
 {
     LOGI("JNI SetWindowView is called.");
     if (env == nullptr) {
