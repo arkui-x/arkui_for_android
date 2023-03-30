@@ -15,18 +15,20 @@
 
 package ohos.stage.ability.adapter;
 
-import android.content.ComponentName;
 import android.app.Activity;
-import android.os.Bundle;
-import java.util.concurrent.atomic.AtomicInteger;
-import android.util.Log;
 import android.content.Intent;
+import android.content.ComponentName;
+import android.os.Bundle;
+import android.util.Log;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 import ohos.ace.adapter.WindowView;
 
 /**
- * A base class for the Ability Cross-platform Environment to run on
- * Android. This class is inherited from
- * android Activity. It is entrance of life-cycles of android applications.
+ * A base class for the Ability Cross-platform Environment of the stage model to run on Android.
+ * This class is inherited from android Activity.
+ * It is entrance of life-cycles of android applications.
  */
 public class StageActivity extends Activity {
     private static final String LOG_TAG = "StageActivity";
@@ -106,7 +108,7 @@ public class StageActivity extends Activity {
     }
 
     /**
-     * set the instance name, should called before super.onCreate()
+     * Set the instance name, should called before super.onCreate()
      *
      * @param name the instance name to set
      */
@@ -126,6 +128,12 @@ public class StageActivity extends Activity {
         return instanceName;
     }
 
+    /**
+     * Start a new activity.
+     *
+     * @param bundleName the package name.
+     * @param activityName the activity name.
+     */
     public void startActivity(String bundleName, String activityName) {
         Log.i(LOG_TAG, "startActivity called, bundleName: " + bundleName + ", activityName: " + activityName);
         Intent intent = new Intent();
@@ -141,6 +149,9 @@ public class StageActivity extends Activity {
         this.startActivity(intent);
     }
 
+    /**
+     * Call this when your activity is done and should be closed.
+     */
     public void finish() {
         Log.i(LOG_TAG, "StageActivity finish called");
         super.finish();

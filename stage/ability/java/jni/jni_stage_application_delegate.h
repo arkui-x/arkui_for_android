@@ -37,6 +37,8 @@ public:
     static void SetFileDir(JNIEnv* env, jclass myclass, jstring str);
     static void SetResourcesFilePrefixPath(JNIEnv* env, jclass myclass, jstring str);
     static void SetPidAndUid(JNIEnv* env, jclass myclass, jint pid, jint uid);
+    static void InitConfiguration(JNIEnv* env, jclass myclass, jstring data);
+    static void OnConfigurationChanged(JNIEnv* env, jclass myclass, jstring data);
     static void SetLocale(JNIEnv* env, jclass myclass, jstring jlanguage, jstring jcountry, jstring jscript);
 };
 } // namespace Platform

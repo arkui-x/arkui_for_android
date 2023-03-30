@@ -72,6 +72,16 @@ bool JniStageApplicationDelegate::Register(const std::shared_ptr<JNIEnv>& env)
             .fnPtr = reinterpret_cast<void*>(&SetPidAndUid),
         },
         {
+            .name = "nativeInitConfiguration",
+            .signature = "(Ljava/lang/String;)V",
+            .fnPtr = reinterpret_cast<void*>(&InitConfiguration),
+        },
+        {
+            .name = "nativeOnConfigurationChanged",
+            .signature = "(Ljava/lang/String;)V",
+            .fnPtr = reinterpret_cast<void*>(&OnConfigurationChanged),
+        },
+        {
             .name = "nativeSetLocale",
             .signature = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&SetLocale),
@@ -178,6 +188,35 @@ void JniStageApplicationDelegate::SetResourcesFilePrefixPath(JNIEnv* env, jclass
 void JniStageApplicationDelegate::SetPidAndUid(JNIEnv* env, jclass myclass, jint pid, jint uid)
 {
     AppMain::GetInstance()->SetPidAndUid(pid, uid);
+}
+
+void JniStageApplicationDelegate::InitConfiguration(JNIEnv* env, jclass myclass, jstring data)
+{
+    if (env == nullptr) {
+        LOGE("env is nullptr");
+        return;
+    }
+    auto jsonConfiguration = env->GetStringUTFChars(data, nullptr);
+    if (jsonConfiguration != nullptr) {
+        AppMain::GetInstance()->InitConfiguration(jsonConfiguration);
+        env->ReleaseStringUTFChars(data, jsonConfiguration);
+    }
+}
+
+void JniStageApplicationDelegate::OnConfigurationChanged(JNIEnv* env, jclass myclass, jstring data)
+{
+    LOGI("JNI OnConfigurationChanged is called.");
+    if (env == nullptr) {
+        LOGE("OnConfigurationChanged env is nullptr");
+        return;
+    }
+    auto jsonConfiguration = env->GetStringUTFChars(data, nullptr);
+    if (jsonConfiguration == nullptr) {
+        LOGE("OnConfigurationChanged jsonConfiguration is nullptr");
+        return;
+    }
+    AppMain::GetInstance()->OnConfigurationUpdate(jsonConfiguration);
+    env->ReleaseStringUTFChars(data, jsonConfiguration);
 }
 
 void JniStageApplicationDelegate::SetLocale(
