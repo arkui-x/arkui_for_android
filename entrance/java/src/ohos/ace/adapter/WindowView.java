@@ -187,14 +187,16 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
 
     /**
      * Notify nativeWindow backPressed.
+     *
+     * @return true if process BackPressed, false otherwise.
      */
-    public void backPressed() {
+    public boolean backPressed() {
         if (nativeWindowPtr == 0L) {
             ALog.w(LOG_TAG, "backPressed: nativeWindow is null");
-            return;
+            return false;
         }
         ALog.i(LOG_TAG, "backPressed called");
-        nativeBackPressed(nativeWindowPtr);
+        return nativeBackPressed(nativeWindowPtr);
     }
 
     @Override
@@ -239,11 +241,11 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         return super.onKeyUp(keyCode, event);
     }
 
-    private native void nativeSurfaceCreated(long viewPtr, Surface surface);
+    private native void nativeSurfaceCreated(long windowPtr, Surface surface);
 
-    private native void nativeSurfaceChanged(long viewPtr, int width, int height);
+    private native void nativeSurfaceChanged(long windowPtr, int width, int height);
 
-    private native void nativeSurfaceDestroyed(long viewPtr);
+    private native void nativeSurfaceDestroyed(long windowPtr);
 
     private native void nativeOnWindowFocusChanged(long windowPtr, boolean hasWindowFocus);
 
@@ -253,10 +255,10 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
 
     private native void nativeDestroy(long windowPtr);
 
-    private native void nativeBackPressed(long windowPtr);
+    private native boolean nativeBackPressed(long windowPtr);
 
-    private native boolean nativeDispatchPointerDataPacket(long viewPtr, ByteBuffer buffer, int position);
+    private native boolean nativeDispatchPointerDataPacket(long windowPtr, ByteBuffer buffer, int position);
 
-    private native boolean nativeDispatchKeyEvent(long viewPtr, int keyCode, int action, int repeatTime, long timeStamp,
-            long timeStampStart);
+    private native boolean nativeDispatchKeyEvent(long windowPtr, int keyCode, int action, int repeatTime,
+            long timeStamp, long timeStampStart);
 }

@@ -112,7 +112,9 @@ public class StageActivity extends Activity {
     @Override
     public void onBackPressed() {
         Log.i(LOG_TAG, "StageActivity onBackPressed called");
-        windowView.backPressed();
+        if (!windowView.backPressed()) {
+            super.onBackPressed();
+        }
     }
 
     /**

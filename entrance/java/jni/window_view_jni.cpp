@@ -67,7 +67,7 @@ static const JNINativeMethod COMMON_METHODS[] = {
     },
     {
         .name = "nativeBackPressed",
-        .signature = "(J)V",
+        .signature = "(J)Z",
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::BackPressed),
     },
     {
@@ -152,12 +152,14 @@ void WindowViewJni::Destroy(JNIEnv* env, jobject myObject, jlong window)
     }
 }
 
-void WindowViewJni::BackPressed(JNIEnv* env, jobject myObject, jlong window)
+jboolean WindowViewJni::BackPressed(JNIEnv* env, jobject myObject, jlong window)
 {
     auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
-    if (windowPtr != nullptr) {
-        windowPtr->ProcessBackPressed();
+    if (windowPtr == nullptr) {
+        LOGE("BackPressed window is nullptr");
+        return false;
     }
+    return windowPtr->ProcessBackPressed();
 }
 
 jboolean WindowViewJni::DispatchPointerDataPacket(
