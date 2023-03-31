@@ -16,13 +16,15 @@
 package ohos.stage.ability.adapter;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import ohos.ace.adapter.AcePlatformPlugin;
 import ohos.ace.adapter.WindowView;
 
 /**
@@ -47,6 +49,8 @@ public class StageActivity extends Activity {
 
     private WindowView windowView = null;
 
+    private AcePlatformPlugin platformPlugin = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(LOG_TAG, "StageActivity onCreate called");
@@ -54,7 +58,9 @@ public class StageActivity extends Activity {
         activityDelegate = new StageActivityDelegate();
         activityDelegate.attachStageActivity(getInstanceName(), this);
 
-        windowView = new WindowView(this, activityId);
+        windowView = new WindowView(this);
+        initPlatformPlugin(this, activityId, windowView);
+
         setContentView(windowView);
         activityDelegate.setWindowView(getInstanceName(), windowView);
         activityDelegate.dispatchOnCreate(getInstanceName());
@@ -157,5 +163,16 @@ public class StageActivity extends Activity {
     public void finish() {
         Log.i(LOG_TAG, "StageActivity finish called");
         super.finish();
+    }
+
+    /**
+     * Initialize platform plugins
+     *
+     * @param context Application context
+     * @param instanceId the instance id
+     * @param windowView the window view
+     */
+    private void initPlatformPlugin(Context context, int instanceId, WindowView windowView) {
+        platformPlugin = new AcePlatformPlugin(context, instanceId, windowView, 0L);
     }
 }
