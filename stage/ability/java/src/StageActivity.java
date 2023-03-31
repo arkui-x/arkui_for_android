@@ -22,8 +22,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import ohos.ace.adapter.AcePlatformPlugin;
 import ohos.ace.adapter.WindowView;
 
@@ -37,9 +35,7 @@ public class StageActivity extends Activity {
 
     private static final String INSTANCE_DEFAULT_NAME = "default";
 
-    private static final AtomicInteger ID_GENERATOR = new AtomicInteger(1);
-
-    private int activityId = ID_GENERATOR.getAndIncrement();
+    private int instanceId = InstanceIdGenerator.getAndIncrement();
 
     private String instanceName;
 
@@ -57,7 +53,7 @@ public class StageActivity extends Activity {
         activityDelegate.attachStageActivity(getInstanceName(), this);
 
         windowView = new WindowView(this);
-        initPlatformPlugin(this, activityId, windowView);
+        initPlatformPlugin(this, instanceId, windowView);
 
         setContentView(windowView);
         activityDelegate.setWindowView(getInstanceName(), windowView);
@@ -123,8 +119,7 @@ public class StageActivity extends Activity {
             return;
         }
 
-        instanceName = name + String.valueOf(activityId);
-        activityId = ID_GENERATOR.getAndIncrement();
+        instanceName = name + String.valueOf(instanceId);
     }
 
     private String getInstanceName() {

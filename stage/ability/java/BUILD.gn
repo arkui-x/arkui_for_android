@@ -21,11 +21,12 @@ java_library("stage_platform_android_java") {
     "$ace_root/adapter/android/stage/ability/java/src/StageActivityDelegate.java",
     "$ace_root/adapter/android/stage/ability/java/src/StageApplication.java",
     "$ace_root/adapter/android/stage/ability/java/src/StageApplicationDelegate.java",
+    "$ace_root/adapter/android/stage/ability/java/src/InstanceIdGenerator.java",
   ]
 
   deps = [
-    "$ace_root/adapter/android/entrance/java:ace_platform_common_java",
     "$ace_root/adapter/android/entrance/java:ace_platform_android_java",
+    "$ace_root/adapter/android/entrance/java:ace_platform_common_java",
   ]
   subsystem_name = "arkui"
   part_name = "ace_engine_cross"

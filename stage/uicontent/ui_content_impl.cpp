@@ -15,9 +15,6 @@
 
 #include "adapter/android/stage/uicontent/ui_content_impl.h"
 
-#include <atomic>
-#include <cinttypes>
-
 #include "ability.h"
 #include "ability_context.h"
 #include "ability_info.h"
@@ -45,7 +42,6 @@ namespace {
 const std::string START_PARAMS_KEY = "__startParams";
 } // namespace
 
-static std::atomic<int32_t> gInstanceId = 0;
 using ContentFinishCallback = std::function<void()>;
 using ContentStartAbilityCallback = std::function<void(const std::string& address)>;
 class ContentEventCallback final : public Platform::PlatformEventCallback {
@@ -177,10 +173,11 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     }
 
     // create container
-    if (runtime_) {
-        instanceId_ = gInstanceId.fetch_add(1, std::memory_order_relaxed);
-        LOGE("instanceId_:fetch_add:%d", instanceId_);
+    if (info) {
+        instanceId_ = info->instanceId;
+        LOGI("acecontainer init instanceId_:%{public}d", instanceId_);
     }
+
     auto container = AceType::MakeRefPtr<Platform::AceContainerSG>(instanceId_, FrontendType::DECLARATIVE_JS, context_,
         info,
         std::make_unique<ContentEventCallback>(

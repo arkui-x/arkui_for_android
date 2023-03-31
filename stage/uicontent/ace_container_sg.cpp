@@ -538,8 +538,6 @@ void AceContainerSG::AttachView(
 
     aceView_->Launch();
     frontend_->AttachPipelineContext(pipelineContext_);
-
-    AceEngine::Get().RegisterToWatchDog(instanceId, taskExecutor_, GetSettings().useUIAsJSThread);
 }
 
 void AceContainerSG::UpdateResourceConfiguration(const std::string& jsonStr)
