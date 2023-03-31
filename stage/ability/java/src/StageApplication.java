@@ -16,26 +16,33 @@
 package ohos.stage.ability.adapter;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
+import android.content.res.Configuration;
 import android.os.Process;
 import android.util.Log;
-import ohos.ace.adapter.AceEnv;
-import android.content.Context;
-import android.content.res.AssetManager;
+
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import ohos.ace.adapter.AppModeConfig;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.FileOutputStream;
-import ohos.ace.adapter.ALog;
-import ohos.ace.adapter.LoggerAosp;
 import java.util.Locale;
+
+import ohos.ace.adapter.AceEnv;
+import ohos.ace.adapter.ALog;
+import ohos.ace.adapter.AppModeConfig;
+import ohos.ace.adapter.LoggerAosp;
+
+import org.json.JSONObject;
 
 /**
  * This class extends from Android Application, the entry of app
+ *
+ * @since 1
  */
 public class StageApplication extends Application {
     private static final String LOG_TAG = "StageApplication";
@@ -54,7 +61,6 @@ public class StageApplication extends Application {
 
     /**
      * Call when Application is created.
-     *
      */
     @Override
     public void onCreate() {
@@ -64,8 +70,12 @@ public class StageApplication extends Application {
         AceEnv.getInstance();
         AppModeConfig.setAppMode("stage");
         initApplication();
+        initConfiguration();
     }
 
+    /**
+     * Initialize stage application.
+     */
     public void initApplication() {
         appDelegate = new StageApplicationDelegate();
         appDelegate.setPidAndUid(Process.myPid(), getUid(this));
@@ -246,5 +256,25 @@ public class StageApplication extends Application {
             Log.e(LOG_TAG, "get uid failed, error: " + e.getMessage());
         }
         return uid;
+    }
+
+    private void initConfiguration() {
+        Log.i(LOG_TAG, "StageApplication initConfiguration called");
+        Configuration cfg = getResources().getConfiguration();
+        JSONObject json = StageConfiguration.convertConfiguration(cfg);
+        appDelegate.initConfiguration(json.toString());
+    }
+
+    /**
+     * Call when Application is on configuration changed.
+     *
+     * @param newConfig the configuration.
+     */
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        Log.i(LOG_TAG, "StageApplication onConfigurationChanged called");
+        super.onConfigurationChanged(newConfig);
+        JSONObject json = StageConfiguration.convertConfiguration(newConfig);
+        appDelegate.onConfigurationChanged(json.toString());
     }
 }

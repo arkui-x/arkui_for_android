@@ -15,54 +15,120 @@
 
 package ohos.stage.ability.adapter;
 
-import android.util.Log;
 import android.content.res.AssetManager;
+import android.util.Log;
 
 /**
- * This class is the connection between stage application and native layer.
+ * This class is responsible for communicating with the stage application delegate jni.
+ *
+ * @since 1
  */
 public class StageApplicationDelegate {
     private static final String LOG_TAG = "StageApplicationDelegate";
 
+    /**
+     * Constructor.
+     */
     public StageApplicationDelegate() {
-        Log.i(LOG_TAG, "StageApplicationDelegate()");
+        Log.i(LOG_TAG, "Constructor called.");
     }
 
-    public void init() {
-        Log.i(LOG_TAG, "init called");
-    }
-
+    /**
+     * Set asset manager object to native.
+     *
+     * @param assetManager the asset manager.
+     */
     public void setNativeAssetManager(AssetManager assetManager) {
         nativeSetAssetManager(assetManager);
     }
 
+    /**
+     * Set hap path to native.
+     *
+     * @param hapPath the hap path.
+     */
     public void setHapPath(String hapPath) {
         nativeSetHapPath(hapPath);
     }
 
+    /**
+     * Set assets file relative path to native.
+     *
+     * @param path the assets file relative path.
+     */
     public void setAssetsFileRelativePath(String path) {
         nativeSetAssetsFileRelativePath(path);
     }
 
+    /**
+     * Launch application.
+     */
     public void launchApplication() {
         nativeLaunchApplication();
     }
 
+    /**
+     * Set cache dir to native.
+     *
+     * @param cacheDir the cache dir.
+     */
     public void setCacheDir(String cacheDir) {
         nativeSetCacheDir(cacheDir);
     }
+
+    /**
+     * Set file dir to native.
+     *
+     * @param filesDir the file dir.
+     */
     public void setFileDir(String filesDir) {
         nativeSetFileDir(filesDir);
     }
 
+    /**
+     * Set resources file prefix path to native.
+     *
+     * @param path the resources file prefix path.
+     */
     public void setResourcesFilePrefixPath(String path) {
         nativeSetResourcesFilePrefixPath(path);
     }
 
+    /**
+     * Set pid and uid to native.
+     *
+     * @param pid the process id.
+     * @param uid the uid.
+     */
     public void setPidAndUid(int pid, int uid) {
         nativeSetPidAndUid(pid, uid);
     }
 
+    /**
+     * Init configuration.
+     *
+     * @param data the configuration data.
+     */
+    public void initConfiguration(String data) {
+        nativeInitConfiguration(data);
+    }
+
+    /**
+     * Called by the system when the device configuration changes while your component is running.
+     *
+     * @param data the configuration data.
+     */
+    public void onConfigurationChanged(String data) {
+        nativeOnConfigurationChanged(data);
+    }
+
+    /**
+     * Set locale to native.
+     *
+     * @param language the language.
+     * @param country the country.
+     * @param script the script.
+     */
     public void setLocale(String language, String country, String script) {
         nativeSetLocale(language, country, script);
     }
@@ -75,5 +141,7 @@ public class StageApplicationDelegate {
     private native void nativeSetFileDir(String filesDir);
     private native void nativeSetResourcesFilePrefixPath(String path);
     private native void nativeSetPidAndUid(int pid, int uid);
+    private native void nativeInitConfiguration(String data);
+    private native void nativeOnConfigurationChanged(String data);
     private native void nativeSetLocale(String language, String country, String script);
 }
