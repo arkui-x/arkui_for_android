@@ -17,13 +17,8 @@
 
 #include "flutter/fml/platform/android/jni_util.h"
 
-#ifdef NG_BUILD
-#include "ace_shell/shell/platform/android/platform_view_android.h"
-#include "ace_shell/shell/platform/android/vsync_waiter_android.h"
-#else
 #include "flutter/shell/platform/android/platform_view_android.h"
 #include "flutter/shell/platform/android/vsync_waiter_android.h"
-#endif
 
 #include "adapter/android/capability/java/jni/bridge/bridge_jni.h"
 #include "adapter/android/capability/java/jni/clipboard/clipboard_jni.h"
@@ -45,11 +40,7 @@
 
 namespace OHOS::Ace::Platform {
 
-#ifdef NG_BUILD
-using flutter::ace::VsyncWaiterAndroid;
-#else
 using flutter::VsyncWaiterAndroid;
-#endif
 
 bool JniRegistry::Register(bool isStageMode)
 {

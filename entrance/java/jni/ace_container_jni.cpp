@@ -507,16 +507,12 @@ void AceContainerJni::SetView(
     flutterView->SetRSWinodw(rsWindow);
     auto window = std::make_shared<NG::RosenWindow>(rsWindow, container->GetTaskExecutor(), instanceId);
 #else
-#ifdef NG_BUILD
-    std::unique_ptr<Window> window = std::make_unique<NG::FlutterWindow>(container->GetTaskExecutor(), instanceId);
-#else
     auto platformWindow = view->GetPlatformWindow();
     if (!platformWindow) {
         LOGE("JNI setView: null platformWindow");
         return;
     }
     std::unique_ptr<Window> window = std::make_unique<Window>(std::move(platformWindow));
-#endif
 #endif
     container->AttachView(std::move(window), view, static_cast<double>(density), width, height);
 }

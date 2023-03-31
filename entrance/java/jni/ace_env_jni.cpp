@@ -15,12 +15,6 @@
 
 #include "adapter/android/entrance/java/jni/ace_env_jni.h"
 
-#ifdef NG_BUILD
-#include "ace_shell/shell/platform/android/platform_view_android.h"
-#else
-#include "flutter/shell/platform/android/platform_view_android.h"
-#endif
-
 #include "base/log/log.h"
 #include "base/utils/utils.h"
 
@@ -51,11 +45,6 @@ bool AceEnvJni::Register(const std::shared_ptr<JNIEnv>& env)
 
 void AceEnvJni::SetupFirstFrameHandler(JNIEnv* env, jclass clazz, jint platfrom)
 {
-#ifndef NG_BUILD
-    if (!flutter::PlatformViewAndroid::RegisterOnFirstFrame(env, platfrom)) {
-        LOGE("JNI AceEnv: register OnFirstFrame failed");
-    }
-#endif
 }
 
 } // namespace OHOS::Ace::Platform

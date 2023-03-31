@@ -18,12 +18,15 @@
 
 #include <memory>
 
+#ifndef ENABLE_ROSEN_BACKEND
 #ifdef NG_BUILD
 #include "ace_shell/shell/platform/android/android_shell_holder.h"
-#include "flutter/lib/ui/window/pointer_data_packet.h"
 #else
 #include "flutter/shell/platform/android/android_shell_holder.h"
 #endif
+#endif
+#include "flutter/lib/ui/window/pointer_data_packet.h"
+
 #include "jni.h"
 
 #include "adapter/android/entrance/java/jni/jni_environment.h"
