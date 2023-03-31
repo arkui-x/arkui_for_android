@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "stage_registry_jni.h"
+#include "stage_jni_registry.h"
 
 #include "stage_activity_delegate_jni.h"
 #include "stage_application_delegate_jni.h"
@@ -24,7 +24,7 @@
 namespace OHOS {
 namespace AbilityRuntime {
 namespace Platform {
-bool StageRegistryJni::Register()
+bool StageJniRegistry::Register()
 {
     auto jniEnv = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
     if (!jniEnv) {
