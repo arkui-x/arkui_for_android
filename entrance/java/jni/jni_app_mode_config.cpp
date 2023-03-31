@@ -18,7 +18,7 @@
 #include "adapter/android/entrance/java/jni/ace_container_jni.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "adapter/android/entrance/java/jni/jni_registry.h"
-#include "adapter/android/stage/ability/java/jni/jni_stage_registry.h"
+#include "adapter/android/stage/ability/java/jni/stage_jni_registry.h"
 #include "base/log/log.h"
 #include "base/utils/utils.h"
 
@@ -75,8 +75,8 @@ void JniAppModeConfig::SetAppMode(JNIEnv* env, jclass myclass, jstring str)
         }
     } else if (appMode == STAGE_MODE) {
         LOGI("Register stage mode jni.");
-        if (!OHOS::AbilityRuntime::Platform::JniStageRegistry::Register()) {
-            LOGE("JNI Onload: failed to register JniStageRegistry");
+        if (!OHOS::AbilityRuntime::Platform::StageJniRegistry::Register()) {
+            LOGE("JNI Onload: failed to register StageJniRegistry");
             return;
         }
         if (!OHOS::Ace::Platform::JniRegistry::Register(true)) {

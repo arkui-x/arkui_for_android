@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "jni_stage_application_delegate.h"
+#include "stage_application_delegate_jni.h"
 
 #include "app_main.h"
 #include "foundation/arkui/ace_engine/adapter/android/entrance/java/jni/apk_asset_provider.h"
@@ -27,9 +27,9 @@
 namespace OHOS {
 namespace AbilityRuntime {
 namespace Platform {
-bool JniStageApplicationDelegate::Register(const std::shared_ptr<JNIEnv>& env)
+bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
-    LOGI("JniStageApplicationDelegate register start.");
+    LOGI("StageApplicationDelegateJni register start.");
     static const JNINativeMethod methods[] = {
         {
             .name = "nativeSetAssetManager",
@@ -72,6 +72,16 @@ bool JniStageApplicationDelegate::Register(const std::shared_ptr<JNIEnv>& env)
             .fnPtr = reinterpret_cast<void*>(&SetPidAndUid),
         },
         {
+            .name = "nativeInitConfiguration",
+            .signature = "(Ljava/lang/String;)V",
+            .fnPtr = reinterpret_cast<void*>(&InitConfiguration),
+        },
+        {
+            .name = "nativeOnConfigurationChanged",
+            .signature = "(Ljava/lang/String;)V",
+            .fnPtr = reinterpret_cast<void*>(&OnConfigurationChanged),
+        },
+        {
             .name = "nativeSetLocale",
             .signature = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&SetLocale),
@@ -92,7 +102,7 @@ bool JniStageApplicationDelegate::Register(const std::shared_ptr<JNIEnv>& env)
     return ret;
 }
 
-void JniStageApplicationDelegate::SetNativeAssetManager(JNIEnv* env, jclass myclass, jobject assetManager)
+void StageApplicationDelegateJni::SetNativeAssetManager(JNIEnv* env, jclass myclass, jobject assetManager)
 {
     LOGI("Set native asset manager.");
     if (env == nullptr) {
@@ -103,7 +113,7 @@ void JniStageApplicationDelegate::SetNativeAssetManager(JNIEnv* env, jclass mycl
     StageAssetProvider::GetInstance()->SetAssetManager(env, assetManager);
 }
 
-void JniStageApplicationDelegate::SetHapPath(JNIEnv* env, jclass myclass, jstring str)
+void StageApplicationDelegateJni::SetHapPath(JNIEnv* env, jclass myclass, jstring str)
 {
     LOGI("Set hap path");
     if (env == nullptr) {
@@ -117,7 +127,7 @@ void JniStageApplicationDelegate::SetHapPath(JNIEnv* env, jclass myclass, jstrin
     }
 }
 
-void JniStageApplicationDelegate::SetAssetsFileRelativePath(JNIEnv* env, jclass myclass, jstring str)
+void StageApplicationDelegateJni::SetAssetsFileRelativePath(JNIEnv* env, jclass myclass, jstring str)
 {
     if (env == nullptr) {
         LOGE("env is nullptr");
@@ -130,13 +140,13 @@ void JniStageApplicationDelegate::SetAssetsFileRelativePath(JNIEnv* env, jclass 
     }
 }
 
-void JniStageApplicationDelegate::LaunchApplication(JNIEnv* env, jclass clazz)
+void StageApplicationDelegateJni::LaunchApplication(JNIEnv* env, jclass clazz)
 {
     LOGI("Launch application");
     AppMain::GetInstance()->LaunchApplication();
 }
 
-void JniStageApplicationDelegate::SetCacheDir(JNIEnv* env, jclass myclass, jstring str)
+void StageApplicationDelegateJni::SetCacheDir(JNIEnv* env, jclass myclass, jstring str)
 {
     if (env == nullptr) {
         LOGE("env is nullptr");
@@ -149,7 +159,7 @@ void JniStageApplicationDelegate::SetCacheDir(JNIEnv* env, jclass myclass, jstri
     }
 }
 
-void JniStageApplicationDelegate::SetFileDir(JNIEnv* env, jclass myclass, jstring str)
+void StageApplicationDelegateJni::SetFileDir(JNIEnv* env, jclass myclass, jstring str)
 {
     if (env == nullptr) {
         LOGE("env is nullptr");
@@ -162,7 +172,7 @@ void JniStageApplicationDelegate::SetFileDir(JNIEnv* env, jclass myclass, jstrin
     }
 }
 
-void JniStageApplicationDelegate::SetResourcesFilePrefixPath(JNIEnv* env, jclass myclass, jstring str)
+void StageApplicationDelegateJni::SetResourcesFilePrefixPath(JNIEnv* env, jclass myclass, jstring str)
 {
     if (env == nullptr) {
         LOGE("env is nullptr");
@@ -175,12 +185,41 @@ void JniStageApplicationDelegate::SetResourcesFilePrefixPath(JNIEnv* env, jclass
     }
 }
 
-void JniStageApplicationDelegate::SetPidAndUid(JNIEnv* env, jclass myclass, jint pid, jint uid)
+void StageApplicationDelegateJni::SetPidAndUid(JNIEnv* env, jclass myclass, jint pid, jint uid)
 {
     AppMain::GetInstance()->SetPidAndUid(pid, uid);
 }
 
-void JniStageApplicationDelegate::SetLocale(
+void StageApplicationDelegateJni::InitConfiguration(JNIEnv* env, jclass myclass, jstring data)
+{
+    if (env == nullptr) {
+        LOGE("env is nullptr");
+        return;
+    }
+    auto jsonConfiguration = env->GetStringUTFChars(data, nullptr);
+    if (jsonConfiguration != nullptr) {
+        AppMain::GetInstance()->InitConfiguration(jsonConfiguration);
+        env->ReleaseStringUTFChars(data, jsonConfiguration);
+    }
+}
+
+void StageApplicationDelegateJni::OnConfigurationChanged(JNIEnv* env, jclass myclass, jstring data)
+{
+    LOGI("JNI OnConfigurationChanged is called.");
+    if (env == nullptr) {
+        LOGE("OnConfigurationChanged env is nullptr");
+        return;
+    }
+    auto jsonConfiguration = env->GetStringUTFChars(data, nullptr);
+    if (jsonConfiguration == nullptr) {
+        LOGE("OnConfigurationChanged jsonConfiguration is nullptr");
+        return;
+    }
+    AppMain::GetInstance()->OnConfigurationUpdate(jsonConfiguration);
+    env->ReleaseStringUTFChars(data, jsonConfiguration);
+}
+
+void StageApplicationDelegateJni::SetLocale(
     JNIEnv* env, jclass myclass, jstring jlanguage, jstring jcountry, jstring jscript)
 {
     if (env == nullptr) {

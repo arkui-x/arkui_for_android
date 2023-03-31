@@ -18,41 +18,87 @@ package ohos.stage.ability.adapter;
 import android.util.Log;
 import ohos.ace.adapter.WindowView;
 
+/**
+ * This class is responsible for communicating with the stage activity delegate jni.
+ *
+ * @since 1
+ */
 public class StageActivityDelegate {
     private static final String LOG_TAG = "StageActivityDelegate";
+
+    /**
+     * Constructor.
+     */
     public StageActivityDelegate() {
-        Log.i(LOG_TAG, "StageActivityDelegate()");
+        Log.i(LOG_TAG, "Constructor called.");
     }
 
+    /**
+     * Attach stage activity to native.
+     *
+     * @param instanceName the activity instance name.
+     * @param object the stage activity.
+     */
     public void attachStageActivity(String instanceName, StageActivity object) {
         nativeAttachStageActivity(instanceName, object);
     }
 
+    /**
+     * Dispatch the oncreate lifecycle to native.
+     *
+     * @param instanceName the activity instance name.
+     */
     public void dispatchOnCreate(String instanceName) {
         Log.i(LOG_TAG, "dispatchOnCreate called");
         nativeDispatchOnCreate(instanceName);
     }
 
+    /**
+     * Dispatch the ondestroy lifecycle to native.
+     *
+     * @param instanceName the activity instance name.
+     */
     public void dispatchOnDestroy(String instanceName) {
         Log.i(LOG_TAG, "dispatchOnDestroy called");
         nativeDispatchOnDestroy(instanceName);
     }
 
+    /**
+     * Dispatch the onnewwant lifecycle to native.
+     *
+     * @param instanceName the activity instance name.
+     */
     public void dispatchOnNewWant(String instanceName) {
         Log.i(LOG_TAG, "dispatchOnNewWant called");
         nativeDispatchOnNewWant(instanceName);
     }
 
+    /**
+     * Dispatch the onforeground lifecycle to native.
+     *
+     * @param instanceName the activity instance name.
+     */
     public void dispatchOnForeground(String instanceName) {
         Log.i(LOG_TAG, "DispatchOnForeground called");
         nativeDispatchOnForeground(instanceName);
     }
 
+    /**
+     * Dispatch the onbackground lifecycle to native.
+     *
+     * @param instanceName the activity instance name.
+     */
     public void dispatchOnBackground(String instanceName) {
         Log.i(LOG_TAG, "DispatchOnBackground called");
         nativeDispatchOnBackground(instanceName);
     }
 
+    /**
+     * Set window view to native.
+     *
+     * @param instanceName the activity instance name.
+     * @param windowView the window view.
+     */
     public void setWindowView(String instanceName, WindowView windowView) {
         Log.i(LOG_TAG, "SetWindowView called");
         nativeSetWindowView(instanceName, windowView);
