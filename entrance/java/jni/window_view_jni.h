@@ -36,7 +36,7 @@ public:
     static void Background(JNIEnv* env, jobject myObject, jlong window);
     static void Destroy(JNIEnv* env, jobject myObject, jlong window);
 
-    static void BackPressed(JNIEnv* env, jobject myObject, jlong window);
+    static jboolean BackPressed(JNIEnv* env, jobject myObject, jlong window);
     static jboolean DispatchPointerDataPacket(
         JNIEnv* env, jobject myObject, jlong window, jobject buffer, jint position);
     static jboolean DispatchKeyEvent(JNIEnv* env, jobject myObject, jlong window, jint keyCode, jint action,
