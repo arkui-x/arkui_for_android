@@ -52,11 +52,11 @@ public class StageConfiguration {
         try {
             int currentNightMode = config.uiMode & Configuration.UI_MODE_NIGHT_MASK;
             switch (currentNightMode) {
-                case Configuration.UI_MODE_NIGHT_NO:
-                    json.put(COLOR_MODE_KEY, COLOR_MODE_LIGHT);
-                    break;
                 case Configuration.UI_MODE_NIGHT_YES:
                     json.put(COLOR_MODE_KEY, COLOR_MODE_DARK);
+                    break;
+                case Configuration.UI_MODE_NIGHT_NO:
+                    json.put(COLOR_MODE_KEY, COLOR_MODE_LIGHT);
                     break;
                 default:
                     json.put(COLOR_MODE_KEY, EMPTY_VALUE);
