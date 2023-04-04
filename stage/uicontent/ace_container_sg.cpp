@@ -606,16 +606,19 @@ void AceContainerSG::InitThemeManager()
 {
     LOGI("Init theme manager");
     auto initThemeManagerTask = [pipelineContext = pipelineContext_, assetManager = assetManager_,
-                                    colorScheme = colorScheme_, resourceInfo = resourceInfo_]() {
+                                    colorScheme = colorScheme_, resourceInfo = resourceInfo_,
+                                    aceView = aceView_]() {
         ACE_SCOPED_TRACE("OHOS::LoadThemes()");
         LOGI("UIContent load theme");
         ThemeConstants::InitDeviceType();
         auto themeManager = AceType::MakeRefPtr<ThemeManagerImpl>();
         pipelineContext->SetThemeManager(themeManager);
         themeManager->InitResource(resourceInfo);
+        themeManager->LoadSystemTheme(resourceInfo.GetThemeId());
         themeManager->SetColorScheme(colorScheme);
         themeManager->LoadCustomTheme(assetManager);
         themeManager->LoadResourceThemes();
+        aceView->SetBackgroundColor(themeManager->GetBackgroundColor());
     };
 
     if (GetSettings().usePlatformAsUIThread) {
@@ -886,9 +889,12 @@ void AceContainerSG::SetResPaths(const std::string& hapResPath,
     LOGI("SetResPaths, Use hap path to load resource");
     resourceInfo_.SetHapPath(hapResPath);
     // use package path to load system resource.
-    resourceInfo_.SetPackagePath(sysResPath);
+    auto sysFisrtPos = sysResPath.find_last_of('/');
+    auto sysResourcePath = sysResPath.substr(0, sysFisrtPos);
+    resourceInfo_.SetPackagePath(sysResourcePath);
 
     auto themeId = colorMode == ColorMode::LIGHT ? THEME_ID_LIGHT : THEME_ID_DARK;
     resourceInfo_.SetThemeId(themeId);
+    colorScheme_ = colorMode == ColorMode::LIGHT ? ColorScheme::SCHEME_LIGHT : ColorScheme::SCHEME_DARK;
 }
 } // namespace OHOS::Ace::Platform

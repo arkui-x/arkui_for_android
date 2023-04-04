@@ -499,6 +499,7 @@ void UIContentImpl::NotifySurfaceCreated()
     auto* window = pipeline->GetWindow();
     CHECK_NULL_VOID(window);
     window->Init();
+    window->RequestFrame();
 }
 
 void UIContentImpl::NotifySurfaceDestroyed()
