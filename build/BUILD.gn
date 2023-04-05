@@ -101,13 +101,10 @@ group("ace_packages") {
     "$ark_toolchain_path/tooling:libark_ecma_debugger",
   ]
 
-  if (enable_ng_build) {
-    deps += [ "$ace_flutter_engine_root_new:libace_dev_android" ]
-  }
-
   deps += [
     "//foundation/appframework/arkui/uicontent:ace_uicontent_interface",
     "//foundation/appframework/window_manager/wm:wm",
+    "//foundation/appframework:appframework_napis",
   ]
 
   deps += common_napi_modules
