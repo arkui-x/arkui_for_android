@@ -79,7 +79,7 @@ struct {
 
 RefPtr<TaskExecutor> BridgeJni::GetPlatformTaskExecutor(int32_t instanceId)
 {
-    auto container = AceType::DynamicCast<AceContainer>(AceEngine::Get().GetContainer(instanceId));
+    auto container = AceEngine::Get().GetContainer(instanceId);
     if (!container) {
         LOGE("JNI GetPlatformTaskExecutor container is null ");
         return nullptr;
