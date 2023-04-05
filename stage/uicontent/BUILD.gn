@@ -45,8 +45,8 @@ template("ace_uicontent_android_source_set") {
       "$ace_root/adapter/android/entrance/java/jni:ace_android_jni_$platform",
       "$ace_root/adapter/android/entrance/java/jni:ace_common_jni_$platform",
       "//foundation/arkui/napi:ace_napi",
-      "//third_party/icu/icu4c:shared_icui18n",
-      "//third_party/icu/icu4c:shared_icuuc",
+      "//third_party/icu/icu4c:static_icui18n",
+      "//third_party/icu/icu4c:static_icuuc",
     ]
 
     if (enable_ng_build) {
@@ -62,7 +62,7 @@ template("ace_uicontent_android_source_set") {
     }
 
     if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
-      deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client" ]
+      deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client_static" ]
     }
 
     configs = [

@@ -14,6 +14,7 @@
 import("//build/ohos.gni")
 import("//foundation/arkui/ace_engine/ace_config.gni")
 import("//foundation/arkui/ace_engine/interfaces/napi/kits/napi_lib.gni")
+import("//foundation/arkui/napi/napi.gni")
 import("//plugins/plugin_lib.gni")
 import("config.gni")
 
@@ -22,7 +23,20 @@ ohos_shared_library("libace_android") {
   deps = [
     "$ace_root/build:libace_static_android",
     "$ace_root/interfaces/native:ace_packages_ndk",
+    "//foundation/appframework/icu_data:icu_data_static",
   ]
+  if (defined(ark_engine)) {
+    deps += [
+      "//arkcompiler/runtime_core/libpandabase:libarkbase_static",
+      "//arkcompiler/runtime_core/libpandafile:libarkfile_static",
+
+      # for enable debugger
+      # "//arkcompiler/toolchain/inspector:ark_debugger_static",
+      # "//arkcompiler/toolchain/tooling:libark_ecma_debugger_set",
+    ]
+  }
+  public_configs = [ "//foundation/arkui/napi:ace_napi_config" ]
+  libs = [ "$root_out_dir/libicudata/android/libicudata.a" ]
   part_name = "ace_engine_cross"
   subsystem_name = "arkui"
 }

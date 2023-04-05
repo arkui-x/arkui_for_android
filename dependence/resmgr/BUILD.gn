@@ -59,35 +59,27 @@ config("resmgr_public_config") {
   }
 }
 
-ohos_shared_library("global_resmgr") {
-  if (resource_management_support_icu) {
-    defines = [ "__ARKUI_CROSS__" ]
-    cflags = [
-      "-std=c++17",
-      "-Wno-ignored-attributes",
-    ]
+ohos_source_set("global_resmgr") {
+  defines = [ "__ARKUI_CROSS__" ]
+  cflags = [
+    "-std=c++17",
+    "-Wno-ignored-attributes",
+  ]
 
-    sources = manager_sources
+  sources = manager_sources
 
-    configs = [ ":resmgr_config" ]
+  configs = [ ":resmgr_config" ]
 
-    public_configs = [ ":resmgr_public_config" ]
+  public_configs = [ ":resmgr_public_config" ]
 
-    deps = [
-      "//third_party/bounds_checking_function:libsec_shared",
-      "//third_party/zlib:libz",
-    ]
+  deps = [
+    "//third_party/icu/icu4c:static_icui18n",
+    "//third_party/zlib:libz",
+  ]
 
-    if (resource_management_support_icu) {
-      deps += [
-        "//third_party/icu/icu4c:shared_icui18n",
-        "//third_party/icu/icu4c:shared_icuuc",
-      ]
-    }
-    if (target_os == "android") {
-      aosp_deps = [ "shared_library:liblog" ]
-    }
-  }
+  aosp_deps = [ "shared_library:liblog" ]
+  libs = [ "log" ]
+
   subsystem_name = "global"
   part_name = "resource_management"
 }

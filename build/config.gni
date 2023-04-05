@@ -34,6 +34,8 @@ js_pa_support = false
 connect_server_support = false
 xcomponent_components_support = false
 enable_rosen_backend = true
+use_external_icu = "static"
+build_container_scope_lib = true
 
 cflags_cc = [
   "-std=c++17",
@@ -42,9 +44,9 @@ cflags_cc = [
 
 platform_deps = [
   "//foundation/arkui/ace_engine/adapter/android/entrance/java/jni:ace_common_jni_android",
+  "//foundation/arkui/ace_engine/adapter/android/osal:ace_osal_android",
   "//foundation/arkui/ace_engine/adapter/android/stage/ability/java/jni:stage_android_jni_android",
   "//foundation/arkui/ace_engine/adapter/android/stage/uicontent:ace_uicontent_android",
-  "//foundation/arkui/ace_engine/adapter/android/osal:ace_osal_android",
 ]
 
 libace_target =

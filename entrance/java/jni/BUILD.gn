@@ -24,9 +24,9 @@ template("ace_android_jni_source_set") {
     configs = [ "$ace_root:ace_config" ]
 
     sources = [
+      "$ace_root/adapter/android/entrance/java/jni/ace_platform_plugin_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/flutter_ace_view.cpp",
       "$ace_root/adapter/android/entrance/java/jni/flutter_ace_view_jni.cpp",
-      "$ace_root/adapter/android/entrance/java/jni/ace_platform_plugin_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/window_view_jni.cpp",
     ]
 
@@ -44,7 +44,7 @@ template("ace_android_jni_source_set") {
       ]
     }
     if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
-      deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client" ]
+      deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client_static" ]
     }
   }
 }
@@ -104,7 +104,7 @@ template("ace_common_jni_source_set") {
       ]
     }
     if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
-      deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client" ]
+      deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client_static" ]
       sources += [
         "$ace_root/adapter/android/entrance/java/jni/virtual_rs_window.cpp",
       ]
