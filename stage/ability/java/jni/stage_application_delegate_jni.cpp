@@ -16,6 +16,7 @@
 #include "stage_application_delegate_jni.h"
 
 #include "app_main.h"
+#include "application_context_adapter.h"
 #include "foundation/arkui/ace_engine/adapter/android/entrance/java/jni/apk_asset_provider.h"
 #include "stage_application_info_adapter.h"
 #include "stage_asset_provider.h"
@@ -31,6 +32,11 @@ bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
     LOGI("StageApplicationDelegateJni register start.");
     static const JNINativeMethod methods[] = {
+        {
+            .name = "nativeAttachStageApplication",
+            .signature = "(Lohos/stage/ability/adapter/StageApplication;)V",
+            .fnPtr = reinterpret_cast<void*>(&AttachStageApplication),
+        },
         {
             .name = "nativeSetAssetManager",
             .signature = "(Ljava/lang/Object;)V",
@@ -246,6 +252,16 @@ void StageApplicationDelegateJni::SetLocale(
     }
 
     StageApplicationInfoAdapter::GetInstance()->SetLocale(language, country, script);
+}
+
+void StageApplicationDelegateJni::AttachStageApplication(JNIEnv* env, jclass myclass, jobject object)
+{
+    LOGI("Attach Stage Application.");
+    if (env == nullptr) {
+        LOGE("JNI JniStageApplicationDelegate: null java env");
+        return;
+    }
+    ApplicationContextAdapter::GetInstance()->SetStageApplication(object);
 }
 } // namespace Platform
 } // namespace AbilityRuntime

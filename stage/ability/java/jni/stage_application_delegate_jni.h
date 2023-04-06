@@ -40,6 +40,7 @@ public:
     static void InitConfiguration(JNIEnv* env, jclass myclass, jstring data);
     static void OnConfigurationChanged(JNIEnv* env, jclass myclass, jstring data);
     static void SetLocale(JNIEnv* env, jclass myclass, jstring jlanguage, jstring jcountry, jstring jscript);
+    static void AttachStageApplication(JNIEnv* env, jclass myclass, jobject object);
 };
 } // namespace Platform
 } // namespace AbilityRuntime
