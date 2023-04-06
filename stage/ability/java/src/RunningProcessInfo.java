@@ -25,10 +25,12 @@ public class RunningProcessInfo {
      * The pid of this process.
      */
     public int pid;
+
     /**
      * The name of the process that this object is associated with.
      */
     public String processName;
+
     /**
      * All packages that have been loaded into the process.
      */
