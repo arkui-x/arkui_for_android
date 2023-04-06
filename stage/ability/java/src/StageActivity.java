@@ -126,6 +126,15 @@ public class StageActivity extends Activity {
         instanceName = name + String.valueOf(instanceId);
     }
 
+    /**
+     * Get the Id of StageActivity.
+     *
+     * @return The InstanceId.
+     */
+    public int getInstanceId() {
+        return this.instanceId;
+    }
+
     private String getInstanceName() {
         if (instanceName == null) {
             return INSTANCE_DEFAULT_NAME;
