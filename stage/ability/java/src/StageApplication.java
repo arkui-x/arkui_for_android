@@ -290,8 +290,16 @@ public class StageApplication extends Application {
         Log.i(LOG_TAG, "Get running process info called");
         List<RunningProcessInfo> processInfos = new ArrayList<RunningProcessInfo>();
 
-        ActivityManager am = (ActivityManager)this.getSystemService(ACTIVITY_SERVICE);
-        List<ActivityManager.RunningAppProcessInfo> processList = am.getRunningAppProcesses();
+        ActivityManager activityMgr = (ActivityManager)this.getSystemService(ACTIVITY_SERVICE);
+        if (activityMgr == null) {
+            Log.e(LOG_TAG, "activityMgr is null");
+            return processInfos;
+        }
+        List<ActivityManager.RunningAppProcessInfo> processList = activityMgr.getRunningAppProcesses();
+        if (processList == null) {
+            Log.e(LOG_TAG, "processList is null");
+            return processInfos;
+        }
         for (ActivityManager.RunningAppProcessInfo info : processList) {
             RunningProcessInfo processInfo = new RunningProcessInfo();
             processInfo.pid = info.pid;
