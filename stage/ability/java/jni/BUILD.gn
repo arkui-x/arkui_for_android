@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Copyright (c) 2023 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -26,12 +26,13 @@ template("stage_android_jni_source_set") {
     ]
 
     include_dirs = [
-        "//third_party/flutter/engine",
-        "//foundation/arkui/ace_engine/adapter/android/entrance/java/jni",
+      "//third_party/flutter/engine",
+      "//foundation/arkui/ace_engine/adapter/android/entrance/java/jni",
     ]
 
     sources = [
       "$ace_root/adapter/android/stage/ability/java/jni/ability_context_adapter.cpp",
+      "$ace_root/adapter/android/stage/ability/java/jni/application_context_adapter.cpp",
       "$ace_root/adapter/android/stage/ability/java/jni/stage_activity_delegate_jni.cpp",
       "$ace_root/adapter/android/stage/ability/java/jni/stage_application_delegate_jni.cpp",
       "$ace_root/adapter/android/stage/ability/java/jni/stage_application_info_adapter.cpp",
@@ -46,8 +47,8 @@ template("stage_android_jni_source_set") {
 
     deps = [
       "$ace_root/adapter/android/entrance/java/jni:ace_common_jni_$platform",
-      "//foundation/arkui/napi:ace_napi",
       "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/kits/native/appkit:cross_platform_appkit_native",
+      "//foundation/arkui/napi:ace_napi",
     ]
   }
 }

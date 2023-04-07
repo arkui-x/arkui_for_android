@@ -133,6 +133,15 @@ public class StageApplicationDelegate {
         nativeSetLocale(language, country, script);
     }
 
+    /**
+     * Attach stage application to native.
+     *
+     * @param object the stage application.
+     */
+    public void attachStageApplication(StageApplication object) {
+        nativeAttachStageApplication(object);
+    }
+
     private native void nativeSetAssetManager(Object assetManager);
     private native void nativeSetHapPath(String hapPath);
     private native void nativeLaunchApplication();
@@ -144,4 +153,5 @@ public class StageApplicationDelegate {
     private native void nativeInitConfiguration(String data);
     private native void nativeOnConfigurationChanged(String data);
     private native void nativeSetLocale(String language, String country, String script);
+    private native void nativeAttachStageApplication(StageApplication object);
 }

@@ -15,6 +15,7 @@
 
 package ohos.stage.ability.adapter;
 
+import android.app.ActivityManager;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -29,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -78,6 +80,7 @@ public class StageApplication extends Application {
      */
     public void initApplication() {
         appDelegate = new StageApplicationDelegate();
+        appDelegate.attachStageApplication(this);
         appDelegate.setPidAndUid(Process.myPid(), getUid(this));
 
         Context context = getApplicationContext();
@@ -276,5 +279,34 @@ public class StageApplication extends Application {
         super.onConfigurationChanged(newConfig);
         JSONObject json = StageConfiguration.convertConfiguration(newConfig);
         appDelegate.onConfigurationChanged(json.toString());
+    }
+
+    /**
+     * Get running process info.
+     *
+     * @return class RunningProcessInfo in List
+     */
+    public Object getRunningProcessInfo() {
+        Log.i(LOG_TAG, "Get running process info called");
+        List<RunningProcessInfo> processInfos = new ArrayList<RunningProcessInfo>();
+
+        ActivityManager activityMgr = (ActivityManager)this.getSystemService(ACTIVITY_SERVICE);
+        if (activityMgr == null) {
+            Log.e(LOG_TAG, "activityMgr is null");
+            return processInfos;
+        }
+        List<ActivityManager.RunningAppProcessInfo> processList = activityMgr.getRunningAppProcesses();
+        if (processList == null) {
+            Log.e(LOG_TAG, "processList is null");
+            return processInfos;
+        }
+        for (ActivityManager.RunningAppProcessInfo info : processList) {
+            RunningProcessInfo processInfo = new RunningProcessInfo();
+            processInfo.pid = info.pid;
+            processInfo.processName = info.processName;
+            processInfo.pkgList = Arrays.asList(info.pkgList);
+            processInfos.add(processInfo);
+        }
+        return processInfos;
     }
 }
