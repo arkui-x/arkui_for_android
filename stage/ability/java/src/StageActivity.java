@@ -25,6 +25,8 @@ import android.util.Log;
 import ohos.ace.adapter.AcePlatformPlugin;
 import ohos.ace.adapter.WindowView;
 
+import ohos.ace.adapter.capability.grantresult.GrantResult;
+
 /**
  * A base class for the Ability Cross-platform Environment of the stage model to run on Android.
  * This class is inherited from android Activity.
@@ -180,5 +182,18 @@ public class StageActivity extends Activity {
      */
     private void initPlatformPlugin(Context context, int instanceId, WindowView windowView) {
         platformPlugin = new AcePlatformPlugin(context, instanceId, windowView, 0L);
+    }
+
+    /**
+     * Callback for the result from requesting permissions.
+     *
+     * @param requestCode The request code passed in {@link #requestPermissions(String[], int)}.
+     * @param permissions permissions The requested permissions. Never null.
+     * @param grantResults grantResults The grant results for the corresponding permissions.
+     */
+    public synchronized void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        Context context = getApplicationContext();
+        GrantResult grantResultsClass = new GrantResult(context);
+        grantResultsClass.onRequestPremissionCallback(permissions, grantResults);
     }
 }
