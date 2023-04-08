@@ -19,10 +19,9 @@ import("//plugins/plugin_lib.gni")
 import("config.gni")
 
 # libace target
-ohos_shared_library("libace_android") {
+ohos_shared_library("libarkui_android") {
   deps = [
     "$ace_root/build:libace_static_android",
-    "$ace_root/interfaces/native:ace_packages_ndk",
     "//foundation/appframework/icu_data:icu_data_static",
   ]
   if (defined(ark_engine)) {
@@ -37,7 +36,7 @@ ohos_shared_library("libace_android") {
   }
   public_configs = [ "//foundation/arkui/napi:ace_napi_config" ]
   libs = [ "$root_out_dir/libicudata/android/libicudata.a" ]
-  part_name = "ace_engine_cross"
+  part_name = "arkui-x"
   subsystem_name = "arkui"
 }
 
@@ -49,9 +48,9 @@ ohos_combine_jars("ace_android_adapter_java") {
     "$ace_root/adapter/android/stage/ability/java:stage_platform_android_java",
   ]
 
-  part_name = "ace_engine_cross"
+  part_name = "arkui-x"
   subsystem_name = "arkui"
-  jar_path = "${root_out_dir}/ace_android_adapter.jar"
+  jar_path = "${root_out_dir}/arkui_android_adapter.jar"
 }
 
 common_napi_modules = []
@@ -92,7 +91,7 @@ foreach(module, common_plugin_libs) {
 group("ace_packages") {
   deps = [
     ":ace_android_adapter_java",
-    ":libace_android",
+    ":libarkui_android",
   ]
 
   # include ark_js debugger shared library
@@ -102,9 +101,10 @@ group("ace_packages") {
   ]
 
   deps += [
+    "$ace_root/interfaces/native:ace_packages_ndk",
+    "//foundation/appframework:appframework_napis",
     "//foundation/appframework/arkui/uicontent:ace_uicontent_interface",
     "//foundation/appframework/window_manager/wm:wm",
-    "//foundation/appframework:appframework_napis",
   ]
 
   deps += common_napi_modules

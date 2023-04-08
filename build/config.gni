@@ -50,7 +50,7 @@ platform_deps = [
 ]
 
 libace_target =
-    "//foundation/arkui/ace_engine/adapter/android/build:libace_android"
+    "//foundation/arkui/ace_engine/adapter/android/build:libarkui_android"
 
 if (xcomponent_components_support) {
   defines += [ "XCOMPONENT_SUPPORTED" ]

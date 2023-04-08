@@ -23,7 +23,7 @@ package ohos.ace.adapter;
 public final class LibraryLoader {
     private static final String LOG_TAG = "LibraryLoader";
 
-    private static final String ANDROID_LIB_NAME = "ace_android";
+    private static final String ANDROID_LIB_NAME = "arkui_android";
 
     private static final Object JNI_LOAD_LOCK = new Object();
 
