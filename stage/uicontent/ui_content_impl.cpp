@@ -21,7 +21,7 @@
 #include "js_runtime_utils.h"
 #include "res_config.h"
 #include "resource_manager.h"
-#include "stage_asset_manager.h"
+#include "stage_asset_provider.h"
 
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
@@ -147,15 +147,15 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
         LOGI("hapPath:%{public}s", hapPath.c_str());
         // first use hap provider
         if (flutterAssetManager && !hapPath.empty()) {
-            auto assetManager = context->GetAssetManager();
-            CHECK_NULL_VOID(assetManager);
+            auto assetProvider = AbilityRuntime::Platform::StageAssetProvider::GetInstance();
+            CHECK_NULL_VOID(assetProvider);
             auto env = JniEnvironment::GetInstance().GetJniEnv();
 
             std::vector<std::string> hapAssetPaths { "", "ets", "ets/share", "resources/base/profile" };
             for (const auto& path : hapAssetPaths) {
                 auto apkAssetProvider = AceType::MakeRefPtr<ApkAssetProvider>(
                     std::make_unique<flutter::APKAssetProvider>(env.get(),
-                        assetManager->GetJavaAssetManager(), hapPath + path));
+                        assetProvider->GetAssetManager(), hapPath + path));
                 flutterAssetManager->PushBack(std::move(apkAssetProvider));
             }
         }
