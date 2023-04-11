@@ -440,7 +440,7 @@ void AceContainerSG::Dispatch(
 {}
 
 void AceContainerSG::DispatchSync(
-    const std::string& group, std::vector<uint8_t>&& data, uint8_t** resData, long& position) const
+    const std::string& group, std::vector<uint8_t>&& data, uint8_t** resData, int64_t& position) const
 {}
 
 void AceContainerSG::DispatchPluginError(int32_t callbackId, int32_t errorCode, std::string&& errorMessage) const

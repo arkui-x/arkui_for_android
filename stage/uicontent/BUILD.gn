@@ -22,7 +22,7 @@ template("ace_uicontent_android_source_set") {
 
   ohos_source_set(target_name) {
     defines += invoker.defines
-    aosp_deps = [ "shared_library:liblog" ]
+    libs = [ "log" ]
 
     sources = [
       "$ace_root/adapter/android/stage/uicontent/ace_container_sg.cpp",

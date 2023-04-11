@@ -154,7 +154,7 @@ public:
         const std::string& group, std::vector<uint8_t>&& data, int32_t id, bool replyToComponent) const override;
 
     void DispatchSync(
-        const std::string& group, std::vector<uint8_t>&& data, uint8_t** resData, long& position) const override;
+        const std::string& group, std::vector<uint8_t>&& data, uint8_t** resData, int64_t& position) const override;
 
     void DispatchPluginError(int32_t callbackId, int32_t errorCode, std::string&& errroMessage) const override;
 
