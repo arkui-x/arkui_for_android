@@ -18,12 +18,6 @@
 
 #include "flutter/fml/platform/android/jni_util.h"
 
-#ifdef NG_BUILD
-#include "ace_shell/shell/common/window_manager.h"
-#else
-#include "flutter/lib/ui/ui_dart_state.h"
-#endif
-
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
@@ -482,22 +476,10 @@ void AceContainer::AttachView(
 {
     aceView_ = view;
     auto instanceId = aceView_->GetInstanceId();
-#ifdef ENABLE_ROSEN_BACKEND
     auto* flutterView = static_cast<Platform::FlutterAceView*>(aceView_);
     CHECK_NULL_VOID(flutterView);
     auto flutterTaskExecutor = AceType::DynamicCast<FlutterTaskExecutor>(taskExecutor_);
     flutterTaskExecutor->InitOtherThreads(flutterView->GetThreadModel());
-#else
-#ifdef NG_BUILD
-    auto state = flutter::ace::WindowManager::GetWindow(instanceId);
-    CHECK_NULL_VOID(state);
-#else
-    auto state = flutter::UIDartState::Current()->GetStateById(instanceId);
-    ACE_DCHECK(state != nullptr);
-#endif
-    auto flutterTaskExecutor = AceType::DynamicCast<FlutterTaskExecutor>(taskExecutor_);
-    flutterTaskExecutor->InitOtherThreads(state->GetTaskRunners());
-#endif
 
     ContainerScope scope(instanceId);
     if (type_ == FrontendType::DECLARATIVE_JS) {
@@ -605,6 +587,7 @@ void AceContainer::AttachView(
     });
 
     InitThemeManager();
+#ifndef NG_BUILD
 #ifdef ENABLE_ROSEN_BACKEND
     taskExecutor_->PostTask(
         [weak = WeakClaim(this)]() {
@@ -617,6 +600,7 @@ void AceContainer::AttachView(
             pipelineContext->SetRSUIDirector(window->GetRSUIDirector());
         },
         TaskExecutor::TaskType::UI);
+#endif
 #endif
 
     auto weakContext = AceType::WeakClaim(AceType::RawPtr(pipelineContext_));

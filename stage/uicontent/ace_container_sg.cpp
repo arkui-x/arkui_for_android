@@ -142,8 +142,8 @@ void AceContainerSG::InitializeFrontend()
 {
     if (type_ == FrontendType::DECLARATIVE_JS) {
 #ifdef NG_BUILD
-        frontend_ = AceType::MakeRefPtr<NG::DeclarativeFrontend>();
-        auto declarativeFrontend = AceType::DynamicCast<NG::DeclarativeFrontend>(frontend_);
+        frontend_ = AceType::MakeRefPtr<DeclarativeFrontendNG>();
+        auto declarativeFrontend = AceType::DynamicCast<DeclarativeFrontendNG>(frontend_);
 #else
         frontend_ = AceType::MakeRefPtr<DeclarativeFrontend>();
         auto declarativeFrontend = AceType::DynamicCast<DeclarativeFrontend>(frontend_);

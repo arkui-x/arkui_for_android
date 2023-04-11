@@ -16,11 +16,7 @@
 #include "adapter/android/entrance/java/jni/flutter_ace_view_jni.h"
 
 #include "flutter/fml/platform/android/jni_weak_ref.h"
-#include "core/common/container.h"
-#include "core/common/container_scope.h"
-#ifdef NG_BUILD
 #include "flutter/lib/ui/window/viewport_metrics.h"
-#endif
 
 #include "adapter/android/entrance/java/jni/ace_resource_register.h"
 #include "adapter/android/entrance/java/jni/flutter_ace_view.h"
@@ -32,6 +28,8 @@
 #include "base/utils/system_properties.h"
 #include "base/utils/utils.h"
 #include "core/common/ace_engine.h"
+#include "core/common/container.h"
+#include "core/common/container_scope.h"
 #include "core/components/calendar/calendar_data_adapter.h"
 
 namespace OHOS::Ace::Platform {
@@ -267,9 +265,6 @@ void FlutterAceViewJni::SetViewportMetrics(JNIEnv* env, jobject myObject, jlong 
         static_cast<double>(physicalViewInsetBottom), static_cast<double>(physicalViewInsetLeft),
         static_cast<double>(systemGestureInsetTop), static_cast<double>(systemGestureInsetRight),
         static_cast<double>(systemGestureInsetBottom), static_cast<double>(systemGestureInsetLeft),
-#ifdef NG_BUILD
-        0.0, // touch slop
-#endif
     };
     auto viewPtr = JavaLongToPointer<FlutterAceView>(view);
     if (viewPtr != nullptr) {

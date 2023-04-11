@@ -32,17 +32,11 @@ template("ace_android_jni_source_set") {
 
     deps = [ "$ace_root/frameworks/core/components/theme:build_theme_code" ]
 
-    if (enable_ng_build) {
-      deps += [
-        "$ace_flutter_engine_root_new:third_party_flutter_engine_dev_$platform",
-        "$ace_flutter_engine_root_new/third_party/skia:ace_skia_dev_$platform",
-      ]
-    } else {
-      deps += [
-        "$ace_flutter_engine_root:third_party_flutter_engine_$platform",
-        "$ace_flutter_engine_root/skia:ace_skia_$platform",
-      ]
-    }
+    deps += [
+      "$ace_flutter_engine_root:third_party_flutter_engine_$platform",
+      "$ace_flutter_engine_root/skia:ace_skia_$platform",
+    ]
+
     if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
       deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client_static" ]
     }
@@ -92,17 +86,11 @@ template("ace_common_jni_source_set") {
 
     deps = [ ":ace_android_jni_$platform" ]
 
-    if (enable_ng_build) {
-      deps += [
-        "$ace_flutter_engine_root_new:third_party_flutter_engine_dev_$platform",
-        "$ace_flutter_engine_root_new/third_party/skia:ace_skia_dev_$platform",
-      ]
-    } else {
-      deps += [
-        "$ace_flutter_engine_root:third_party_flutter_engine_$platform",
-        "$ace_flutter_engine_root/skia:ace_skia_$platform",
-      ]
-    }
+    deps += [
+      "$ace_flutter_engine_root:third_party_flutter_engine_$platform",
+      "$ace_flutter_engine_root/skia:ace_skia_$platform",
+    ]
+
     if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
       deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client_static" ]
       sources += [
