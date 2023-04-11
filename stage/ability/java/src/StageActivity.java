@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import ohos.ace.adapter.AcePlatformPlugin;
+import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 import ohos.ace.adapter.WindowView;
 
 import ohos.ace.adapter.capability.grantresult.GrantResult;
@@ -182,6 +183,10 @@ public class StageActivity extends Activity {
      */
     private void initPlatformPlugin(Context context, int instanceId, WindowView windowView) {
         platformPlugin = new AcePlatformPlugin(context, instanceId, windowView, 0L);
+        if (platformPlugin != null) {
+            platformPlugin.initTexturePlugin(instanceId);
+            platformPlugin.addResourcePlugin(AceVideoPluginAosp.createRegister(context, getInstanceName()));
+        }
     }
 
     /**

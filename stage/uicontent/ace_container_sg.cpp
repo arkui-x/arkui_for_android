@@ -485,7 +485,6 @@ void AceContainerSG::SetView(
     CHECK_NULL_VOID(aceView);
     auto eventHandler = std::make_shared<OHOS::AppExecFwk::EventHandler>(OHOS::AppExecFwk::EventRunner::Current());
     rsWindow->CreateVSyncReceiver(eventHandler);
-    aceView->SetRSWinodw(rsWindow);
     auto window = std::make_unique<NG::RosenWindow>(rsWindow, container->GetTaskExecutor(), view->GetInstanceId());
     container->AttachView(std::move(window), view, density, width, height);
 #endif
@@ -522,6 +521,9 @@ void AceContainerSG::AttachView(
     }
 
     auto resResgister = AcePlatformPluginJni::GetResRegister(instanceId);
+    if (resResgister == nullptr) {
+        LOGW("AcePlatformPluginJni::GetResRegister fail.");
+    }
     auto* aceViewSG = static_cast<AceViewSG*>(aceView_);
     aceViewSG->SetPlatformResRegister(resResgister);
     resRegister_ = aceView_->GetPlatformResRegister();
