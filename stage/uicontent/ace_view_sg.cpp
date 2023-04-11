@@ -15,6 +15,7 @@
 
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
 
+#include "adapter/android/entrance/java/jni/ace_platform_plugin_jni.h"
 #include "adapter/android/entrance/java/jni/ace_resource_register.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "adapter/android/entrance/java/jni/native_window_surface.h"
@@ -134,7 +135,7 @@ bool AceViewSG::Dump(const std::vector<std::string>& params)
 
 const void* AceViewSG::GetNativeWindowById(uint64_t textureId)
 {
-    return nullptr;
+    return AcePlatformPluginJni::GetNativeWindow(instanceId_, static_cast<int64_t>(textureId));
 }
 
 std::unique_ptr<DrawDelegate> AceViewSG::GetDrawDelegate()

@@ -35,6 +35,10 @@ public:
     static jlong InitResRegister(JNIEnv* env, jobject myObject, jlong view, jobject resRegister, jint instanceId);
 
     static RefPtr<AceResourceRegister> GetResRegister(int32_t instanceId);
+    static void RegisterSurface(JNIEnv* env, jobject myObject,
+        jint instanceId, jlong texture_id, jobject surface);
+    static void UnregisterSurface(JNIEnv* env, jobject myObject, jint instanceId, jlong texture_id);
+    static void* GetNativeWindow(int32_t instanceId, int64_t textureId);
 
 private:
     ACE_DISALLOW_COPY_AND_MOVE(AcePlatformPluginJni);

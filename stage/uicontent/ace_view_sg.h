@@ -116,17 +116,6 @@ public:
         return AceView::ViewType::SURFACE_VIEW;
     }
 
-#ifdef ENABLE_ROSEN_BACKEND
-    void SetRSWinodw(sptr<Rosen::Window> window)
-    {
-        rsWinodw_ = std::move(window);
-    }
-    sptr<Rosen::Window> GetRsWindow()
-    {
-        return rsWinodw_;
-    }
-#endif
-
 private:
     bool IsLastPage() const;
     void NotifySurfacePositionChanged(int32_t posX, int32_t posY);

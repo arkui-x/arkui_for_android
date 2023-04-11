@@ -18,13 +18,16 @@
 #include "flutter/fml/platform/android/jni_weak_ref.h"
 #include "adapter/android/entrance/java/jni/flutter_ace_view.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
+#include "adapter/android/entrance/java/jni/native_window_surface.h"
 #include "base/log/event_report.h"
 #include "base/log/log.h"
 #include "base/utils/macros.h"
 #include "base/utils/utils.h"
 
 namespace OHOS::Ace::Platform {
+using NativeWindowMap = std::unordered_map<int64_t, void*>;
 std::unordered_map<int, RefPtr<AceResourceRegister>> g_resRegisters;
+std::unordered_map<int, NativeWindowMap> g_nativeWindowMaps;
 bool AcePlatformPluginJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
     static const JNINativeMethod methods[] = {
@@ -32,7 +35,17 @@ bool AcePlatformPluginJni::Register(const std::shared_ptr<JNIEnv>& env)
             .name = "nativeInitResRegister",
             .signature = "(JLohos/ace/adapter/AceResourceRegister;I)J",
             .fnPtr = reinterpret_cast<void*>(&AcePlatformPluginJni::InitResRegister),
-        }
+        },
+        {
+            .name = "nativeRegisterSurface",
+            .signature = "(IJLjava/lang/Object;)V",
+            .fnPtr = reinterpret_cast<void*>(&AcePlatformPluginJni::RegisterSurface),
+        },
+        {
+            .name = "nativeUnregisterSurface",
+            .signature = "(IJ)V",
+            .fnPtr = reinterpret_cast<void*>(&AcePlatformPluginJni::UnregisterSurface),
+        },
     };
 
     if (!env) {
@@ -74,5 +87,53 @@ jlong AcePlatformPluginJni::InitResRegister(JNIEnv* env, jobject myObject,
 RefPtr<AceResourceRegister> AcePlatformPluginJni::GetResRegister(int32_t instanceId)
 {
     return g_resRegisters[instanceId];
+}
+
+void* AcePlatformPluginJni::GetNativeWindow(int32_t instanceId, int64_t textureId)
+{
+    auto iter = g_nativeWindowMaps.find(static_cast<int32_t>(instanceId));
+    if (iter != g_nativeWindowMaps.end()) {
+        auto map =  iter->second;
+        auto nativeWindowIter = map.find(static_cast<int64_t>(textureId));
+        if (nativeWindowIter != map.end()) {
+            return nativeWindowIter->second;
+        }
+    }
+    return nullptr;
+}
+
+void AcePlatformPluginJni::RegisterSurface(JNIEnv* env, jobject myObject,
+    jint instanceId, jlong textureId, jobject surface)
+{
+    if (env == nullptr) {
+        LOGW("env is null");
+        return;
+    }
+
+    auto nativeWindow = reinterpret_cast<void*>(ANativeWindow_fromSurface(env, surface));
+    auto iter = g_nativeWindowMaps.find(static_cast<int32_t>(instanceId));
+    if (iter != g_nativeWindowMaps.end()) {
+        iter->second.emplace(static_cast<int64_t>(textureId), nativeWindow);
+    } else {
+        std::unordered_map<int64_t, void*> nativeWindowMap;
+        nativeWindowMap.emplace(static_cast<int64_t>(textureId), nativeWindow);
+        g_nativeWindowMaps.emplace(static_cast<int32_t>(instanceId), nativeWindowMap);
+    }
+}
+
+void AcePlatformPluginJni::UnregisterSurface(JNIEnv* env, jobject myObject, jint instanceId, jlong textureId)
+{
+    if (env == nullptr) {
+        LOGW("env is null");
+        return;
+    }
+    
+    auto iter = g_nativeWindowMaps.find(static_cast<int32_t>(instanceId));
+    if (iter == g_nativeWindowMaps.end()) {
+        LOGW("UnregisterSurface fail, instanceId :%{public}d", instanceId);
+        return;
+    }
+
+    iter->second.erase(static_cast<int64_t>(textureId));
 }
 } // namespace OHOS::Ace::Platform

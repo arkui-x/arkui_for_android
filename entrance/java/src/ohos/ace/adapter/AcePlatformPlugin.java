@@ -24,9 +24,11 @@ import ohos.ace.adapter.capability.bridge.BridgeManager;
 import ohos.ace.adapter.capability.clipboard.ClipboardPluginAosp;
 import ohos.ace.adapter.capability.editing.TextInputPluginAosp;
 import ohos.ace.adapter.capability.environment.EnvironmentAosp;
-import ohos.ace.adapter.capability.storage.PersistentStorageAosp;
-import ohos.ace.adapter.capability.vibrator.VibratorPluginAosp;
 import ohos.ace.adapter.capability.plugin.PluginManager;
+import ohos.ace.adapter.capability.storage.PersistentStorageAosp;
+import ohos.ace.adapter.capability.texture.AceTexturePluginAosp;
+import ohos.ace.adapter.capability.texture.IAceTexture;
+import ohos.ace.adapter.capability.vibrator.VibratorPluginAosp;
 
 public class AcePlatformPlugin {
     private static final String LOG_TAG = "AcePlatformPlugin";
@@ -85,8 +87,7 @@ public class AcePlatformPlugin {
     private void initResRegister(long nativeViewPtr, int instanceId) {
         resRegister = new AceResourceRegister();
         if (nativeViewPtr == 0L) {
-            ALog.e(LOG_TAG, "initResRegister nativeViewPtr is null");
-            return;
+            ALog.w(LOG_TAG, "initResRegister nativeViewPtr is null");
         }
         long resRegisterPtr = nativeInitResRegister(nativeViewPtr, resRegister, instanceId);
         if (resRegisterPtr == 0L) {
@@ -102,5 +103,44 @@ public class AcePlatformPlugin {
         return null;
     }
 
+    /**
+     * Called to initialize texture plugin.
+     *
+     * @param instanceId the instance id
+     */
+    public void initTexturePlugin(int instanceId) {
+        IAceTexture textureImpl = new IAceTexture() {
+            @Override
+            public void registerSurface(long textureId, Object surface) {
+                ALog.i(LOG_TAG, "registerSurface.");
+                nativeRegisterSurface(instanceId, textureId, surface);
+            }
+
+            @Override
+            public void registerTexture(long textureId, Object surfaceTexture) {
+                ALog.i(LOG_TAG, "registerTexture.");
+            }
+
+            @Override
+            public void markTextureFrameAvailable(long textureId) {
+                ALog.i(LOG_TAG, "markTextureFrameAvailable.");
+            }
+
+            @Override
+            public void unregisterTexture(long textureId) {
+                ALog.i(LOG_TAG, "unregisterTexture.");
+            }
+
+            @Override
+            public void unregisterSurface(long textureId) {
+                ALog.i(LOG_TAG, "unregisterSurface.");
+                nativeUnregisterSurface(instanceId, textureId);
+            }
+        };
+        addResourcePlugin(AceTexturePluginAosp.createRegister(textureImpl));
+    }
+
     private native long nativeInitResRegister(long viewPtr, AceResourceRegister resRegister, int instanceId);
+    private native void nativeRegisterSurface(int instanceId, long textureId, Object surface);
+    private native void nativeUnregisterSurface(int instanceId, long textureId);
 }
