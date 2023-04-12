@@ -36,6 +36,7 @@ ohos_shared_library("libarkui_android") {
   }
   public_configs = [ "//foundation/arkui/napi:ace_napi_config" ]
   libs = [ "$root_out_dir/libicudata/android/libicudata.a" ]
+  version_script = "libarkui_android.map"
   part_name = "arkui-x"
   subsystem_name = "arkui"
 }

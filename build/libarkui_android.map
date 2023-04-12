@@ -1,0 +1,95 @@
+{
+  global:
+    extern "C++" {
+      construction?vtable?for?OHOS::Ace::AceType-in-OHOS::Ace::Animator;
+      construction?vtable?for?OHOS::Ace::AceType-in-OHOS::Ace::Container;
+      construction?vtable?for?OHOS::Ace::AceType-in-OHOS::Ace::Framework::MediaQueryInfo;
+      construction?vtable?for?OHOS::Ace::AceType-in-OHOS::Ace::Scheduler;
+      construction?vtable?for?OHOS::Ace::AceType-in-OHOS::Ace::ThemeConstants;
+      construction?vtable?for?OHOS::Ace::Container-in-OHOS::Ace::Platform::AceContainer;
+      construction?vtable?for?OHOS::Ace::ScheduleTask-in-OHOS::Ace::Scheduler;
+
+      guard?variable?for?OHOS::Ace::Animator::TypeId??::myTypeId;
+      guard?variable?for?OHOS::Ace::Container::TypeId??::myTypeId;
+      guard?variable?for?OHOS::Ace::Framework::MediaQueryInfo::TypeId??::myTypeId;
+      guard?variable?for?OHOS::Ace::LogWrapper::GetBriefFileName?char?const*?::separator;
+      guard?variable?for?OHOS::Ace::Scheduler::TypeId??::myTypeId;
+      guard?variable?for?OHOS::Ace::ThemeConstants::TypeId??::myTypeId;
+
+      non-virtual?thunk?to?OHOS::Ace::Animator::~Animator*;
+
+
+      OHOS::Ace::AceApplicationInfo::*;
+      OHOS::Ace::Animator::*;
+      "OHOS::Ace::BaseId::BaseId()";
+      OHOS::Ace::Container::*;
+      OHOS::Ace::Curves::*;
+      OHOS::Ace::EngineHelper::*;
+      OHOS::Ace::Framework::*;
+      OHOS::Ace::GridSystemManager::*;
+      OHOS::Ace::JsonValue::*;
+      OHOS::Ace::Localization::*;
+      OHOS::Ace::LogWrapper::*;
+      OHOS::Ace::Platform::AceApplicationInfoImpl::*;
+      OHOS::Ace::Scheduler::*;
+      OHOS::Ace::ScopedDelegate::*;
+      "OHOS::Ace::SystemGridInfo::ToString() const";
+      OHOS::Ace::ThemeConstants::*;
+      OHOS::Ace::MemoryMonitor::*;
+
+      virtual?thunk?to?OHOS::Ace::Animator::~Animator??;
+
+      vtable?for?OHOS::Ace::AceApplicationInfo;
+      vtable?for?OHOS::Ace::Animator;
+      vtable?for?OHOS::Ace::BaseId;
+      vtable?for?OHOS::Ace::Container;
+      vtable?for?OHOS::Ace::Framework::MediaQueryInfo;
+      vtable?for?OHOS::Ace::Framework::RevSourceMap;
+      vtable?for?OHOS::Ace::Framework::StandardFunctionCodec;
+      vtable?for?OHOS::Ace::Localization;
+      vtable?for?OHOS::Ace::Platform::AceApplicationInfoImpl;
+      vtable?for?OHOS::Ace::Scheduler;
+      vtable?for?OHOS::Ace::ThemeConstants;
+
+      VTT?for?OHOS::Ace::Animator;
+      VTT?for?OHOS::Ace::Container;
+      VTT?for?OHOS::Ace::Framework::MediaQueryInfo;
+      VTT?for?OHOS::Ace::Scheduler;
+      VTT?for?OHOS::Ace::ThemeConstants;
+
+      JNI_OnLoad;
+
+      napi_*;
+      uv_queue_work;
+      uv_chdir;
+      uv_os_getpid;
+      uv_kill;
+      uv_cwd;
+      uv_os_getenv;
+      icudt69_dat;
+      "PrintLog(LogLevel, char const*, ...)";
+
+      OHOS::Ace::Platform::JniEnvironment::*;
+      OHOS::Ace::Platform::PluginManagerJni::*;
+      OHOS::Ace::Platform::GrantResultManager::*;
+      OHOS::Ace::Platform::BridgeManager::*;
+      Json::Value::*;
+      Json::CharReaderBuilder::*;
+      Json::ValueIteratorBase::*;
+      Json::StreamWriterBuilder::*;
+      NativeModuleManager::*;
+      SkBitmap::*;
+      SkRGBA4f??SkAlphaType?3?::*;
+      SkPaint::*;
+      SkColorSpace::*;
+      SkCanvas::*;
+
+      memset_s;
+      memcpy_s;
+      sprintf_s;
+      snprintf_s;
+      sscanf_s;
+    };
+  local:
+    *;
+};
