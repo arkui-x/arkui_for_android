@@ -16,6 +16,7 @@
 package ohos.stage.ability.adapter;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -171,8 +172,8 @@ public class StageActivity extends Activity {
             }
             intent.setComponent(componentName);
             this.startActivity(intent);
-        } catch (Exception var11) {
-            Log.e("StageApplication", "read resources err: " + var11.getMessage());
+        } catch (ActivityNotFoundException exception) {
+            Log.e("StageApplication", "start activity err: " + exception.getMessage());
             error = ERR_INVALID_PARAMETERS;
         }
         return error;
