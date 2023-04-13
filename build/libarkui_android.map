@@ -67,12 +67,17 @@
       uv_cwd;
       uv_os_getenv;
       icudt69_dat;
+
       "PrintLog(LogLevel, char const*, ...)";
 
       OHOS::Ace::Platform::JniEnvironment::*;
       OHOS::Ace::Platform::PluginManagerJni::*;
       OHOS::Ace::Platform::GrantResultManager::*;
       OHOS::Ace::Platform::BridgeManager::*;
+
+      "OHOS::Global::Resource::ResourceManagerImpl::GetResourcePaths()";
+      "OHOS::Global::Resource::CreateResConfig()";
+
       Json::Value::*;
       Json::CharReaderBuilder::*;
       Json::ValueIteratorBase::*;
