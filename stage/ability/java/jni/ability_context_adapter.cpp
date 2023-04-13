@@ -17,11 +17,17 @@
 
 #include <cctype>
 
+#include "ability_manager_errors.h"
 #include "base/log/log.h"
 
 namespace OHOS {
 namespace AbilityRuntime {
 namespace Platform {
+namespace {
+const std::string ABILITY_NAME = "Ability";
+const std::string ACTIVITY_NAME = "Activity";
+}
+
 std::shared_ptr<AbilityContextAdapter> AbilityContextAdapter::instance_ = nullptr;
 std::mutex AbilityContextAdapter::mutex_;
 AbilityContextAdapter::AbilityContextAdapter() {}
@@ -51,37 +57,37 @@ void AbilityContextAdapter::AddStageActivity(const std::string& instanceName, jo
     jobjects_.emplace(instanceName, Ace::Platform::JniEnvironment::MakeJavaGlobalRef(env, stageActivity));
 }
 
-void AbilityContextAdapter::StartAbility(const std::string& instanceName, const AAFwk::Want& want)
+int32_t AbilityContextAdapter::StartAbility(const std::string& instanceName, const AAFwk::Want& want)
 {
     LOGI("Start ability, caller instance name: %{public}s", instanceName.c_str());
     auto finder = jobjects_.find(instanceName);
     if (finder == jobjects_.end()) {
         LOGE("Activity caller is not exist.");
-        return;
+        return AAFwk::INNER_ERR;
     }
 
     jobject stageActivity = finder->second.get();
     if (stageActivity == nullptr) {
         LOGE("stageActivity is nullptr");
-        return;
+        return AAFwk::INNER_ERR;
     }
 
     auto env = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
     if (env == nullptr) {
         LOGE("env is nullptr");
-        return;
+        return AAFwk::INNER_ERR;
     }
 
     const jclass objClass = env->GetObjectClass(stageActivity);
     if (objClass == nullptr) {
         LOGE("GetObjectClass return null");
-        return;
+        return AAFwk::INNER_ERR;
     }
 
-    auto startActivityMethod = env->GetMethodID(objClass, "startActivity", "(Ljava/lang/String;Ljava/lang/String;)V");
+    auto startActivityMethod = env->GetMethodID(objClass, "startActivity", "(Ljava/lang/String;Ljava/lang/String;)I");
     if (startActivityMethod == nullptr) {
         LOGE("fail to get the method StartActivity id");
-        return;
+        return AAFwk::INNER_ERR;
     }
     env->DeleteLocalRef(objClass);
 
@@ -90,23 +96,36 @@ void AbilityContextAdapter::StartAbility(const std::string& instanceName, const 
     auto abilityName = want.GetAbilityName();
     LOGI("bundleName: %{public}s, moduleName: %{public}s, abilityName: %{public}s", bundleName.c_str(),
         moduleName.c_str(), abilityName.c_str());
-
-    moduleName[0] = std::toupper(moduleName[0]);
+    
+    if (!moduleName.empty()) {
+        moduleName[0] = std::toupper(moduleName[0]);
+    }
     LOGI("moduleName : %{public}s", moduleName.c_str());
     std::string tempName = "Ability";
-    std::string activityName =
-        bundleName + "." + moduleName + abilityName.replace(abilityName.find(tempName), 7, "Activity");
+    std::string activityName;
+    auto pos = abilityName.find(ABILITY_NAME);
+    if (pos != std::string::npos) {
+        activityName = bundleName + "." + moduleName + abilityName.replace(pos, ABILITY_NAME.size(), ACTIVITY_NAME);
+    } else {
+        activityName = bundleName + "." + moduleName + abilityName;
+    }
+    
     LOGI("activityName : %{public}s", activityName.c_str());
     jstring jBundleName = env->NewStringUTF(bundleName.c_str());
     jstring jActivityName = env->NewStringUTF(activityName.c_str());
     if (jBundleName == nullptr || jActivityName == nullptr) {
         LOGE("jBundleName or jActivityName is nullptr");
-        return;
+        return AAFwk::INNER_ERR;
     }
 
-    env->CallVoidMethod(stageActivity, startActivityMethod, jBundleName, jActivityName);
+    auto result = env->CallIntMethod(stageActivity, startActivityMethod, jBundleName, jActivityName);
     env->DeleteLocalRef(jBundleName);
     env->DeleteLocalRef(jActivityName);
+
+    if (result != ERR_OK) {
+        return AAFwk::INVALID_PARAMETERS_ERR;
+    }
+    return ERR_OK;
 }
 
 void AbilityContextAdapter::TerminateSelf(const std::string& instanceName)

@@ -35,7 +35,7 @@ public:
     static std::shared_ptr<AbilityContextAdapter> GetInstance();
     void AddStageActivity(const std::string& instanceName, jobject stageActivity);
     void RemoveStageActivity(const std::string& instanceName);
-    void StartAbility(const std::string& instanceName, const AAFwk::Want& want);
+    int32_t StartAbility(const std::string& instanceName, const AAFwk::Want& want);
     void TerminateSelf(const std::string& instanceName);
 
 private:
