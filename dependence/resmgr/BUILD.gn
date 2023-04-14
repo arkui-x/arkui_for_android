@@ -77,7 +77,6 @@ ohos_source_set("global_resmgr") {
     "//third_party/zlib:libz",
   ]
 
-  aosp_deps = [ "shared_library:liblog" ]
   libs = [ "log" ]
 
   subsystem_name = "global"

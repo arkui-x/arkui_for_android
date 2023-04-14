@@ -431,7 +431,7 @@ void AceContainer::Dispatch(
 {}
 
 void AceContainer::DispatchSync(
-    const std::string& group, std::vector<uint8_t>&& data, uint8_t** resData, long& position) const
+    const std::string& group, std::vector<uint8_t>&& data, uint8_t** resData, int64_t& position) const
 {}
 
 void AceContainer::DispatchPluginError(int32_t callbackId, int32_t errorCode, std::string&& errorMessage) const

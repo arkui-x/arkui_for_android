@@ -20,7 +20,7 @@ template("ace_osal_android_source_set") {
 
   ohos_source_set(target_name) {
     defines += invoker.defines
-    aosp_deps = [ "shared_library:liblog" ]
+    libs = [ "log" ]
 
     sources = [
       "ace_engine_ext.cpp",
