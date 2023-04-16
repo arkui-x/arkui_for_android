@@ -16,6 +16,7 @@
 package ohos.stage.ability.adapter;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -49,6 +50,10 @@ public class StageActivity extends Activity {
     private WindowView windowView = null;
 
     private AcePlatformPlugin platformPlugin = null;
+
+    private static final int ERR_INVALID_PARAMETERS = -1;
+
+    private static final int ERR_OK = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,20 +155,28 @@ public class StageActivity extends Activity {
      *
      * @param bundleName the package name.
      * @param activityName the activity name.
+     * @return Returns ERR_OK on success, others on failure.
      */
-    public void startActivity(String bundleName, String activityName) {
+    public int startActivity(String bundleName, String activityName) {
         Log.i(LOG_TAG, "startActivity called, bundleName: " + bundleName + ", activityName: " + activityName);
-        Intent intent = new Intent();
-        String packageName = getApplicationContext().getPackageName();
-        Log.i(LOG_TAG, "Current package name: " + packageName);
-        ComponentName componentName = null;
-        if (packageName == bundleName) {
-            componentName = new ComponentName(getBaseContext(), activityName);
-        } else {
-            componentName = new ComponentName(bundleName, activityName);
+        int error = ERR_OK;
+        try {
+            Intent intent = new Intent();
+            String packageName = getApplicationContext().getPackageName();
+            Log.i(LOG_TAG, "Current package name: " + packageName);
+            ComponentName componentName = null;
+            if (packageName == bundleName) {
+                componentName = new ComponentName(getBaseContext(), activityName);
+            } else {
+                componentName = new ComponentName(bundleName, activityName);
+            }
+            intent.setComponent(componentName);
+            this.startActivity(intent);
+        } catch (ActivityNotFoundException exception) {
+            Log.e("StageApplication", "start activity err: " + exception.getMessage());
+            error = ERR_INVALID_PARAMETERS;
         }
-        intent.setComponent(componentName);
-        this.startActivity(intent);
+        return error;
     }
 
     /**
