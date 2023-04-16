@@ -41,9 +41,9 @@ template("ace_uicontent_android_source_set") {
 
     deps = [
       "$ability_runtime_cross_platform_path/interfaces/kits/native/ability:cross_platform_abilitykit_native",
-      "$ace_root/adapter/android/dependence/resmgr:global_resmgr",
       "$ace_root/adapter/android/entrance/java/jni:ace_android_jni_$platform",
       "$ace_root/adapter/android/entrance/java/jni:ace_common_jni_$platform",
+      "//foundation/appframework/resource_management:global_resmgr",
       "//foundation/arkui/napi:ace_napi",
       "//third_party/icu/icu4c:static_icui18n",
       "//third_party/icu/icu4c:static_icuuc",
