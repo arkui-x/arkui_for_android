@@ -123,6 +123,8 @@ void StageActivityDelegateJni::DispatchOnDestroy(JNIEnv* env, jclass myclass, js
         AppMain::GetInstance()->DispatchOnDestroy(instanceName);
         env->ReleaseStringUTFChars(str, instanceName);
     }
+
+    AbilityContextAdapter::GetInstance()->RemoveStageActivity(instanceName);
 }
 
 void StageActivityDelegateJni::DispatchOnForeground(JNIEnv* env, jclass myclass, jstring str)
