@@ -31,7 +31,8 @@ class ACE_EXPORT ApkAssetProvider : public FlutterAssetProvider {
     DECLARE_ACE_TYPE(ApkAssetProvider, FlutterAssetProvider);
 
 public:
-    explicit ApkAssetProvider(std::unique_ptr<flutter::APKAssetProvider> provider) : assetProvider_(std::move(provider))
+    explicit ApkAssetProvider(std::unique_ptr<flutter::APKAssetProvider> provider, const std::string basePath = "")
+        : assetProvider_(std::move(provider)), basePath_(basePath)
     {}
     ~ApkAssetProvider() override = default;
 
@@ -53,8 +54,7 @@ public:
 
     std::string GetAssetPath(const std::string& assetName, bool isAddHapPath) override
     {
-        // TODO: need implement it
-        return "";
+        return basePath_;
     }
 
     void GetAssetList(const std::string& path, std::vector<std::string>& assetList) override
@@ -63,6 +63,7 @@ public:
     }
 
 private:
+    std::string basePath_;
     std::unique_ptr<flutter::AssetResolver> assetProvider_;
 };
 
