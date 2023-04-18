@@ -197,6 +197,7 @@ public class StageActivity extends Activity {
     private void initPlatformPlugin(Context context, int instanceId, WindowView windowView) {
         platformPlugin = new AcePlatformPlugin(context, instanceId, windowView, 0L);
         if (platformPlugin != null) {
+            windowView.SetInputConnectionClient(platformPlugin);
             platformPlugin.initTexturePlugin(instanceId);
             platformPlugin.addResourcePlugin(AceVideoPluginAosp.createRegister(context, getInstanceName()));
         }

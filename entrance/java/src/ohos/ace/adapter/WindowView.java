@@ -16,6 +16,8 @@
 package ohos.ace.adapter;
 
 import android.content.Context;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -41,6 +43,8 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     private boolean delayNotifySurfaceChanged = false;
     private boolean delayNotifySurfaceDestroyed = false;
 
+    private InputConnectionClient inputClient = null;
+
     /**
      * Constructor of WindowView
      *
@@ -50,6 +54,11 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     public WindowView(Context context) {
         super(context);
         initView();
+    }
+
+    public void SetInputConnectionClient(InputConnectionClient inputConnectionClient)
+    {
+        inputClient = inputConnectionClient;
     }
 
     private void initView() {
@@ -149,6 +158,14 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         }
         ALog.i(LOG_TAG, "onWindowFocusChanged");
         nativeOnWindowFocusChanged(nativeWindowPtr, hasWindowFocus);
+    }
+
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        if (inputClient != null) {
+            return inputClient.onCreateInputConnection(this, outAttrs);
+        }
+        return super.onCreateInputConnection(outAttrs);
     }
 
     /**

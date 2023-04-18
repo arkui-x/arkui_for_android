@@ -55,6 +55,7 @@ java_library("ace_platform_android_java") {
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceViewCreatorAosp.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceVsyncWaiter.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/DownloadManager.java",
+    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/InputConnectionClient.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/LoggerAosp.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/WindowView.java",
   ]
