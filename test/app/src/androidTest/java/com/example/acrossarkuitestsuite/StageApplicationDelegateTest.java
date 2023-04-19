@@ -35,7 +35,8 @@ import ohos.stage.ability.adapter.StageApplicationDelegate;
  */
 @RunWith(AndroidJUnit4.class)
 public class StageApplicationDelegateTest {
-    private static String TEST_PATH = "./";
+    private static final String TEST_PATH = "./";
+
     private StageApplication stageApplication;
     private StageApplicationDelegate stageApplicationDelegate;
 

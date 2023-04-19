@@ -33,7 +33,8 @@ import ohos.stage.ability.adapter.StageActivityDelegate;
  */
 @RunWith(AndroidJUnit4.class)
 public class StageActivityDelegateTest {
-    private static String INSTANCE_NAME = "instanceName";
+    private static final String INSTANCE_NAME = "instanceName";
+
     private StageActivityDelegate stageActivityDelegate;
 
     /**
