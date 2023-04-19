@@ -39,6 +39,7 @@ import ohos.stage.ability.adapter.StageConfiguration;
 public class StageConfigurationTest {
     private static final String COLOR_MODE_KEY = "ohos.system.colorMode";
     private static final String COLOR_MODE_DARK = "dark";
+
     private StageConfiguration stageConfiguration;
 
     /**
