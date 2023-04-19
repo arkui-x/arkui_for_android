@@ -35,6 +35,7 @@ import ohos.stage.ability.adapter.StageApplicationDelegate;
  */
 @RunWith(AndroidJUnit4.class)
 public class StageApplicationDelegateTest {
+    private static final String LOG_TAG = "StageApplicationDelegateTest";
     private static final String TEST_PATH = "./";
 
     private StageApplication stageApplication;
@@ -45,7 +46,7 @@ public class StageApplicationDelegateTest {
      */
     @Before
     public void doBefore() {
-        Log.i("StageApplicationDelegateTest", "doBefore");
+        Log.i(LOG_TAG, "doBefore");
         stageApplication = new StageApplication();
         stageApplicationDelegate = new StageApplicationDelegate();
     }
@@ -55,7 +56,7 @@ public class StageApplicationDelegateTest {
      */
     @After
     public void doAfter() {
-        Log.i("StageApplicationDelegateTest", "doAfter");
+        Log.i(LOG_TAG, "doAfter");
         this.stageApplication = null;
         this.stageApplicationDelegate = null;
     }

@@ -33,6 +33,7 @@ import ohos.stage.ability.adapter.StageActivityDelegate;
  */
 @RunWith(AndroidJUnit4.class)
 public class StageActivityDelegateTest {
+    private static final String LOG_TAG = "StageActivityDelegateTest";
     private static final String INSTANCE_NAME = "instanceName";
 
     private StageActivityDelegate stageActivityDelegate;
@@ -42,7 +43,7 @@ public class StageActivityDelegateTest {
      */
     @Before
     public void doBefore() {
-        Log.i("StageActivityDelegateTest", "doBefore");
+        Log.i(LOG_TAG, "doBefore");
         stageActivityDelegate = new StageActivityDelegate();
     }
 
@@ -51,7 +52,7 @@ public class StageActivityDelegateTest {
      */
     @After
     public void doAfter() {
-        Log.i("StageActivityDelegateTest", "doAfter");
+        Log.i(LOG_TAG, "doAfter");
         this.stageActivityDelegate = null;
     }
 

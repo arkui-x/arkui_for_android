@@ -33,6 +33,8 @@ import ohos.stage.ability.adapter.InstanceIdGenerator;
  */
 @RunWith(AndroidJUnit4.class)
 public class InstanceIdGeneratorTest {
+    private static final String LOG_TAG = "InstanceIdGeneratorTest";
+
     private InstanceIdGenerator instanceIdGenerator;
 
     /**
@@ -40,7 +42,7 @@ public class InstanceIdGeneratorTest {
      */
     @Before
     public void doBefore() {
-        Log.i("InstanceIdGeneratorTest", "doBefore");
+        Log.i(LOG_TAG, "doBefore");
         instanceIdGenerator = new InstanceIdGenerator();
     }
 
@@ -49,7 +51,7 @@ public class InstanceIdGeneratorTest {
      */
     @After
     public void doAfter() {
-        Log.i("InstanceIdGeneratorTest", "doAfter");
+        Log.i(LOG_TAG, "doAfter");
         this.instanceIdGenerator = null;
     }
 
