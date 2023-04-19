@@ -25,11 +25,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.content.res.Configuration;
 import android.util.Log;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import ohos.stage.ability.adapter.StageActivity;
 import ohos.stage.ability.adapter.StageConfiguration;
 
 /**
@@ -39,9 +37,10 @@ import ohos.stage.ability.adapter.StageConfiguration;
  */
 @RunWith(AndroidJUnit4.class)
 public class StageConfigurationTest {
-    private StageConfiguration stageConfiguration;
     private static final String COLOR_MODE_KEY = "ohos.system.colorMode";
     private static final String COLOR_MODE_DARK = "dark";
+    private StageConfiguration stageConfiguration;
+
     /**
      * Do something before test method start
      */

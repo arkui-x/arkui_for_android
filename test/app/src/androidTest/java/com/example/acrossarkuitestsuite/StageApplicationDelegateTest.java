@@ -16,22 +16,17 @@
 package com.example.acrossarkuitestsuite;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.content.res.AssetManager;
-import android.content.res.Configuration;
 import android.util.Log;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import ohos.stage.ability.adapter.StageActivity;
 import ohos.stage.ability.adapter.StageApplication;
 import ohos.stage.ability.adapter.StageApplicationDelegate;
-import ohos.stage.ability.adapter.StageConfiguration;
 
 /**
  * EnvironmentTest
@@ -40,9 +35,9 @@ import ohos.stage.ability.adapter.StageConfiguration;
  */
 @RunWith(AndroidJUnit4.class)
 public class StageApplicationDelegateTest {
+    private static String TEST_PATH = "./";
     private StageApplication stageApplication;
     private StageApplicationDelegate stageApplicationDelegate;
-    private static String TEST_PATH = "./";
 
     /**
      * Do something before test method start
@@ -69,10 +64,10 @@ public class StageApplicationDelegateTest {
      */
     @Test
     public void setNativeAssetManager_0100() throws JSONException {
-        try{
+        try {
             stageApplicationDelegate.setNativeAssetManager(stageApplication.getAssets());
         }
-        catch (Exception e){
+        catch (Exception e) {
             Assert.assertNotEquals(null, stageApplicationDelegate);
         }
         Assert.assertNotEquals(null, stageApplicationDelegate);

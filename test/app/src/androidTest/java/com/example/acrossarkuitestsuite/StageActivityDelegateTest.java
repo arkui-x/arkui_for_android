@@ -22,12 +22,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import android.util.Log;
-import android.view.Window;
-
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import ohos.ace.adapter.WindowView;
-import ohos.stage.ability.adapter.StageActivity;
 import ohos.stage.ability.adapter.StageActivityDelegate;
 
 /**
@@ -36,9 +32,9 @@ import ohos.stage.ability.adapter.StageActivityDelegate;
  * @since 1
  */
 @RunWith(AndroidJUnit4.class)
-public class StageActivityDelegateTest{
-    private StageActivityDelegate stageActivityDelegate;
+public class StageActivityDelegateTest {
     private static String INSTANCE_NAME = "instanceName";
+    private StageActivityDelegate stageActivityDelegate;
 
     /**
      * Do something before test method start
