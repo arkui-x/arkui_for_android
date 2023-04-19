@@ -69,7 +69,7 @@ public class StageApplicationDelegateTest {
         try {
             stageApplicationDelegate.setNativeAssetManager(stageApplication.getAssets());
         }
-        catch (Exception e) {
+        catch (NullPointerException nullPointerException) {
             Assert.assertNotEquals(null, stageApplicationDelegate);
         }
         Assert.assertNotEquals(null, stageApplicationDelegate);
