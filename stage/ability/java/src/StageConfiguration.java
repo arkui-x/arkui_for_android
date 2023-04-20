@@ -35,9 +35,9 @@ public class StageConfiguration {
 
     private static final String ORI_MODE_KEY = "ohos.application.direction";
 
-    private static final String ORI_MODE_LANDSCAPE = "vertical";
+    private static final String ORI_MODE_LANDSCAPE = "horizontal";
 
-    private static final String ORI_MODE_PORTRAIT = "horizontal";
+    private static final String ORI_MODE_PORTRAIT = "vertical";
 
     private static final String EMPTY_VALUE = "";
 
