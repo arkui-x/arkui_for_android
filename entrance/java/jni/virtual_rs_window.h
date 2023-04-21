@@ -84,7 +84,7 @@ public:
     virtual void RequestVsync(const std::shared_ptr<VsyncCallback>& vsyncCallback);
 
     void CreateSurfaceNode(void* nativeWindow);
-    void NotifySurfaceChanged(int32_t width, int32_t height);
+    void NotifySurfaceChanged(int32_t width, int32_t height, float density);
     void NotifySurfaceDestroyed();
 
     void WindowFocusChanged(bool hasWindowFocus);
@@ -114,6 +114,7 @@ private:
 
     int32_t surfaceWidth_ = 0;
     int32_t surfaceHeight_ = 0;
+    float density_ = 3.0f;
     std::shared_ptr<RSSurfaceNode> surfaceNode_;
     std::shared_ptr<flutter::VsyncWaiter> vsyncWaiter_;
 

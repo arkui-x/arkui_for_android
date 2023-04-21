@@ -110,7 +110,7 @@ void Window::CreateSurfaceNode(void* nativeWindow)
     }
 }
 
-void Window::NotifySurfaceChanged(int32_t width, int32_t height)
+void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
 {
     if (!surfaceNode_) {
         LOGE("Window Notify Surface Changed, surfaceNode_ is nullptr!");
@@ -119,17 +119,18 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height)
     LOGI("Window Notify Surface Changed wh:[%{public}d, %{public}d]", width, height);
     surfaceWidth_ = width;
     surfaceHeight_ = height;
+    density_ = density;
     surfaceNode_->SetBoundsWidth(surfaceWidth_);
     surfaceNode_->SetBoundsHeight(surfaceHeight_);
 
     if (!uiContent_) {
-        LOGW("Window Notify uiContent_ Surface Created, uiContent_ is nullptr, delay notify.");
+        LOGW("Window Notify uiContent_ Surface Changed, uiContent_ is nullptr, delay notify.");
         delayNotifySurfaceChanged_ = true;
     } else {
-        LOGI("Window Notify uiContent_ Surface Created");
         Ace::ViewportConfig config;
-        config.SetDensity(3.0f);
+        config.SetDensity(density_);
         config.SetSize(surfaceWidth_, surfaceHeight_);
+        LOGI("Window Notify uiContent_ Surface Changed %{public}s", config.ToString().c_str());
         uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE);
     }
 }
@@ -237,8 +238,9 @@ void Window::DelayNotifyUIContentIfNeeded()
         LOGI("Window Delay Notify uiContent_ Surface Changed wh:[%{public}d, %{public}d]",
             surfaceWidth_, surfaceHeight_);
         Ace::ViewportConfig config;
-        config.SetDensity(3.0f);
+        config.SetDensity(density_);
         config.SetSize(surfaceWidth_, surfaceHeight_);
+        config.SetOrientation(surfaceHeight_ >= surfaceWidth_ ? 0 : 1);
         uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE);
         delayNotifySurfaceChanged_ = false;
     }

@@ -26,7 +26,7 @@ public:
     static bool RegisterNatives(JNIEnv* env);
 
     static void SurfaceCreated(JNIEnv* env, jobject myObject, jlong window, jobject jsurface);
-    static void SurfaceChanged(JNIEnv* env, jobject myObject, jlong window, jint width, jint height);
+    static void SurfaceChanged(JNIEnv* env, jobject myObject, jlong window, jint width, jint height, jfloat density);
     static void SurfaceDestroyed(JNIEnv* env, jobject myObject, jlong window);
     static void RegisterWindow(JNIEnv* env, void* window, jobject windowView);
     static void UnRegisterWindow(JNIEnv* env, jobject windowView);
