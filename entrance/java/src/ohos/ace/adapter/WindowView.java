@@ -90,7 +90,8 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         if (delayNotifySurfaceChanged) {
             ALog.i(LOG_TAG,
                     "delay notify surface changed w=" + surfaceWidth + " h=" + surfaceHeight);
-            nativeSurfaceChanged(nativeWindowPtr, surfaceWidth, surfaceHeight);
+            nativeSurfaceChanged(
+                nativeWindowPtr, surfaceWidth, surfaceHeight, getResources().getDisplayMetrics().density);
             delayNotifySurfaceChanged = false;
         }
 
@@ -124,7 +125,8 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
             delayNotifySurfaceChanged = true;
         } else {
             ALog.i(LOG_TAG, "surfaceChanged w=" + surfaceWidth + " h=" + surfaceHeight);
-            nativeSurfaceChanged(nativeWindowPtr, surfaceWidth, surfaceHeight);
+            nativeSurfaceChanged(
+                nativeWindowPtr, surfaceWidth, surfaceHeight, getResources().getDisplayMetrics().density);
         }
     }
 
@@ -243,7 +245,7 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
 
     private native void nativeSurfaceCreated(long windowPtr, Surface surface);
 
-    private native void nativeSurfaceChanged(long windowPtr, int width, int height);
+    private native void nativeSurfaceChanged(long windowPtr, int width, int height, float density);
 
     private native void nativeSurfaceDestroyed(long windowPtr);
 

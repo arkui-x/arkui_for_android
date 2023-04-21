@@ -37,7 +37,7 @@ static const JNINativeMethod ANDROID_METHODS[] = {
 static const JNINativeMethod COMMON_METHODS[] = {
     {
         .name = "nativeSurfaceChanged",
-        .signature = "(JII)V",
+        .signature = "(JIIF)V",
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::SurfaceChanged),
     },
     {
@@ -93,11 +93,11 @@ void WindowViewJni::SurfaceCreated(JNIEnv* env, jobject myObject, jlong window, 
 }
 
 void WindowViewJni::SurfaceChanged(
-    JNIEnv* env, jobject myObject, jlong window, jint width, jint height)
+    JNIEnv* env, jobject myObject, jlong window, jint width, jint height, jfloat density)
 {
     auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
     if (windowPtr != nullptr) {
-        windowPtr->NotifySurfaceChanged(width, height);
+        windowPtr->NotifySurfaceChanged(width, height, density);
     }
 }
 
