@@ -38,7 +38,7 @@ public class StageApplication extends Application {
         super.onCreate();
 
         appDelegate = new StageApplicationDelegate();
-        appDelegate.SetStageApplication(this);
+        appDelegate.setStageApplication(this);
         appDelegate.initApplication();
     }
 

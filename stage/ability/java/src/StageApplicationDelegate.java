@@ -103,7 +103,7 @@ public class StageApplicationDelegate {
      *
      * @param object the stage application.
      */
-    public void SetStageApplication(StageApplication object) {
+    public void setStageApplication(StageApplication object) {
         stageApplication = object;
     }
 
