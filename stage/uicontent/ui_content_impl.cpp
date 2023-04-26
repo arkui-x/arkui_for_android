@@ -451,7 +451,8 @@ void UIContentImpl::UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRunti
             CHECK_NULL_VOID_NOLOG(container);
             auto colorMode = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::SYSTEM_COLORMODE);
             auto direction = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_DIRECTION);
-            auto densityDpi = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_DENSITYDPI);
+            auto densityDpi = config->GetItem(
+                OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_DENSITYDPI);
             container->UpdateConfiguration(colorMode, direction, densityDpi);
         },
         TaskExecutor::TaskType::UI);
