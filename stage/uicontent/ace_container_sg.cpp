@@ -542,12 +542,13 @@ void AceContainerSG::AttachView(
     frontend_->AttachPipelineContext(pipelineContext_);
 }
 
-void AceContainerSG::UpdateConfiguration(const std::string& colorMode, const std::string& direction)
+void AceContainerSG::UpdateConfiguration(
+    const std::string& colorMode, const std::string& direction, const std::string& densityDpi)
 {
-    LOGI("AceContainerSG::UpdateConfiguration, colorMode:%{public}s, direction:%{public}s",
-        colorMode.c_str(), direction.c_str());
+    LOGI("AceContainerSG::UpdateConfiguration, colorMode:%{public}s, direction:%{public}s, densityDpi:%{public}s",
+        colorMode.c_str(), direction.c_str(), densityDpi.c_str());
 
-    if (colorMode.empty() && direction.empty()) {
+    if (colorMode.empty() && direction.empty() && densityDpi.empty()) {
         LOGW("AceContainerSG::UpdateResourceConfiguration param is empty");
         return;
     }
@@ -577,6 +578,11 @@ void AceContainerSG::UpdateConfiguration(const std::string& colorMode, const std
         } else if (direction == "horizontal") {
             resConfig.SetOrientation(DeviceOrientation::LANDSCAPE);
         }
+    }
+    if (!densityDpi.empty()) {
+        double density = std::stoi(densityDpi) / DPI_BASE;
+        LOGI("resconfig density : %{public}f", density);
+        resConfig.SetDensity(density);
     }
     SetResourceConfiguration(resConfig);
     themeManager->UpdateConfig(resConfig);
