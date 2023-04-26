@@ -542,66 +542,56 @@ void AceContainerSG::AttachView(
     frontend_->AttachPipelineContext(pipelineContext_);
 }
 
-void AceContainerSG::UpdateResourceConfiguration(const std::string& jsonStr)
+void AceContainerSG::UpdateConfiguration(const std::string& colorMode, const std::string& direction)
 {
-    uint32_t updateFlags = 0;
-    auto resConfig = resourceInfo_.GetResourceConfiguration();
-    ContainerScope scope(instanceId_);
-    if (!resConfig.UpdateFromJsonString(jsonStr, updateFlags)) {
+    LOGI("AceContainerSG::UpdateConfiguration, colorMode:%{public}s, direction:%{public}s",
+        colorMode.c_str(), direction.c_str());
+
+    if (colorMode.empty() && direction.empty()) {
+        LOGW("AceContainerSG::UpdateResourceConfiguration param is empty");
         return;
     }
-    resourceInfo_.SetResourceConfiguration(resConfig);
-    if (!ResourceConfiguration::TestFlag(updateFlags, ResourceConfiguration::COLOR_MODE_UPDATED_FLAG)) {
-        SystemProperties::SetColorMode(resConfig.GetColorMode());
+    CHECK_NULL_VOID(pipelineContext_);
+    ContainerScope scope(instanceId_);
+    auto themeManager = pipelineContext_->GetThemeManager();
+    CHECK_NULL_VOID(themeManager);
+    auto resConfig = GetResourceConfiguration();
+    if (!colorMode.empty()) {
+        if (colorMode == "dark") {
+            SystemProperties::SetColorMode(ColorMode::DARK);
+            SetColorScheme(ColorScheme::SCHEME_DARK);
+            resConfig.SetColorMode(ColorMode::DARK);
+        } else {
+            SystemProperties::SetColorMode(ColorMode::LIGHT);
+            SetColorScheme(ColorScheme::SCHEME_LIGHT);
+            resConfig.SetColorMode(ColorMode::LIGHT);
+        }
         if (frontend_) {
             frontend_->FlushReload();
             frontend_->SetColorMode(resConfig.GetColorMode());
         }
     }
-
-    std::unique_ptr<JsonValue> jsonConfig = JsonUtil::ParseJsonString(jsonStr);
-    if (jsonConfig->Contains(ORI_MODE_KEY)) {
-        auto oriMode = jsonConfig->GetValue(ORI_MODE_KEY);
-        if (oriMode && oriMode->IsString()) {
-            auto strOriMode = oriMode->GetString();
-            if (strOriMode == ORI_MODE_PORTRAIT && resConfig.GetOrientation() != DeviceOrientation::PORTRAIT) {
-                resConfig.SetOrientation(DeviceOrientation::PORTRAIT);
-            } else if (strOriMode == ORI_MODE_LANDSCAPE && resConfig.GetOrientation() != DeviceOrientation::LANDSCAPE) {
-                resConfig.SetOrientation(DeviceOrientation::LANDSCAPE);
-            }
+    if (!direction.empty()) {
+        if (direction == "vertical") {
+            resConfig.SetOrientation(DeviceOrientation::PORTRAIT);
+        } else if (direction == "horizontal") {
+            resConfig.SetOrientation(DeviceOrientation::LANDSCAPE);
         }
     }
-    if (jsonConfig->Contains(DENSITY_KEY)) {
-        auto jsonDensity = jsonConfig->GetValue(DENSITY_KEY);
-        if (jsonDensity && jsonDensity->IsNumber()) {
-            double densityDpi = jsonDensity->GetInt();
-            double density = densityDpi / DPI_BASE;
-            resConfig.SetDensity(density);
-        }
-    }
-
-    CHECK_NULL_VOID(pipelineContext_);
-    auto themeManager = pipelineContext_->GetThemeManager();
-    CHECK_NULL_VOID(themeManager);
+    SetResourceConfiguration(resConfig);
     themeManager->UpdateConfig(resConfig);
-    taskExecutor_->PostTask(
-        [weakThemeManager = WeakPtr<ThemeManager>(themeManager), colorScheme = colorScheme_, config = resConfig,
-            weakContext = WeakPtr<PipelineBase>(pipelineContext_)]() {
-            auto themeManager = weakThemeManager.Upgrade();
-            auto context = weakContext.Upgrade();
-            if (!themeManager || !context) {
-                return;
-            }
-            themeManager->LoadResourceThemes();
-            themeManager->ParseSystemTheme();
-            themeManager->SetColorScheme(colorScheme);
-            context->NotifyConfigurationChange();
-            context->FlushReload();
-        },
-        TaskExecutor::TaskType::UI);
-    if (frontend_) {
-        frontend_->RebuildAllPages();
+    themeManager->LoadResourceThemes();
+    themeManager->ParseSystemTheme();
+    themeManager->SetColorScheme(colorScheme_);
+    if (colorScheme_ == ColorScheme::SCHEME_DARK) {
+        pipelineContext_->SetAppBgColor(Color::BLACK);
+    } else {
+        pipelineContext_->SetAppBgColor(Color::WHITE);
     }
+    pipelineContext_->RefreshRootBgColor();
+    pipelineContext_->NotifyConfigurationChange();
+    pipelineContext_->FlushReload();
+    pipelineContext_->FlushReloadTransition();
 }
 
 void AceContainerSG::InitThemeManager()
@@ -621,6 +611,11 @@ void AceContainerSG::InitThemeManager()
         themeManager->LoadCustomTheme(assetManager);
         themeManager->LoadResourceThemes();
         aceView->SetBackgroundColor(themeManager->GetBackgroundColor());
+        if (colorScheme == ColorScheme::SCHEME_DARK) {
+            pipelineContext->SetAppBgColor(Color::BLACK);
+        } else {
+            pipelineContext->SetAppBgColor(Color::WHITE);
+        }
     };
 
     if (GetSettings().usePlatformAsUIThread) {

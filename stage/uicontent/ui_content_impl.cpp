@@ -40,6 +40,9 @@
 namespace OHOS::Ace::Platform {
 namespace {
 const std::string START_PARAMS_KEY = "__startParams";
+// Device type, same as w/ java in AceView
+constexpr int32_t ORIENTATION_PORTRAIT = 1;
+constexpr int32_t ORIENTATION_LANDSCAPE = 2;
 } // namespace
 
 using ContentFinishCallback = std::function<void()>;
@@ -296,6 +299,11 @@ void UIContentImpl::InitAceInfoFromResConfig()
             SystemProperties::SetColorMode(ColorMode::LIGHT);
             LOGI("UIContent set light mode");
         }
+        if (resConfig->GetDirection() == OHOS::Global::Resource::Direction::DIRECTION_VERTICAL) {
+            SystemProperties::SetDeviceOrientation(ORIENTATION_PORTRAIT);
+        } else if (resConfig->GetDirection() == OHOS::Global::Resource::Direction::DIRECTION_HORIZONTAL) {
+            SystemProperties::SetDeviceOrientation(ORIENTATION_LANDSCAPE);
+        }
         SystemProperties::SetDeviceAccess(
             resConfig->GetInputDevice() == Global::Resource::InputDevice::INPUTDEVICE_POINTINGDEVICE);
     }
@@ -431,13 +439,29 @@ bool UIContentImpl::ProcessKeyEvent(int32_t keyCode, int32_t keyAction, int32_t 
 void UIContentImpl::UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRuntime::Platform::Configuration>& config)
 {
     LOGI("UIContentImpl: UpdateConfiguration called");
+    CHECK_NULL_VOID(config);
+    auto container = Platform::AceContainerSG::GetContainer(instanceId_);
+    CHECK_NULL_VOID(container);
+    auto taskExecutor = container->GetTaskExecutor();
+    CHECK_NULL_VOID(taskExecutor);
+    taskExecutor->PostTask(
+        [weakContainer = WeakPtr<Platform::AceContainerSG>(container), config]() {
+            auto container = weakContainer.Upgrade();
+            CHECK_NULL_VOID_NOLOG(container);
+            auto colorMode = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::SYSTEM_COLORMODE);
+            auto direction = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_DIRECTION);
+            container->UpdateConfiguration(colorMode, direction);
+        },
+        TaskExecutor::TaskType::UI);
+    LOGI("UIContentImpl: UpdateConfiguration called End");
 }
 
 void UIContentImpl::UpdateViewportConfig(const ViewportConfig& config, OHOS::Rosen::WindowSizeChangeReason reason)
 {
     LOGI("UIContentImpl: UpdateViewportConfig %{public}s", config.ToString().c_str());
     SystemProperties::SetResolution(config.Density());
-    SystemProperties::SetDeviceOrientation(config.Height() >= config.Width() ? 0 : 1);
+    SystemProperties::SetDeviceOrientation(
+        config.Height() >= config.Width() ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE);
     auto container = Platform::AceContainerSG::GetContainer(instanceId_);
     CHECK_NULL_VOID(container);
     auto taskExecutor = container->GetTaskExecutor();
