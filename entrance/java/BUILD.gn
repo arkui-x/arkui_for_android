@@ -51,6 +51,7 @@ java_library("ace_platform_android_java") {
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceApplication.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceEventProcessorAosp.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AcePlatformPlugin.java",
+    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceSurfaceHolder.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceViewAosp.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceViewCreatorAosp.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceVsyncWaiter.java",

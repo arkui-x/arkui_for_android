@@ -55,7 +55,7 @@ bool SystemProperties::isHookModeEnabled_ = false;
 bool SystemProperties::accessibilityEnabled_ = false;
 bool SystemProperties::windowAnimationEnabled_ = false;
 bool SystemProperties::debugBoundaryEnabled_ = false;
-bool SystemProperties::extSurfaceEnabled_ = false;
+bool SystemProperties::extSurfaceEnabled_ = true;
 uint32_t SystemProperties::dumpFrameCount_ = 0;
 PerformancePtr SystemProperties::performanceProps_ = nullptr;
 

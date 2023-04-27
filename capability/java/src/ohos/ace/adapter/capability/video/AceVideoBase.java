@@ -117,6 +117,11 @@ public abstract class AceVideoBase {
             setLandscape(param);
         });
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "setlandscape" + PARAM_BEGIN, setLandscape);
+
+        IAceOnCallResourceMethod callSetSurface = (param) -> runAsync(() -> {
+            setSurface(param);
+        });
+        callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "setsurface" + PARAM_BEGIN, callSetSurface);
     }
 
     /**
@@ -271,6 +276,14 @@ public abstract class AceVideoBase {
      * @return result of call.
      */
     public abstract String setLandscape(Map<String, String> params);
+
+    /**
+     * This is called to set video surface
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String setSurface(Map<String, String> params);
 
     /**
      * This is called to fire prepared event.

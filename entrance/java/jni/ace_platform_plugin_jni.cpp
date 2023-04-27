@@ -69,7 +69,7 @@ jlong AcePlatformPluginJni::InitResRegister(JNIEnv* env, jobject myObject,
         LOGE("env is null");
         return 0;
     }
-    auto aceResRegister = Referenced::MakeRefPtr<AceResourceRegister>(resRegister);
+    auto aceResRegister = Referenced::MakeRefPtr<AceResourceRegister>(resRegister, instanceId);
     if (aceResRegister && !aceResRegister->Initialize(env)) {
         LOGE("Failed to initialize the AcerResourceRegister");
         return 0;

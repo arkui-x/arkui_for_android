@@ -16,6 +16,7 @@
 package ohos.ace.adapter;
 
 import android.content.Context;
+import android.graphics.PixelFormat;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.KeyEvent;
@@ -56,7 +57,7 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         initView();
     }
 
-    public void SetInputConnectionClient(InputConnectionClient inputConnectionClient)
+    public void setInputConnectionClient(InputConnectionClient inputConnectionClient)
     {
         inputClient = inputConnectionClient;
     }
@@ -65,6 +66,7 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         ALog.i(LOG_TAG, "WindowView created");
         setFocusableInTouchMode(true);
         getHolder().addCallback(this);
+        setZOrderOnTop(true);
     }
 
     /**
@@ -116,6 +118,7 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         setFocusable(true);
         requestFocus();
         Surface surface = holder.getSurface();
+        holder.setFormat(PixelFormat.TRANSLUCENT);
         if (nativeWindowPtr == 0L) {
             ALog.w(LOG_TAG, "surfaceCreated nativeWindow not ready, delay notify");
             delayNotifyCreateSurface = surface;

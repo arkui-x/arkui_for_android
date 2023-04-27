@@ -63,13 +63,12 @@ public class AceVideoPluginAosp extends AceVideoPluginBase {
             long textureId = Long.parseLong(param.get(KEY_TEXTURE));
             Object obj = resRegister.getObject(KEY_TEXTURE, textureId);
             if (obj == null || !(obj instanceof AceTexture)) {
-                ALog.e(LOG_TAG, "create fail , failed to find texture, texture id = " + textureId);
-                return -1L;
+                ALog.i(LOG_TAG, "not find texture, texture id = " + textureId + ", should set surface later");
             }
             long id = getAtomicId();
-            AceTexture texture = (AceTexture)obj;
-            AceVideoAosp video = new AceVideoAosp(id, instanceName, texture.getSurface(), context,
-                getEventCallback());
+            AceTexture texture = (AceTexture) obj;
+            AceVideoAosp video = new AceVideoAosp(id, instanceName, texture == null ? null : texture.getSurface(),
+                    context, getEventCallback());
             addResource(id, video);
             return id;
         } catch (NumberFormatException ignored) {
