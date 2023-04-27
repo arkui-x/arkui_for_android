@@ -41,6 +41,8 @@ public class StageConfiguration {
 
     private static final String EMPTY_VALUE = "";
 
+    private static final String DENSITY_KEY = "ohos.application.densitydpi";
+
     /**
      * Convert configuration.
      *
@@ -74,6 +76,8 @@ public class StageConfiguration {
                     json.put(ORI_MODE_KEY, EMPTY_VALUE);
                     break;
             }
+            int den = config.densityDpi;
+            json.put(DENSITY_KEY, String.valueOf(den));
         } catch (JSONException ignored) {
             Log.e(LOG_TAG, "convertConfiguration parse Configuration failed");
             return json;
