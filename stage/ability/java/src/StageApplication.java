@@ -38,8 +38,7 @@ public class StageApplication extends Application {
         super.onCreate();
 
         appDelegate = new StageApplicationDelegate();
-        appDelegate.setStageApplication(this);
-        appDelegate.initApplication();
+        appDelegate.initApplication(this);
     }
 
     /**

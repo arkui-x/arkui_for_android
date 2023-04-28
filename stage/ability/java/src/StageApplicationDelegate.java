@@ -69,9 +69,13 @@ public class StageApplicationDelegate {
 
     /**
      * Initialize stage application.
+     * 
+     * @param object the stage application.
      */
-    public void initApplication() {
+    public void initApplication(StageApplication object) {
         Log.i(LOG_TAG, "init application.");
+        stageApplication = object;
+
         ALog.setLogger(new LoggerAosp());
         AceEnv.getInstance();
         AppModeConfig.setAppMode("stage");
@@ -96,15 +100,6 @@ public class StageApplicationDelegate {
 
         launchApplication();
         initConfiguration();
-    }
-
-    /**
-     * Set stage application.
-     *
-     * @param object the stage application.
-     */
-    public void setStageApplication(StageApplication object) {
-        stageApplication = object;
     }
 
     private int getUid(Context context) {
