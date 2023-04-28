@@ -22,7 +22,7 @@ import("config.gni")
 ohos_shared_library("libarkui_android") {
   deps = [
     "$ace_root/build:libace_static_android",
-    "//foundation/appframework/icu_data:icu_data_static",
+    "//foundation/appframework/icu_data:static_icudata",
   ]
   if (defined(ark_engine)) {
     deps += [
@@ -35,7 +35,7 @@ ohos_shared_library("libarkui_android") {
     ]
   }
   public_configs = [ "//foundation/arkui/napi:ace_napi_config" ]
-  libs = [ "$root_out_dir/libicudata/android/libicudata.a" ]
+
   version_script = "libarkui_android.map"
   part_name = "arkui-x"
   subsystem_name = "arkui"
