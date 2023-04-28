@@ -16,6 +16,7 @@
 package ohos.stage.ability.adapter;
 
 import android.app.ActivityManager;
+import android.app.Application;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -48,7 +49,7 @@ import org.json.JSONObject;
 public class StageApplicationDelegate {
     private static final String LOG_TAG = "StageApplicationDelegate";
 
-    private StageApplication stageApplication = null;
+    private Application stageApplication = null;
 
     private static final String ASSETS_SUB_PATH = "arkui-x";
 
@@ -70,11 +71,11 @@ public class StageApplicationDelegate {
     /**
      * Initialize stage application.
      * 
-     * @param object the stage application.
+     * @param application the stage application.
      */
-    public void initApplication(StageApplication object) {
+    public void initApplication(Application application) {
         Log.i(LOG_TAG, "init application.");
-        stageApplication = object;
+        stageApplication = application;
 
         ALog.setLogger(new LoggerAosp());
         AceEnv.getInstance();
