@@ -50,6 +50,10 @@ public class StageApplication extends Application {
     public void onConfigurationChanged(Configuration newConfig) {
         Log.i(LOG_TAG, "StageApplication onConfigurationChanged called");
         super.onConfigurationChanged(newConfig);
+        if (appDelegate == null) {
+            Log.e(LOG_TAG, "appDelegate is null");
+            return;
+        }
         appDelegate.onConfigurationChanged(newConfig);
     }
 }
