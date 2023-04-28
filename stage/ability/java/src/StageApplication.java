@@ -52,14 +52,4 @@ public class StageApplication extends Application {
         super.onConfigurationChanged(newConfig);
         appDelegate.onConfigurationChanged(newConfig);
     }
-
-    /**
-     * Get running process info.
-     *
-     * @return class RunningProcessInfo in List
-     */
-    public Object getRunningProcessInfo() {
-        Log.i(LOG_TAG, "Get running process info called");
-        return appDelegate.getRunningProcessInfo();
-    }
 }

@@ -80,7 +80,7 @@ public class StageApplicationDelegate {
         AceEnv.getInstance();
         AppModeConfig.setAppMode("stage");
 
-        attachStageApplication(stageApplication);
+        attachStageApplication();
 
         Context context = stageApplication.getApplicationContext();
         setPidAndUid(Process.myPid(), getUid(context));
@@ -395,11 +395,9 @@ public class StageApplicationDelegate {
 
     /**
      * Attach stage application to native.
-     *
-     * @param object the stage application.
      */
-    public void attachStageApplication(StageApplication object) {
-        nativeAttachStageApplication(object);
+    public void attachStageApplication() {
+        nativeAttachStageApplicationDelegate(this);
     }
 
     private native void nativeSetAssetManager(Object assetManager);
@@ -413,5 +411,5 @@ public class StageApplicationDelegate {
     private native void nativeInitConfiguration(String data);
     private native void nativeOnConfigurationChanged(String data);
     private native void nativeSetLocale(String language, String country, String script);
-    private native void nativeAttachStageApplication(StageApplication object);
+    private native void nativeAttachStageApplicationDelegate(StageApplicationDelegate object);
 }

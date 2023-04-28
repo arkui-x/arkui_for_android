@@ -32,7 +32,7 @@ public:
     ~ApplicationContextAdapter();
 
     static std::shared_ptr<ApplicationContextAdapter> GetInstance();
-    void SetStageApplication(jobject stageApplication);
+    void SetStageApplicationDelegate(jobject stageApplicationDelegate);
     std::vector<RunningProcessInfo> GetRunningProcessInformation();
 
 private:
