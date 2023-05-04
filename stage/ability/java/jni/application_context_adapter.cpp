@@ -40,7 +40,7 @@ std::shared_ptr<ApplicationContextAdapter> ApplicationContextAdapter::GetInstanc
     return instance_;
 }
 
-void ApplicationContextAdapter::SetStageApplication(jobject stageApplication)
+void ApplicationContextAdapter::SetStageApplicationDelegate(jobject stageApplicationDelegate)
 {
     LOGI("Set stage application");
     auto env = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
@@ -49,7 +49,7 @@ void ApplicationContextAdapter::SetStageApplication(jobject stageApplication)
         return;
     }
 
-    object_ = Ace::Platform::JniEnvironment::MakeJavaGlobalRef(env, stageApplication);
+    object_ = Ace::Platform::JniEnvironment::MakeJavaGlobalRef(env, stageApplicationDelegate);
     if (object_ == nullptr) {
         LOGE("object_ is nullptr");
         return;

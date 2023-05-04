@@ -33,9 +33,9 @@ bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
     LOGI("StageApplicationDelegateJni register start.");
     static const JNINativeMethod methods[] = {
         {
-            .name = "nativeAttachStageApplication",
-            .signature = "(Lohos/stage/ability/adapter/StageApplication;)V",
-            .fnPtr = reinterpret_cast<void*>(&AttachStageApplication),
+            .name = "nativeAttachStageApplicationDelegate",
+            .signature = "(Lohos/stage/ability/adapter/StageApplicationDelegate;)V",
+            .fnPtr = reinterpret_cast<void*>(&AttachStageApplicationDelegate),
         },
         {
             .name = "nativeSetAssetManager",
@@ -254,14 +254,14 @@ void StageApplicationDelegateJni::SetLocale(
     StageApplicationInfoAdapter::GetInstance()->SetLocale(language, country, script);
 }
 
-void StageApplicationDelegateJni::AttachStageApplication(JNIEnv* env, jclass myclass, jobject object)
+void StageApplicationDelegateJni::AttachStageApplicationDelegate(JNIEnv* env, jclass myclass, jobject object)
 {
     LOGI("Attach Stage Application.");
     if (env == nullptr) {
         LOGE("JNI JniStageApplicationDelegate: null java env");
         return;
     }
-    ApplicationContextAdapter::GetInstance()->SetStageApplication(object);
+    ApplicationContextAdapter::GetInstance()->SetStageApplicationDelegate(object);
 }
 } // namespace Platform
 } // namespace AbilityRuntime
