@@ -16,6 +16,9 @@
 package ohos.ace.adapter;
 
 import android.content.Context;
+import android.graphics.PixelFormat;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -41,6 +44,8 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     private boolean delayNotifySurfaceChanged = false;
     private boolean delayNotifySurfaceDestroyed = false;
 
+    private InputConnectionClient inputClient = null;
+
     /**
      * Constructor of WindowView
      *
@@ -52,10 +57,16 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         initView();
     }
 
+    public void setInputConnectionClient(InputConnectionClient inputConnectionClient)
+    {
+        inputClient = inputConnectionClient;
+    }
+
     private void initView() {
         ALog.i(LOG_TAG, "WindowView created");
         setFocusableInTouchMode(true);
         getHolder().addCallback(this);
+        setZOrderOnTop(true);
     }
 
     /**
@@ -107,6 +118,7 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         setFocusable(true);
         requestFocus();
         Surface surface = holder.getSurface();
+        holder.setFormat(PixelFormat.TRANSLUCENT);
         if (nativeWindowPtr == 0L) {
             ALog.w(LOG_TAG, "surfaceCreated nativeWindow not ready, delay notify");
             delayNotifyCreateSurface = surface;
@@ -149,6 +161,14 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         }
         ALog.i(LOG_TAG, "onWindowFocusChanged");
         nativeOnWindowFocusChanged(nativeWindowPtr, hasWindowFocus);
+    }
+
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        if (inputClient != null) {
+            return inputClient.onCreateInputConnection(this, outAttrs);
+        }
+        return super.onCreateInputConnection(outAttrs);
     }
 
     /**

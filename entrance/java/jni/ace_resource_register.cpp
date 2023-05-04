@@ -15,17 +15,20 @@
 
 #include "adapter/android/entrance/java/jni/ace_resource_register.h"
 
+#include <cstdint>
 #include <functional>
 #include <sstream>
 
 #include "base/log/log.h"
 #include "base/utils/utils.h"
+#include "core/common/container_scope.h"
 #include "core/pipeline/pipeline_base.h"
 
 namespace OHOS::Ace::Platform {
 
-AceResourceRegister::AceResourceRegister(jobject object)
-    : object_(JniEnvironment::MakeJavaGlobalRef(JniEnvironment::GetInstance().GetJniEnv(), object))
+AceResourceRegister::AceResourceRegister(jobject object, int32_t instanceId)
+    : object_(JniEnvironment::MakeJavaGlobalRef(JniEnvironment::GetInstance().GetJniEnv(), object)),
+      instanceId_(instanceId)
 {}
 
 bool AceResourceRegister::Initialize(JNIEnv* env)
@@ -97,6 +100,7 @@ void AceResourceRegister::OnCallEvent(JNIEnv* env, jclass clazz, jlong resRegist
         eventParam = paramStr;
         env->ReleaseStringUTFChars(param, paramStr);
     }
+    ContainerScope scope(resRegister->instanceId_);
     resRegister->OnEvent(eventId, eventParam);
 }
 
@@ -118,8 +122,7 @@ bool AceResourceRegister::OnMethodCall(const std::string& method, const std::str
         env->DeleteLocalRef(jMethod);
         return false;
     }
-    jstring jResult =
-        static_cast<jstring>(env->CallObjectMethod(object_.get(), onCallMethod_, jMethod, jParam));
+    jstring jResult = static_cast<jstring>(env->CallObjectMethod(object_.get(), onCallMethod_, jMethod, jParam));
     if (env->ExceptionCheck()) {
         LOGE("AceResourceRegister OnMethodCall: has exception");
         env->ExceptionDescribe();

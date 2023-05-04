@@ -28,6 +28,7 @@ import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 import ohos.ace.adapter.WindowView;
 
 import ohos.ace.adapter.capability.grantresult.GrantResult;
+import ohos.ace.adapter.capability.surface.AceSurfacePluginAosp;
 
 /**
  * A base class for the Ability Cross-platform Environment of the stage model to run on Android.
@@ -44,6 +45,12 @@ public class StageActivity extends Activity {
     private int instanceId = InstanceIdGenerator.getAndIncrement();
 
     private String instanceName;
+
+    private String bundleName;
+
+    private String moduleName;
+
+    private String abilityName;
 
     private StageActivityDelegate activityDelegate = null;
 
@@ -132,6 +139,12 @@ public class StageActivity extends Activity {
         }
 
         instanceName = name + String.valueOf(instanceId);
+        String[] nameArray = instanceName.split(":");
+        if (nameArray.length >= 3) {
+            bundleName = nameArray[0];
+            moduleName = nameArray[1];
+            abilityName = nameArray[2];
+        }
     }
 
     /**
@@ -197,8 +210,10 @@ public class StageActivity extends Activity {
     private void initPlatformPlugin(Context context, int instanceId, WindowView windowView) {
         platformPlugin = new AcePlatformPlugin(context, instanceId, windowView, 0L);
         if (platformPlugin != null) {
+            windowView.setInputConnectionClient(platformPlugin);
             platformPlugin.initTexturePlugin(instanceId);
-            platformPlugin.addResourcePlugin(AceVideoPluginAosp.createRegister(context, getInstanceName()));
+            platformPlugin.addResourcePlugin(AceVideoPluginAosp.createRegister(context, moduleName));
+            platformPlugin.addResourcePlugin(AceSurfacePluginAosp.createRegister(context));
         }
     }
 

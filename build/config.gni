@@ -36,6 +36,7 @@ xcomponent_components_support = false
 enable_rosen_backend = true
 use_external_icu = "static"
 build_container_scope_lib = true
+video_components_support = true
 
 cflags_cc = [
   "-std=c++17",
@@ -59,4 +60,8 @@ if (xcomponent_components_support) {
 if (defined(enable_rosen_backend) && enable_rosen_backend) {
   defines += [ "ENABLE_ROSEN_BACKEND" ]
   defines += [ "VIRTUAL_RS_WINDOW" ]
+}
+
+if (defined(video_components_support) && video_components_support) {
+  defines += [ "VIDEO_SUPPORTED" ]
 }

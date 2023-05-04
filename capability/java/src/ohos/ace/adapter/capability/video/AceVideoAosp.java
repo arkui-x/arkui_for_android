@@ -28,6 +28,7 @@ import android.view.Surface;
 import android.view.Window;
 import android.view.WindowManager;
 
+import ohos.ace.adapter.AceSurfaceHolder;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.IAceOnResourceEvent;
 
@@ -41,8 +42,8 @@ import java.util.Map;
  * @since 1
  */
 public class AceVideoAosp extends AceVideoBase
-    implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnSeekCompleteListener,
-    MediaPlayer.OnCompletionListener, MediaPlayer.OnBufferingUpdateListener {
+        implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnSeekCompleteListener,
+        MediaPlayer.OnCompletionListener, MediaPlayer.OnBufferingUpdateListener {
     private static final String LOG_TAG = "AceVideoAosp";
 
     private static final String SUCCESS = "success";
@@ -60,7 +61,7 @@ public class AceVideoAosp extends AceVideoBase
     private static final int SECOND_TO_MSEC = 1000;
 
     private static final AudioAttributes ATTR_VIDEO = new AudioAttributes.Builder().setUsage(
-        AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
+            AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
 
     private final MediaPlayer mediaPlayer;
 
@@ -76,20 +77,25 @@ public class AceVideoAosp extends AceVideoBase
 
     private HandlerThread handlerThread;
 
+    private boolean stageMode = true;
+
     /**
      * constructor of AceVideo on AOSP platform
      *
-     * @param id the id of plugin
-     * @param name name of plugin
-     * @param surface the surface to render video content
-     * @param context context of application
+     * @param id       the id of plugin
+     * @param name     name of plugin
+     * @param surface  the surface to render video content
+     * @param context  context of application
      * @param callback resource callback
      */
     public AceVideoAosp(long id, String name, Surface surface, Context context, IAceOnResourceEvent callback) {
         super(id, callback);
         this.instanceName = name;
         mediaPlayer = new MediaPlayer();
-        mediaPlayer.setSurface(surface);
+        if (surface != null) {
+            mediaPlayer.setSurface(surface);
+            stageMode = false;
+        }
         this.context = context;
         window = getWindow();
         mainHandler = new Handler(Looper.getMainLooper());
@@ -142,15 +148,30 @@ public class AceVideoAosp extends AceVideoBase
                     return false;
                 }
                 AssetFileDescriptor assetFd;
-                try {
-                    assetFd = assetManage.openFd(
-                        "js" + File.separator + instanceName + File.separator + param.substring(HAP_SCHEME.length()));
-                } catch (IOException ignored) {
-                    ALog.e(LOG_TAG, "not found asset in instance path, now begin to search asset in share path");
-                    assetFd = assetManage.openFd(
-                        "js" + File.separator + "share" + File.separator + param.substring(HAP_SCHEME.length()));
+                if (stageMode) {
+                    try {
+                        String filePath = "arkui-x" + File.separator + instanceName + File.separator + "ets" + param;
+                        ALog.i(LOG_TAG, "setDataSourc hapPath:" + filePath);
+                        assetFd = assetManage.openFd(filePath);
+                        mediaPlayer.setDataSource(assetFd.getFileDescriptor(), assetFd.getStartOffset(),
+                                assetFd.getLength());
+                    } catch (IOException ignored) {
+                        ALog.e(LOG_TAG, "not found asset in instance path, now begin to search asset in share path");
+                    }
+                } else {
+                    try {
+                        assetFd = assetManage.openFd(
+                                "js" + File.separator + instanceName + File.separator
+                                        + param.substring(HAP_SCHEME.length()));
+                    } catch (IOException ignored) {
+                        ALog.e(LOG_TAG, "not found asset in instance path, now begin to search asset in share path");
+                        assetFd = assetManage.openFd(
+                                "js" + File.separator + "share" + File.separator
+                                        + param.substring(HAP_SCHEME.length()));
+                    }
+                    mediaPlayer.setDataSource(assetFd.getFileDescriptor(), assetFd.getStartOffset(),
+                            assetFd.getLength());
                 }
-                mediaPlayer.setDataSource(assetFd.getFileDescriptor(), assetFd.getStartOffset(), assetFd.getLength());
             } else {
                 mediaPlayer.setDataSource(param);
             }
@@ -356,6 +377,31 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public String setLandscape(Map<String, String> params) {
         return SUCCESS;
+    }
+
+    @Override
+    public String setSurface(Map<String, String> params) {
+        if (params == null) {
+            ALog.e(LOG_TAG, "setSurface failed: params is null");
+            return FAIL;
+        }
+        if (!params.containsKey(KEY_VALUE)) {
+            ALog.e(LOG_TAG, "setSurface failed: value is illegal");
+            return FAIL;
+        }
+        try {
+            long surfaceId = Integer.parseInt(params.get(KEY_VALUE));
+            ALog.i(LOG_TAG, "setSurface id:" + surfaceId);
+            Surface surface = AceSurfaceHolder.getSurface(surfaceId);
+            if (surface != null) {
+                ALog.i(LOG_TAG, "MediaPlayer SetSurface");
+                mediaPlayer.setSurface(surface);
+            }
+        } catch (NumberFormatException ignored) {
+            ALog.e(LOG_TAG, "NumberFormatException, seek failed. value = " + params.get(KEY_VALUE));
+            return FAIL;
+        }
+        return FAIL;
     }
 
     @Override

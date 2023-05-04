@@ -16,6 +16,7 @@
 #ifndef FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_ACE_RESOURCE_REGISTER_H
 #define FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_ACE_RESOURCE_REGISTER_H
 
+#include <cstdint>
 #include <vector>
 
 #include "jni.h"
@@ -28,7 +29,7 @@ namespace OHOS::Ace::Platform {
 
 class AceResourceRegister final : public PlatformResRegister {
 public:
-    explicit AceResourceRegister(jobject object);
+    AceResourceRegister(jobject object, int32_t id);
     ~AceResourceRegister() override = default;
 
     static void OnCallEvent(JNIEnv* env, jclass clazz, jlong resRegisterPtr, jstring evnetId, jstring param);
@@ -46,6 +47,7 @@ private:
     jmethodID registerResourceMethod_ = nullptr;
     jmethodID releaseResourceMethod_ = nullptr;
     jmethodID onCallMethod_ = nullptr;
+    int32_t instanceId_ = 0;
 };
 
 } // namespace OHOS::Ace::Platform

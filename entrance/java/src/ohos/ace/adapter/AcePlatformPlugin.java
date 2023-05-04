@@ -30,7 +30,7 @@ import ohos.ace.adapter.capability.texture.AceTexturePluginAosp;
 import ohos.ace.adapter.capability.texture.IAceTexture;
 import ohos.ace.adapter.capability.vibrator.VibratorPluginAosp;
 
-public class AcePlatformPlugin {
+public class AcePlatformPlugin implements InputConnectionClient {
     private static final String LOG_TAG = "AcePlatformPlugin";
 
     private AceResourceRegister resRegister;
@@ -96,6 +96,7 @@ public class AcePlatformPlugin {
         resRegister.setRegisterPtr(resRegisterPtr);
     }
 
+    @Override
     public InputConnection onCreateInputConnection(View view, EditorInfo outAttrs) {
         if (textInputPlugin != null) {
             return textInputPlugin.createInputConnection(view, outAttrs);
