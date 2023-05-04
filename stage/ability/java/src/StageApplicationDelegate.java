@@ -49,8 +49,6 @@ import org.json.JSONObject;
 public class StageApplicationDelegate {
     private static final String LOG_TAG = "StageApplicationDelegate";
 
-    private Application stageApplication = null;
-
     private static final String ASSETS_SUB_PATH = "arkui-x";
 
     private static final String TEMP_DIR = "/temp";
@@ -61,6 +59,8 @@ public class StageApplicationDelegate {
 
     private static final String DATABASE_DIR = "/database";
 
+    private Application stageApplication = null;
+
     /**
      * Constructor.
      */
@@ -70,7 +70,6 @@ public class StageApplicationDelegate {
 
     /**
      * Initialize stage application.
-     * 
      * @param application the stage application.
      */
     public void initApplication(Application application) {
