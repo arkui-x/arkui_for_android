@@ -66,6 +66,7 @@
       uv_kill;
       uv_cwd;
       uv_os_getenv;
+      uv_strerror;
       icudt69_dat;
 
       "PrintLog(LogLevel, char const*, ...)";
@@ -83,6 +84,7 @@
       Json::ValueIteratorBase::*;
       Json::StreamWriterBuilder::*;
       NativeModuleManager::*;
+      NativeEngine::*;
       SkBitmap::*;
       SkRGBA4f??SkAlphaType?3?::*;
       SkPaint::*;
