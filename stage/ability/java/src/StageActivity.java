@@ -15,6 +15,9 @@
 
 package ohos.stage.ability.adapter;
 
+import java.io.FileDescriptor;
+import java.io.PrintWriter;
+
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -23,6 +26,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.AcePlatformPlugin;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 import ohos.ace.adapter.WindowView;
@@ -126,6 +130,12 @@ public class StageActivity extends Activity {
         if (!windowView.backPressed()) {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    public void dump(String prefix, FileDescriptor fd, PrintWriter writer, String[] args) {
+        Log.i(LOG_TAG, "StageActivity dump called");
+        AceEnv.dump(instanceId, prefix, fd, writer, args);
     }
 
     /**

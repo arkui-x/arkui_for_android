@@ -152,13 +152,14 @@ public final class AceEnv {
     /**
      * Dump the debug information
      *
+     * @param instanceId id of instance
      * @param prefix prefix string of dump command
      * @param fd the file descriptor where to dump
      * @param writer the writer to write dump info
      * @param args the args of dump command
      */
-    public static void dump(String prefix, FileDescriptor fd, PrintWriter writer, String[] args) {
-        DumpHelper.dump(prefix, fd, writer, args);
+    public static void dump(int instanceId, String prefix, FileDescriptor fd, PrintWriter writer, String[] args) {
+        DumpHelper.dump(instanceId, prefix, fd, writer, args);
     }
 
     /**

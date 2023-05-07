@@ -22,6 +22,7 @@
 #include "base/log/log.h"
 #include "base/utils/utils.h"
 #include "core/common/ace_engine.h"
+#include "core/common/container.h"
 
 namespace OHOS::Ace::Platform {
 
@@ -30,7 +31,7 @@ bool DumpHelperJni::Register(const std::shared_ptr<JNIEnv>& env)
     static const JNINativeMethod methods[] = {
         {
             .name = "nativeDump",
-            .signature = "(Ljava/lang/String;Ljava/io/FileDescriptor;[Ljava/lang/String;)V",
+            .signature = "(ILjava/lang/String;Ljava/io/FileDescriptor;[Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&Dump),
         },
     };
@@ -50,7 +51,8 @@ bool DumpHelperJni::Register(const std::shared_ptr<JNIEnv>& env)
     return ret;
 }
 
-void DumpHelperJni::Dump(JNIEnv* env, jclass myClass, jstring prefix, jobject fileDescriptor, jobjectArray args)
+void DumpHelperJni::Dump(
+    JNIEnv* env, jclass myClass, jint instanceId, jstring prefix, jobject fileDescriptor, jobjectArray args)
 {
     if (!env) {
         LOGE("JNIEnv is null when call dump!");
@@ -85,6 +87,10 @@ void DumpHelperJni::Dump(JNIEnv* env, jclass myClass, jstring prefix, jobject fi
 
         if (file) {
             DumpLog::GetInstance().SetDumpFile(file);
+            auto container = AceEngine::Get().GetContainer(instanceId);
+            CHECK_NULL_VOID(container);
+            std::vector<std::string> info;
+            container->Dump(params, info);
             DumpLog::GetInstance().Reset();
         } else {
             LOGE("Failed to open fd as file");

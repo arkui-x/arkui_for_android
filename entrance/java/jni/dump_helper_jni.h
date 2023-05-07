@@ -30,7 +30,8 @@ public:
     static bool Register(const std::shared_ptr<JNIEnv>& env);
 
 private:
-    static void Dump(JNIEnv* env, jclass myClass, jstring prefix, jobject fileDescriptor, jobjectArray args);
+    static void Dump(
+        JNIEnv* env, jclass myClass, jint instanceId, jstring prefix, jobject fileDescriptor, jobjectArray args);
 };
 
 } // namespace OHOS::Ace::Platform
