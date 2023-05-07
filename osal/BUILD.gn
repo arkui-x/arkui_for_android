@@ -23,11 +23,11 @@ template("ace_osal_android_source_set") {
     libs = [ "log" ]
 
     sources = [
+      "accessibility_manager_impl.cpp",
       "ace_engine_ext.cpp",
       "ace_trace.cpp",
       "drag_window.cpp",
       "event_report.cpp",
-      "fake_accessibility_manager.cpp",
       "frame_report.cpp",
       "frame_trace_adapter_impl.cpp",
       "layout_inspector.cpp",

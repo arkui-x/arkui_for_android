@@ -224,7 +224,9 @@ public class AceActivity extends Activity {
 
     @Override
     public void dump(String prefix, FileDescriptor fd, PrintWriter writer, String[] args) {
-        AceEnv.dump(prefix, fd, writer, args);
+        if (container != null) {
+            AceEnv.dump(container.getInstanceId(), prefix, fd, writer, args);
+        }
     }
 
     private void createContainer() {

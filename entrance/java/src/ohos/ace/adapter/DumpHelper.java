@@ -51,12 +51,13 @@ public final class DumpHelper {
     /**
      * dump the debug information
      *
-     * @param prefix prefix string of dump command
-     * @param fd the file descriptor where to dump
-     * @param writer the writer to write dump info
-     * @param args the args of dump command
+     * @param instanceId id of instance
+     * @param prefix     prefix string of dump command
+     * @param fd         the file descriptor where to dump
+     * @param writer     the writer to write dump info
+     * @param args       the args of dump command
      */
-    public static void dump(String prefix, FileDescriptor fd, PrintWriter writer, String[] args) {
+    public static void dump(int instanceId, String prefix, FileDescriptor fd, PrintWriter writer, String[] args) {
         if (fd == null || args == null) {
             ALog.w(LOG_TAG, "dump failed, fd pr args is null");
             return;
@@ -100,7 +101,7 @@ public final class DumpHelper {
             return;
         }
 
-        nativeDump(prefix, fd, args);
+        nativeDump(instanceId, prefix, fd, args);
     }
 
     private static void printString(FileDescriptor fd, String str) {
@@ -113,5 +114,5 @@ public final class DumpHelper {
         }
     }
 
-    private static native void nativeDump(String prefix, FileDescriptor fd, String[] args);
+    private static native void nativeDump(int instanceId, String prefix, FileDescriptor fd, String[] args);
 }
