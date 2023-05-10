@@ -48,7 +48,10 @@ template("ace_osal_android_source_set") {
       "//foundation/appframework/resource_management:global_resmgr",
     ]
 
-    configs = [ "$ace_root:ace_config" ]
+    configs = [
+      "$ace_root:ace_config",
+      "//foundation/multimedia/image_framework/interfaces/innerkits:image_external_config",
+    ]
   }
 }
 
