@@ -188,6 +188,7 @@ public class StageActivity extends Activity {
      *
      * @param bundleName the package name.
      * @param activityName the activity name.
+     * @param params the want params.
      * @return Returns ERR_OK on success, others on failure.
      */
     public int startActivity(String bundleName, String activityName, String params) {
