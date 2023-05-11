@@ -26,7 +26,7 @@ namespace Platform {
 namespace {
 const std::string ABILITY_NAME = "Ability";
 const std::string ACTIVITY_NAME = "Activity";
-}
+} // namespace
 
 std::shared_ptr<AbilityContextAdapter> AbilityContextAdapter::instance_ = nullptr;
 std::mutex AbilityContextAdapter::mutex_;
@@ -84,7 +84,8 @@ int32_t AbilityContextAdapter::StartAbility(const std::string& instanceName, con
         return AAFwk::INNER_ERR;
     }
 
-    auto startActivityMethod = env->GetMethodID(objClass, "startActivity", "(Ljava/lang/String;Ljava/lang/String;)I");
+    auto startActivityMethod =
+        env->GetMethodID(objClass, "startActivity", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
     if (startActivityMethod == nullptr) {
         LOGE("fail to get the method StartActivity id");
         return AAFwk::INNER_ERR;
@@ -109,16 +110,18 @@ int32_t AbilityContextAdapter::StartAbility(const std::string& instanceName, con
     } else {
         activityName = bundleName + "." + moduleName + abilityName;
     }
-    
+
     LOGI("activityName : %{public}s", activityName.c_str());
+    LOGI("params : %{public}s", want.ToJson().c_str());
     jstring jBundleName = env->NewStringUTF(bundleName.c_str());
     jstring jActivityName = env->NewStringUTF(activityName.c_str());
-    if (jBundleName == nullptr || jActivityName == nullptr) {
-        LOGE("jBundleName or jActivityName is nullptr");
+    jstring jParams = env->NewStringUTF(want.ToJson().c_str());
+    if (jBundleName == nullptr || jActivityName == nullptr || jParams == nullptr) {
+        LOGE("jBundleName or jActivityName or jParams is nullptr");
         return AAFwk::INNER_ERR;
     }
 
-    auto result = env->CallIntMethod(stageActivity, startActivityMethod, jBundleName, jActivityName);
+    auto result = env->CallIntMethod(stageActivity, startActivityMethod, jBundleName, jActivityName, jParams);
     env->DeleteLocalRef(jBundleName);
     env->DeleteLocalRef(jActivityName);
 

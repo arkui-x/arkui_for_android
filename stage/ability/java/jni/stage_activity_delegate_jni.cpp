@@ -36,7 +36,7 @@ bool StageActivityDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
         },
         {
             .name = "nativeDispatchOnCreate",
-            .signature = "(Ljava/lang/String;)V",
+            .signature = "(Ljava/lang/String;Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&DispatchOnCreate),
         },
         {
@@ -97,7 +97,7 @@ void StageActivityDelegateJni::AttachStageActivity(JNIEnv* env, jclass myclass, 
     env->ReleaseStringUTFChars(jinstanceName, instanceName);
 }
 
-void StageActivityDelegateJni::DispatchOnCreate(JNIEnv* env, jclass myclass, jstring str)
+void StageActivityDelegateJni::DispatchOnCreate(JNIEnv* env, jclass myclass, jstring str, jstring params)
 {
     LOGI("JNI DispatchOnCreate is called.");
     if (env == nullptr) {
@@ -105,9 +105,11 @@ void StageActivityDelegateJni::DispatchOnCreate(JNIEnv* env, jclass myclass, jst
         return;
     }
     auto instanceName = env->GetStringUTFChars(str, nullptr);
-    if (instanceName != nullptr) {
-        AppMain::GetInstance()->DispatchOnCreate(instanceName);
+    auto parameters = env->GetStringUTFChars(params, nullptr);
+    if (instanceName != nullptr && parameters != nullptr) {
+        AppMain::GetInstance()->DispatchOnCreate(instanceName, parameters);
         env->ReleaseStringUTFChars(str, instanceName);
+        env->ReleaseStringUTFChars(params, parameters);
     }
 }
 

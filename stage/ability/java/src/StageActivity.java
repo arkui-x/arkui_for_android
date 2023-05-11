@@ -46,6 +46,8 @@ public class StageActivity extends Activity {
 
     private static final String INSTANCE_DEFAULT_NAME = "default";
 
+    private static final String WANT_PARAMS = "params";
+
     private int instanceId = InstanceIdGenerator.getAndIncrement();
 
     private String instanceName;
@@ -70,6 +72,14 @@ public class StageActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(LOG_TAG, "StageActivity onCreate called");
         super.onCreate(savedInstanceState);
+
+        Intent intent = getIntent();
+        String params = intent.getStringExtra(WANT_PARAMS);
+        if (params == null) {
+            params = "";
+        }
+        Log.i(LOG_TAG, "params: " + params);
+
         activityDelegate = new StageActivityDelegate();
         activityDelegate.attachStageActivity(getInstanceName(), this);
 
@@ -78,7 +88,7 @@ public class StageActivity extends Activity {
 
         setContentView(windowView);
         activityDelegate.setWindowView(getInstanceName(), windowView);
-        activityDelegate.dispatchOnCreate(getInstanceName());
+        activityDelegate.dispatchOnCreate(getInstanceName(), params);
     }
 
     @Override
@@ -180,7 +190,7 @@ public class StageActivity extends Activity {
      * @param activityName the activity name.
      * @return Returns ERR_OK on success, others on failure.
      */
-    public int startActivity(String bundleName, String activityName) {
+    public int startActivity(String bundleName, String activityName, String params) {
         Log.i(LOG_TAG, "startActivity called, bundleName: " + bundleName + ", activityName: " + activityName);
         int error = ERR_OK;
         try {
@@ -194,6 +204,7 @@ public class StageActivity extends Activity {
                 componentName = new ComponentName(bundleName, activityName);
             }
             intent.setComponent(componentName);
+            intent.putExtra(WANT_PARAMS, params);
             this.startActivity(intent);
         } catch (ActivityNotFoundException exception) {
             Log.e("StageApplication", "start activity err: " + exception.getMessage());
