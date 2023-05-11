@@ -475,7 +475,8 @@ void AceContainerJni::AddAssetPath(JNIEnv* env, jclass clazz, jint instanceId, j
 
         if (flutterAssetManager) {
             auto apkAssetProvider = AceType::MakeRefPtr<ApkAssetProvider>(
-                std::make_unique<flutter::APKAssetProvider>(env, assetManager, pathStr));
+                std::make_unique<flutter::APKAssetProvider>(env, assetManager, pathStr), pathStr);
+            apkAssetProvider->SetAssetManager(AAssetManager_fromJava(env, assetManager));
             flutterAssetManager->PushBack(std::move(apkAssetProvider));
         }
         env->ReleaseStringUTFChars(path, pathStr);
@@ -678,5 +679,4 @@ void AceContainerJni::SetLibPath(JNIEnv* env, jclass clazz, jint instanceId, jst
         flutterAssetManager->SetLibPath("default", { libPath });
     }
 }
-
 }; // namespace OHOS::Ace::Platform

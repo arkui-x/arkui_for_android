@@ -158,7 +158,8 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
             for (const auto& path : hapAssetPaths) {
                 auto apkAssetProvider = AceType::MakeRefPtr<ApkAssetProvider>(
                     std::make_unique<flutter::APKAssetProvider>(env.get(),
-                        assetProvider->GetAssetManager(), hapPath + path), hapPath + "ets/");
+                        assetProvider->GetAssetManager(), hapPath + path), hapPath + path);
+                apkAssetProvider->SetAssetManager(AAssetManager_fromJava(env.get(), assetProvider->GetAssetManager()));
                 flutterAssetManager->PushBack(std::move(apkAssetProvider));
             }
         }
