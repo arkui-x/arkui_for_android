@@ -152,7 +152,8 @@ void ResourceAdapterImpl::Init(const ResourceInfo& resourceInfo)
         resConfig->GetDeviceType(), resConfig->GetColorMode());
 
     resourceManager_ = newResMgr;
-    packagePathStr_ = IsDirExist(packagePath) ? packagePath : std::string();
+    packagePathStr_ = hapPath.empty() ? (IsDirExist(packagePath) ?
+        packagePath : std::string()) : (IsDirExist(hapPath) ? hapPath : std::string());
 
     Platform::AceApplicationInfoImpl::GetInstance().SetResourceManager(newResMgr);
 }
@@ -341,7 +342,7 @@ std::string ResourceAdapterImpl::GetMediaPath(uint32_t resId)
         if (state != Global::Resource::SUCCESS) {
             LOGE("GetMediaPath error, id=%{public}u", resId);
             return "";
-        }   
+        }
         return "file://" + mediaPath;
     }
     return "";
