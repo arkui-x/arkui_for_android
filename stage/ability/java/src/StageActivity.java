@@ -74,9 +74,9 @@ public class StageActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
-        String params = intent.getStringExtra(WANT_PARAMS);
-        if (params == null) {
-            params = "";
+        String params = "";
+        if (intent != null) {
+            params = intent.getStringExtra(WANT_PARAMS);
         }
         Log.i(LOG_TAG, "params: " + params);
 
