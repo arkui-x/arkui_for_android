@@ -33,6 +33,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.LinkedList;
+import java.util.List;
 import java.io.IOException;
 
 import org.json.JSONObject;
@@ -287,8 +289,11 @@ public class AceActivity extends Activity {
 
     private void initAsset() {
         Context context = getApplicationContext();
-        container.addAssetPath(getAssets(), ASSET_PATH + getInstanceName());
-        container.addAssetPath(getAssets(), ASSET_PATH + ASSET_PATH_SHARE);
+        List<String> assetDirList = new LinkedList<String>();
+        traverseAssetDir(assetDirList, ASSET_PATH);
+        for (String dir : assetDirList) {
+            container.addAssetPath(getAssets(), dir);
+        }
         String apkPath = context.getPackageCodePath();
         int lastIndex = apkPath.lastIndexOf("/");
         apkPath = apkPath.substring(0, lastIndex).concat("/lib/arm64");
@@ -477,6 +482,29 @@ public class AceActivity extends Activity {
                     ALog.e(LOG_TAG, "FileOutputStream close err: " + e.getMessage());
                 }
             }
+        }
+    }
+
+    private void traverseAssetDir(List<String> assetDirList, String path) {
+        try {
+            String[] list = getAssets().list(path);
+            if (list == null || list.length <= 0) {
+                return;
+            }
+            for (int i = 0; i < list.length; i++) {
+                if (!list[i].contains(".")) {
+                    String subPath;
+                    if ("".equals(path)) {
+                        subPath = list[i];
+                    } else {
+                        subPath = path + list[i];
+                    }
+                    assetDirList.add(subPath);
+                    traverseAssetDir(assetDirList, subPath + "/");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
