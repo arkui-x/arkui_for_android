@@ -78,6 +78,7 @@ public:
     std::vector<uint8_t> GetModuleBuffer(const std::string& moduleName, std::string& modulePath);
     std::vector<uint8_t> GetModuleAbilityBuffer(
         const std::string& moduleName, const std::string& abilityName, std::string& modulePath);
+    std::vector<uint8_t> GetAbcPathBuffer(const std::string& abcPath);
     Ace::RefPtr<AssetProvider> CreateAndFindAssetProvider(const std::string& path);
     void SetCacheDir(const std::string& filesRootDir);
     void SetFileDir(const std::string& filesRootDir);

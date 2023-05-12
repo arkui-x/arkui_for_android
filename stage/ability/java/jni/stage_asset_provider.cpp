@@ -196,6 +196,37 @@ std::vector<uint8_t> StageAssetProvider::GetModuleAbilityBuffer(
     return buffer;
 }
 
+std::vector<uint8_t> StageAssetProvider::GetAbcPathBuffer(const std::string& abcPath)
+{
+    LOGI("Get Module Ability Buffer");
+    std::string findPath;
+    {
+        std::lock_guard<std::mutex> lock(allFilePathMutex_);
+        for (auto& path : allFilePath_) {
+            if (path.find(abcPath) != std::string::npos) {
+                findPath = path;
+            }
+        }
+    }
+    std::vector<uint8_t> buffer;
+    auto lastPos = findPath.find_last_of('/');
+    std::string fileName = findPath.substr(lastPos + 1, findPath.size());
+    std::string filePath = findPath.substr(0, lastPos);
+    auto assetProvider = CreateAndFindAssetProvider(filePath);
+    auto mapping = assetProvider->GetAsMapping(fileName);
+    if (mapping == nullptr) {
+        LOGE("mapping is nullptr");
+        return buffer;
+    }
+    auto moduleMap = mapping->GetMapping();
+    if (moduleMap == nullptr) {
+        LOGE("moduleMap is nullptr");
+        return buffer;
+    }
+    buffer.assign(&moduleMap[0], &moduleMap[mapping->GetSize()]);
+    return buffer;
+}
+
 Ace::RefPtr<AssetProvider> StageAssetProvider::CreateAndFindAssetProvider(const std::string& path)
 {
     LOGI("Create and find asset provider, path: %{public}s", path.c_str());
