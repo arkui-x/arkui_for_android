@@ -33,6 +33,7 @@ template("ace_osal_android_source_set") {
       "layout_inspector.cpp",
       "log_wrapper.cpp",
       "mouse_style_android.cpp",
+      "page_url_checker_android.cpp",
       "pixel_map_android.cpp",
       "resource_adapter_impl.cpp",
       "resource_convertor.cpp",
@@ -42,6 +43,8 @@ template("ace_osal_android_source_set") {
       "system_properties.cpp",
       "trace_id_impl.cpp",
     ]
+
+    include_dirs = [ "$ace_root/frameworks/core/common" ]
 
     deps = [
       "$ace_root/frameworks/core/components/theme:build_theme_code",

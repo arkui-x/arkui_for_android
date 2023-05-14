@@ -36,6 +36,7 @@
       "OHOS::Ace::SystemGridInfo::ToString() const";
       OHOS::Ace::ThemeConstants::*;
       OHOS::Ace::MemoryMonitor::*;
+      "OHOS::Ace::SystemProperties::GetDebugEnabled()";
       OHOS::Media::PixelMapNapi::*;
 
       virtual?thunk?to?OHOS::Ace::Animator::~Animator??;
