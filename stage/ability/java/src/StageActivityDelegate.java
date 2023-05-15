@@ -47,10 +47,11 @@ public class StageActivityDelegate {
      * Dispatch the oncreate lifecycle to native.
      *
      * @param instanceName the activity instance name.
+     * @param params the want params
      */
-    public void dispatchOnCreate(String instanceName) {
+    public void dispatchOnCreate(String instanceName, String params) {
         Log.i(LOG_TAG, "dispatchOnCreate called");
-        nativeDispatchOnCreate(instanceName);
+        nativeDispatchOnCreate(instanceName, params);
     }
 
     /**
@@ -105,7 +106,7 @@ public class StageActivityDelegate {
     }
 
     private native void nativeAttachStageActivity(String instanceName, StageActivity object);
-    private native void nativeDispatchOnCreate(String instanceName);
+    private native void nativeDispatchOnCreate(String instanceName, String params);
     private native void nativeDispatchOnDestroy(String instanceName);
     private native void nativeDispatchOnForeground(String instanceName);
     private native void nativeDispatchOnBackground(String instanceName);

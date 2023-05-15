@@ -30,7 +30,7 @@ public:
 
     static bool Register(const std::shared_ptr<JNIEnv>& env);
     static void AttachStageActivity(JNIEnv* env, jclass myclass, jstring jinstanceName, jobject object);
-    static void DispatchOnCreate(JNIEnv* env, jclass myclass, jstring str);
+    static void DispatchOnCreate(JNIEnv* env, jclass myclass, jstring str, jstring params);
     static void DispatchOnDestroy(JNIEnv* env, jclass myclass, jstring str);
     static void DispatchOnForeground(JNIEnv* env, jclass myclass, jstring str);
     static void DispatchOnBackground(JNIEnv* env, jclass myclass, jstring str);
