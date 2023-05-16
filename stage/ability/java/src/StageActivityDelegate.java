@@ -17,6 +17,8 @@ package ohos.stage.ability.adapter;
 
 import android.util.Log;
 import ohos.ace.adapter.WindowView;
+import ohos.ace.adapter.SubWindowManager;
+import ohos.ace.adapter.DisplayInfo;
 
 /**
  * This class is responsible for communicating with the stage activity delegate jni.
@@ -41,6 +43,8 @@ public class StageActivityDelegate {
      */
     public void attachStageActivity(String instanceName, StageActivity object) {
         nativeAttachStageActivity(instanceName, object);
+        SubWindowManager.getInstance().setActivity(object);
+        DisplayInfo.getInstance().setContext(object);
     }
 
     /**
