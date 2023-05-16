@@ -23,7 +23,6 @@
 #include "wm_common.h"
 #include "wm_single_instance.h"
 #include "nocopyable.h"
-#include "adapter/android/entrance/java/jni/jni_environment.h"
 
 namespace OHOS::Rosen {
 
@@ -32,19 +31,8 @@ constexpr int ROTATION_90 = 1;
 constexpr int ROTATION_180 = 2;
 constexpr int ROTATION_270 = 3;
 
-struct DisplayInfoJni {
-    jobject object;
-    jclass clazz;
-    jmethodID getDisplayIdMethod;
-    jmethodID getOrentationMethod;
-    jmethodID getWidthMethod;
-    jmethodID getHeightMethod;
-    jmethodID getRefreshRateMethod;
-};
-
 class DisplayInfo : public virtual RefBase {
 public:
-    static bool Register(const std::shared_ptr<JNIEnv>& env);
     DisplayInfo();
     ~DisplayInfo();
     DISALLOW_COPY_AND_MOVE(DisplayInfo);
@@ -70,9 +58,6 @@ private:
     float refreshRate_;
     Orientation orientation_ { Orientation::UNSPECIFIED };
     DisplayOrientation displayOrientation_ { DisplayOrientation::UNKNOWN };
-
-    static DisplayInfoJni displayInfoJni_;
-    static void SetupDisplayInfo(JNIEnv* env, jobject obj);
 };
 } // namespace OHOS::Rosen
 #endif // FOUNDATION_DMSERVER_DISPLAY_INFO_H

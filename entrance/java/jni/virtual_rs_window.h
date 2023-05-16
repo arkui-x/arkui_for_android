@@ -55,19 +55,6 @@ struct VsyncCallback {
 };
 class VSyncReceiver;
 
-struct SubWindowManagerJni {
-    jobject object;
-    jclass clazz;
-    jmethodID createSubWindowMethod;
-    jmethodID getContentViewMethod;
-    jmethodID resizeMethod;
-    jmethodID showWindowMethod;
-    jmethodID moveWindowToMethod;
-    jmethodID destroyWindowMethod;
-    jmethodID getWindowIdMethod;
-    jmethodID getTopWindowMethod;
-};
-
 enum class WindowSizeChangeReason : uint32_t {
     UNDEFINED = 0,
     MAXIMIZE,
@@ -221,8 +208,6 @@ private:
 
     void DelayNotifyUIContentIfNeeded();
 
-    static SubWindowManagerJni subWindowManagerJni_;
-    static void SetupSubWindowManager(JNIEnv* env, jobject obj);
     bool isWindowShow_ = false;
     std::shared_ptr<jobject> viewController_ = nullptr;
     uint32_t windowId_ = 0;

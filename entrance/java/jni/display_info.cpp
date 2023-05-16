@@ -14,6 +14,7 @@
  */
 
 #include "display_info.h"
+#include "display_info_jni.h"
 
 #include <new>
 #include <parcel.h>
@@ -25,68 +26,23 @@ using namespace OHOS::Ace::Platform;
 
 namespace OHOS::Rosen {
 
-DisplayInfoJni DisplayInfo::displayInfoJni_;
-
-bool DisplayInfo::Register(const std::shared_ptr<JNIEnv>& env)
-{
-    static const JNINativeMethod methods[] = { {
-        .name = "nativeSetupDisplayInfo",
-        .signature = "()V",
-        .fnPtr = reinterpret_cast<void*>(&SetupDisplayInfo),
-    } };
-
-    if (!env) {
-        LOGE("JNI Window: null java env");
-        return false;
-    }
-
-    const jclass clazz = env->FindClass("ohos/ace/adapter/DisplayInfo");
-    if (clazz == nullptr) {
-        LOGE("JNI: can't find java class Window");
-        return false;
-    }
-    bool ret = env->RegisterNatives(clazz, methods, ArraySize(methods)) == 0;
-    env->DeleteLocalRef(clazz);
-    return ret;
-}
-
-void DisplayInfo::SetupDisplayInfo(JNIEnv* env, jobject obj)
-{
-    LOGI("DisplayInfo::SetupDisplayInfo called");
-
-    jclass clazz = env->GetObjectClass(obj);
-    displayInfoJni_.object = env->NewGlobalRef(obj);
-    displayInfoJni_.clazz = (jclass)env->NewGlobalRef(clazz);
-    displayInfoJni_.getDisplayIdMethod = env->GetMethodID(clazz, "getDisplayId", "()I");
-    displayInfoJni_.getOrentationMethod = env->GetMethodID(clazz, "getOrentation", "()I");
-    displayInfoJni_.getWidthMethod = env->GetMethodID(clazz, "getWidth", "()I");
-    displayInfoJni_.getHeightMethod = env->GetMethodID(clazz, "getHeight", "()I");
-    displayInfoJni_.getRefreshRateMethod = env->GetMethodID(clazz, "getRefreshRate", "()F");
-}
-
-
 DisplayInfo::DisplayInfo()
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
-    if (env == nullptr) {
-        LOGE("DisplayInfo:: env is NULL");
-        return;
-    }
-    jint displayId = env->CallIntMethod(displayInfoJni_.object, displayInfoJni_.getDisplayIdMethod);
-    jint orentation = env->CallIntMethod(displayInfoJni_.object, displayInfoJni_.getOrentationMethod);
-    jint width = env->CallIntMethod(displayInfoJni_.object, displayInfoJni_.getWidthMethod);
-    jint height = env->CallIntMethod(displayInfoJni_.object, displayInfoJni_.getHeightMethod);
-    jfloat refreshRate = env->CallFloatMethod(displayInfoJni_.object, displayInfoJni_.getRefreshRateMethod);
+    int displayId = DisplayInfoJni::getDisplayId();
+    int orentation = DisplayInfoJni::getOrentation();
+    int32_t width = DisplayInfoJni::getDisplayWidth();
+    int32_t height = DisplayInfoJni::getDisplayHeight();
+    float refreshRate = DisplayInfoJni::getRefreshRate();
 
     LOGI("DisplayInfo:: displayId=%d orentation=%d with=%d height=%d refreshRate=%.3f", displayId, orentation, width, height, refreshRate);
 
     SetDisplayId(displayId);
-    SetWidth((int32_t)width);
-    SetHeight((int32_t)height);
+    SetWidth(width);
+    SetHeight(height);
     SetRefreshRate(refreshRate);
 
     Orientation orientation2 = Orientation::UNSPECIFIED;
-    switch( (int)orentation ) {
+    switch( orentation ) {
         case ROTATION_0: {
             orientation2 = Orientation::HORIZONTAL;
             break;

@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 
-#include "adapter/android/entrance/java/jni/virtual_rs_window.h"
+#include "virtual_rs_window.h"
+#include "subwindow_manager_jni.h"
 
 #include <memory>
 
@@ -32,48 +33,6 @@ namespace OHOS::Rosen {
 std::map<uint32_t, std::vector<std::shared_ptr<Window>>> Window::subWindowMap_;
 std::map<std::string, std::pair<uint32_t, std::shared_ptr<Window>>> Window::windowMap_;
 std::shared_ptr<Window> Window::mainWindow_ = nullptr;
-SubWindowManagerJni Window::subWindowManagerJni_;
-
-bool Window::Register(const std::shared_ptr<JNIEnv>& env)
-{
-    static const JNINativeMethod methods[] = { {
-        .name = "nativeSetupSubWindowManager",
-        .signature = "()V",
-        .fnPtr = reinterpret_cast<void*>(&SetupSubWindowManager),
-    } };
-
-    if (!env) {
-        LOGE("JNI Window: null java env");
-        return false;
-    }
-
-    const jclass clazz = env->FindClass("ohos/ace/adapter/SubWindowManager");
-    if (clazz == nullptr) {
-        LOGE("JNI: can't find java class Window");
-        return false;
-    }
-
-    bool ret = env->RegisterNatives(clazz, methods, Ace::ArraySize(methods)) == 0;
-    env->DeleteLocalRef(clazz);
-    return ret;
-}
-
-void Window::SetupSubWindowManager(JNIEnv* env, jobject obj)
-{
-    LOGI("Window::SetupSubWindowManager called");
-
-    jclass clazz = env->GetObjectClass(obj);
-    subWindowManagerJni_.object = env->NewGlobalRef(obj);
-    subWindowManagerJni_.clazz = (jclass)env->NewGlobalRef(clazz);
-    subWindowManagerJni_.createSubWindowMethod = env->GetMethodID(clazz, "createSubWindow", "(Ljava/lang/String;IIIIIIII)V");
-    subWindowManagerJni_.getContentViewMethod = env->GetMethodID(clazz, "getContentView", "(Ljava/lang/String;)Landroid/view/View;");
-    subWindowManagerJni_.resizeMethod = env->GetMethodID(clazz, "resize", "(Ljava/lang/String;II)Z");
-    subWindowManagerJni_.showWindowMethod = env->GetMethodID(clazz, "showWindow", "(Ljava/lang/String;)Z");
-    subWindowManagerJni_.moveWindowToMethod = env->GetMethodID(clazz, "moveWindowTo", "(Ljava/lang/String;II)Z");
-    subWindowManagerJni_.destroyWindowMethod = env->GetMethodID(clazz, "destroyWindow", "(Ljava/lang/String;)Z");
-    subWindowManagerJni_.getWindowIdMethod = env->GetMethodID(clazz, "getWindowId", "(Ljava/lang/String;)I");
-    subWindowManagerJni_.getTopWindowMethod = env->GetMethodID(clazz, "getTopWindow", "()Landroid/view/View;");
-}
 
 std::shared_ptr<Window> Window::Create(
     std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context, JNIEnv* env, jobject windowView)
@@ -89,37 +48,18 @@ std::shared_ptr<Window> Window::CreateSubWindow(
             std::shared_ptr<OHOS::Rosen::WindowOption> option)
 {
     LOGI("Window::CreateSubWindow called. windowName=%s", option->GetWindowName().c_str());
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
     uint32_t parentId = option->GetParentId();
     auto window = std::make_shared<Window>(context);
     window->SetWindowOption(option);
 
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
-    if (env == nullptr) {
-        LOGE("Window::CreateSubWindow: env is NULL");
-        return nullptr;
-    }
+    SubWindowManagerJni::CreateSubWindow(option);
 
-    jstring windowName = env->NewStringUTF(option->GetWindowName().c_str());
-    int windowType = (int)option->GetWindowType();
-    int windowMode = (int)option->GetWindowMode();
-    int windowTag = (int)option->GetWindowTag();
-    int width = option->GetWindowRect().width_;
-    int height = option->GetWindowRect().height_;
-    int x = option->GetWindowRect().posX_;
-    int y = option->GetWindowRect().posY_;
+    jobject view = SubWindowManagerJni::GetContentView(option->GetWindowName());
 
-    env->CallVoidMethod(subWindowManagerJni_.object, subWindowManagerJni_.createSubWindowMethod,
-                        windowName, windowType, windowMode, windowTag, (int)parentId, width, height, x, y);
-    LOGI("Window::CreateSubWindow: createSubwindow");
+    uint32_t windowId = SubWindowManagerJni::GetWindowId(option->GetWindowName());
 
-    jobject view = env->CallObjectMethod(subWindowManagerJni_.object, subWindowManagerJni_.getContentViewMethod,
-                                         windowName);
-    LOGI("Window::CreateSubWindow: getContentView: %d", view != nullptr);
-
-    jint windowId = env->CallIntMethod(subWindowManagerJni_.object, subWindowManagerJni_.getWindowIdMethod,
-                                        windowName);
-
-    window->SetWindowId((uint32_t)windowId);
+    window->SetWindowId(windowId);
     windowMap_.insert(std::make_pair(window->GetWindowName(), std::pair<uint32_t,
                                         std::shared_ptr<Window>>((uint32_t)windowId, window)));
     if (parentId != INVALID_WINDOW_ID) {
@@ -130,7 +70,6 @@ std::shared_ptr<Window> Window::CreateSubWindow(
     window->CreateSurfaceNode(view);
     LOGI("Window::CreateSubWindow: success");
 
-    env->DeleteLocalRef(windowName);
     return window;
 }
 
@@ -184,19 +123,10 @@ WMError Window::ShowWindow()
 {
     LOGI("Window::ShowWindow called.");
 
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
-
-    jstring windowName = env->NewStringUTF(this->GetWindowOption()->GetWindowName().c_str());
-
-    jboolean ret = env->CallBooleanMethod(subWindowManagerJni_.object, subWindowManagerJni_.showWindowMethod,
-                                            windowName);
-
-    env->DeleteLocalRef(windowName);
-    if (ret == JNI_TRUE) {
-        LOGI("Window::ShowWindow: success");
+    bool result = SubWindowManagerJni::ShowWindow(this->GetWindowName());
+    if (result) {
         return WMError::WM_OK;
     } else {
-        LOGI("Window::ShowWindow: failed");
         return WMError::WM_ERROR_INVALID_WINDOW;
     }
 }
@@ -206,14 +136,9 @@ WMError Window::DestroyWindow()
     LOGI("Window::DestroyWindow called.");
     isWindowShow_ = false;
 
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    bool result = SubWindowManagerJni::DestroyWindow(this->GetWindowName());
 
-    jstring windowName = env->NewStringUTF(this->GetWindowOption()->GetWindowName().c_str());
-    jboolean ret = env->CallBooleanMethod(subWindowManagerJni_.object, subWindowManagerJni_.destroyWindowMethod,
-                                            windowName);
-    env->DeleteLocalRef(windowName);
-
-    if (ret == JNI_TRUE) {
+    if (result) {
         LOGI("Window::DestroyWindow: success");
 
         if (subWindowMap_.count(GetParentId()) > 0) { // remove from subWindowMap_
@@ -251,18 +176,11 @@ WMError Window::MoveWindowTo(int32_t x, int32_t y)
 {
     LOGI("Window::MoveWindowTo called. x=%d, y=%d", x, y);
 
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    bool result = SubWindowManagerJni::MoveWindowTo(this->GetWindowName(), x, y);
 
-    jstring windowName = env->NewStringUTF(this->GetWindowOption()->GetWindowName().c_str());
-    jboolean ret = env->CallBooleanMethod(subWindowManagerJni_.object, subWindowManagerJni_.moveWindowToMethod,
-                                                windowName, (int)x, (int)y);
-    env->DeleteLocalRef(windowName);
-
-    if (ret == JNI_TRUE) {
-        LOGI("Window::MoveWindowTo: success");
+    if (result) {
         return WMError::WM_OK;
     } else {
-        LOGI("Window::MoveWindowTo: failed");
         return WMError::WM_ERROR_INVALID_WINDOW;
     }
 }
@@ -270,14 +188,9 @@ WMError Window::ResizeWindowTo(int32_t width, int32_t height)
 {
     LOGI("Window::ResizeWindowTo called. width=%d, height=%d", width, height);
 
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    bool result = SubWindowManagerJni::ResizeWindowTo(this->GetWindowName(), width, height);
 
-    jstring windowName = env->NewStringUTF(this->GetWindowOption()->GetWindowName().c_str());
-    jboolean ret = env->CallBooleanMethod(subWindowManagerJni_.object, subWindowManagerJni_.resizeMethod,
-                                                windowName, (int)width, (int)height);
-    env->DeleteLocalRef(windowName);
-
-    if (ret == JNI_TRUE) {
+    if (result) {
         LOGI("Window::ResizeWindowTo: success");
         return WMError::WM_OK;
     } else {
