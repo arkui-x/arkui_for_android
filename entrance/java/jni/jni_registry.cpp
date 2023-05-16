@@ -36,6 +36,8 @@
 #include "adapter/android/entrance/java/jni/flutter_ace_view_jni.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "adapter/android/entrance/java/jni/window_view_jni.h"
+#include "adapter/android/entrance/java/jni/virtual_rs_window.h"
+#include "adapter/android/entrance/java/jni/display_info.h"
 #include "base/log/log.h"
 
 namespace OHOS::Ace::Platform {
@@ -136,7 +138,7 @@ bool JniRegistry::Register(bool isStageMode)
         LOGE("JNI Initialize: failed to register DownloadManager");
         return false;
     }
-    
+
     if (!BridgeJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register BridgeJni");
         return false;
@@ -153,6 +155,16 @@ bool JniRegistry::Register(bool isStageMode)
     }
 
     if (!GrantResultJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register GrantResultJni");
+        return false;
+    }
+
+    if (!Rosen::Window::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register GrantResultJni");
+        return false;
+    }
+
+    if (!Rosen::DisplayInfo::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register GrantResultJni");
         return false;
     }
