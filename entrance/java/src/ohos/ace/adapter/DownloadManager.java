@@ -124,7 +124,6 @@ public class DownloadManager {
                     ALog.e(LOG_TAG, "InputStream close err:" + error.getMessage());
                 }
             }
-            return NULL_BYTE;
         }
     }
 
