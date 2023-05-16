@@ -27,6 +27,11 @@
 
 namespace OHOS::Rosen {
 
+constexpr int ROTATION_0 = 0;
+constexpr int ROTATION_90 = 1;
+constexpr int ROTATION_180 = 2;
+constexpr int ROTATION_270 = 3;
+
 struct DisplayInfoJni {
     jobject object;
     jclass clazz;

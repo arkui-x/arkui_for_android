@@ -21,8 +21,12 @@ import android.widget.PopupWindow;
 import android.util.Log;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
+/**
+ * The type Sub window manager.
+ */
 public class SubWindowManager {
 
     private static final String TAG = "SubWindowManager";
@@ -31,10 +35,15 @@ public class SubWindowManager {
     private Map<String, SubWindow> mSubWindowMap = new HashMap<>();
     private static SubWindowManager _sinstance;
 
+    /**
+     * Gets instance.
+     *
+     * @return the instance
+     */
     public static final SubWindowManager getInstance() {
-        if(_sinstance == null) {
+        if (_sinstance == null) {
             synchronized (SubWindowManager.class) {
-                if(_sinstance == null) {
+                if (_sinstance == null) {
                     _sinstance = new SubWindowManager();
                 }
             }
@@ -43,22 +52,40 @@ public class SubWindowManager {
         return _sinstance;
     }
 
-    private SubWindowManager () {
+    private SubWindowManager() {
         Log.d(TAG, "SubWindowManager created.");
         nativeSetupSubWindowManager();
     }
 
+    /**
+     * Sets activity.
+     *
+     * @param activity the activity
+     */
     public void setActivity(Activity activity) {
         Log.d(TAG, "setActivity called.");
         mRootActivity = activity;
     }
 
+    /**
+     * Create sub window.
+     *
+     * @param name     the name
+     * @param type     the type
+     * @param mode     the mode
+     * @param tag      the tag
+     * @param parentId the parent id
+     * @param x        the x
+     * @param y        the y
+     * @param width    the width
+     * @param height   the height
+     */
     public void createSubWindow(String name, int type, int mode, int tag, int parentId, int x, int y, int width, int height) {
-        Log.d(TAG, "createSubWindow called: " +
-            String.format("name=%s type=%d mode=%d tag=%d parentId=%d x=%d y=%d width=%d height=%d",
-            name, type, mode, tag, parentId, x, y, width, height));
+        Log.d(TAG, "createSubWindow called: "
+            + String.format(Locale.ENGLISH, "name=%s type=%d mode=%d tag=%d parentId=%d x=%d y=%d width=%d height=%d",
+                        name, type, mode, tag, parentId, x, y, width, height));
         SubWindow subWindow = mSubWindowMap.get(name);
-        if(subWindow == null) {
+        if (subWindow == null) {
             subWindow = new SubWindow(mRootActivity, name);
             subWindow.createSubWindow(type, mode, tag, parentId, x, y, width, height);
             mSubWindowMap.put(name, subWindow);
@@ -67,42 +94,65 @@ public class SubWindowManager {
         }
     }
 
+    /**
+     * Gets content view.
+     *
+     * @param name the name
+     * @return the content view
+     */
     public View getContentView(String name) {
         Log.d(TAG, "getContentView called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
-        if(subWindow != null) {
+        if (subWindow != null) {
             return subWindow.getContentView();
         }
         return null;
     }
 
+    /**
+     * Gets window id.
+     *
+     * @param name the name
+     * @return the window id
+     */
     public int getWindowId(String name) {
         Log.d(TAG, "getWindowId called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
-        if(subWindow != null) {
+        if (subWindow != null) {
             return subWindow.getWindowId();
         }
         return -1;
     }
 
+    /**
+     * Gets top window.
+     *
+     * @return the top window
+     */
     public View getTopWindow() {
         Log.d(TAG, "getWindowId called. ");
-        if(mRootActivity != null) {
+        if (mRootActivity != null) {
             View rootView = mRootActivity.getWindow().getDecorView();
             View topView = rootView.findFocus();
-            if(topView instanceof SurfaceView) {
+            if (topView instanceof SurfaceView) {
                 return topView;
             }
         }
         return null;
     }
 
+    /**
+     * Show window boolean.
+     *
+     * @param name the name
+     * @return the boolean
+     */
     public boolean showWindow(String name) {
         Log.d(TAG, "showWindow called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
-        if(subWindow != null) {
+        if (subWindow != null) {
             subWindow.showWindow();
-            if(subWindow.getSubWindowView().isShowing()) {
+            if (subWindow.getSubWindowView().isShowing()) {
                 return true;
             } else {
                 Log.e(TAG, "showWindow failed due to not shown.");
@@ -113,11 +163,19 @@ public class SubWindowManager {
         return false;
     }
 
+    /**
+     * Resize boolean.
+     *
+     * @param name   the name
+     * @param width  the width
+     * @param height the height
+     * @return the boolean
+     */
     public boolean resize(String name, int width, int height) {
         Log.d(TAG, "resize called. name=" + name + ", width=" + width + ", height=" + height);
         SubWindow subWindow = mSubWindowMap.get(name);
-        if(subWindow != null) {
-            if(subWindow.getSubWindowView().isShowing()) {
+        if (subWindow != null) {
+            if (subWindow.getSubWindowView().isShowing()) {
                 subWindow.resize(width, height);
                 return true;
             } else {
@@ -129,11 +187,19 @@ public class SubWindowManager {
         return false;
     }
 
+    /**
+     * Move window to boolean.
+     *
+     * @param name the name
+     * @param x    the x
+     * @param y    the y
+     * @return the boolean
+     */
     public boolean moveWindowTo(String name, int x, int y) {
         Log.d(TAG, "moveWindowTo called. name=" + name + ", x=" + x + ", y=" + y);
         SubWindow subWindow = mSubWindowMap.get(name);
-        if(subWindow != null) {
-            if(subWindow.getSubWindowView().isShowing()) {
+        if (subWindow != null) {
+            if (subWindow.getSubWindowView().isShowing()) {
                 subWindow.moveWindowTo(x, y);
                 return true;
             } else {
@@ -145,11 +211,17 @@ public class SubWindowManager {
         return false;
     }
 
+    /**
+     * Destroy window boolean.
+     *
+     * @param name the name
+     * @return the boolean
+     */
     public boolean destroyWindow(String name) {
         Log.d(TAG, "destroyWindow called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
-        if(subWindow != null) {
-            if(subWindow.getSubWindowView().isShowing()) {
+        if (subWindow != null) {
+            if (subWindow.getSubWindowView().isShowing()) {
                 subWindow.destroyWindow();
                 mSubWindowMap.remove(name);
                 return true;
@@ -162,18 +234,32 @@ public class SubWindowManager {
         return false;
     }
 
+    /**
+     * Sets on dismiss listener.
+     *
+     * @param name     the name
+     * @param listener the listener
+     * @return the on dismiss listener
+     */
     public boolean setOnDismissListener(String name, PopupWindow.OnDismissListener listener) {
         SubWindow subWindow = mSubWindowMap.get(name);
-        if(subWindow != null) {
+        if (subWindow != null) {
             subWindow.getSubWindowView().setOnDismissListener(listener);
             return true;
         }
         return false;
     }
 
+    /**
+     * Sets touch interceptor.
+     *
+     * @param name     the name
+     * @param listener the listener
+     * @return the touch interceptor
+     */
     public boolean setTouchInterceptor(String name, View.OnTouchListener listener) {
         SubWindow subWindow = mSubWindowMap.get(name);
-        if(subWindow != null) {
+        if (subWindow != null) {
             subWindow.getSubWindowView().setTouchInterceptor(listener);
             return true;
         }

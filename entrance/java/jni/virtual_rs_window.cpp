@@ -86,7 +86,7 @@ std::shared_ptr<Window> Window::Create(
 
 std::shared_ptr<Window> Window::CreateSubWindow(
         std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context,
-        std::shared_ptr<OHOS::Rosen::WindowOption> option)
+            std::shared_ptr<OHOS::Rosen::WindowOption> option)
 {
     LOGI("Window::CreateSubWindow called. windowName=%s", option->GetWindowName().c_str());
     uint32_t parentId = option->GetParentId();
@@ -108,17 +108,20 @@ std::shared_ptr<Window> Window::CreateSubWindow(
     int x = option->GetWindowRect().posX_;
     int y = option->GetWindowRect().posY_;
 
-    env->CallVoidMethod(subWindowManagerJni_.object, subWindowManagerJni_.createSubWindowMethod, windowName,windowType, windowMode, windowTag,
-                         (int)parentId, width, height, x, y);
+    env->CallVoidMethod(subWindowManagerJni_.object, subWindowManagerJni_.createSubWindowMethod,
+                        windowName, windowType, windowMode, windowTag, (int)parentId, width, height, x, y);
     LOGI("Window::CreateSubWindow: createSubwindow");
 
-    jobject view = env->CallObjectMethod(subWindowManagerJni_.object, subWindowManagerJni_.getContentViewMethod, windowName);
+    jobject view = env->CallObjectMethod(subWindowManagerJni_.object, subWindowManagerJni_.getContentViewMethod,
+                                         windowName);
     LOGI("Window::CreateSubWindow: getContentView: %d", view != nullptr);
 
-    jint windowId = env->CallIntMethod(subWindowManagerJni_.object, subWindowManagerJni_.getWindowIdMethod, windowName);
+    jint windowId = env->CallIntMethod(subWindowManagerJni_.object, subWindowManagerJni_.getWindowIdMethod,
+                                        windowName);
 
     window->SetWindowId((uint32_t)windowId);
-    windowMap_.insert(std::make_pair(window->GetWindowName(), std::pair<uint32_t, std::shared_ptr<Window>>((uint32_t)windowId, window)));
+    windowMap_.insert(std::make_pair(window->GetWindowName(), std::pair<uint32_t,
+                                        std::shared_ptr<Window>>((uint32_t)windowId, window)));
     if (parentId != INVALID_WINDOW_ID) {
         subWindowMap_[parentId].push_back(window);
     }
@@ -170,7 +173,7 @@ std::shared_ptr<Window> Window::GetTopWindow(const std::shared_ptr<OHOS::Ability
 {
     LOGI("Window::GetTopWindow");
 
-    if(mainWindow_ != nullptr) {
+    if (mainWindow_ != nullptr) {
         return mainWindow_;
     }
 
@@ -185,10 +188,11 @@ WMError Window::ShowWindow()
 
     jstring windowName = env->NewStringUTF(this->GetWindowOption()->GetWindowName().c_str());
 
-    jboolean ret = env->CallBooleanMethod(subWindowManagerJni_.object, subWindowManagerJni_.showWindowMethod, windowName);
+    jboolean ret = env->CallBooleanMethod(subWindowManagerJni_.object, subWindowManagerJni_.showWindowMethod,
+                                            windowName);
 
     env->DeleteLocalRef(windowName);
-    if(ret == JNI_TRUE) {
+    if (ret == JNI_TRUE) {
         LOGI("Window::ShowWindow: success");
         return WMError::WM_OK;
     } else {
@@ -205,10 +209,11 @@ WMError Window::DestroyWindow()
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
 
     jstring windowName = env->NewStringUTF(this->GetWindowOption()->GetWindowName().c_str());
-    jboolean ret = env->CallBooleanMethod(subWindowManagerJni_.object, subWindowManagerJni_.destroyWindowMethod, windowName);
+    jboolean ret = env->CallBooleanMethod(subWindowManagerJni_.object, subWindowManagerJni_.destroyWindowMethod,
+                                            windowName);
     env->DeleteLocalRef(windowName);
 
-    if(ret == JNI_TRUE) {
+    if (ret == JNI_TRUE) {
         LOGI("Window::DestroyWindow: success");
 
         if (subWindowMap_.count(GetParentId()) > 0) { // remove from subWindowMap_
@@ -249,10 +254,11 @@ WMError Window::MoveWindowTo(int32_t x, int32_t y)
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
 
     jstring windowName = env->NewStringUTF(this->GetWindowOption()->GetWindowName().c_str());
-    jboolean ret = env->CallBooleanMethod(subWindowManagerJni_.object, subWindowManagerJni_.moveWindowToMethod, windowName, (int)x, (int)y);
+    jboolean ret = env->CallBooleanMethod(subWindowManagerJni_.object, subWindowManagerJni_.moveWindowToMethod,
+                                                windowName, (int)x, (int)y);
     env->DeleteLocalRef(windowName);
 
-    if(ret == JNI_TRUE) {
+    if (ret == JNI_TRUE) {
         LOGI("Window::MoveWindowTo: success");
         return WMError::WM_OK;
     } else {
@@ -260,16 +266,18 @@ WMError Window::MoveWindowTo(int32_t x, int32_t y)
         return WMError::WM_ERROR_INVALID_WINDOW;
     }
 }
-WMError Window::ResizeWindowTo(int32_t width, int32_t height) {
+WMError Window::ResizeWindowTo(int32_t width, int32_t height)
+{
     LOGI("Window::ResizeWindowTo called. width=%d, height=%d", width, height);
 
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
 
     jstring windowName = env->NewStringUTF(this->GetWindowOption()->GetWindowName().c_str());
-    jboolean ret = env->CallBooleanMethod(subWindowManagerJni_.object, subWindowManagerJni_.resizeMethod, windowName, (int)width, (int)height);
+    jboolean ret = env->CallBooleanMethod(subWindowManagerJni_.object, subWindowManagerJni_.resizeMethod,
+                                                windowName, (int)width, (int)height);
     env->DeleteLocalRef(windowName);
 
-    if(ret == JNI_TRUE) {
+    if (ret == JNI_TRUE) {
         LOGI("Window::ResizeWindowTo: success");
         return WMError::WM_OK;
     } else {
@@ -299,12 +307,14 @@ WMError Window::SetKeepScreenOn(bool keepScreenOn)
     return WMError::WM_OK;
 }
 
-bool Window::IsKeepScreenOn() {
+bool Window::IsKeepScreenOn()
+{
     LOGI("Window::IsKeepScreenOn called.");
     return true;
 }
 
-WMError Window::SetSystemBarProperty(WindowType type, const SystemBarProperty& property) {
+WMError Window::SetSystemBarProperty(WindowType type, const SystemBarProperty& property)
+{
     LOGI("Window::SetSystemBarProperty called.");
     return WMError::WM_OK;
 }

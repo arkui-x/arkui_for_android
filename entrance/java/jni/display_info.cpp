@@ -86,20 +86,20 @@ DisplayInfo::DisplayInfo()
     SetRefreshRate(refreshRate);
 
     Orientation orientation2 = Orientation::UNSPECIFIED;
-    switch((int)orentation) {
-        case 0: { // ROTATION_0
+    switch( (int)orentation ) {
+        case ROTATION_0: {
             orientation2 = Orientation::HORIZONTAL;
             break;
         }
-        case 1: { // ROTATION_90
+        case ROTATION_90: {
             orientation2 = Orientation::VERTICAL;
             break;
         }
-        case 2: { // ROTATION_180
+        case ROTATION_180: {
             orientation2 = Orientation::REVERSE_HORIZONTAL;
             break;
         }
-        case 3: { // ROTATION_270
+        case ROTATION_270: {
             orientation2 = Orientation::REVERSE_VERTICAL;
             break;
         }
@@ -110,9 +110,7 @@ DisplayInfo::DisplayInfo()
 }
 
 DisplayInfo::~DisplayInfo()
-{
-
-}
+{}
 
 DisplayId DisplayInfo::GetDisplayId() const
 {
@@ -135,7 +133,8 @@ DisplayOrientation DisplayInfo::GetDisplayOrientation() const
     return displayOrientation_;
 }
 
-float DisplayInfo::GetRefreshRate() const {
+float DisplayInfo::GetRefreshRate() const
+{
     return refreshRate_;
 }
 
@@ -160,7 +159,8 @@ void DisplayInfo::SetDisplayOrientation(DisplayOrientation displayOrientation)
     displayOrientation_ = displayOrientation;
 }
 
-void DisplayInfo::SetRefreshRate(float refreshRate) {
+void DisplayInfo::SetRefreshRate(float refreshRate)
+{
     refreshRate_ = refreshRate;
 }
 

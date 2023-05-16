@@ -20,15 +20,23 @@ import android.view.Display;
 import android.view.WindowManager;
 import android.util.Log;
 
+/**
+ * The type Display info.
+ */
 public class DisplayInfo {
 
     private static final String TAG = "DisplayInfo";
     private static volatile DisplayInfo _sinstance;
 
+    /**
+     * Gets instance.
+     *
+     * @return the instance
+     */
     public static final DisplayInfo getInstance() {
-        if(_sinstance == null) {
+        if (_sinstance == null) {
             synchronized (DisplayInfo.class) {
-                if(_sinstance == null) {
+                if (_sinstance == null) {
                     _sinstance = new DisplayInfo();
                 }
             }
@@ -40,28 +48,48 @@ public class DisplayInfo {
     private Context mContext;
     private WindowManager mWindowManager;
 
-    private DisplayInfo () {
+    private DisplayInfo() {
         Log.d(TAG, "DisplayInfo created.");
     }
 
+    /**
+     * Sets context.
+     *
+     * @param context the context
+     */
     public void setContext(Context context) {
         mContext = context;
         mWindowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
         nativeSetupDisplayInfo();
     }
 
+    /**
+     * Gets display id.
+     *
+     * @return the display id
+     */
     public int getDisplayId() {
         Log.d(TAG, "getDisplayId called.");
         Display defaultDisplay = mWindowManager.getDefaultDisplay();
         return defaultDisplay.getDisplayId();
     }
 
+    /**
+     * Gets orentation.
+     *
+     * @return the orentation
+     */
     public int getOrentation() {
         Log.d(TAG, "getOrentation called.");
         Display defaultDisplay = mWindowManager.getDefaultDisplay();
         return defaultDisplay.getRotation();
     }
 
+    /**
+     * Gets width.
+     *
+     * @return the width
+     */
     public int getWidth() {
         Log.d(TAG, "getWidth called.");
         DisplayMetrics metrics = new DisplayMetrics();
@@ -70,6 +98,11 @@ public class DisplayInfo {
         return metrics.widthPixels;
     }
 
+    /**
+     * Gets height.
+     *
+     * @return the height
+     */
     public int getHeight() {
         Log.d(TAG, "getHeight called.");
         DisplayMetrics metrics = new DisplayMetrics();
@@ -78,6 +111,11 @@ public class DisplayInfo {
         return metrics.heightPixels;
     }
 
+    /**
+     * Gets refresh rate.
+     *
+     * @return the refresh rate
+     */
     public float getRefreshRate() {
         Log.d(TAG, "getRefreshRate called.");
         Display defaultDisplay = mWindowManager.getDefaultDisplay();

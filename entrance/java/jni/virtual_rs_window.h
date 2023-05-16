@@ -154,15 +154,18 @@ public:
         option_ = option;
     }
 
-    std::shared_ptr<WindowOption> GetWindowOption() {
+    std::shared_ptr<WindowOption> GetWindowOption()
+    {
         return option_;
     }
 
-    void SetWindowId(uint32_t windowId) {
+    void SetWindowId(uint32_t windowId)
+    {
         windowId_ = windowId;
     }
 
-    uint32_t GetWindowId() {
+    uint32_t GetWindowId()
+    {
         return windowId_;
     }
 
@@ -172,29 +175,35 @@ public:
     }
 
     // @override
-    const std::string& GetWindowName() {
+    const std::string& GetWindowName()
+    {
         return option_->GetWindowName();
     }
 
     // @override
-    WindowType GetType() {
+    WindowType GetType()
+    {
         return option_->GetWindowType();
     }
 
     // @override
-    uint32_t GetParentId() {
+    uint32_t GetParentId()
+    {
         return  option_->GetParentId();
     }
     // @override
-    Rect GetRect() {
+    Rect GetRect()
+    {
         return option_->GetWindowRect();
     }
     // @override
-    WindowMode GetMode() {
+    WindowMode GetMode()
+    {
         return option_->GetWindowMode();
     }
 
-    WindowState GetWindowState() {
+    WindowState GetWindowState()
+    {
         return state_;
     }
 
