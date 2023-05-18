@@ -195,6 +195,9 @@ public class BridgeManager {
             if (object == null) {
                 bridgeErrorCode = BridgeErrorCode.BRIDGE_METHOD_UNIMPL;
             }
+            if (object != null && !ParameterHelper.isExceedJsSafeInteger(object)) {
+                bridgeErrorCode = BridgeErrorCode.BRIDGE_EXCEEDS_SAFE_INTEGER;
+            }
             resultJsonObj = createJsonMethodResult(bridgeErrorCode, object);
             if (resultJsonObj == null) {
                 resultJsonObj = createJsonMethodResult(bridgeErrorCode, null);
@@ -334,40 +337,45 @@ public class BridgeManager {
     public void platformSendMessageResponse(String bridgeName, Object data) {
         BridgeErrorCode bridgeErrorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
+        int instanceId = bridgePlugin.getInstanceId();
         if (bridgePlugin == null) {
             ALog.e(LOG_TAG, "platformSendMessageResponse bridgeName is not found.");
             return;
         }
         try {
-            JSONObject dataJson = new JSONObject();
             if (data == null) {
-                sendMessageResponseErrorCode(bridgeName, bridgePlugin.getInstanceId());
+                sendMessageResponseErrorCode(bridgeName, instanceId, BridgeErrorCode.BRIDGE_DATA_ERROR);
                 return;
-            } else if (data instanceof JSONObject) {
+            }
+            JSONObject dataJson = new JSONObject();
+            if (data instanceof JSONObject) {
                 dataJson.put(MESSAGE_JSON_KEY, data.toString());
             } else if (!data.getClass().isArray()) {
+                if (!ParameterHelper.isExceedJsSafeInteger(data)) {
+                    sendMessageResponseErrorCode(bridgeName, instanceId, BridgeErrorCode.BRIDGE_EXCEEDS_SAFE_INTEGER);
+                    return;
+                }
                 dataJson.put(MESSAGE_JSON_KEY, data);
             } else if (data.getClass().isArray()) {
                 JSONArray array = ParameterHelper.objectTransformJsonArray(data);
                 if (array == null) {
-                    sendMessageResponseErrorCode(bridgeName, bridgePlugin.getInstanceId());
+                    sendMessageResponseErrorCode(bridgeName, instanceId, BridgeErrorCode.BRIDGE_DATA_ERROR);
                     return;
                 }
                 dataJson.put(MESSAGE_JSON_KEY, array);
             } else {
-                sendMessageResponseErrorCode(bridgeName, bridgePlugin.getInstanceId());
+                sendMessageResponseErrorCode(bridgeName, instanceId, BridgeErrorCode.BRIDGE_DATA_ERROR);
                 return;
             }
             dataJson.put(JSON_ERROR_CODE, 0);
-            nativePlatformSendMessageResponse(bridgeName, dataJson.toString(), bridgePlugin.getInstanceId());
+            nativePlatformSendMessageResponse(bridgeName, dataJson.toString(), instanceId);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    private void sendMessageResponseErrorCode(String bridgeName, int instanceId) {
+    private void sendMessageResponseErrorCode(String bridgeName, int instanceId, BridgeErrorCode bridgeErrorCode) {
         JSONObject dataJson = new JSONObject();
-        BridgeErrorCode bridgeErrorCode = BridgeErrorCode.BRIDGE_DATA_ERROR;
         dataJson = createJsonMethodResult(bridgeErrorCode, DATA_ERROR);
         nativePlatformSendMessageResponse(bridgeName, dataJson.toString(), instanceId);
     }
@@ -385,20 +393,25 @@ public class BridgeManager {
             return;
         }
         try {
-            JSONObject dataJson = new JSONObject();
             if (data == null) {
-                jsSendMessageResponseErrorCode(bridgePlugin);
+                jsSendMessageResponseErrorCode(bridgePlugin, BridgeErrorCode.BRIDGE_DATA_ERROR);
                 return;
-            } else if (data instanceof JSONObject) {
+            }
+            JSONObject dataJson = new JSONObject();
+            if (data instanceof JSONObject) {
                 dataJson.put(MESSAGE_JSON_KEY, data.toString());
             } else if (data.getClass().isArray()) {
                 JSONArray array = ParameterHelper.objectTransformJsonArray(data);
                 if (array == null) {
-                    jsSendMessageResponseErrorCode(bridgePlugin);
+                    jsSendMessageResponseErrorCode(bridgePlugin, BridgeErrorCode.BRIDGE_DATA_ERROR);
                     return;
                 }
                 dataJson.put(MESSAGE_JSON_KEY, array);
             } else {
+                if (!ParameterHelper.isExceedJsSafeInteger(data)) {
+                    jsSendMessageResponseErrorCode(bridgePlugin, BridgeErrorCode.BRIDGE_EXCEEDS_SAFE_INTEGER);
+                    return;
+                }
                 dataJson.put(MESSAGE_JSON_KEY, data);
             }
             dataJson.put(JSON_ERROR_CODE, 0);
@@ -408,8 +421,7 @@ public class BridgeManager {
         }
     }
 
-    private void jsSendMessageResponseErrorCode(BridgePlugin bridgePlugin) {
-        BridgeErrorCode bridgeErrorCode = BridgeErrorCode.BRIDGE_DATA_ERROR;
+    private void jsSendMessageResponseErrorCode(BridgePlugin bridgePlugin, BridgeErrorCode bridgeErrorCode) {
         JSONObject dataJson = new JSONObject();
         dataJson = createJsonMethodResult(bridgeErrorCode, null);
         bridgePlugin.jsSendMessageResponse(dataJson);
