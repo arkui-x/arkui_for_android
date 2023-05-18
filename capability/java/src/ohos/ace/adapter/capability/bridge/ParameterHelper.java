@@ -36,6 +36,14 @@ public class ParameterHelper {
 
     private static final int HASH_CODE = 1;
 
+    private static final long JS_MAX_VALUE = 0x1FFFFFFFFFFFFFL;
+
+    private static final long JS_MIN_VALUE = -0x1FFFFFFFFFFFFFL;
+
+    private static final long[] LONG_ARRAY = {};
+
+    private static final String LONG_ARRAY_CLASS_NAME = LONG_ARRAY.getClass().getName().toString();
+
     /**
      * Method parameter helper.
      *
@@ -43,6 +51,22 @@ public class ParameterHelper {
      */
     public ParameterHelper() {
         ALog.i("ParameterHelper", "ParameterHelper construction");
+    }
+
+    /**
+     * whether it exceeds the safe integer range.
+     *
+     * @param number Incoming pending integer.
+     * @return Returns whether it exceeds the safe integer range.
+     */
+    public static boolean isExceedJsSafeInteger(Object number) {
+        if (number instanceof Long) {
+            if ((long) number > JS_MAX_VALUE || (long) number < JS_MIN_VALUE) {
+                ALog.e("ParameterHelper", "Data exceeds JavaScript safe integer.");
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -219,8 +243,14 @@ public class ParameterHelper {
                 }
                 if (objectParamter.getClass().isArray()) {
                     JSONArray array = objectTransformJsonArray(objectParamter);
+                    if (array == null) {
+                        return null;
+                    }
                     jsonParamters.put(String.valueOf(key), array);
                 } else {
+                    if (!isExceedJsSafeInteger(objectParamter)) {
+                        return null;
+                    }
                     jsonParamters.put(String.valueOf(key), objectParamter);
                 }
                 key++;
@@ -246,33 +276,34 @@ public class ParameterHelper {
                     JsonArray.put(stringIter);
                 }
             } else if (objects instanceof char[]) {
-                for (char charIter : (char[]) objects)
-                {
+                for (char charIter : (char[]) objects) {
                     JsonArray.put(charIter);
                 }
             } else if (objects instanceof int[]) {
-                for (int intIter : (int[]) objects)
-                {
+                for (int intIter : (int[]) objects) {
                     JsonArray.put(intIter);
                 }
             } else if (objects instanceof double[]) {
-                for (double doubleIter : (double[]) objects)
-                {
+                for (double doubleIter : (double[]) objects) {
                     JsonArray.put(doubleIter);
                 }
             } else if (objects instanceof float[]) {
-                for (float floatIter : (float[]) objects)
-                {
+                for (float floatIter : (float[]) objects) {
                     JsonArray.put(floatIter);
                 }
             } else if (objects instanceof boolean[]) {
-                for (boolean booleanIter : (boolean[]) objects)
-                {
+                for (boolean booleanIter : (boolean[]) objects) {
                     JsonArray.put(booleanIter);
                 }
+            } else if (objects.getClass().getName().toString().equals(LONG_ARRAY_CLASS_NAME)) {
+                for (long longIter : (long[]) objects) {
+                    if (!isExceedJsSafeInteger(longIter)) {
+                        return null;
+                    }
+                    JsonArray.put(longIter);
+                }
             } else if (objects instanceof Object[]) {
-                for (Object objectIter : (Object[]) objects)
-                {
+                for (Object objectIter : (Object[]) objects) {
                     if (objectIter == null) {
                         return null;
                     }
