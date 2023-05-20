@@ -20,6 +20,8 @@
 namespace OHOS::Ace {
 namespace {
 constexpr char COLOR_VALUE_PREFIX[] = "$color:";
+constexpr char RES_TAG[] = "resource:///";
+constexpr char MEDIA_VALUE_KEY_WORD[] = "/";
 constexpr char REF_ATTR_VALUE_KEY_WORD[] = "?theme:";
 
 double ParseDoubleUnit(const std::string& value, std::string& unit)
@@ -38,10 +40,17 @@ double ParseDoubleUnit(const std::string& value, std::string& unit)
 
 DimensionUnit ParseDimensionUnit(const std::string& unit)
 {
-    if (unit == "fp" || unit == "sp") {
+    if (unit == "px") {
+        return DimensionUnit::PX;
+    } else if (unit == "fp") {
         return DimensionUnit::FP;
+    } else if (unit == "lpx") {
+        return DimensionUnit::LPX;
+    } else if (unit == "%") {
+        return DimensionUnit::PERCENT;
+    } else {
+        return DimensionUnit::VP;
     }
-    return DimensionUnit::VP;
 }
 }
 
@@ -49,8 +58,20 @@ void ResourceThemeStyle::ParseContent()
 {
     static const std::set<std::string> stringAttrs = {
         "attribute_text_font_family_regular",
-        "attribute_text_font_family_medium"
+        "attribute_text_font_family_medium",
+        "description_current_location",
+        "description_add_location",
+        "description_select_location",
+        "description_share_location",
+        "description_send_location",
+        "description_locating",
+        "description_location",
+        "description_send_current_location",
+        "description_relocation",
+        "description_punch_in",
+        "description_current_position"
     };
+
     for (auto& [attrName, attrValue] : rawAttrs_) {
         if (attrName.empty() || attrValue.empty()) {
             LOGW("theme attr name:%{public}s or value:%{public}s is empty", attrName.c_str(), attrValue.c_str());
@@ -59,6 +80,8 @@ void ResourceThemeStyle::ParseContent()
         if (attrValue.front() == '#' || attrValue.find(COLOR_VALUE_PREFIX) != std::string::npos) {
             // color
             attributes_[attrName] = { .type = ThemeConstantsType::COLOR, .value = Color::FromString(attrValue) };
+        } else if (attrValue.find(MEDIA_VALUE_KEY_WORD) != std::string::npos) {
+            attributes_[attrName] = { .type =  ThemeConstantsType::STRING, .value = std::string(RES_TAG) + attrValue };
         } else if (stringAttrs.find(attrName) != stringAttrs.end()) {
             // string
             attributes_[attrName] = { .type = ThemeConstantsType::STRING, .value = attrValue };
@@ -77,7 +100,11 @@ void ResourceThemeStyle::ParseContent()
         }
     }
     LOGD("theme attribute size:%{public}zu", attributes_.size());
+    OnParseStyle();
+}
 
+void ResourceThemeStyle::OnParseStyle()
+{
     for (auto& [patternName, patternMap]: patternAttrs_) {
         auto patternStyle = AceType::MakeRefPtr<ResourceThemeStyle>(resAdapter_);
         patternStyle->SetName(patternName);
