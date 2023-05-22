@@ -25,6 +25,7 @@ namespace {
 const std::string MODULE_JSON_NAME = "module.json";
 const std::string ABC_EXTENSION_NAME = ".abc";
 const std::string ABILITY_STAGE_ABC_NAME = "AbilityStage.abc";
+const std::string MODULE_STAGE_ABC_NAME = "modules.abc";
 const std::string TEMP_DIR = "/temp";
 const std::string FILES_DIR = "/files";
 const std::string PREFERENCE_DIR = "/preference";
@@ -117,13 +118,20 @@ std::list<std::vector<uint8_t>> StageAssetProvider::GetModuleJsonBufferList()
     return bufferList;
 }
 
-std::vector<uint8_t> StageAssetProvider::GetModuleBuffer(const std::string& moduleName, std::string& modulePath)
+std::vector<uint8_t> StageAssetProvider::GetModuleBuffer(const std::string& moduleName,
+    std::string& modulePath, bool esmodule)
 {
+    std::string fullAbilityName;
+    if (esmodule) {
+        fullAbilityName = MODULE_STAGE_ABC_NAME;
+    } else {
+        fullAbilityName = ABILITY_STAGE_ABC_NAME;
+    }
     std::vector<std::string> abcPath;
     {
         std::lock_guard<std::mutex> lock(allFilePathMutex_);
         for (auto& path : allFilePath_) {
-            if (path.find(ABILITY_STAGE_ABC_NAME) != std::string::npos) {
+            if (path.find(fullAbilityName) != std::string::npos) {
                 abcPath.emplace_back(path);
             }
         }
@@ -155,11 +163,16 @@ std::vector<uint8_t> StageAssetProvider::GetModuleBuffer(const std::string& modu
     return buffer;
 }
 
-std::vector<uint8_t> StageAssetProvider::GetModuleAbilityBuffer(
-    const std::string& moduleName, const std::string& abilityName, std::string& modulePath)
+std::vector<uint8_t> StageAssetProvider::GetModuleAbilityBuffer(const std::string& moduleName,
+    const std::string& abilityName, std::string& modulePath, bool esmodule)
 {
     LOGI("Get Module Ability Buffer");
-    std::string fullAbilityName(abilityName);
+    std::string fullAbilityName;
+    if (esmodule) {
+        fullAbilityName = "modules";
+    } else {
+        fullAbilityName = abilityName;
+    }
     fullAbilityName.append(ABC_EXTENSION_NAME);
     std::vector<std::string> abcPath;
     {

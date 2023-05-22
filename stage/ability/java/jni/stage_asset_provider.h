@@ -75,9 +75,9 @@ public:
     void SetAssetManager(JNIEnv* env, jobject assetManager);
     jobject GetAssetManager();
     std::list<std::vector<uint8_t>> GetModuleJsonBufferList();
-    std::vector<uint8_t> GetModuleBuffer(const std::string& moduleName, std::string& modulePath);
+    std::vector<uint8_t> GetModuleBuffer(const std::string& moduleName, std::string& modulePath, bool esmodule);
     std::vector<uint8_t> GetModuleAbilityBuffer(
-        const std::string& moduleName, const std::string& abilityName, std::string& modulePath);
+        const std::string& moduleName, const std::string& abilityName, std::string& modulePath, bool esmodule);
     std::vector<uint8_t> GetAbcPathBuffer(const std::string& abcPath);
     Ace::RefPtr<AssetProvider> CreateAndFindAssetProvider(const std::string& path);
     void SetCacheDir(const std::string& filesRootDir);
