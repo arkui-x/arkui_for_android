@@ -38,6 +38,7 @@ public:
     jobject GetWindowView(const std::string& instanceName);
     std::shared_ptr<JNIEnv> GetJniEnv();
     void RemoveWindowView(const std::string& instanceName);
+    std::string GetWindowName(void* windowView);
 
 private:
     static std::shared_ptr<WindowViewAdapter> instance_;

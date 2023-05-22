@@ -15,10 +15,10 @@
 package ohos.ace.adapter;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.View;
 import android.widget.PopupWindow;
-import android.graphics.drawable.BitmapDrawable;
 
 /**
  * The type Sub window.
@@ -146,7 +146,7 @@ public class SubWindow {
         subWindowView.setFocusable(false);
         subWindowView.setElevation(0);
         subWindowView.setTouchable(true);
-        subWindowView.setBackgroundDrawable(new BitmapDrawable());
+        contentView.setBackgroundColor(Color.GRAY);
 
         subWindowView.setContentView(contentView);
 

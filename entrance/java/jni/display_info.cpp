@@ -44,19 +44,19 @@ DisplayInfo::DisplayInfo()
     Orientation orientation2 = Orientation::UNSPECIFIED;
     switch( orentation ) {
         case ROTATION_0: {
-            orientation2 = Orientation::HORIZONTAL;
-            break;
-        }
-        case ROTATION_90: {
             orientation2 = Orientation::VERTICAL;
             break;
         }
+        case ROTATION_90: {
+            orientation2 = Orientation::HORIZONTAL;
+            break;
+        }
         case ROTATION_180: {
-            orientation2 = Orientation::REVERSE_HORIZONTAL;
+            orientation2 = Orientation::REVERSE_VERTICAL;
             break;
         }
         case ROTATION_270: {
-            orientation2 = Orientation::REVERSE_VERTICAL;
+            orientation2 = Orientation::REVERSE_HORIZONTAL;
             break;
         }
         default:
