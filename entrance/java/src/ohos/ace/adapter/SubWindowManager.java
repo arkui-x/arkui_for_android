@@ -14,9 +14,14 @@
  */
 package ohos.ace.adapter;
 
+import android.app.ActionBar;
 import android.app.Activity;
+import android.content.pm.ActivityInfo;
+import android.provider.Settings;
 import android.view.View;
 import android.view.SurfaceView;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.PopupWindow;
 import android.util.Log;
 
@@ -34,6 +39,14 @@ public class SubWindowManager {
     private Activity mRootActivity;
     private Map<String, SubWindow> mSubWindowMap = new HashMap<>();
     private static SubWindowManager _sinstance;
+
+    /*
+     ** copy from native wm_common.h: enum class Orientation
+     */
+    private static final int VERTICAL = 1;
+    private static final int HORIZONTAL = 2;
+    private static final int REVERSE_VERTICAL = 3;
+    private static final int REVERSE_HORIZONTAL = 4;
 
     /**
      * Gets instance.
@@ -80,10 +93,12 @@ public class SubWindowManager {
      * @param width    the width
      * @param height   the height
      */
-    public void createSubWindow(String name, int type, int mode, int tag, int parentId, int x, int y, int width, int height) {
-        Log.d(TAG, "createSubWindow called: "
-            + String.format(Locale.ENGLISH, "name=%s type=%d mode=%d tag=%d parentId=%d x=%d y=%d width=%d height=%d",
-                        name, type, mode, tag, parentId, x, y, width, height));
+    public void createSubWindow(String name, int type, int mode, int tag, int parentId, int x, int y, int width,
+        int height) {
+        Log.d(TAG,
+            "createSubWindow called: " + String.format(Locale.ENGLISH,
+                "name=%s type=%d mode=%d tag=%d parentId=%d x=%d y=%d width=%d height=%d", name, type, mode, tag,
+                parentId, x, y, width, height));
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow == null) {
             subWindow = new SubWindow(mRootActivity, name);
@@ -164,6 +179,28 @@ public class SubWindowManager {
     }
 
     /**
+     * whether the sub-window is showing or not
+     *
+     * @param name the window name
+     * @return the popup window is showing or not
+     */
+    public boolean isShowing(String name) {
+        Log.d(TAG, "isShowing called. name=" + name);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow != null) {
+            if (subWindow.getSubWindowView().isShowing()) {
+                Log.e(TAG, "sub window is shown.");
+                return true;
+            } else {
+                Log.e(TAG, "sub window is not shown.");
+                return false;
+            }
+        }
+        Log.e(TAG, "not found SubWindow: " + name);
+        return false;
+    }
+
+    /**
      * Resize boolean.
      *
      * @param name   the name
@@ -231,6 +268,208 @@ public class SubWindowManager {
             }
         }
         Log.e(TAG, "not found SubWindow: " + name);
+        return false;
+    }
+
+    /**
+     * Sets background color.
+     *
+     * @param color the color
+     * @return the background color
+     */
+    public boolean setBackgroundColor(int color) {
+        Log.d(TAG, "setBackgroundColor called: color=" + color);
+
+        if (mRootActivity != null) {
+            mRootActivity.getCurrentFocus().setBackgroundColor(color);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Sets app screen brightness.
+     *
+     * @param birghtessValue the birghtess value
+     * @return the app screen brightness
+     */
+    public boolean setAppScreenBrightness(float birghtessValue) {
+        Log.d(TAG, "setAppScreenBrightness called: birghtessValue=" + birghtessValue);
+
+        if (mRootActivity != null) {
+            Window window = mRootActivity.getWindow();
+            WindowManager.LayoutParams lp = window.getAttributes();
+            lp.screenBrightness = birghtessValue;
+            window.setAttributes(lp);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * get app screen brightness.
+     *
+     * @return the app screen brightness
+     */
+    public float getAppScreenBrightness() {
+        if (mRootActivity == null) {
+            Log.e(TAG, "getAppScreenBrightness failed, mRootActivity is null");
+            return 0.0f;
+        }
+        Window window = mRootActivity.getWindow();
+        WindowManager.LayoutParams wlp = window.getAttributes();
+
+        if (wlp != null) {
+            if (wlp.screenBrightness != WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE) {
+                Log.d(TAG, "getAppScreenBrightness called: brightnessValue=" + wlp.screenBrightness);
+                return wlp.screenBrightness;
+            } else {
+                Log.e(TAG, "getAppScreenBrightness is not set, use system brightness");
+            }
+        }
+        int systemBrightness = 0;
+        try {
+            systemBrightness =
+                Settings.System.getInt(mRootActivity.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS);
+        } catch (Settings.SettingNotFoundException exception) {
+            Log.e(TAG, "getAppScreenBrightness is not set, query system brightness exception");
+        }
+        float appBrightness = systemBrightness / 255f;
+        Log.d(TAG, "getAppScreenBrightness called: system brightnessValue=" + appBrightness);
+        return appBrightness;
+    }
+
+    /**
+     * Sets keep screen on.
+     *
+     * @param keepScreenOn the keep screen on
+     * @return the keep screen on
+     */
+    public boolean setKeepScreenOn(boolean keepScreenOn) {
+        Log.d(TAG, "setKeepScreenOn called: keepScreenOn=" + keepScreenOn);
+
+        if (mRootActivity != null) {
+            Window window = mRootActivity.getWindow();
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Is keep screen on boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isKeepScreenOn() {
+        Log.d(TAG, "isKeepScreenOn called");
+
+        if (mRootActivity != null) {
+            Window window = mRootActivity.getWindow();
+            WindowManager.LayoutParams lp = window.getAttributes();
+            if ((lp.flags & WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Request orientation boolean.
+     *
+     * @param direction the screen direction
+     * @return the boolean
+     */
+    public boolean requestOrientation(int direction) {
+        Log.d(TAG, "requestOrientation called: direction=" + direction);
+
+        if (mRootActivity != null) {
+            int orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+
+            switch (direction) {
+                case VERTICAL:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                    break;
+                case HORIZONTAL:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+                    break;
+                case REVERSE_VERTICAL:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+                    break;
+                case REVERSE_HORIZONTAL:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+                    break;
+                default:
+                    Log.e(TAG, "unspecified orientation: " + orientation);
+                    break;
+            }
+
+            mRootActivity.setRequestedOrientation(orientation);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Sets status bar and action bar status.
+     *
+     * @param hide the hide
+     * @return the status bar status
+     */
+    public boolean setStatusBarStatus(boolean hide) {
+        Log.d(TAG, "setStatusBarStatus called: hide=" + hide);
+
+        if (mRootActivity != null) {
+            Window window = mRootActivity.getWindow();
+            View decorView = window.getDecorView();
+            ActionBar actionBar = mRootActivity.getActionBar();
+            if (hide) {
+                // Hide the status bar.
+                int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+                decorView.setSystemUiVisibility(uiOptions);
+                // Remember that you should never show the action bar if the
+                // status bar is hidden, so hide that too if necessary.
+                if (actionBar != null && actionBar.isShowing()) {
+                    actionBar.hide();
+                }
+                return true;
+            } else {
+                int uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
+                decorView.setSystemUiVisibility(uiOptions);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Sets status bar and action bar status.
+     *
+     * @param hide the hide
+     * @return the action bar status
+     */
+    public boolean setActionBarStatus(boolean hide) {
+        Log.d(TAG, "setActionBarStatus called: hide=" + hide);
+
+        if (mRootActivity != null) {
+            Window window = mRootActivity.getWindow();
+            View decorView = window.getDecorView();
+            ActionBar actionBar = mRootActivity.getActionBar();
+            if (hide) {
+                if (actionBar != null && actionBar.isShowing()) {
+                    actionBar.hide();
+                }
+                return true;
+            } else {
+                int uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
+                decorView.setSystemUiVisibility(uiOptions);
+
+                if (actionBar != null && !actionBar.isShowing()) {
+                    actionBar.show();
+                }
+                return true;
+            }
+        }
         return false;
     }
 

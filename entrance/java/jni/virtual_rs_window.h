@@ -16,17 +16,19 @@
 #ifndef FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_VIRTUAL_RS_WINDOW_H
 #define FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_VIRTUAL_RS_WINDOW_H
 
+#include <map>
 #include <memory>
 
 #include "flutter/shell/common/vsync_waiter.h"
+#include "foundation/appframework/window_manager/interfaces/innerkits/wm/window_interface.h"
+#include "foundation/appframework/window_manager/interfaces/innerkits/wm/window_option.h"
 #include "refbase.h"
 #include "render_service_client/core/ui/rs_surface_node.h"
 
+#include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "adapter/android/entrance/java/jni/window_view_jni.h"
 #include "base/log/log.h"
 #include "base/utils/noncopyable.h"
-#include "foundation/appframework/window_manager/interfaces/innerkits/wm/window_option.h"
-#include "adapter/android/entrance/java/jni/jni_environment.h"
 
 class NativeValue;
 class NativeEngine;
@@ -36,7 +38,7 @@ namespace AbilityRuntime::Platform {
 class Context;
 class Configuration;
 class Ability;
-}
+} // namespace AbilityRuntime::Platform
 
 namespace Ace::Platform {
 class UIContent;
@@ -78,8 +80,7 @@ public:
     static bool Register(const std::shared_ptr<JNIEnv>& env);
     static std::shared_ptr<Window> Create(
         std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context, JNIEnv* env, jobject windowView);
-    static std::shared_ptr<Window> CreateSubWindow(
-        std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context,
+    static std::shared_ptr<Window> CreateSubWindow(std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context,
         std::shared_ptr<OHOS::Rosen::WindowOption> option);
 
     explicit Window(const flutter::TaskRunners& taskRunners);
@@ -89,12 +90,13 @@ public:
 
     static std::vector<std::shared_ptr<Window>> GetSubWindow(uint32_t parentId);
     static std::shared_ptr<Window> FindWindow(const std::string& name);
-    static std::shared_ptr<Window> GetTopWindow(const std::shared_ptr<OHOS::AbilityRuntime::Platform::Context>& context);
+    static std::shared_ptr<Window> GetTopWindow(
+        const std::shared_ptr<OHOS::AbilityRuntime::Platform::Context>& context);
 
     WMError ShowWindow();
-    WMError DestroyWindow();
     WMError MoveWindowTo(int32_t x, int32_t y);
     WMError ResizeWindowTo(int32_t width, int32_t height);
+    bool IsWindowShow();
 
     bool CreateVSyncReceiver(std::shared_ptr<AppExecFwk::EventHandler> handler);
     void RequestNextVsync(std::function<void(int64_t, void*)> callback);
@@ -108,7 +110,7 @@ public:
     void WindowFocusChanged(bool hasWindowFocus);
     void Foreground();
     void Background();
-    void Destroy();
+    WMError Destroy();
 
     // event process
     bool ProcessBackPressed();
@@ -116,8 +118,8 @@ public:
     bool ProcessKeyEvent(
         int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp = 0, int64_t timeStampStart = 0);
 
-    int SetUIContent(const std::string& contentInfo, NativeEngine* engine,
-        NativeValue* storage, bool isdistributed, AbilityRuntime::Platform::Ability* ability);
+    int SetUIContent(const std::string& contentInfo, NativeEngine* engine, NativeValue* storage, bool isdistributed,
+        AbilityRuntime::Platform::Ability* ability);
 
     WMError SetBackgroundColor(uint32_t color);
     uint32_t GetBackgroundColor() const
@@ -127,7 +129,7 @@ public:
     WMError SetBrightness(float brightness);
     float GetBrightness() const
     {
-        return 0;
+        return brightness_;
     }
     WMError SetKeepScreenOn(bool keepScreenOn);
     bool IsKeepScreenOn();
@@ -137,13 +139,12 @@ public:
     WMError RegisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener);
     WMError UnregisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener);
 
-    void SetWindowOption(std::shared_ptr<WindowOption> option) {
-        option_ = option;
-    }
-
-    std::shared_ptr<WindowOption> GetWindowOption()
+    void SetRect(std::shared_ptr<WindowOption> option)
     {
-        return option_;
+        rect_.width_ = option->GetWindowRect().width_;
+        rect_.height_ = option->GetWindowRect().height_;
+        rect_.posX_ = option->GetWindowRect().posX_;
+        rect_.posY_ = option->GetWindowRect().posY_;
     }
 
     void SetWindowId(uint32_t windowId)
@@ -156,37 +157,52 @@ public:
         return windowId_;
     }
 
-    bool IsWindowShow()
+    void SetWindowName(const std::string& windowName)
     {
-        return isWindowShow_;
+        name_ = windowName;
+    }
+
+    void SetWindowType(WindowType windowType)
+    {
+        windowType_ = windowType;
+    }
+
+    void SetParentId(uint32_t parentId)
+    {
+        parentId_ = parentId;
+    }
+
+    void SetWindowMode(WindowMode mode)
+    {
+        windowMode_ = mode;
     }
 
     // @override
     const std::string& GetWindowName()
     {
-        return option_->GetWindowName();
+        return name_;
     }
 
     // @override
     WindowType GetType()
     {
-        return option_->GetWindowType();
+        return windowType_;
     }
 
     // @override
     uint32_t GetParentId()
     {
-        return  option_->GetParentId();
+        return parentId_;
     }
     // @override
     Rect GetRect()
     {
-        return option_->GetWindowRect();
+        return rect_;
     }
     // @override
     WindowMode GetMode()
     {
-        return option_->GetWindowMode();
+        return windowMode_;
     }
 
     WindowState GetWindowState()
@@ -208,17 +224,28 @@ private:
 
     void DelayNotifyUIContentIfNeeded();
 
-    bool isWindowShow_ = false;
+    std::string name_ = "";
     std::shared_ptr<jobject> viewController_ = nullptr;
     uint32_t windowId_ = 0;
-    std::shared_ptr<WindowOption> option_;
+    uint32_t parentId_ = 0;
+    WindowMode windowMode_;
+    WindowType windowType_;
+    Rect rect_ = { 0, 0, 0, 0 };
 
     uint32_t backgroundColor_;
-    SystemBarProperty property_;
+    float brightness_;
+    std::unordered_map<WindowType, SystemBarProperty> sysBarPropMap_ {
+        { WindowType::WINDOW_TYPE_STATUS_BAR, SystemBarProperty() },
+        { WindowType::WINDOW_TYPE_NAVIGATION_BAR, SystemBarProperty() },
+    };
     WindowState state_ { WindowState::STATE_INITIAL };
-    static std::shared_ptr<Window> mainWindow_;
     static std::map<uint32_t, std::vector<std::shared_ptr<Window>>> subWindowMap_;
     static std::map<std::string, std::pair<uint32_t, std::shared_ptr<Window>>> windowMap_;
+    static void AddToWindowMap(std::shared_ptr<Window> window);
+    static void DeleteFromWindowMap(std::shared_ptr<Window> window);
+    static void DeleteFromWindowMap(Window* window);
+    static void AddToSubWindowMap(std::shared_ptr<Window> window);
+    static void DeleteFromSubWindowMap(std::shared_ptr<Window> window);
 
     int32_t surfaceWidth_ = 0;
     int32_t surfaceHeight_ = 0;
@@ -235,6 +262,74 @@ private:
     bool delayNotifySurfaceCreated_ = false;
     bool delayNotifySurfaceChanged_ = false;
     bool delayNotifySurfaceDestroyed_ = false;
+
+    //////////WindowLifeCycle Listeners////////////////////
+
+    static std::recursive_mutex globalMutex_;
+    static std::map<uint32_t, std::vector<sptr<IWindowLifeCycle>>> lifecycleListeners_;
+
+    template<typename T1, typename T2, typename Ret>
+    using EnableIfSame = typename std::enable_if<std::is_same_v<T1, T2>, Ret>::type;
+    template<typename T>
+    WMError RegisterListener(std::vector<sptr<T>>& holder, const sptr<T>& listener);
+    template<typename T>
+    WMError UnregisterListener(std::vector<sptr<T>>& holder, const sptr<T>& listener);
+    template<typename T>
+    void ClearUselessListeners(std::map<uint32_t, T>& listeners, uint32_t winId)
+    {
+        listeners.erase(winId);
+    }
+
+    template<typename T>
+    inline EnableIfSame<T, IWindowLifeCycle, std::vector<wptr<IWindowLifeCycle>>> GetListeners()
+    {
+        std::vector<wptr<IWindowLifeCycle>> lifecycleListeners;
+        {
+            std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+            for (auto& listener : lifecycleListeners_[GetWindowId()]) {
+                lifecycleListeners.push_back(listener);
+            }
+        }
+        return lifecycleListeners;
+    }
+
+#define CALL_LIFECYCLE_LISTENER(windowLifecycleCb)                  \
+    do {                                                            \
+        auto lifecycleListeners = GetListeners<IWindowLifeCycle>(); \
+        for (auto& listener : (lifecycleListeners)) {               \
+            LOGI("Window: notify listener");                        \
+            if (listener.GetRefPtr() != nullptr) {                  \
+                listener.GetRefPtr()->windowLifecycleCb();          \
+                LOGI("Window: notify listener not nullptr");        \
+            }                                                       \
+        }                                                           \
+    } while (0)
+
+    inline void NotifyAfterForeground(bool needNotifyListeners = true, bool needNotifyUiContent = true)
+    {
+        if (needNotifyListeners) {
+            CALL_LIFECYCLE_LISTENER(AfterForeground);
+        }
+    }
+
+    inline void NotifyAfterBackground(bool needNotifyListeners = true, bool needNotifyUiContent = true)
+    {
+        if (needNotifyListeners) {
+            CALL_LIFECYCLE_LISTENER(AfterBackground);
+        }
+    }
+
+    inline void NotifyAfterActive()
+    {
+        CALL_LIFECYCLE_LISTENER(AfterActive);
+    }
+
+    inline void NotifyAfterInactive()
+    {
+        CALL_LIFECYCLE_LISTENER(AfterInactive);
+    }
+
+    void ClearListenersById(uint32_t winId);
 
     DISALLOW_COPY_AND_MOVE(Window);
 };

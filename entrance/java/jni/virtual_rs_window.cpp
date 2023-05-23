@@ -14,16 +14,19 @@
  */
 
 #include "virtual_rs_window.h"
-#include "subwindow_manager_jni.h"
 
 #include <memory>
 
-#include "adapter/android/entrance/java/jni/jni_environment.h"
-#include "base/log/log.h"
 #include "flutter/shell/platform/android/vsync_waiter_android.h"
 #include "foundation/appframework/arkui/uicontent/ui_content.h"
+#include "hilog.h"
 #include "shell/common/vsync_waiter.h"
+#include "subwindow_manager_jni.h"
 #include "transaction/rs_interfaces.h"
+#include "window_view_adapter.h"
+
+#include "adapter/android/entrance/java/jni/jni_environment.h"
+#include "base/log/log.h"
 #include "base/utils/utils.h"
 
 using namespace OHOS::Ace::Platform;
@@ -32,39 +35,136 @@ namespace OHOS::Rosen {
 
 std::map<uint32_t, std::vector<std::shared_ptr<Window>>> Window::subWindowMap_;
 std::map<std::string, std::pair<uint32_t, std::shared_ptr<Window>>> Window::windowMap_;
-std::shared_ptr<Window> Window::mainWindow_ = nullptr;
+std::map<uint32_t, std::vector<sptr<IWindowLifeCycle>>> Window::lifecycleListeners_;
+std::recursive_mutex Window::globalMutex_;
+
+Window::Window(std::shared_ptr<AbilityRuntime::Platform::Context> context, uint32_t windowId)
+    : context_(context), windowId_(windowId), brightness_(SubWindowManagerJni::GetAppScreenBrightness())
+{}
+
+Window::Window(const flutter::TaskRunners& taskRunners)
+    : vsyncWaiter_(std::make_shared<flutter::VsyncWaiterAndroid>(taskRunners)),
+      brightness_(SubWindowManagerJni::GetAppScreenBrightness())
+{}
+
+Window::Window(std::shared_ptr<AbilityRuntime::Platform::Context> context)
+    : context_(context), brightness_(SubWindowManagerJni::GetAppScreenBrightness())
+{}
+
+Window::~Window()
+{
+    ReleaseWindowView();
+}
+
+void Window::AddToWindowMap(std::shared_ptr<Window> window)
+{
+    DeleteFromWindowMap(window);
+    windowMap_.insert(std::make_pair(
+        window->GetWindowName(), std::pair<uint32_t, std::shared_ptr<Window>>(window->GetWindowId(), window)));
+}
+
+void Window::DeleteFromWindowMap(std::shared_ptr<Window> window)
+{
+    auto iter = windowMap_.find(window->GetWindowName());
+    if (iter != windowMap_.end()) {
+        windowMap_.erase(iter);
+    }
+}
+
+void Window::DeleteFromWindowMap(Window* window)
+{
+    if (window == nullptr) {
+        return;
+    }
+    auto iter = windowMap_.find(window->GetWindowName());
+    if (iter != windowMap_.end()) {
+        windowMap_.erase(iter);
+    }
+}
+
+void Window::AddToSubWindowMap(std::shared_ptr<Window> window)
+{
+    if (window == nullptr) {
+        HILOG_ERROR("window is null");
+        return;
+    }
+    if (window->GetType() != OHOS::Rosen::WindowType::WINDOW_TYPE_APP_SUB_WINDOW ||
+        window->GetParentId() != INVALID_WINDOW_ID) {
+        HILOG_ERROR("window is not subwindow");
+        return;
+    }
+    DeleteFromSubWindowMap(window);
+    uint32_t parentId = window->GetParentId();
+    subWindowMap_[parentId].push_back(window);
+}
+
+void Window::DeleteFromSubWindowMap(std::shared_ptr<Window> window)
+{
+    if (window == nullptr) {
+        return;
+    }
+    uint32_t parentId = window->GetParentId();
+    if (parentId == INVALID_WINDOW_ID) {
+        return;
+    }
+    auto iter1 = subWindowMap_.find(parentId);
+    if (iter1 == subWindowMap_.end()) {
+        return;
+    }
+    auto subWindows = iter1->second;
+    auto iter2 = subWindows.begin();
+    while (iter2 != subWindows.end()) {
+        if (*iter2 == window) {
+            subWindows.erase(iter2);
+            ((*iter2)->Destroy());
+            break;
+        }
+    }
+}
 
 std::shared_ptr<Window> Window::Create(
     std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context, JNIEnv* env, jobject windowView)
 {
+    std::string windowName = AbilityRuntime::Platform::WindowViewAdapter::GetInstance()->GetWindowName(windowView);
+    if (windowName.empty()) {
+        LOGE("Window::Create called failed due to null windowName");
+        return nullptr;
+    }
+
+    LOGI("Window::Create called. windowName=%s", windowName.c_str());
+
     auto window = std::make_shared<Window>(context);
     window->SetWindowView(env, windowView);
-    mainWindow_ = window;
+    window->SetWindowName(windowName);
+    AddToWindowMap(window);
     return window;
 }
 
 std::shared_ptr<Window> Window::CreateSubWindow(
-        std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context,
-            std::shared_ptr<OHOS::Rosen::WindowOption> option)
+    std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context, std::shared_ptr<OHOS::Rosen::WindowOption> option)
 {
+    if (option == nullptr) {
+        LOGE("Window::CreateSubWindow called failed due to null option");
+        return nullptr;
+    }
+
     LOGI("Window::CreateSubWindow called. windowName=%s", option->GetWindowName().c_str());
+
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
-    uint32_t parentId = option->GetParentId();
-    auto window = std::make_shared<Window>(context);
-    window->SetWindowOption(option);
-
     SubWindowManagerJni::CreateSubWindow(option);
-
     jobject view = SubWindowManagerJni::GetContentView(option->GetWindowName());
-
     uint32_t windowId = SubWindowManagerJni::GetWindowId(option->GetWindowName());
 
+    auto window = std::make_shared<Window>(context);
     window->SetWindowId(windowId);
-    windowMap_.insert(std::make_pair(window->GetWindowName(), std::pair<uint32_t,
-                                        std::shared_ptr<Window>>((uint32_t)windowId, window)));
-    if (parentId != INVALID_WINDOW_ID) {
-        subWindowMap_[parentId].push_back(window);
-    }
+    window->SetWindowName(option->GetWindowName());
+    window->SetWindowType(option->GetWindowType());
+    window->SetParentId(option->GetParentId());
+    window->SetWindowMode(option->GetWindowMode());
+    window->SetRect(option);
+
+    AddToSubWindowMap(window);
+    AddToWindowMap(window);
 
     window->SetSubWindowView(env, view);
     window->CreateSurfaceNode(view);
@@ -73,20 +173,56 @@ std::shared_ptr<Window> Window::CreateSubWindow(
     return window;
 }
 
-Window::Window(std::shared_ptr<AbilityRuntime::Platform::Context> context, uint32_t windowId)
-    : context_(context), windowId_(windowId)
-{}
-
-Window::Window(const flutter::TaskRunners& taskRunners)
-    : vsyncWaiter_(std::make_shared<flutter::VsyncWaiterAndroid>(taskRunners))
-{}
-
-Window::Window(std::shared_ptr<AbilityRuntime::Platform::Context> context) : context_(context)
-{}
-
-Window::~Window()
+WMError Window::Destroy()
 {
-    ReleaseWindowView();
+    if (uiContent_ != nullptr) {
+        uiContent_->Destroy();
+        uiContent_ = nullptr;
+    }
+
+    if (!this->GetWindowName().empty()) {
+        SubWindowManagerJni::DestroyWindow(this->GetWindowName());
+    }
+
+    ClearListenersById(GetWindowId());
+
+    // Remove subWindows of current window from subWindowMap_
+    if (subWindowMap_.count(GetWindowId()) > 0) {
+        auto& subWindows = subWindowMap_.at(GetWindowId());
+        for (auto iter = subWindows.begin(); iter != subWindows.end(); iter = subWindows.begin()) {
+            if ((*iter) == nullptr) {
+                subWindows.erase(iter);
+                continue;
+            }
+            subWindows.erase(iter);
+            DeleteFromWindowMap(*iter);
+            (*iter)->Destroy();
+        }
+        subWindowMap_[GetWindowId()].clear();
+        subWindowMap_.erase(GetWindowId());
+    }
+
+    // Rmove current window from subWindowMap_ of parent window
+    if (subWindowMap_.count(GetParentId()) > 0) {
+        auto& subWindows = subWindowMap_.at(GetParentId());
+        for (auto iter = subWindows.begin(); iter < subWindows.end(); ++iter) {
+            if ((*iter) == nullptr) {
+                continue;
+            }
+            if ((*iter)->GetWindowId() == GetWindowId()) {
+                subWindows.erase(iter);
+                break;
+            }
+        }
+    }
+
+    // Remove current window from windowMap_
+    if (windowMap_.count(GetWindowName()) > 0) {
+        DeleteFromWindowMap(this);
+    }
+
+    NotifyAfterBackground();
+    return WMError::WM_OK;
 }
 
 std::vector<std::shared_ptr<Window>> Window::GetSubWindow(uint32_t parentId)
@@ -111,17 +247,21 @@ std::shared_ptr<Window> Window::FindWindow(const std::string& name)
 std::shared_ptr<Window> Window::GetTopWindow(const std::shared_ptr<OHOS::AbilityRuntime::Platform::Context>& context)
 {
     LOGI("Window::GetTopWindow");
+    // get last pair in windowMap_
+    auto iter = windowMap_.end();
+    iter--;
+    std::pair<uint32_t, std::shared_ptr<Window>> pair = iter->second;
 
-    if (mainWindow_ != nullptr) {
-        return mainWindow_;
-    }
-
-    return nullptr;
+    return pair.second;
 }
 
 WMError Window::ShowWindow()
 {
     LOGI("Window::ShowWindow called.");
+    if (this->GetWindowName().empty()) {
+        LOGI("Window::ShowWindow called failed due to null option");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
 
     bool result = SubWindowManagerJni::ShowWindow(this->GetWindowName());
     if (result) {
@@ -131,50 +271,25 @@ WMError Window::ShowWindow()
     }
 }
 
-WMError Window::DestroyWindow()
+bool Window::IsWindowShow()
 {
-    LOGI("Window::DestroyWindow called.");
-    isWindowShow_ = false;
-
-    bool result = SubWindowManagerJni::DestroyWindow(this->GetWindowName());
-
-    if (result) {
-        LOGI("Window::DestroyWindow: success");
-
-        if (subWindowMap_.count(GetParentId()) > 0) { // remove from subWindowMap_
-            auto& subWindows = subWindowMap_.at(GetParentId());
-            for (auto iter = subWindows.begin(); iter < subWindows.end(); ++iter) {
-                if ((*iter) == nullptr) {
-                    continue;
-                }
-                if ((*iter)->GetWindowId() == GetWindowId()) {
-                    subWindows.erase(iter);
-                    break;
-                }
-            }
-        }
-
-        if (subWindowMap_.count(GetWindowId()) > 0) { // remove from subWindowMap_ and windowMap_
-            auto& subWindows = subWindowMap_.at(GetWindowId());
-            for (auto iter = subWindows.begin(); iter != subWindows.end(); iter = subWindows.begin()) {
-                if ((*iter) == nullptr) {
-                    subWindows.erase(iter);
-                    continue;
-                }
-                (*iter)->Destroy();
-            }
-            subWindowMap_[GetWindowId()].clear();
-            subWindowMap_.erase(GetWindowId());
-        }
-        return WMError::WM_OK;
-    } else {
-        LOGI("Window::DestroyWindow: failed");
-        return WMError::WM_ERROR_INVALID_WINDOW;
+    if (this->GetWindowName().empty()) {
+        LOGE("Window::IsWindowShow called failed due to null window name");
+        return false;
     }
+    return SubWindowManagerJni::IsWindowShowing(this->GetWindowName());
 }
+
 WMError Window::MoveWindowTo(int32_t x, int32_t y)
 {
     LOGI("Window::MoveWindowTo called. x=%d, y=%d", x, y);
+    if (this->GetWindowName().empty()) {
+        LOGI("Window::MoveWindowTo called failed due to null option");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+
+    rect_.posX_ = x;
+    rect_.posY_ = y;
 
     bool result = SubWindowManagerJni::MoveWindowTo(this->GetWindowName(), x, y);
 
@@ -187,6 +302,14 @@ WMError Window::MoveWindowTo(int32_t x, int32_t y)
 WMError Window::ResizeWindowTo(int32_t width, int32_t height)
 {
     LOGI("Window::ResizeWindowTo called. width=%d, height=%d", width, height);
+
+    if (this->GetWindowName().empty()) {
+        LOGI("Window::ResizeWindowTo called failed due to null option");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+
+    rect_.width_ = width;
+    rect_.height_ = height;
 
     bool result = SubWindowManagerJni::ResizeWindowTo(this->GetWindowName(), width, height);
 
@@ -201,8 +324,9 @@ WMError Window::ResizeWindowTo(int32_t width, int32_t height)
 
 WMError Window::SetBackgroundColor(uint32_t color)
 {
-    LOGI("Window::SetBackgroundColor called. color=%d", color);
+    LOGI("Window::SetBackgroundColor called. color=%u", color);
     backgroundColor_ = color;
+
     if (uiContent_) {
         uiContent_->SetBackgroundColor(color);
     }
@@ -212,45 +336,141 @@ WMError Window::SetBackgroundColor(uint32_t color)
 WMError Window::SetBrightness(float brightness)
 {
     LOGI("Window::SetBrightness called. brightness=%.3f", brightness);
-    return WMError::WM_OK;
+
+    bool result = SubWindowManagerJni::SetAppScreenBrightness(brightness);
+
+    brightness_ = brightness;
+    if (result) {
+        LOGI("Window::SetBrightness: success");
+        return WMError::WM_OK;
+    } else {
+        LOGI("Window::SetBrightness: failed");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
 }
 WMError Window::SetKeepScreenOn(bool keepScreenOn)
 {
     LOGI("Window::SetKeepScreenOn called. keepScreenOn=%d", keepScreenOn);
-    return WMError::WM_OK;
+
+    bool result = SubWindowManagerJni::SetKeepScreenOn(keepScreenOn);
+
+    if (result) {
+        LOGI("Window::SetKeepScreenOn: success");
+        return WMError::WM_OK;
+    } else {
+        LOGI("Window::SetKeepScreenOn: failed");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
 }
 
 bool Window::IsKeepScreenOn()
 {
     LOGI("Window::IsKeepScreenOn called.");
-    return true;
+
+    return SubWindowManagerJni::IsKeepScreenOn();
 }
 
 WMError Window::SetSystemBarProperty(WindowType type, const SystemBarProperty& property)
 {
     LOGI("Window::SetSystemBarProperty called.");
-    return WMError::WM_OK;
+
+    bool hide = !property.enable_;
+    bool result = false;
+
+    if (type == WindowType::WINDOW_TYPE_NAVIGATION_BAR) {
+        if (hide) {
+            result = SubWindowManagerJni::SetActionBarStatus(true);
+        } else {
+            result = SubWindowManagerJni::SetActionBarStatus(false);
+        }
+
+    } else if (type == WindowType::WINDOW_TYPE_STATUS_BAR) {
+        if (hide) {
+            result = SubWindowManagerJni::SetStatusBarStatus(true);
+        } else {
+            result = SubWindowManagerJni::SetStatusBarStatus(false);
+        }
+    }
+
+    sysBarPropMap_[type] = property;
+
+    if (result) {
+        LOGI("Window::SetSystemBarProperty: success");
+        return WMError::WM_OK;
+    } else {
+        LOGI("Window::SetSystemBarProperty: failed");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
 }
 
 void Window::SetRequestedOrientation(Orientation orientation)
 {
     LOGI("Window::SetRequestedOrientation called.");
+
+    bool result = SubWindowManagerJni::RequestOrientation(orientation);
+
+    if (result) {
+        LOGI("Window::SetRequestedOrientation: success");
+    } else {
+        LOGI("Window::SetRequestedOrientation: failed");
+    }
 }
 
 SystemBarProperty Window::GetSystemBarPropertyByType(WindowType type) const
 {
     LOGI("Window::GetSystemBarPropertyByType called.");
-    return property_;
+    for (auto& it : sysBarPropMap_) {
+        if (it.first == type) {
+            return it.second;
+        }
+    }
+}
+
+void Window::ClearListenersById(uint32_t winId)
+{
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    ClearUselessListeners(lifecycleListeners_, winId);
 }
 
 WMError Window::RegisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener)
 {
-    LOGI("Window::RegisterLifeCycleListener called.");
-    return WMError::WM_OK;
+    LOGD("Start register");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return RegisterListener(lifecycleListeners_[GetWindowId()], listener);
 }
+
 WMError Window::UnregisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener)
 {
-    LOGI("Window::UnregisterLifeCycleListener called.");
+    LOGD("Start unregister");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return UnregisterListener(lifecycleListeners_[GetWindowId()], listener);
+}
+
+template<typename T>
+WMError Window::RegisterListener(std::vector<sptr<T>>& holder, const sptr<T>& listener)
+{
+    if (listener == nullptr) {
+        LOGE("listener is nullptr");
+        return WMError::WM_ERROR_NULLPTR;
+    }
+    if (std::find(holder.begin(), holder.end(), listener) != holder.end()) {
+        LOGE("Listener already registered");
+        return WMError::WM_OK;
+    }
+    holder.emplace_back(listener);
+    return WMError::WM_OK;
+}
+
+template<typename T>
+WMError Window::UnregisterListener(std::vector<sptr<T>>& holder, const sptr<T>& listener)
+{
+    if (listener == nullptr) {
+        LOGE("listener could not be null");
+        return WMError::WM_ERROR_NULLPTR;
+    }
+    holder.erase(std::remove_if(holder.begin(), holder.end(),
+                     [listener](sptr<T> registeredListener) { return registeredListener == listener; }),
+        holder.end());
     return WMError::WM_OK;
 }
 
@@ -258,9 +478,7 @@ void Window::RequestVsync(const std::shared_ptr<VsyncCallback>& vsyncCallback)
 {
     // stage model
     if (receiver_) {
-        auto callback = [vsyncCallback](int64_t timestamp, void*) {
-            vsyncCallback->onCallback(timestamp);
-        };
+        auto callback = [vsyncCallback](int64_t timestamp, void*) { vsyncCallback->onCallback(timestamp); };
         VSyncReceiver::FrameCallback fcb = {
             .userData_ = this,
             .callback_ = callback,
@@ -366,11 +584,9 @@ void Window::WindowFocusChanged(bool hasWindowFocus)
     if (hasWindowFocus) {
         LOGI("Window: notify uiContent Focus");
         uiContent_->Focus();
-        isWindowShow_ = true;
     } else {
         LOGI("Window: notify uiContent UnFocus");
         uiContent_->UnFocus();
-        isWindowShow_ = false;
     }
 }
 
@@ -382,7 +598,6 @@ void Window::Foreground()
     }
     LOGI("Window: notify uiContent Foreground");
     uiContent_->Foreground();
-    isWindowShow_ = true;
 }
 
 void Window::Background()
@@ -392,18 +607,7 @@ void Window::Background()
         return;
     }
     LOGI("Window: notify uiContent Background");
-    isWindowShow_ = false;
     uiContent_->Background();
-}
-
-void Window::Destroy()
-{
-    if (!uiContent_) {
-        LOGW("Window::Destroy uiContent_ is nullptr");
-        return;
-    }
-    LOGI("Window: notify uiContent Destroy");
-    uiContent_->Destroy();
 }
 
 bool Window::ProcessBackPressed()
@@ -424,8 +628,8 @@ bool Window::ProcessPointerEvent(const std::vector<uint8_t>& data)
     return uiContent_->ProcessPointerEvent(data);
 }
 
-bool Window::ProcessKeyEvent(int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp,
-    int64_t timeStampStart)
+bool Window::ProcessKeyEvent(
+    int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp, int64_t timeStampStart)
 {
     if (!uiContent_) {
         LOGW("Window::ProcessKeyEvent uiContent_ is nullptr");
@@ -448,8 +652,8 @@ void Window::DelayNotifyUIContentIfNeeded()
     }
 
     if (delayNotifySurfaceChanged_) {
-        LOGI("Window Delay Notify uiContent_ Surface Changed wh:[%{public}d, %{public}d]",
-            surfaceWidth_, surfaceHeight_);
+        LOGI("Window Delay Notify uiContent_ Surface Changed wh:[%{public}d, %{public}d]", surfaceWidth_,
+            surfaceHeight_);
         Ace::ViewportConfig config;
         config.SetDensity(density_);
         config.SetSize(surfaceWidth_, surfaceHeight_);
@@ -465,8 +669,8 @@ void Window::DelayNotifyUIContentIfNeeded()
     }
 }
 
-int Window::SetUIContent(const std::string& contentInfo,
-    NativeEngine* engine, NativeValue* storage, bool isdistributed, AbilityRuntime::Platform::Ability* ability)
+int Window::SetUIContent(const std::string& contentInfo, NativeEngine* engine, NativeValue* storage, bool isdistributed,
+    AbilityRuntime::Platform::Ability* ability)
 {
     using namespace OHOS::Ace::Platform;
     (void)ability;
@@ -480,7 +684,6 @@ int Window::SetUIContent(const std::string& contentInfo,
     uiContent_ = std::move(uiContent);
 
     uiContent_->Foreground();
-    isWindowShow_ = true;
 
     DelayNotifyUIContentIfNeeded();
     return 0;

@@ -16,11 +16,13 @@
 #ifndef FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_SUBWINDOW_MANAGER_JNI_H
 #define FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_SUBWINDOW_MANAGER_JNI_H
 
-#include "jni.h"
 #include <memory>
 #include <string>
-#include "base/utils/noncopyable.h"
+
+#include "jni.h"
 #include "window_option.h"
+
+#include "base/utils/noncopyable.h"
 
 namespace OHOS::Ace::Platform {
 
@@ -35,6 +37,15 @@ struct SubWindowManagerStruct {
     jmethodID destroyWindowMethod;
     jmethodID getWindowIdMethod;
     jmethodID getTopWindowMethod;
+    jmethodID setBackgroundColorMethod;
+    jmethodID setAppScreenBrightnessMethod;
+    jmethodID getAppScreenBrightnessMethod;
+    jmethodID setKeepScreenOnMethod;
+    jmethodID isKeepScreenOnMethod;
+    jmethodID requestOrientationMethod;
+    jmethodID setStatusBarStatusMethod;
+    jmethodID setActionBarStatusMethod;
+    jmethodID isWindowShowingMethod;
 };
 
 class SubWindowManagerJni {
@@ -47,6 +58,16 @@ public:
     static bool MoveWindowTo(const std::string& windowName, int32_t x, int32_t y);
     static bool ResizeWindowTo(const std::string& windowName, int32_t width, int32_t height);
     static bool DestroyWindow(const std::string& windowName);
+    static bool SetBackgroundColor(uint32_t color);
+    static bool SetAppScreenBrightness(float brightness);
+    static float GetAppScreenBrightness();
+    static bool SetKeepScreenOn(bool keepScreenOn);
+    static bool IsKeepScreenOn();
+    static bool RequestOrientation(Rosen::Orientation orientation);
+    static bool SetStatusBarStatus(bool hide);
+    static bool SetActionBarStatus(bool hide);
+    static bool IsWindowShowing(const std::string& name);
+
 private:
     static SubWindowManagerStruct subWindowManagerStruct_;
     static void SetupSubWindowManager(JNIEnv* env, jobject obj);

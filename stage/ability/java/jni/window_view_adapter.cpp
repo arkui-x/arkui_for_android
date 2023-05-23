@@ -73,6 +73,20 @@ void WindowViewAdapter::RemoveWindowView(const std::string& instanceName)
         jobjects_.erase(finder);
     }
 }
+
+std::string WindowViewAdapter::GetWindowName(void* windowView)
+{
+    if (windowView != nullptr) {
+        auto iterator = jobjects_.begin();
+        while (iterator != jobjects_.end()) {
+            if (iterator->second.get() == windowView) {
+                return iterator->first;
+            }
+            iterator++;
+        }
+    }
+    return std::string("");
+}
 } // namespace Platform
 } // namespace AbilityRuntime
 } // namespace OHOS
