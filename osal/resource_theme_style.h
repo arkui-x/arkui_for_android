@@ -35,6 +35,8 @@ public:
 
     void ParseContent() override;
 
+protected:
+    void OnParseStyle();
 private:
     RawAttrMap rawAttrs_; // key and value read from global resource api.
     RawPatternMap patternAttrs_;
