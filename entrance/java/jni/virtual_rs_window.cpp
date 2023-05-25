@@ -151,26 +151,32 @@ std::shared_ptr<Window> Window::CreateSubWindow(
     LOGI("Window::CreateSubWindow called. windowName=%s", option->GetWindowName().c_str());
 
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
-    SubWindowManagerJni::CreateSubWindow(option);
-    jobject view = SubWindowManagerJni::GetContentView(option->GetWindowName());
-    uint32_t windowId = SubWindowManagerJni::GetWindowId(option->GetWindowName());
+    bool result = SubWindowManagerJni::CreateSubWindow(option);
 
-    auto window = std::make_shared<Window>(context);
-    window->SetWindowId(windowId);
-    window->SetWindowName(option->GetWindowName());
-    window->SetWindowType(option->GetWindowType());
-    window->SetParentId(option->GetParentId());
-    window->SetWindowMode(option->GetWindowMode());
-    window->SetRect(option);
+    if (result) {
+        jobject view = SubWindowManagerJni::GetContentView(option->GetWindowName());
+        uint32_t windowId = SubWindowManagerJni::GetWindowId(option->GetWindowName());
 
-    AddToSubWindowMap(window);
-    AddToWindowMap(window);
+        auto window = std::make_shared<Window>(context);
+        window->SetWindowId(windowId);
+        window->SetWindowName(option->GetWindowName());
+        window->SetWindowType(option->GetWindowType());
+        window->SetParentId(option->GetParentId());
+        window->SetWindowMode(option->GetWindowMode());
+        window->SetRect(option);
 
-    window->SetSubWindowView(env, view);
-    window->CreateSurfaceNode(view);
-    LOGI("Window::CreateSubWindow: success");
+        AddToSubWindowMap(window);
+        AddToWindowMap(window);
 
-    return window;
+        window->SetSubWindowView(env, view);
+        window->CreateSurfaceNode(view);
+        LOGI("Window::CreateSubWindow: success");
+
+        return window;
+    }
+
+    LOGI("Window::CreateSubWindow: failed");
+    return nullptr;
 }
 
 WMError Window::Destroy()
@@ -225,13 +231,13 @@ WMError Window::Destroy()
     return WMError::WM_OK;
 }
 
-std::vector<std::shared_ptr<Window>> Window::GetSubWindow(uint32_t parentId)
+const std::vector<std::shared_ptr<Window>>& Window::GetSubWindow(uint32_t parentId)
 {
     LOGI("Window::GetSubWindow called. parentId=%d", parentId);
     if (subWindowMap_.find(parentId) == subWindowMap_.end()) {
         return std::vector<std::shared_ptr<Window>>();
     }
-    return std::vector<std::shared_ptr<Window>>(subWindowMap_[parentId].begin(), subWindowMap_[parentId].end());
+    return subWindowMap_[parentId];
 }
 
 std::shared_ptr<Window> Window::FindWindow(const std::string& name)
@@ -247,12 +253,22 @@ std::shared_ptr<Window> Window::FindWindow(const std::string& name)
 std::shared_ptr<Window> Window::GetTopWindow(const std::shared_ptr<OHOS::AbilityRuntime::Platform::Context>& context)
 {
     LOGI("Window::GetTopWindow");
-    // get last pair in windowMap_
-    auto iter = windowMap_.end();
-    iter--;
-    std::pair<uint32_t, std::shared_ptr<Window>> pair = iter->second;
 
-    return pair.second;
+    auto iter = windowMap_.begin();
+    while (iter != windowMap_.end()) {
+        std::pair<uint32_t, std::shared_ptr<Window>> pair = iter->second;
+        std::shared_ptr<Window> window = pair.second;
+
+        if (window->isForground()) {
+            LOGI("Window::GetTopWindow is forground: %s", window->GetWindowName().c_str());
+            return window;
+        }
+
+        iter++;
+    }
+
+    LOGE("Window::GetTopWindow no window on forground");
+    return nullptr;
 }
 
 WMError Window::ShowWindow()
@@ -584,9 +600,11 @@ void Window::WindowFocusChanged(bool hasWindowFocus)
     if (hasWindowFocus) {
         LOGI("Window: notify uiContent Focus");
         uiContent_->Focus();
+        isForground_ = true;
     } else {
         LOGI("Window: notify uiContent UnFocus");
         uiContent_->UnFocus();
+        isForground_ = false;
     }
 }
 
@@ -598,6 +616,8 @@ void Window::Foreground()
     }
     LOGI("Window: notify uiContent Foreground");
     uiContent_->Foreground();
+
+    isForground_ = true;
 }
 
 void Window::Background()
@@ -608,6 +628,7 @@ void Window::Background()
     }
     LOGI("Window: notify uiContent Background");
     uiContent_->Background();
+    isForground_ = false;
 }
 
 bool Window::ProcessBackPressed()

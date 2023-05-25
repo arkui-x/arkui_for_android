@@ -55,7 +55,7 @@ void SubWindowManagerJni::SetupSubWindowManager(JNIEnv* env, jobject obj)
     subWindowManagerStruct_.object = env->NewGlobalRef(obj);
     subWindowManagerStruct_.clazz = (jclass)env->NewGlobalRef(clazz);
     subWindowManagerStruct_.createSubWindowMethod =
-        env->GetMethodID(clazz, "createSubWindow", "(Ljava/lang/String;IIIIIIII)V");
+        env->GetMethodID(clazz, "createSubWindow", "(Ljava/lang/String;IIIIIIII)Z");
     subWindowManagerStruct_.getContentViewMethod =
         env->GetMethodID(clazz, "getContentView", "(Ljava/lang/String;)Landroid/view/View;");
     subWindowManagerStruct_.resizeMethod = env->GetMethodID(clazz, "resize", "(Ljava/lang/String;II)Z");
@@ -77,12 +77,12 @@ void SubWindowManagerJni::SetupSubWindowManager(JNIEnv* env, jobject obj)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
-void SubWindowManagerJni::CreateSubWindow(std::shared_ptr<OHOS::Rosen::WindowOption> option)
+bool SubWindowManagerJni::CreateSubWindow(std::shared_ptr<OHOS::Rosen::WindowOption> option)
 {
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
     if (env == nullptr) {
         LOGE("SubWindowManagerJni::CreateSubWindow: env is NULL");
-        return;
+        return false;
     }
 
     jstring windowName = env->NewStringUTF(option->GetWindowName().c_str());
@@ -95,12 +95,17 @@ void SubWindowManagerJni::CreateSubWindow(std::shared_ptr<OHOS::Rosen::WindowOpt
     int x = option->GetWindowRect().posX_;
     int y = option->GetWindowRect().posY_;
 
-    env->CallVoidMethod(subWindowManagerStruct_.object, subWindowManagerStruct_.createSubWindowMethod, windowName,
-        windowType, windowMode, windowTag, (int)parentId, width, height, x, y);
-
-    LOGI("SubWindowManagerJni::CreateSubWindow: success");
+    jboolean ret = env->CallBooleanMethod(subWindowManagerStruct_.object, subWindowManagerStruct_.createSubWindowMethod,
+        windowName, windowType, windowMode, windowTag, (int)parentId, width, height, x, y);
 
     env->DeleteLocalRef(windowName);
+    if (ret == JNI_TRUE) {
+        LOGI("SubWindowManagerJni::CreateSubWindow: success");
+        return true;
+    } else {
+        LOGI("SubWindowManagerJni::CreateSubWindow: failed");
+        return false;
+    }
 }
 
 jobject SubWindowManagerJni::GetContentView(const std::string& name)

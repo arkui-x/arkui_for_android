@@ -93,7 +93,7 @@ public class SubWindowManager {
      * @param width    the width
      * @param height   the height
      */
-    public void createSubWindow(String name, int type, int mode, int tag, int parentId, int x, int y, int width,
+    public boolean createSubWindow(String name, int type, int mode, int tag, int parentId, int x, int y, int width,
         int height) {
         Log.d(TAG,
             "createSubWindow called: " + String.format(Locale.ENGLISH,
@@ -104,8 +104,10 @@ public class SubWindowManager {
             subWindow = new SubWindow(mRootActivity, name);
             subWindow.createSubWindow(type, mode, tag, parentId, x, y, width, height);
             mSubWindowMap.put(name, subWindow);
+            return true;
         } else {
             Log.e(TAG, "SubWindow " + name + " already created.");
+            return false;
         }
     }
 
