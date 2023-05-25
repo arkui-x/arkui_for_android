@@ -145,14 +145,6 @@ public:
         rect_.height_ = option->GetWindowRect().height_;
         rect_.posX_ = option->GetWindowRect().posX_;
         rect_.posY_ = option->GetWindowRect().posY_;
-
-        if (rect_.width_ < 1) {
-            rect_.width_ = 100;
-        }
-
-        if (rect_.height_ < 1) {
-            rect_.height_ = 100;
-        }
     }
 
     void SetWindowId(uint32_t windowId)

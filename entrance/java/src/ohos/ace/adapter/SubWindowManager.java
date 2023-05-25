@@ -92,6 +92,7 @@ public class SubWindowManager {
      * @param y        the y
      * @param width    the width
      * @param height   the height
+     * @return the boolean
      */
     public boolean createSubWindow(String name, int type, int mode, int tag, int parentId, int x, int y, int width,
         int height) {

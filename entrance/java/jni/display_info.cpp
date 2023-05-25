@@ -41,28 +41,28 @@ DisplayInfo::DisplayInfo()
     SetHeight(height);
     SetRefreshRate(refreshRate);
 
-    Orientation arkOrentation = Orientation::UNSPECIFIED;
+    Orientation arkOrientation = Orientation::UNSPECIFIED;
     switch( orentation ) {
         case ROTATION_0: {
-            arkOrentation = Orientation::VERTICAL;
+            arkOrientation = Orientation::VERTICAL;
             break;
         }
         case ROTATION_90: {
-            arkOrentation = Orientation::HORIZONTAL;
+            arkOrientation = Orientation::HORIZONTAL;
             break;
         }
         case ROTATION_180: {
-            arkOrentation = Orientation::REVERSE_VERTICAL;
+            arkOrientation = Orientation::REVERSE_VERTICAL;
             break;
         }
         case ROTATION_270: {
-            arkOrentation = Orientation::REVERSE_HORIZONTAL;
+            arkOrientation = Orientation::REVERSE_HORIZONTAL;
             break;
         }
         default:
             break;
     }
-    SetOrientation(arkOrentation);
+    SetOrientation(arkOrientation);
 }
 
 DisplayInfo::~DisplayInfo()
