@@ -221,9 +221,11 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
         front->UpdateState(Frontend::State::ON_CREATE);
         front->SetJsMessageDispatcher(container);
     }
+
+    double density = SystemProperties::GetResolution();
     auto aceResCfg = container->GetResourceConfiguration();
     aceResCfg.SetOrientation(SystemProperties::GetDeviceOrientation());
-    aceResCfg.SetDensity(SystemProperties::GetResolution());
+    aceResCfg.SetDensity(density);
     aceResCfg.SetDeviceType(SystemProperties::GetDeviceType());
     aceResCfg.SetColorMode(SystemProperties::GetColorMode());
     aceResCfg.SetDeviceAccess(SystemProperties::GetDeviceAccess());
@@ -242,7 +244,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
         Platform::AceViewSG::SurfaceCreated(aceView, window_);
     }
     // set view
-    Platform::AceContainerSG::SetView(aceView, 1.0f, 0, 0, window_);
+    Platform::AceContainerSG::SetView(aceView, density, 0, 0, window_);
 
     // Set sdk version in module json mode
     if (isModelJson) {
