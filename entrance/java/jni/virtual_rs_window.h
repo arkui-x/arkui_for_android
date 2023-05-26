@@ -88,7 +88,7 @@ public:
     explicit Window(std::shared_ptr<AbilityRuntime::Platform::Context> context, uint32_t windowId);
     ~Window() override;
 
-    static std::vector<std::shared_ptr<Window>> GetSubWindow(uint32_t parentId);
+    static const std::vector<std::shared_ptr<Window>>& GetSubWindow(uint32_t parentId);
     static std::shared_ptr<Window> FindWindow(const std::string& name);
     static std::shared_ptr<Window> GetTopWindow(
         const std::shared_ptr<OHOS::AbilityRuntime::Platform::Context>& context);
@@ -215,6 +215,11 @@ public:
         return surfaceNode_;
     }
 
+    bool isForground()
+    {
+        return isForground_;
+    }
+
     void UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRuntime::Platform::Configuration>& config);
 
 private:
@@ -231,6 +236,7 @@ private:
     WindowMode windowMode_;
     WindowType windowType_;
     Rect rect_ = { 0, 0, 0, 0 };
+    bool isForground_ = false;
 
     uint32_t backgroundColor_;
     float brightness_;

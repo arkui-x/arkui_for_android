@@ -51,7 +51,7 @@ struct SubWindowManagerStruct {
 class SubWindowManagerJni {
 public:
     static bool Register(const std::shared_ptr<JNIEnv>& env);
-    static void CreateSubWindow(std::shared_ptr<OHOS::Rosen::WindowOption> option);
+    static bool CreateSubWindow(std::shared_ptr<OHOS::Rosen::WindowOption> option);
     static jobject GetContentView(const std::string& windowName);
     static uint32_t GetWindowId(const std::string& windowName);
     static bool ShowWindow(const std::string& windowName);
