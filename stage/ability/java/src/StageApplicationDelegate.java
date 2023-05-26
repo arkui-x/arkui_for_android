@@ -22,6 +22,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
+import android.content.SharedPreferences;
 import android.os.Process;
 import android.util.Log;
 
@@ -59,6 +60,14 @@ public class StageApplicationDelegate {
 
     private static final String DATABASE_DIR = "/database";
 
+    private static final String RESOURCES_DIR = "resources";
+
+    private static final String SYSTEMRES_DIR = "systemres";
+
+    private static final String SHARED_PREFERENCES_NAME = "assets_path";
+
+    private static final String ASSETS_PATH_KEY = "assets_path_key";
+
     private Application stageApplication = null;
 
     /**
@@ -89,7 +98,7 @@ public class StageApplicationDelegate {
         setHapPath(apkPath);
         setNativeAssetManager(stageApplication.getAssets());
 
-        setAssetsFileRelativePath(routerTraverseAssets(ASSETS_SUB_PATH));
+        setAssetsFileRelativePath(getAssetsPath());
         createStagePath();
 
         copyAllModuleResources();
@@ -117,6 +126,37 @@ public class StageApplicationDelegate {
             Log.e(LOG_TAG, "get uid failed, error: " + e.getMessage());
         }
         return uid;
+    }
+
+    private String getAssetsPath() {
+        if (stageApplication == null) {
+            Log.e(LOG_TAG, "stageApplication is null");
+            return "";
+        }
+
+        SharedPreferences sharedPreferences =
+            stageApplication.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
+        if (sharedPreferences == null) {
+            Log.e(LOG_TAG, "sharedPreferences is null");
+            return "";
+        }
+
+        String path = sharedPreferences.getString(ASSETS_PATH_KEY, "");
+        if (!path.isEmpty()) {
+            return path;
+        }
+
+        SharedPreferences.Editor edit = sharedPreferences.edit();
+        if (edit == null) {
+            Log.e(LOG_TAG, "edit is null");
+            return "";
+        }
+
+        String assetsPath = routerTraverseAssets(ASSETS_SUB_PATH);
+        edit.putString(ASSETS_PATH_KEY, assetsPath);
+        edit.commit();
+
+        return assetsPath;
     }
 
     /**
@@ -155,6 +195,8 @@ public class StageApplicationDelegate {
                 String subPath;
                 if ("".equals(path)) {
                     subPath = list[i];
+                } else if (list[i].equals(RESOURCES_DIR) || list[i].equals(SYSTEMRES_DIR)) {
+                    continue;
                 } else {
                     subPath = path + "/" + list[i];
                 }
