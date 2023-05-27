@@ -227,6 +227,8 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     container->SetAssetManagerIfNull(flutterAssetManager);
     container->SetBundlePath(context->GetBundleCodeDir());
     container->SetFilesDataPath(context->GetFilesDir());
+    container->SetModuleName(moduleName);
+    container->SetIsModule(info->compileMode == AppExecFwk::CompileMode::ES_MODULE);
 
     std::string hapResPath { "" };
     std::string sysResPath { "" };
