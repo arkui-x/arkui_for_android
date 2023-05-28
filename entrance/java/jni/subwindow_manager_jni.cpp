@@ -36,7 +36,7 @@ bool SubWindowManagerJni::Register(const std::shared_ptr<JNIEnv>& env)
         return false;
     }
 
-    const jclass clazz = env->FindClass("ohos/ace/adapter/SubWindowManager");
+    const jclass clazz = env->FindClass("ohos/stage/ability/adapter/SubWindowManager");
     if (clazz == nullptr) {
         LOGE("JNI: can't find java class Window");
         return false;

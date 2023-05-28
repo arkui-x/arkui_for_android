@@ -17,6 +17,7 @@
 
 #include <memory>
 
+#include "ability_context.h"
 #include "flutter/shell/platform/android/vsync_waiter_android.h"
 #include "foundation/appframework/arkui/uicontent/ui_content.h"
 #include "hilog.h"
@@ -136,6 +137,17 @@ std::shared_ptr<Window> Window::Create(
     auto window = std::make_shared<Window>(context);
     window->SetWindowView(env, windowView);
     window->SetWindowName(windowName);
+
+    auto abilityContext =
+        OHOS::AbilityRuntime::Platform::Context::ConvertTo<OHOS::AbilityRuntime::Platform::AbilityContext>(context);
+    std::shared_ptr<OHOS::AppExecFwk::AbilityInfo> info;
+    CHECK_NULL_RETURN(abilityContext, nullptr);
+    info = abilityContext->GetAbilityInfo();
+    if (info) {
+        LOGI("info->name = %s, info->instanceId = %d", info->name.c_str(), info->instanceId);
+        window->SetWindowId(info->instanceId);
+    }
+
     AddToWindowMap(window);
     return window;
 }
