@@ -147,7 +147,8 @@ std::string SystemProperties::GetPartialUpdatePkg()
 
 int32_t SystemProperties::GetSvgMode()
 {
-    return 0;
+    // TODO: using SkiaSvgDom.
+    return 1; // 1 for using svgdom of ArkUI, 0 for using SkiaSvgDom
 }
 
 bool SystemProperties::GetIsUseMemoryMonitor()
