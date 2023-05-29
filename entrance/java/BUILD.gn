@@ -59,8 +59,6 @@ java_library("ace_platform_android_java") {
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/InputConnectionClient.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/LoggerAosp.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/WindowView.java",
-    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/SubWindowManager.java",
-    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/SubWindow.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/DisplayInfo.java",
   ]
 

@@ -24,6 +24,8 @@ java_library("stage_platform_android_java") {
     "$ace_root/adapter/android/stage/ability/java/src/StageApplication.java",
     "$ace_root/adapter/android/stage/ability/java/src/StageApplicationDelegate.java",
     "$ace_root/adapter/android/stage/ability/java/src/StageConfiguration.java",
+    "$ace_root/adapter/android/stage/ability/java/src/SubWindow.java",
+    "$ace_root/adapter/android/stage/ability/java/src/SubWindowManager.java",
   ]
 
   deps = [

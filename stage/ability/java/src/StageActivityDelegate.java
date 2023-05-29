@@ -17,7 +17,6 @@ package ohos.stage.ability.adapter;
 
 import android.util.Log;
 import ohos.ace.adapter.WindowView;
-import ohos.ace.adapter.SubWindowManager;
 import ohos.ace.adapter.DisplayInfo;
 
 /**

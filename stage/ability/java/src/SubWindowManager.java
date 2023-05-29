@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ohos.ace.adapter;
+package ohos.stage.ability.adapter;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -353,7 +353,12 @@ public class SubWindowManager {
 
         if (mRootActivity != null) {
             Window window = mRootActivity.getWindow();
-            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            if (keepScreenOn) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            } else {
+                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            }
+
             return true;
         }
         return false;

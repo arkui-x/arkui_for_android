@@ -178,7 +178,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
 
     // create container
     if (info) {
-        instanceId_ = info->instanceId;
+        instanceId_ = window->IsSubWindow() ? window->GetWindowId() : info->instanceId;
         LOGI("acecontainer init instanceId_:%{public}d", instanceId_);
     }
 

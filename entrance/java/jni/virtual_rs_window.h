@@ -112,6 +112,10 @@ public:
     void Background();
     WMError Destroy();
 
+    bool IsSubWindow() const
+    {
+        return windowType_  == OHOS::Rosen::WindowType::WINDOW_TYPE_APP_SUB_WINDOW;
+    }
     // event process
     bool ProcessBackPressed();
     bool ProcessPointerEvent(const std::vector<uint8_t>& data);

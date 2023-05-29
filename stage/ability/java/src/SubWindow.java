@@ -12,13 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ohos.ace.adapter;
+package ohos.stage.ability.adapter;
 
 import android.app.Activity;
 import android.graphics.Color;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.PopupWindow;
+import ohos.ace.adapter.WindowView;
 
 /**
  * The type Sub window.
@@ -73,7 +75,7 @@ public class SubWindow {
      */
     public SubWindow(Activity activity, String name) {
         this.name = name;
-        this.windowId = hashCode();
+        this.windowId = InstanceIdGenerator.getAndIncrement();
         rootActivity = activity;
         rootView = rootActivity.getWindow().getDecorView();
         windowParam = new WindowParam();
@@ -150,14 +152,17 @@ public class SubWindow {
 
         subWindowView.setContentView(contentView);
 
-        subWindowView.showAsDropDown(rootView, windowParam.x, windowParam.y);
+        Log.d(TAG, "showWindow called. x=" + windowParam.x + ", y=" + windowParam.y
+                            + ", width=" + windowParam.width + ", height=" + windowParam.height);
+        subWindowView.showAtLocation(rootView, Gravity.TOP | Gravity.START, windowParam.x, windowParam.y);
     }
 
     /**
      * Update window.
      */
     public void updateWindow() {
-        subWindowView.setContentView(contentView);
+        Log.d(TAG, "updateWindow called. x=" + windowParam.x + ", y=" + windowParam.y
+                            + ", width=" + windowParam.width + ", height=" + windowParam.height);
         subWindowView.update(windowParam.x, windowParam.y, windowParam.width, windowParam.height, true);
     }
 
@@ -200,7 +205,7 @@ public class SubWindow {
      * @param y the y
      */
     public void moveWindowTo(int x, int y) {
-        windowParam.x = y;
+        windowParam.x = x;
         windowParam.y = y;
         updateWindow();
     }
