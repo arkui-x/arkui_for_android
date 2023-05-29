@@ -303,20 +303,9 @@ std::string StageAssetProvider::GetPreferencesDir() const
 void StageAssetProvider::GetResIndexPath(
     const std::string& moduleName, std::string& appResIndexPath, std::string& sysResIndexPath)
 {
-    std::lock_guard<std::mutex> lock(allFilePathMutex_);
-    std::string tModuleName = moduleName + SEPARATOR;
-    for (auto& path : allFilePath_) {
-        if (path.find(RESOURCES_INDEX_NAME) == std::string::npos) {
-            continue;
-        }
-
-        auto fisrtPos = path.find_first_of('/');
-        if (path.find(tModuleName) != std::string::npos) {
-            appResIndexPath = resourcesFilePrefixPath_ + path.substr(fisrtPos, path.size());
-        } else if (path.find(SYSTEM_RES_INDEX_NAME) != std::string::npos) {
-            sysResIndexPath = resourcesFilePrefixPath_ + path.substr(fisrtPos, path.size());
-        }
-    }
+    appResIndexPath = resourcesFilePrefixPath_ + SEPARATOR + moduleName + SEPARATOR + RESOURCES_INDEX_NAME;
+    sysResIndexPath =
+        resourcesFilePrefixPath_ + SEPARATOR + SYSTEM_RES_INDEX_NAME + SEPARATOR + RESOURCES_INDEX_NAME;
 }
 
 void StageAssetProvider::SetResourcesFilePrefixPath(const std::string& resourcesFilePrefixPath)

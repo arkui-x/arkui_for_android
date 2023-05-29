@@ -68,6 +68,8 @@ public class StageApplicationDelegate {
 
     private static final String ASSETS_PATH_KEY = "assets_path_key";
 
+    private static final String COPY_RESOURCE_DIRECTORY_KEY = "copy_resource_directory_key";
+
     private Application stageApplication = null;
 
     /**
@@ -229,13 +231,29 @@ public class StageApplicationDelegate {
      * copy the resources from all modules
      */
     private void copyAllModuleResources() {
-        String rootDirectory = "arkui-x";
+        if (stageApplication == null) {
+            Log.e(LOG_TAG, "stageApplication is null");
+            return;
+        }
+
+        SharedPreferences sharedPreferences =
+            stageApplication.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
+        if (sharedPreferences == null) {
+            Log.e(LOG_TAG, "sharedPreferences is null");
+            return;
+        }
+
+        if (sharedPreferences.getBoolean(COPY_RESOURCE_DIRECTORY_KEY, false)) {
+            Log.i(LOG_TAG, "copy resources directory complete");
+            return;
+        }
+        Log.i(LOG_TAG, "first copy resources directory");
         AssetManager assets = stageApplication.getAssets();
         String moduleResourcesDirectory = "";
         String moduleResourcesIndex = "";
         List<String> moduleResources = new ArrayList<>();
         try {
-            String[] list = assets.list(rootDirectory);
+            String[] list = assets.list(ASSETS_SUB_PATH);
             for (String name : list) {
                 if ("systemres".equals(name)) {
                     moduleResources.add(name);
@@ -250,9 +268,17 @@ public class StageApplicationDelegate {
             Log.e(LOG_TAG, "read resources err: " + e.getMessage());
         }
         for (String resourcesName : moduleResources) {
-            copyFilesFromAssets(rootDirectory + "/" + resourcesName,
+            copyFilesFromAssets(ASSETS_SUB_PATH + "/" + resourcesName,
                 stageApplication.getExternalFilesDir(null).getAbsolutePath() + "/" + resourcesName);
         }
+
+        SharedPreferences.Editor edit = sharedPreferences.edit();
+        if (edit == null) {
+            Log.e(LOG_TAG, "edit is null");
+            return;
+        }
+        edit.putBoolean(COPY_RESOURCE_DIRECTORY_KEY, true);
+        edit.commit();
     }
 
     /**
