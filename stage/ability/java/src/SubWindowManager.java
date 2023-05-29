@@ -353,7 +353,12 @@ public class SubWindowManager {
 
         if (mRootActivity != null) {
             Window window = mRootActivity.getWindow();
-            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            if (keepScreenOn) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            } else {
+                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            }
+
             return true;
         }
         return false;
