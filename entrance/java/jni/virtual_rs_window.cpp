@@ -35,7 +35,8 @@ using namespace OHOS::Ace::Platform;
 namespace OHOS::Rosen {
 namespace {
 template<typename T>
-void DummyRelease(T*) {
+void DummyRelease(T*)
+{
     HILOG_INFO("dummy release.");
 }
 }
