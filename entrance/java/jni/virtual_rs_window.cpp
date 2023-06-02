@@ -33,7 +33,13 @@
 using namespace OHOS::Ace::Platform;
 
 namespace OHOS::Rosen {
-
+namespace {
+template<typename T>
+void DummyRelease(T*)
+{
+    HILOG_INFO("dummy release.");
+}
+}
 std::map<uint32_t, std::vector<std::shared_ptr<Window>>> Window::subWindowMap_;
 std::map<std::string, std::pair<uint32_t, std::shared_ptr<Window>>> Window::windowMap_;
 std::map<uint32_t, std::vector<sptr<IWindowLifeCycle>>> Window::lifecycleListeners_;
@@ -134,7 +140,7 @@ std::shared_ptr<Window> Window::Create(
 
     LOGI("Window::Create called. windowName=%s", windowName.c_str());
 
-    auto window = std::make_shared<Window>(context);
+    auto window = std::shared_ptr<Window>(new Window(context), DummyRelease<Window>);
     window->SetWindowView(env, windowView);
     window->SetWindowName(windowName);
 
