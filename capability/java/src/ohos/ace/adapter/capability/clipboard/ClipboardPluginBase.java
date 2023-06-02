@@ -36,6 +36,13 @@ public abstract class ClipboardPluginBase {
     public abstract void setData(String data);
 
     /**
+     * Check if clipboard has data
+     *
+     * @return true if clipboard has data
+     */
+    public abstract boolean hasData();
+
+    /**
      * Clear data in clipboard
      */
     public abstract void clear();

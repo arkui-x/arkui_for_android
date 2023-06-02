@@ -37,6 +37,8 @@ public:
     static bool GetData(
         const std::function<void(const std::string&)>& callback, const WeakPtr<TaskExecutor>& taskExecutor);
 
+    static bool HasData(const std::function<void(const bool)>& callback, const WeakPtr<TaskExecutor>& taskExecutor);
+
     static bool Clear();
 private:
     ClipboardJni() = delete;

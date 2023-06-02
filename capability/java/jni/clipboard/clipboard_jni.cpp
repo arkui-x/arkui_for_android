@@ -34,10 +34,12 @@ static const JNINativeMethod METHODS[] = {
 
 static const char METHOD_SET_DATA[] = "setData";
 static const char METHOD_GET_DATA[] = "getData";
+static const char METHOD_HAS_DATA[] = "hasData";
 static const char METHOD_CLEAR[] = "clear";
 
 static const char SIGNATURE_SET_DATA[] = "(Ljava/lang/String;)V";
 static const char SIGNATURE_GET_DATA[] = "()Ljava/lang/String;";
+static const char SIGNATURE_HAS_DATA[] = "()Z";
 static const char SIGNATURE_CLEAR[] = "()V";
 
 JniEnvironment::JavaGlobalRef g_clipboardObj(nullptr, nullptr);
@@ -45,6 +47,7 @@ JniEnvironment::JavaGlobalRef g_clipboardObj(nullptr, nullptr);
 struct {
     jmethodID setData;
     jmethodID getData;
+    jmethodID hasData;
     jmethodID clear;
 } g_pluginMethods;
 
@@ -100,6 +103,11 @@ void ClipboardJni::NativeInit(JNIEnv* env, jobject object)
     g_pluginMethods.getData = env->GetMethodID(clazz, METHOD_GET_DATA, SIGNATURE_GET_DATA);
     if (!g_pluginMethods.getData) {
         LOGW("Clipborad JNI Init: getData method not found");
+    }
+
+    g_pluginMethods.hasData = env->GetMethodID(clazz, METHOD_HAS_DATA, SIGNATURE_HAS_DATA);
+    if (!g_pluginMethods.hasData) {
+        LOGW("Clipborad JNI Init: hasData method not found");
     }
 
     g_pluginMethods.clear = env->GetMethodID(clazz, METHOD_CLEAR, SIGNATURE_CLEAR);
@@ -171,6 +179,39 @@ bool ClipboardJni::GetData(
             [callback, result] {
                 if (callback) {
                     callback(result);
+                }
+            },
+            TaskExecutor::TaskType::UI);
+    }
+    return true;
+}
+
+bool ClipboardJni::HasData(const std::function<void(const bool)>& callback, const WeakPtr<TaskExecutor>& taskExecutor)
+{
+    auto env = JniEnvironment::GetInstance().GetJniEnv();
+    if (!env) {
+        LOGW("Clipborad JNI: null env");
+        return false;
+    }
+    if (!g_clipboardObj || !g_pluginMethods.hasData) {
+        LOGW("Clipborad JNI: null hasData method");
+        return false;
+    }
+
+    bool jResult = static_cast<bool>(env->CallBooleanMethod(g_clipboardObj.get(), g_pluginMethods.hasData));
+    if (env->ExceptionCheck()) {
+        LOGE("Clipborad JNI: call hasData has exception");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return false;
+    }
+
+    auto executor = taskExecutor.Upgrade();
+    if (executor) {
+        executor->PostTask(
+            [callback, jResult] {
+                if (callback) {
+                    callback(jResult);
                 }
             },
             TaskExecutor::TaskType::UI);
