@@ -16,12 +16,16 @@
 #include "application_context_adapter.h"
 
 #include <cctype>
-
+#include "ability_manager_errors.h"
 #include "base/log/log.h"
 
 namespace OHOS {
 namespace AbilityRuntime {
 namespace Platform {
+namespace {
+const std::string ABILITY_NAME = "Ability";
+const std::string ACTIVITY_NAME = "Activity";
+} // namespace
 std::shared_ptr<ApplicationContextAdapter> ApplicationContextAdapter::instance_ = nullptr;
 std::mutex ApplicationContextAdapter::mutex_;
 ApplicationContextAdapter::ApplicationContextAdapter() : object_(nullptr, nullptr) {}
@@ -38,6 +42,67 @@ std::shared_ptr<ApplicationContextAdapter> ApplicationContextAdapter::GetInstanc
     }
 
     return instance_;
+}
+
+int32_t ApplicationContextAdapter::StartAbility(const AAFwk::Want& want)
+{
+    LOGI("AbilityDelegator:start ability with application.");
+    auto env = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (env == nullptr) {
+        LOGE("env is nullptr");
+        return AAFwk::INNER_ERR;
+    }
+
+    const jclass objClass = env->GetObjectClass(object_.get());
+    if (objClass == nullptr) {
+        LOGE("GetObjectClass return null");
+        return AAFwk::INNER_ERR;
+    }
+
+    auto startActivityMethod =
+        env->GetMethodID(objClass, "startActivity", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
+    if (startActivityMethod == nullptr) {
+        LOGE("fail to get the method StartActivity id");
+        return AAFwk::INNER_ERR;
+    }
+    env->DeleteLocalRef(objClass);
+
+    auto bundleName = want.GetBundleName();
+    auto moduleName = want.GetModuleName();
+    auto abilityName = want.GetAbilityName();
+    LOGI("AbilityDelegator:bundleName: %{public}s, moduleName: %{public}s, abilityName: %{public}s", bundleName.c_str(),
+        moduleName.c_str(), abilityName.c_str());
+    
+    if (!moduleName.empty()) {
+        moduleName[0] = std::toupper(moduleName[0]);
+    }
+    LOGI("AbilityDelegator:moduleName : %{public}s", moduleName.c_str());
+    std::string activityName;
+    auto pos = abilityName.find(ABILITY_NAME);
+    if (pos != std::string::npos) {
+        activityName = bundleName + "." + moduleName + abilityName.replace(pos, ABILITY_NAME.size(), ACTIVITY_NAME);
+    } else {
+        activityName = bundleName + "." + moduleName + abilityName;
+    }
+
+    LOGI("AbilityDelegator:activityName : %{public}s", activityName.c_str());
+    LOGI("AbilityDelegator:params : %{public}s", want.ToJson().c_str());
+    jstring jBundleName = env->NewStringUTF(bundleName.c_str());
+    jstring jActivityName = env->NewStringUTF(activityName.c_str());
+    jstring jParams = env->NewStringUTF(want.ToJson().c_str());
+    if (jBundleName == nullptr || jActivityName == nullptr || jParams == nullptr) {
+        LOGE("jBundleName or jActivityName or jParams is nullptr");
+        return AAFwk::INNER_ERR;
+    }
+
+    auto result = env->CallIntMethod(object_.get(), startActivityMethod, jBundleName, jActivityName, jParams);
+    env->DeleteLocalRef(jBundleName);
+    env->DeleteLocalRef(jActivityName);
+    
+    if (result != ERR_OK) {
+        return AAFwk::INVALID_PARAMETERS_ERR;
+    }
+    return ERR_OK;
 }
 
 void ApplicationContextAdapter::SetStageApplicationDelegate(jobject stageApplicationDelegate)
@@ -83,6 +148,87 @@ std::string ApplicationContextAdapter::ConvertJstringToString(std::shared_ptr<JN
         env->DeleteLocalRef(jstr);
     }
     return result;
+}
+
+int32_t ApplicationContextAdapter::FinishUserTest()
+{
+    LOGI("Finish user test.");
+    auto env = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (env == nullptr) {
+        LOGE("env is nullptr");
+        return AAFwk::INNER_ERR;
+    }
+
+    const jclass objClass = env->GetObjectClass(object_.get());
+    if (objClass == nullptr) {
+        LOGE("GetObjectClass return null");
+        return AAFwk::INNER_ERR;
+    }
+
+    jmethodID finishUserTestMethod = env->GetMethodID(objClass, "finishUserTest", "()I");
+    if (finishUserTestMethod == nullptr) {
+        LOGE("fail to get the method finishUserTest id");
+        return AAFwk::INNER_ERR;
+    }
+
+    env->DeleteLocalRef(objClass);
+    env->CallIntMethod(object_.get(), finishUserTestMethod);
+    return ERR_OK;
+}
+
+std::string ApplicationContextAdapter::GetTopAbility()
+{
+    LOGI("Get top ability.");
+    auto env = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (env == nullptr) {
+        LOGE("env is nullptr");
+        return "";
+    }
+
+    const jclass objClass = env->GetObjectClass(object_.get());
+    if (objClass == nullptr) {
+        LOGE("GetObjectClass return null");
+        return "";
+    }
+
+    jmethodID getTopActivityMethod = env->GetMethodID(objClass, "getTopActivity", "()Ljava/lang/String;");
+    if (getTopActivityMethod == nullptr) {
+        LOGE("fail to get the method getTopActivity id");
+        return "";
+    }
+
+    env->DeleteLocalRef(objClass);
+
+    jstring result = (jstring) env->CallObjectMethod(object_.get(), getTopActivityMethod);
+    const char* topAbility = env->GetStringUTFChars(result, NULL);
+    return topAbility;
+}
+
+void ApplicationContextAdapter::Print(std::string msg)
+{
+    LOGI("Print the message.");
+    auto env = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (env == nullptr) {
+        LOGE("env is nullptr");
+        return;
+    }
+
+    const jclass objClass = env->GetObjectClass(object_.get());
+    if (objClass == nullptr) {
+        LOGE("GetObjectClass return null");
+        return;
+    }
+
+    jmethodID printMethod = env->GetMethodID(objClass, "print", "(Ljava/lang/String;)V");
+    if (printMethod == nullptr) {
+        LOGE("fail to get the method print id");
+        return;
+    }
+
+    env->DeleteLocalRef(objClass);
+
+    jstring jMsg = env->NewStringUTF(msg.c_str());
+    env->CallVoidMethod(object_.get(), printMethod, jMsg);
 }
 
 std::vector<RunningProcessInfo> ApplicationContextAdapter::GetRunningProcessInformation()

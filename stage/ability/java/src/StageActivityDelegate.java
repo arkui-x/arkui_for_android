@@ -108,6 +108,10 @@ public class StageActivityDelegate {
         nativeSetWindowView(instanceName, windowView);
     }
 
+    public void CreateAbilityDelegator(String bundleName, String moduleName, String testRunerName, String timeout) {
+        nativeCreateAbilityDelegator(bundleName,  moduleName, testRunerName, timeout);
+    }
+
     private native void nativeAttachStageActivity(String instanceName, StageActivity object);
     private native void nativeDispatchOnCreate(String instanceName, String params);
     private native void nativeDispatchOnDestroy(String instanceName);
@@ -115,4 +119,5 @@ public class StageActivityDelegate {
     private native void nativeDispatchOnBackground(String instanceName);
     private native void nativeDispatchOnNewWant(String instanceName);
     private native void nativeSetWindowView(String instanceName, WindowView windowView);
+    private native void nativeCreateAbilityDelegator(String bundleName, String moduleName, String testRunerName, String timeout);
 }

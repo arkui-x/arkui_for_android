@@ -15,14 +15,19 @@
 
 package ohos.stage.ability.adapter;
 
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Application;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.ComponentName;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.os.Process;
 import android.util.Log;
 
@@ -69,6 +74,12 @@ public class StageApplicationDelegate {
     private static final String ASSETS_PATH_KEY = "assets_path_key";
 
     private static final String COPY_RESOURCE_DIRECTORY_KEY = "copy_resource_directory_key";
+	
+    private static final String WANT_PARAMS = "params";
+ 
+    private static final int ERR_INVALID_PARAMETERS = -1;
+ 
+    private static final int ERR_OK = 0;
 
     private Application stageApplication = null;
 
@@ -369,6 +380,84 @@ public class StageApplicationDelegate {
         return processInfos;
     }
 
+    /**
+      * Finish user test.
+      * @return Returns ERR_OK on success, others on failure.
+      */
+    public int finishUserTest() {
+        Log.i(LOG_TAG, "Finish user test called");
+        int error = ERR_OK;
+        try {
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            stageApplication.getApplicationContext().startActivity(intent);
+            android.os.Process.killProcess(android.os.Process.myPid());
+            System.exit(0);
+        } catch (Exception exception) {
+            Log.e(LOG_TAG, "finish test err.");
+            error = ERR_INVALID_PARAMETERS;
+        }
+        return error;
+    }
+
+    /**
+     * Get the package name and activity name at the top of the stack.
+     * @return Return the ability name.
+     */
+    public String getTopActivity() {
+        Log.i(LOG_TAG, "Get top activity called");
+        String topAbility = null;
+        try {
+            Activity topActivity = StageApplication.getInstance().getCurrentTopActivity();
+            if (topActivity instanceof StageActivity) {
+                topAbility = ((StageActivity) topActivity).getInstanceName();
+            }
+        } catch (Exception exception) {
+            Log.e(LOG_TAG, "get top activity error.");
+        }
+        return topAbility;
+    }
+
+    /**
+     * Print message.
+     * @param msg
+     */
+    public void print(String msg){
+        Log.i(LOG_TAG, "print message: " + msg);
+    }
+    
+    /**
+      * Start a new activity.
+      *
+      * @param bundleName the package name.
+      * @param activityName the activity name.
+      * @param params the want params.
+      * @return Returns ERR_OK on success, others on failure.
+      */
+    public int startActivity(String bundleName, String activityName, String params) {
+        Log.i(LOG_TAG, "startActivity called, bundleName: " + bundleName + ", activityName: " + activityName);
+        int error = ERR_OK;
+        try {
+            Intent intent = new Intent();
+            String packageName = stageApplication.getApplicationContext().getPackageName();
+            ComponentName componentName = null;
+            if (packageName.equals(bundleName)) {
+                componentName = new ComponentName(stageApplication.getApplicationContext(), activityName);
+            } else {
+                componentName = new ComponentName(bundleName, activityName);
+            }
+            intent.setComponent(componentName);
+            intent.putExtra(WANT_PARAMS, params);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            stageApplication.getApplicationContext().startActivity(intent);
+        } catch (ActivityNotFoundException exception) {
+            Log.e("StageApplication", "start activity err.");
+            error = ERR_INVALID_PARAMETERS;
+        }
+        return error;
+    }
+    
     /**
      * Set asset manager object to native.
      *

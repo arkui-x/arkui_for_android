@@ -14,11 +14,13 @@
  */
 
 #include "ability_context_adapter.h"
+#include "application_context_adapter.h"
 
 #include <cctype>
 
 #include "ability_manager_errors.h"
 #include "base/log/log.h"
+#include "base/utils/string_utils.h"
 
 namespace OHOS {
 namespace AbilityRuntime {
@@ -126,6 +128,147 @@ int32_t AbilityContextAdapter::StartAbility(const std::string& instanceName, con
     env->DeleteLocalRef(jActivityName);
 
     if (result != ERR_OK) {
+        return AAFwk::INVALID_PARAMETERS_ERR;
+    }
+    return ERR_OK;
+}
+
+int32_t AbilityContextAdapter::DoAbilityForeground(const std::string &fullName)
+{
+    LOGI("Do ability foreground, caller full name: %{public}s", fullName.c_str());
+    std::string instanceName = ApplicationContextAdapter::GetInstance()->GetTopAbility();
+    auto finder = jobjects_.find(instanceName);
+    if (finder == jobjects_.end()) {
+        LOGE("Activity caller is not exist.");
+        return AAFwk::INNER_ERR;
+    }
+
+    jobject stageActivity = finder->second.get();
+    if (stageActivity == nullptr) {
+        LOGE("stageActivity is nullptr");
+        return AAFwk::INNER_ERR;
+    }
+
+    auto env = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (env == nullptr) {
+        LOGE("env is nullptr");
+        return AAFwk::INNER_ERR;
+    }
+
+    const jclass objClass = env->GetObjectClass(stageActivity);
+    if (objClass == nullptr) {
+        LOGE("GetObjectClass return null");
+        return AAFwk::INNER_ERR;
+    }
+
+    auto doActivityForegroundMethod = env->GetMethodID(objClass, "doActivityForeground", "(Ljava/lang/String;Ljava/lang/String;)I");
+    if (doActivityForegroundMethod == nullptr) {
+        LOGE("fail to get the method doActivityForeground id");
+        return AAFwk::INNER_ERR;
+    }
+    env->DeleteLocalRef(objClass);
+
+    std::vector<std::string> vecList;
+    Ace::StringUtils::StringSplitter(fullName, ':', vecList);
+    size_t lens = vecList.size();
+    if (lens != 3) {
+        LOGE("Enter DoAbilityForeground StringSplit fullName size not equal three!");
+        return AAFwk::INVALID_PARAMETERS_ERR;
+    }
+    auto bundleName = vecList[0];
+    auto moduleName = vecList[1];
+    auto abilityName = vecList[2];
+    LOGI("bundleName: %{public}s, moduleName: %{public}s, abilityName: %{public}s", bundleName.c_str(),
+        moduleName.c_str(), abilityName.c_str());
+    
+    if (!moduleName.empty()) {
+        moduleName[0] = std::toupper(moduleName[0]);
+    }
+    LOGI("moduleName : %{public}s", moduleName.c_str());
+    std::string activityName;
+    auto pos = abilityName.find(ABILITY_NAME);
+    if (pos != std::string::npos) {
+        activityName = moduleName + abilityName.replace(pos, ABILITY_NAME.size(), ACTIVITY_NAME);
+    } else {
+        activityName = moduleName + abilityName;
+    }
+    
+    LOGI("activityName : %{public}s", activityName.c_str());
+    jstring jBundleName = env->NewStringUTF(bundleName.c_str());
+    jstring jActivityName = env->NewStringUTF(activityName.c_str());
+    if (jBundleName == nullptr || jActivityName == nullptr) {
+        LOGE("jBundleName or jActivityName is nullptr");
+        return AAFwk::INNER_ERR;
+    }
+    
+    auto result = env->CallIntMethod(stageActivity, doActivityForegroundMethod, jBundleName, jActivityName);
+    env->DeleteLocalRef(jBundleName);
+    env->DeleteLocalRef(jActivityName);
+
+    if (result != ERR_OK) {
+        LOGE("DoAbilityForeground INVALID_PARAMETERS_ERR");
+        return AAFwk::INVALID_PARAMETERS_ERR;
+    }
+    return ERR_OK;
+}
+
+int32_t AbilityContextAdapter::DoAbilityBackground(const std::string &fullName)
+{
+    LOGI("Do ability background");
+    std::vector<std::string> vecList;
+    Ace::StringUtils::StringSplitter(fullName, ':', vecList);
+    size_t lens = vecList.size();
+    if (lens != 3) {
+        LOGE("Enter DoAbilityForeground StringSplit fullName size not equal three!");
+        return AAFwk::INVALID_PARAMETERS_ERR;
+    }
+    auto bundleName = vecList[0];
+    auto moduleName = vecList[1];
+    auto abilityName = vecList[2];
+
+    std::string activityName;
+    auto pos = abilityName.find(ABILITY_NAME);
+    if (pos != std::string::npos) {
+        activityName = bundleName + ":" + moduleName + ":" + abilityName + ":1";
+    } else {
+        activityName = bundleName + ":" + moduleName + ":" + abilityName.replace(pos, ABILITY_NAME.size(), ACTIVITY_NAME) + ":1";
+    }
+    LOGI("DoAbilityBackground get activityName, activityName: %{public}s", activityName.c_str());
+    auto finder = jobjects_.find(activityName);
+    if (finder == jobjects_.end()) {
+        LOGE("Activity caller is not exist.");
+        return AAFwk::INNER_ERR;
+    }
+
+    jobject stageActivity = finder->second.get();
+    if (stageActivity == nullptr) {
+        LOGE("stageActivity is nullptr");
+        return AAFwk::INNER_ERR;
+    }
+
+    auto env = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (env == nullptr) {
+        LOGE("env is nullptr");
+        return AAFwk::INNER_ERR;
+    }
+
+    const jclass objClass = env->GetObjectClass(stageActivity);
+    if (objClass == nullptr) {
+        LOGE("GetObjectClass return null");
+        return AAFwk::INNER_ERR;
+    }
+
+    auto doActivityBackgroundMethod = env->GetMethodID(objClass, "doActivityBackground", "()I");
+    if (doActivityBackgroundMethod == nullptr) {
+        LOGE("fail to get the method doActivityBackground id");
+        return AAFwk::INNER_ERR;
+    }
+    env->DeleteLocalRef(objClass);
+
+    auto result = env->CallIntMethod(stageActivity, doActivityBackgroundMethod);
+
+    if (result != ERR_OK) {
+        LOGE("DoAbilityBackground INVALID_PARAMETERS_ERR");
         return AAFwk::INVALID_PARAMETERS_ERR;
     }
     return ERR_OK;

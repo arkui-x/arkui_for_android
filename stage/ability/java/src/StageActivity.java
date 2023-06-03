@@ -17,13 +17,17 @@ package ohos.stage.ability.adapter;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.util.List;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 
 import ohos.ace.adapter.AceEnv;
@@ -47,6 +51,8 @@ public class StageActivity extends Activity {
     private static final String INSTANCE_DEFAULT_NAME = "default";
 
     private static final String WANT_PARAMS = "params";
+
+    private static final String TEST_PARAMS = "test";
 
     private int instanceId = InstanceIdGenerator.getAndIncrement();
 
@@ -79,13 +85,13 @@ public class StageActivity extends Activity {
             params = intent.getStringExtra(WANT_PARAMS);
             if (params == null) {
                 params = "";
-            }
+			}
         }
         Log.i(LOG_TAG, "params: " + params);
 
         activityDelegate = new StageActivityDelegate();
         activityDelegate.attachStageActivity(getInstanceName(), this);
-
+        getIntentToCreateDelegator();
         windowView = new WindowView(this);
         initPlatformPlugin(this, instanceId, windowView);
 
@@ -93,7 +99,7 @@ public class StageActivity extends Activity {
         activityDelegate.setWindowView(getInstanceName(), windowView);
         activityDelegate.dispatchOnCreate(getInstanceName(), params);
     }
-
+    
     @Override
     protected void onStart() {
         Log.i(LOG_TAG, "StageActivity onStart called");
@@ -178,12 +184,37 @@ public class StageActivity extends Activity {
     public int getInstanceId() {
         return this.instanceId;
     }
-
-    private String getInstanceName() {
+    
+    /**
+     * Get the instance name.
+     * 
+     * @return The instanceName.
+     */
+    public String getInstanceName() {
         if (instanceName == null) {
             return INSTANCE_DEFAULT_NAME;
         }
         return instanceName;
+    }
+
+    private void getIntentToCreateDelegator() {
+        Intent intent = getIntent();
+        if (intent == null) {
+            Log.w(LOG_TAG, "Intent is null.");
+            return;
+        }
+        boolean hasTestValue = intent.hasExtra(TEST_PARAMS);
+        if (hasTestValue && !StageApplication.isFrist) {
+            Log.i(LOG_TAG, "Start creating abilityDelegate");
+            String bundleName = intent.getStringExtra("bundleName");
+            String moduleName = intent.getStringExtra("moduleName");
+            String testRunerName = intent.getStringExtra("unittest");
+            String timeout = intent.getStringExtra("timeout");
+            activityDelegate.CreateAbilityDelegator(bundleName,  moduleName, testRunerName, timeout);
+            StageApplication.isFrist = true;
+        } else {
+            Log.i(LOG_TAG, "No need to start creating abilityDelegate");
+        }
     }
 
     /**
@@ -218,6 +249,46 @@ public class StageActivity extends Activity {
     }
 
     /**
+     * Switch to the foreground.
+     * 
+     * @param bundleName the package name.
+     * @param activityName the activity name.
+     */
+    public int doActivityForeground(String bundleName, String activityName) {
+        Log.i(LOG_TAG, "doActivityForeground called, bundleName: " + bundleName + ", activityName: " + activityName);
+        int error = ERR_OK;
+        try {
+            Intent intent = new Intent(getApplicationContext(), Class.forName(bundleName + "." + activityName));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
+            pendingIntent.send();
+        } catch (ClassNotFoundException | PendingIntent.CanceledException exception) {
+            Log.e(LOG_TAG, "switch foreground err.");
+            error = ERR_INVALID_PARAMETERS;
+        }
+        return error;
+    }
+ 
+    /**
+     * Switch to the background.
+     * 
+     * @return Returns ERR_OK on success, others on failure.
+     */
+    public int doActivityBackground() {
+        Log.i(LOG_TAG, "doActivityBackground called");
+        int error = ERR_OK;
+        try {
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            startActivity(intent);
+        } catch (ActivityNotFoundException exception) {
+            Log.e(LOG_TAG, "switch background err.");
+            error = ERR_INVALID_PARAMETERS;
+        }
+        return error;
+    }
+
+	/**
      * Call this when your activity is done and should be closed.
      */
     public void finish() {

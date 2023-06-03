@@ -15,8 +15,10 @@
 
 package ohos.stage.ability.adapter;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.res.Configuration;
+import android.os.Bundle;
 import android.util.Log;
 
 /**
@@ -26,8 +28,10 @@ import android.util.Log;
  */
 public class StageApplication extends Application {
     private static final String LOG_TAG = "StageApplication";
-
+    public static boolean isFrist = false;
     private StageApplicationDelegate appDelegate = null;
+    private static StageApplication mInstance;
+    private Activity currentStackTopActivity = null;
 
     /**
      * Call when Application is created.
@@ -39,6 +43,8 @@ public class StageApplication extends Application {
 
         appDelegate = new StageApplicationDelegate();
         appDelegate.initApplication(this);
+        mInstance = this;
+        initActivity();
     }
 
     /**
@@ -56,4 +62,47 @@ public class StageApplication extends Application {
         }
         appDelegate.onConfigurationChanged(newConfig);
     }
+
+    private void initActivity() {
+        registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
+            @Override
+            public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+            }
+ 
+            @Override
+            public void onActivityDestroyed(Activity activity) {
+            }
+ 
+            @Override
+            public void onActivityStarted(Activity activity) {
+            }
+ 
+            @Override
+            public void onActivityResumed(Activity activity) {
+                currentStackTopActivity = activity;
+                Log.d("onActivityResumed: ", currentStackTopActivity + "");
+            }
+ 
+            @Override
+            public void onActivityPaused(Activity activity) {
+            }
+ 
+            @Override
+            public void onActivityStopped(Activity activity) {
+            }
+ 
+            @Override
+            public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+            }
+        });
+    }
+ 
+    public static StageApplication getInstance() {
+        return mInstance;
+    }
+ 
+    public Activity getCurrentTopActivity() {
+        return currentStackTopActivity;
+    }
+     
 }
