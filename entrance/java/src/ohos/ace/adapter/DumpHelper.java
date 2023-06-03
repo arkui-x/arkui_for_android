@@ -42,6 +42,7 @@ public final class DumpHelper {
             add("-frontend");
             add("-accessibility");
             add("-rotation");
+            add("-pipeline");
         }
     };
 
@@ -76,6 +77,7 @@ public final class DumpHelper {
                     "    -layer                         dump information of Layer tree." + System.lineSeparator() +
                     "    -foucs                         dump information of Focus tree." + System.lineSeparator() +
                     "    -frontend                      dump information of Frontend." + System.lineSeparator() +
+                    "    -pipeline                      dump information of Pipeline context." + System.lineSeparator() +
                     "    -memory                        dump information of Memory usage." + System.lineSeparator() +
                     "    -accessibility                 dump information of accessibility tree."
                     + System.lineSeparator() +
