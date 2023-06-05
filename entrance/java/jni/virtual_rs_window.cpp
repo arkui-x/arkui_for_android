@@ -35,7 +35,7 @@ using namespace OHOS::Ace::Platform;
 namespace OHOS::Rosen {
 void DummyWindowRelease(Window* window)
 {
-    if (!window->GetISUIContentInitialize()) {
+    if (!window->GetIsUIContentInitialize()) {
         delete window;
     }
     LOGI("Rosenwindow rsWindow_Window: dummy release");
@@ -737,7 +737,7 @@ int Window::SetUIContent(const std::string& contentInfo, NativeEngine* engine, N
 
     uiContent_->Foreground();
 
-    iSUIContentInitialize_ = true;
+    isUIContentInitialize_ = true;
     DelayNotifyUIContentIfNeeded();
     return 0;
 }

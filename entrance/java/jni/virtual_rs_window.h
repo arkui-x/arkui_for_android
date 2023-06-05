@@ -76,8 +76,7 @@ enum class WindowSizeChangeReason : uint32_t {
     END,
 };
 
-class Window : public RefBase,
-               public std::enable_shared_from_this<Window> {
+class Window : public RefBase {
 public:
     static bool Register(const std::shared_ptr<JNIEnv>& env);
     static std::shared_ptr<Window> Create(
@@ -229,9 +228,9 @@ public:
 
     void UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRuntime::Platform::Configuration>& config);
 
-    bool GetISUIContentInitialize() const
+    bool GetIsUIContentInitialize() const
     {
-        return iSUIContentInitialize_;
+        return isUIContentInitialize_;
     }
 
 private:
@@ -249,7 +248,7 @@ private:
     WindowType windowType_;
     Rect rect_ = { 0, 0, 0, 0 };
     bool isForground_ = false;
-    bool iSUIContentInitialize_ = false;
+    bool isUIContentInitialize_ = false;
 
     uint32_t backgroundColor_;
     float brightness_;
