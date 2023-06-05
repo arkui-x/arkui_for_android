@@ -51,6 +51,7 @@ class EventHandler;
 namespace Rosen {
 class IWindowLifeCycle;
 class WindowOption;
+using NotifyNativeWinDestroyFunc = std::function<void(std::string windowName)>;
 using OnCallback = std::function<void(int64_t)>;
 struct VsyncCallback {
     OnCallback onCallback;
@@ -75,7 +76,8 @@ enum class WindowSizeChangeReason : uint32_t {
     END,
 };
 
-class Window : public RefBase {
+class Window : public RefBase,
+               public std::enable_shared_from_this<Window> {
 public:
     static bool Register(const std::shared_ptr<JNIEnv>& env);
     static std::shared_ptr<Window> Create(
@@ -111,6 +113,7 @@ public:
     void Foreground();
     void Background();
     WMError Destroy();
+    void RegisterWindowDestroyedListener(const NotifyNativeWinDestroyFunc& func);
 
     bool IsSubWindow() const
     {
@@ -226,6 +229,11 @@ public:
 
     void UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRuntime::Platform::Configuration>& config);
 
+    bool GetISUIContentInitialize() const
+    {
+        return iSUIContentInitialize_;
+    }
+
 private:
     void SetWindowView(JNIEnv* env, jobject windowView);
     void SetSubWindowView(JNIEnv* env, jobject windowView);
@@ -241,6 +249,7 @@ private:
     WindowType windowType_;
     Rect rect_ = { 0, 0, 0, 0 };
     bool isForground_ = false;
+    bool iSUIContentInitialize_ = false;
 
     uint32_t backgroundColor_;
     float brightness_;
@@ -272,7 +281,7 @@ private:
     bool delayNotifySurfaceCreated_ = false;
     bool delayNotifySurfaceChanged_ = false;
     bool delayNotifySurfaceDestroyed_ = false;
-
+    NotifyNativeWinDestroyFunc notifyNativefunc_;
     //////////WindowLifeCycle Listeners////////////////////
 
     static std::recursive_mutex globalMutex_;
@@ -337,6 +346,14 @@ private:
     inline void NotifyAfterInactive()
     {
         CALL_LIFECYCLE_LISTENER(AfterInactive);
+    }
+
+    inline void NotifyBeforeDestroy(std::string windowName)
+    {
+        std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+        if (notifyNativefunc_) {
+            notifyNativefunc_(windowName);
+        }
     }
 
     void ClearListenersById(uint32_t winId);
