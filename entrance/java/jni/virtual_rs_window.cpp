@@ -312,6 +312,7 @@ WMError Window::ShowWindow()
 
     bool result = SubWindowManagerJni::ShowWindow(this->GetWindowName());
     if (result) {
+        NotifyAfterForeground();
         return WMError::WM_OK;
     } else {
         return WMError::WM_ERROR_INVALID_WINDOW;
@@ -596,7 +597,8 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
     density_ = density;
     surfaceNode_->SetBoundsWidth(surfaceWidth_);
     surfaceNode_->SetBoundsHeight(surfaceHeight_);
-
+    rect_.width_ = width;
+    rect_.height_ = height;
     if (!uiContent_) {
         LOGW("Window Notify uiContent_ Surface Changed, uiContent_ is nullptr, delay notify.");
         delayNotifySurfaceChanged_ = true;
@@ -631,10 +633,12 @@ void Window::WindowFocusChanged(bool hasWindowFocus)
     if (hasWindowFocus) {
         LOGI("Window: notify uiContent Focus");
         uiContent_->Focus();
+        NotifyAfterActive();
         isForground_ = true;
     } else {
         LOGI("Window: notify uiContent UnFocus");
         uiContent_->UnFocus();
+        NotifyAfterInactive();
         isForground_ = false;
     }
 }
@@ -647,7 +651,7 @@ void Window::Foreground()
     }
     LOGI("Window: notify uiContent Foreground");
     uiContent_->Foreground();
-
+    NotifyAfterForeground();
     isForground_ = true;
 }
 
@@ -659,6 +663,7 @@ void Window::Background()
     }
     LOGI("Window: notify uiContent Background");
     uiContent_->Background();
+    NotifyAfterBackground();
     isForground_ = false;
 }
 
