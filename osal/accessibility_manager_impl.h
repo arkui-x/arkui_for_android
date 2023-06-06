@@ -16,8 +16,14 @@
 #ifndef FOUNDATION_ACE_ADAPTER_ANDROID_OSAL_ACCESSIBILITY_MANAGER_IMPL_H
 #define FOUNDATION_ACE_ADAPTER_ANDROID_OSAL_ACCESSIBILITY_MANAGER_IMPL_H
 
+#include "foundation/appframework/arkui/uicontent/component_info.h"
+
 #include "core/pipeline_ng/pipeline_context.h"
 #include "frameworks/bridge/common/accessibility/accessibility_node_manager.h"
+
+namespace OHOS::Ace::Platform {
+struct ComponentInfo;
+}
 
 namespace OHOS::Ace::Framework {
 
@@ -27,6 +33,7 @@ class AccessibilityManagerImpl : public AccessibilityNodeManager {
 public:
     AccessibilityManagerImpl() = default;
     ~AccessibilityManagerImpl() override = default;
+    bool GetAllComponents(NodeId nodeID, std::vector<OHOS::Ace::Platform::ComponentInfo>& components);
 
 protected:
     void DumpHandleEvent(const std::vector<std::string>& params) override;
