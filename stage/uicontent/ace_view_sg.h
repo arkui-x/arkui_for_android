@@ -25,7 +25,7 @@
 #include "core/common/ace_view.h"
 #include "core/common/platform_res_register.h"
 #include "core/event/key_event_recognizer.h"
-
+#include "core/event/touch_event.h"
 #ifdef ENABLE_ROSEN_BACKEND
 #include "core/common/flutter/flutter_thread_model.h"
 #include "adapter/android/entrance/java/jni/virtual_rs_window.h"
@@ -93,7 +93,7 @@ public:
         return threadModel_.get();
     }
 #endif
-
+    bool DispatchBasicEvent(const std::vector<TouchEvent>& touchEvents);
     bool DispatchTouchEvent(const std::vector<uint8_t>& data);
     bool DispatchKeyEvent(const KeyEventInfo& eventInfo);
 

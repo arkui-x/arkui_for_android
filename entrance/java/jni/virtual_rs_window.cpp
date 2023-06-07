@@ -25,7 +25,7 @@
 #include "subwindow_manager_jni.h"
 #include "transaction/rs_interfaces.h"
 #include "window_view_adapter.h"
-
+#include "core/event/touch_event.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/log/log.h"
 #include "base/utils/utils.h"
@@ -674,6 +674,15 @@ bool Window::ProcessBackPressed()
         return false;
     }
     return uiContent_->ProcessBackPressed();
+}
+
+bool Window::ProcessBasicEvent(const std::vector<Ace::TouchEvent>& touchEvents)
+{
+    if (!uiContent_) {
+        LOGW("Window::ProcessBasicEvent uiContent_ is nullptr");
+        return false;
+    }
+    return uiContent_->ProcessBasicEvent(touchEvents);
 }
 
 bool Window::ProcessPointerEvent(const std::vector<uint8_t>& data)
