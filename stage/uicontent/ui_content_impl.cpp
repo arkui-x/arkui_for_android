@@ -37,6 +37,8 @@
 #include "core/common/container_scope.h"
 #include "core/common/flutter/flutter_asset_manager.h"
 
+#include "core/event/touch_event.h"
+
 namespace OHOS::Ace::Platform {
 namespace {
 const std::string START_PARAMS_KEY = "__startParams";
@@ -414,6 +416,17 @@ bool UIContentImpl::ProcessBackPressed()
     }
     LOGI("ProcessBackPressed: Platform::AceContainerSG::OnBackPressed return false");
     return false;
+}
+
+bool UIContentImpl::ProcessBasicEvent(const std::vector<TouchEvent>& touchEvents)
+{
+    auto container = AceEngine::Get().GetContainer(instanceId_);
+    CHECK_NULL_RETURN_NOLOG(container, false);
+
+    auto aceView = static_cast<Platform::AceViewSG*>(container->GetView());
+    CHECK_NULL_RETURN_NOLOG(aceView, false);
+
+    return aceView->DispatchBasicEvent(touchEvents);
 }
 
 bool UIContentImpl::ProcessPointerEvent(const std::vector<uint8_t>& data)

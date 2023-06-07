@@ -29,6 +29,7 @@
 #include "adapter/android/entrance/java/jni/window_view_jni.h"
 #include "base/log/log.h"
 #include "base/utils/noncopyable.h"
+#include "core/event/touch_event.h"
 
 class NativeValue;
 class NativeEngine;
@@ -120,6 +121,7 @@ public:
     }
     // event process
     bool ProcessBackPressed();
+    bool ProcessBasicEvent(const std::vector<Ace::TouchEvent>& touchEvents);
     bool ProcessPointerEvent(const std::vector<uint8_t>& data);
     bool ProcessKeyEvent(
         int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp = 0, int64_t timeStampStart = 0);
