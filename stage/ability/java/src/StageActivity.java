@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.os.Trace;
 
 import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.AcePlatformPlugin;
@@ -35,7 +36,8 @@ import ohos.ace.adapter.capability.grantresult.GrantResult;
 import ohos.ace.adapter.capability.surface.AceSurfacePluginAosp;
 
 /**
- * A base class for the Ability Cross-platform Environment of the stage model to run on Android.
+ * A base class for the Ability Cross-platform Environment of the stage model to
+ * run on Android.
  * This class is inherited from android Activity.
  * It is entrance of life-cycles of android applications.
  *
@@ -72,6 +74,7 @@ public class StageActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(LOG_TAG, "StageActivity onCreate called");
         super.onCreate(savedInstanceState);
+        Trace.beginSection("StageActivity::onCreate");
 
         Intent intent = getIntent();
         String params = "";
@@ -92,6 +95,7 @@ public class StageActivity extends Activity {
         setContentView(windowView);
         activityDelegate.setWindowView(getInstanceName(), windowView);
         activityDelegate.dispatchOnCreate(getInstanceName(), params);
+        Trace.endSection();
     }
 
     @Override
@@ -104,8 +108,10 @@ public class StageActivity extends Activity {
     protected void onResume() {
         Log.i(LOG_TAG, "StageActivity onResume called");
         super.onResume();
+        Trace.beginSection("StageActivity::onResume");
         activityDelegate.dispatchOnForeground(getInstanceName());
         windowView.foreground();
+        Trace.endSection();
     }
 
     @Override
@@ -189,9 +195,9 @@ public class StageActivity extends Activity {
     /**
      * Start a new activity.
      *
-     * @param bundleName the package name.
+     * @param bundleName   the package name.
      * @param activityName the activity name.
-     * @param params the want params.
+     * @param params       the want params.
      * @return Returns ERR_OK on success, others on failure.
      */
     public int startActivity(String bundleName, String activityName, String params) {
@@ -228,11 +234,12 @@ public class StageActivity extends Activity {
     /**
      * Initialize platform plugins
      *
-     * @param context Application context
+     * @param context    Application context
      * @param instanceId the instance id
      * @param windowView the window view
      */
     private void initPlatformPlugin(Context context, int instanceId, WindowView windowView) {
+        Trace.beginSection("StageActivity::initPlatformPlugin");
         platformPlugin = new AcePlatformPlugin(context, instanceId, windowView, 0L);
         if (platformPlugin != null) {
             windowView.setInputConnectionClient(platformPlugin);
@@ -240,14 +247,17 @@ public class StageActivity extends Activity {
             platformPlugin.addResourcePlugin(AceVideoPluginAosp.createRegister(context, moduleName));
             platformPlugin.addResourcePlugin(AceSurfacePluginAosp.createRegister(context));
         }
+        Trace.endSection();
     }
 
     /**
      * Callback for the result from requesting permissions.
      *
-     * @param requestCode The request code passed in {@link #requestPermissions(String[], int)}.
-     * @param permissions permissions The requested permissions. Never null.
-     * @param grantResults grantResults The grant results for the corresponding permissions.
+     * @param requestCode  The request code passed in
+     *                     {@link #requestPermissions(String[], int)}.
+     * @param permissions  permissions The requested permissions. Never null.
+     * @param grantResults grantResults The grant results for the corresponding
+     *                     permissions.
      */
     public synchronized void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         Context context = getApplicationContext();
