@@ -22,6 +22,7 @@
 #include "jni.h"
 #include "jni_environment.h"
 #include "running_process_info.h"
+#include "want.h"
 
 namespace OHOS {
 namespace AbilityRuntime {
@@ -34,6 +35,10 @@ public:
     static std::shared_ptr<ApplicationContextAdapter> GetInstance();
     void SetStageApplicationDelegate(jobject stageApplicationDelegate);
     std::vector<RunningProcessInfo> GetRunningProcessInformation();
+    std::string GetTopAbility();
+    int32_t StartAbility(const AAFwk::Want& want);
+    void Print(std::string msg);
+    int32_t FinishUserTest();
 
 private:
     std::string ConvertJstringToString(std::shared_ptr<JNIEnv> env, jclass cls, jstring jstr);

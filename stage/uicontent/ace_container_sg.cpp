@@ -161,6 +161,7 @@ void AceContainerSG::InitializeFrontend()
         }
         declarativeFrontend->SetJsEngine(jsEngine);
         EngineHelper::AddEngine(instanceId_, jsEngine);
+        declarativeFrontend->SetPageProfile(pageProfile_);
         declarativeFrontend->SetNeedDebugBreakPoint(AceApplicationInfo::GetInstance().IsNeedDebugBreakPoint());
         declarativeFrontend->SetDebugVersion(AceApplicationInfo::GetInstance().IsDebugVersion());
     } else {

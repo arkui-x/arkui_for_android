@@ -64,8 +64,12 @@ bool StageActivityDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
             .signature = "(Ljava/lang/String;Lohos/ace/adapter/WindowView;)V",
             .fnPtr = reinterpret_cast<void*>(&SetWindowView),
         },
+        {
+            .name = "nativeCreateAbilityDelegator",
+            .signature = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+            .fnPtr = reinterpret_cast<void*>(&CreateAbilityDelegator),
+        },
     };
-
     if (!env) {
         LOGE("JNI StageActivityDelegate: null java env");
         return false;
@@ -186,6 +190,28 @@ void StageActivityDelegateJni::SetWindowView(JNIEnv* env, jclass myclass, jstrin
     }
     WindowViewAdapter::GetInstance()->AddWindowView(instanceName, jwindowView);
     env->ReleaseStringUTFChars(str, instanceName);
+}
+
+void StageActivityDelegateJni::CreateAbilityDelegator(JNIEnv* env, jclass myclass, jstring jbundleName,
+    jstring jmoduleName, jstring jtestName, jstring jtimeout)
+{
+    auto bundleName = env->GetStringUTFChars(jbundleName, nullptr);
+    auto moduleName = env->GetStringUTFChars(jmoduleName, nullptr);
+    auto testName = env->GetStringUTFChars(jtestName, nullptr);
+    auto timeout = env->GetStringUTFChars(jtimeout, nullptr);
+    if (bundleName == nullptr) {
+        LOGE("bundleName is nullptr");
+        return;
+    }
+    if (moduleName == nullptr) {
+        LOGE("moduleName is nullptr");
+        return;
+    }
+    if (testName == nullptr) {
+        LOGE("testName is nullptr");
+        return;
+    }
+    AppMain::GetInstance()->PrepareAbilityDelegator(bundleName, moduleName, testName, timeout);
 }
 } // namespace Platform
 } // namespace AbilityRuntime

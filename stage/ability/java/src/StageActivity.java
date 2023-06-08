@@ -19,6 +19,7 @@ import java.io.FileDescriptor;
 import java.io.PrintWriter;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
@@ -49,6 +50,10 @@ public class StageActivity extends Activity {
     private static final String INSTANCE_DEFAULT_NAME = "default";
 
     private static final String WANT_PARAMS = "params";
+
+    private static final String TEST_PARAMS = "test";
+
+    private static boolean isFrist = false;
 
     private int instanceId = InstanceIdGenerator.getAndIncrement();
 
@@ -88,7 +93,7 @@ public class StageActivity extends Activity {
 
         activityDelegate = new StageActivityDelegate();
         activityDelegate.attachStageActivity(getInstanceName(), this);
-
+        getIntentToCreateDelegator();
         windowView = new WindowView(this);
         initPlatformPlugin(this, instanceId, windowView);
 
@@ -185,11 +190,36 @@ public class StageActivity extends Activity {
         return this.instanceId;
     }
 
-    private String getInstanceName() {
+    /**
+     * Get the instance name.
+     *
+     * @return The instanceName.
+     */
+    public String getInstanceName() {
         if (instanceName == null) {
             return INSTANCE_DEFAULT_NAME;
         }
         return instanceName;
+    }
+
+    private void getIntentToCreateDelegator() {
+        Intent intent = getIntent();
+        if (intent == null) {
+            Log.w(LOG_TAG, "Intent is null.");
+            return;
+        }
+        boolean hasTestValue = intent.hasExtra(TEST_PARAMS);
+        if (hasTestValue && !isFrist) {
+            Log.i(LOG_TAG, "Start creating abilityDelegate");
+            String testBundleName = intent.getStringExtra("bundleName");
+            String testModuleName = intent.getStringExtra("moduleName");
+            String testRunerName = intent.getStringExtra("unittest");
+            String timeout = intent.getStringExtra("timeout");
+            activityDelegate.createAbilityDelegator(testBundleName, testModuleName, testRunerName, timeout);
+            isFrist = true;
+        } else {
+            Log.i(LOG_TAG, "No need to start creating abilityDelegate");
+        }
     }
 
     /**
@@ -218,6 +248,45 @@ public class StageActivity extends Activity {
             this.startActivity(intent);
         } catch (ActivityNotFoundException exception) {
             Log.e("StageApplication", "start activity err: " + exception.getMessage());
+            error = ERR_INVALID_PARAMETERS;
+        }
+        return error;
+    }
+
+    /**
+     * Switch to the foreground.
+     *
+     * @param bundleName   the package name.
+     * @param activityName the activity name.
+     * @return Returns ERR_OK on success, others on failure.
+     */
+    public int doActivityForeground(String bundleName, String activityName) {
+        Log.i(LOG_TAG, "doActivityForeground called, bundleName: " + bundleName + ", activityName: " + activityName);
+        int error = ERR_OK;
+        try {
+            Intent intent = new Intent(getApplicationContext(), Class.forName(bundleName + "." + activityName));
+            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
+            pendingIntent.send();
+        } catch (ClassNotFoundException | PendingIntent.CanceledException exception) {
+            Log.e(LOG_TAG, "switch foreground err.");
+            error = ERR_INVALID_PARAMETERS;
+        }
+        return error;
+    }
+
+    /**
+     * Switch to the background.
+     *
+     * @return Returns ERR_OK on success, others on failure.
+     */
+    public int doActivityBackground() {
+        Log.i(LOG_TAG, "doActivityBackground called");
+        int error = ERR_OK;
+        try {
+            finish();
+        } catch (ActivityNotFoundException exception) {
+            Log.e(LOG_TAG, "switch background err.");
             error = ERR_INVALID_PARAMETERS;
         }
         return error;
@@ -253,11 +322,9 @@ public class StageActivity extends Activity {
     /**
      * Callback for the result from requesting permissions.
      *
-     * @param requestCode  The request code passed in
-     *                     {@link #requestPermissions(String[], int)}.
+     * @param requestCode  The request code passed in {@link #requestPermissions(String[], int)}.
      * @param permissions  permissions The requested permissions. Never null.
-     * @param grantResults grantResults The grant results for the corresponding
-     *                     permissions.
+     * @param grantResults grantResults The grant results for the corresponding permissions.
      */
     public synchronized void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         Context context = getApplicationContext();

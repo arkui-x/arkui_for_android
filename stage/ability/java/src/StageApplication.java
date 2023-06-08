@@ -26,7 +26,6 @@ import android.util.Log;
  */
 public class StageApplication extends Application {
     private static final String LOG_TAG = "StageApplication";
-
     private StageApplicationDelegate appDelegate = null;
 
     /**

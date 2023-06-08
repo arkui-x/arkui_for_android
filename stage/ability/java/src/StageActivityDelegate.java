@@ -16,6 +16,7 @@
 package ohos.stage.ability.adapter;
 
 import android.util.Log;
+
 import ohos.ace.adapter.WindowView;
 import ohos.ace.adapter.DisplayInfo;
 
@@ -38,7 +39,7 @@ public class StageActivityDelegate {
      * Attach stage activity to native.
      *
      * @param instanceName the activity instance name.
-     * @param object the stage activity.
+     * @param object       the stage activity.
      */
     public void attachStageActivity(String instanceName, StageActivity object) {
         nativeAttachStageActivity(instanceName, object);
@@ -50,7 +51,7 @@ public class StageActivityDelegate {
      * Dispatch the oncreate lifecycle to native.
      *
      * @param instanceName the activity instance name.
-     * @param params the want params
+     * @param params       the want params
      */
     public void dispatchOnCreate(String instanceName, String params) {
         Log.i(LOG_TAG, "dispatchOnCreate called");
@@ -101,18 +102,39 @@ public class StageActivityDelegate {
      * Set window view to native.
      *
      * @param instanceName the activity instance name.
-     * @param windowView the window view.
+     * @param windowView   the window view.
      */
     public void setWindowView(String instanceName, WindowView windowView) {
         Log.i(LOG_TAG, "SetWindowView called");
         nativeSetWindowView(instanceName, windowView);
     }
 
+    /**
+     * Create ability delegator.
+     *
+     * @param bundleName the bundle name.
+     * @param moduleName the module name.
+     * @param testRunerName the testRuner name.
+     * @param timeout timeout.
+     */
+    public void createAbilityDelegator(String bundleName, String moduleName, String testRunerName, String timeout) {
+        nativeCreateAbilityDelegator(bundleName, moduleName, testRunerName, timeout);
+    }
+
     private native void nativeAttachStageActivity(String instanceName, StageActivity object);
+
     private native void nativeDispatchOnCreate(String instanceName, String params);
+
     private native void nativeDispatchOnDestroy(String instanceName);
+
     private native void nativeDispatchOnForeground(String instanceName);
+
     private native void nativeDispatchOnBackground(String instanceName);
+
     private native void nativeDispatchOnNewWant(String instanceName);
+
     private native void nativeSetWindowView(String instanceName, WindowView windowView);
+
+    private native void nativeCreateAbilityDelegator(String bundleName, String moduleName,
+                                                        String testRunerName, String timeout);
 }

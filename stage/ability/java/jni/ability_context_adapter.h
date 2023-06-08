@@ -36,7 +36,12 @@ public:
     void AddStageActivity(const std::string& instanceName, jobject stageActivity);
     void RemoveStageActivity(const std::string& instanceName);
     int32_t StartAbility(const std::string& instanceName, const AAFwk::Want& want);
+    int32_t DoAbilityForeground(const std::string &fullName);
+    int32_t DoAbilityBackground(const std::string &fullName);
     void TerminateSelf(const std::string& instanceName);
+    void GetThreeElement(const std::string &fullName, std::string &bundleName,
+        std::string &moduleName, std::string &abilityName);
+    void GetNewFullName(const std::string &fullName, std::string &newFullName);
 
 private:
     static std::shared_ptr<AbilityContextAdapter> instance_;
