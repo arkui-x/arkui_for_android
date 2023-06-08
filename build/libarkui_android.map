@@ -244,6 +244,7 @@
       "icu_69::UnicodeString::doAppend(icu_69::UnicodeString const&, int, int)";
       "icu_69::UnicodeString::doAppend(char16_t const*, int, int)";
       "icu_69::UMemory::operator new(unsigned long)";
+      "icu_69::UMemory::operator new(unsigned int)";
       "icu_69::UMemory::operator delete(void*)";
       "icu_69::UnicodeString::char32At(int) const";
       "icu_69::BreakIterator::createLineInstance(icu_69::Locale const&, UErrorCode&)";

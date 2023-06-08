@@ -147,8 +147,12 @@ std::string SystemProperties::GetPartialUpdatePkg()
 
 int32_t SystemProperties::GetSvgMode()
 {
-    // TODO: using SkiaSvgDom.
-    return 1; // 1 for using svgdom of ArkUI, 0 for using SkiaSvgDom
+    // 1 for using svgdom of ArkUI, 0 for using SkiaSvgDom
+#ifdef NG_BUILD
+    return 0;
+#else
+    return 1;
+#endif
 }
 
 bool SystemProperties::GetIsUseMemoryMonitor()
@@ -171,4 +175,10 @@ bool SystemProperties::IsFormAnimationLimited()
 {
     return false;
 }
+
+bool SystemProperties::GetImageFrameworkEnabled()
+{
+    return false;
+}
+
 } // namespace OHOS::Ace

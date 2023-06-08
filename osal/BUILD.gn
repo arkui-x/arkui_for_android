@@ -30,6 +30,7 @@ template("ace_osal_android_source_set") {
       "event_report.cpp",
       "frame_report.cpp",
       "frame_trace_adapter_impl.cpp",
+      "image_source_android.cpp",
       "layout_inspector.cpp",
       "log_wrapper.cpp",
       "mouse_style_android.cpp",
