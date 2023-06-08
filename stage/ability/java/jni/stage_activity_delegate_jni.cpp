@@ -192,7 +192,7 @@ void StageActivityDelegateJni::SetWindowView(JNIEnv* env, jclass myclass, jstrin
     env->ReleaseStringUTFChars(str, instanceName);
 }
 
-void StageActivityDelegateJni::CreateAbilityDelegator(JNIEnv* env, jstring jbundleName,
+void StageActivityDelegateJni::CreateAbilityDelegator(JNIEnv* env, jclass myclass, jstring jbundleName,
     jstring jmoduleName, jstring jtestName, jstring jtimeout)
 {
     auto bundleName = env->GetStringUTFChars(jbundleName, nullptr);

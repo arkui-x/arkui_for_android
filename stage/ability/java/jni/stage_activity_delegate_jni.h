@@ -36,7 +36,7 @@ public:
     static void DispatchOnBackground(JNIEnv* env, jclass myclass, jstring str);
     static void DispatchOnNewWant(JNIEnv* env, jclass myclass, jstring str);
     static void SetWindowView(JNIEnv* env, jclass myclass, jstring str, jobject jwindowView);
-    static void CreateAbilityDelegator(JNIEnv* env, jstring jbundleName,
+    static void CreateAbilityDelegator(JNIEnv* env, jclass myclass, jstring jbundleName,
         jstring jmoduleName, jstring jtestName, jstring timeout);
 };
 } // namespace Platform
