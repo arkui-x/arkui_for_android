@@ -17,17 +17,14 @@ package ohos.stage.ability.adapter;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
-import java.util.List;
 
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 
 import ohos.ace.adapter.AceEnv;
@@ -53,6 +50,8 @@ public class StageActivity extends Activity {
     private static final String WANT_PARAMS = "params";
 
     private static final String TEST_PARAMS = "test";
+
+    private static boolean isFrist = false;
 
     private int instanceId = InstanceIdGenerator.getAndIncrement();
 
@@ -85,7 +84,7 @@ public class StageActivity extends Activity {
             params = intent.getStringExtra(WANT_PARAMS);
             if (params == null) {
                 params = "";
-			}
+            }
         }
         Log.i(LOG_TAG, "params: " + params);
 
@@ -99,7 +98,7 @@ public class StageActivity extends Activity {
         activityDelegate.setWindowView(getInstanceName(), windowView);
         activityDelegate.dispatchOnCreate(getInstanceName(), params);
     }
-    
+
     @Override
     protected void onStart() {
         Log.i(LOG_TAG, "StageActivity onStart called");
@@ -184,10 +183,10 @@ public class StageActivity extends Activity {
     public int getInstanceId() {
         return this.instanceId;
     }
-    
+
     /**
      * Get the instance name.
-     * 
+     *
      * @return The instanceName.
      */
     public String getInstanceName() {
@@ -204,14 +203,14 @@ public class StageActivity extends Activity {
             return;
         }
         boolean hasTestValue = intent.hasExtra(TEST_PARAMS);
-        if (hasTestValue && !StageApplication.isFrist) {
+        if (hasTestValue && !isFrist) {
             Log.i(LOG_TAG, "Start creating abilityDelegate");
-            String bundleName = intent.getStringExtra("bundleName");
-            String moduleName = intent.getStringExtra("moduleName");
+            String testBundleName = intent.getStringExtra("bundleName");
+            String testModuleName = intent.getStringExtra("moduleName");
             String testRunerName = intent.getStringExtra("unittest");
             String timeout = intent.getStringExtra("timeout");
-            activityDelegate.CreateAbilityDelegator(bundleName,  moduleName, testRunerName, timeout);
-            StageApplication.isFrist = true;
+            activityDelegate.createAbilityDelegator(testBundleName, testModuleName, testRunerName, timeout);
+            isFrist = true;
         } else {
             Log.i(LOG_TAG, "No need to start creating abilityDelegate");
         }
@@ -220,9 +219,9 @@ public class StageActivity extends Activity {
     /**
      * Start a new activity.
      *
-     * @param bundleName the package name.
+     * @param bundleName   the package name.
      * @param activityName the activity name.
-     * @param params the want params.
+     * @param params       the want params.
      * @return Returns ERR_OK on success, others on failure.
      */
     public int startActivity(String bundleName, String activityName, String params) {
@@ -250,16 +249,17 @@ public class StageActivity extends Activity {
 
     /**
      * Switch to the foreground.
-     * 
-     * @param bundleName the package name.
+     *
+     * @param bundleName   the package name.
      * @param activityName the activity name.
+     * @return Returns ERR_OK on success, others on failure.
      */
     public int doActivityForeground(String bundleName, String activityName) {
         Log.i(LOG_TAG, "doActivityForeground called, bundleName: " + bundleName + ", activityName: " + activityName);
         int error = ERR_OK;
         try {
             Intent intent = new Intent(getApplicationContext(), Class.forName(bundleName + "." + activityName));
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
             pendingIntent.send();
         } catch (ClassNotFoundException | PendingIntent.CanceledException exception) {
@@ -268,19 +268,17 @@ public class StageActivity extends Activity {
         }
         return error;
     }
- 
+
     /**
      * Switch to the background.
-     * 
+     *
      * @return Returns ERR_OK on success, others on failure.
      */
     public int doActivityBackground() {
         Log.i(LOG_TAG, "doActivityBackground called");
         int error = ERR_OK;
         try {
-            Intent intent = new Intent(Intent.ACTION_MAIN);
-            intent.addCategory(Intent.CATEGORY_HOME);
-            startActivity(intent);
+            finish();
         } catch (ActivityNotFoundException exception) {
             Log.e(LOG_TAG, "switch background err.");
             error = ERR_INVALID_PARAMETERS;
@@ -288,7 +286,7 @@ public class StageActivity extends Activity {
         return error;
     }
 
-	/**
+    /**
      * Call this when your activity is done and should be closed.
      */
     public void finish() {
@@ -299,7 +297,7 @@ public class StageActivity extends Activity {
     /**
      * Initialize platform plugins
      *
-     * @param context Application context
+     * @param context    Application context
      * @param instanceId the instance id
      * @param windowView the window view
      */
@@ -316,8 +314,8 @@ public class StageActivity extends Activity {
     /**
      * Callback for the result from requesting permissions.
      *
-     * @param requestCode The request code passed in {@link #requestPermissions(String[], int)}.
-     * @param permissions permissions The requested permissions. Never null.
+     * @param requestCode  The request code passed in {@link #requestPermissions(String[], int)}.
+     * @param permissions  permissions The requested permissions. Never null.
      * @param grantResults grantResults The grant results for the corresponding permissions.
      */
     public synchronized void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {

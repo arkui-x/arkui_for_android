@@ -70,7 +70,6 @@ bool StageActivityDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
             .fnPtr = reinterpret_cast<void*>(&CreateAbilityDelegator),
         },
     };
-
     if (!env) {
         LOGE("JNI StageActivityDelegate: null java env");
         return false;
@@ -193,7 +192,8 @@ void StageActivityDelegateJni::SetWindowView(JNIEnv* env, jclass myclass, jstrin
     env->ReleaseStringUTFChars(str, instanceName);
 }
 
-void StageActivityDelegateJni::CreateAbilityDelegator(JNIEnv* env, jclass myclass, jstring jbundleName, jstring jmoduleName, jstring jtestName, jstring jtimeout)
+void StageActivityDelegateJni::CreateAbilityDelegator(JNIEnv* env, jstring jbundleName,
+    jstring jmoduleName, jstring jtestName, jstring jtimeout)
 {
     auto bundleName = env->GetStringUTFChars(jbundleName, nullptr);
     auto moduleName = env->GetStringUTFChars(jmoduleName, nullptr);
