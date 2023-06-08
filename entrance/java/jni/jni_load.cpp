@@ -17,6 +17,7 @@
 
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/log/log.h"
+#include "base/log/ace_trace.h"
 #include "jni_app_mode_config.h"
 
 namespace {
@@ -37,6 +38,7 @@ jint JNI_OnLoad(JavaVM* vm, void*)
         return RET_FAIL;
     }
 
+    OHOS::Ace::AceScopedTrace aceScopedTrace("JNI_OnLoad");
     std::shared_ptr<JavaVM> javaVm(vm, DummyRelease<JavaVM>);
     if (!OHOS::Ace::Platform::JniEnvironment::GetInstance().Initialize(javaVm)) {
         LOGE("JNI Onload: failed to initialize JniEnvironment");

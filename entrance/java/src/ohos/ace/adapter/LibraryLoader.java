@@ -15,6 +15,8 @@
 
 package ohos.ace.adapter;
 
+import android.os.Trace;
+
 /**
  * Load library for JNI.
  *
@@ -39,8 +41,10 @@ public final class LibraryLoader {
 
     private static void loadAndroidJniLibrary() {
         try {
+            Trace.beginSection("loadJniLibrary");
             ALog.i(LOG_TAG, "Load android ace lib");
             System.loadLibrary(ANDROID_LIB_NAME);
+            Trace.endSection();
             jniLoaded = true;
         } catch (UnsatisfiedLinkError error) {
             ALog.e(LOG_TAG, "Could not load android ace lib. Exception:" + error.getMessage());

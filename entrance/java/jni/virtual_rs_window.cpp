@@ -25,7 +25,7 @@
 #include "subwindow_manager_jni.h"
 #include "transaction/rs_interfaces.h"
 #include "window_view_adapter.h"
-
+#include "core/event/touch_event.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/log/log.h"
 #include "base/utils/utils.h"
@@ -33,12 +33,12 @@
 using namespace OHOS::Ace::Platform;
 
 namespace OHOS::Rosen {
-namespace {
-template<typename T>
-void DummyRelease(T*)
+void DummyWindowRelease(Window* window)
 {
-    HILOG_INFO("dummy release.");
-}
+    if (!window->GetIsUIContentInitialize()) {
+        delete window;
+    }
+    LOGI("Rosenwindow rsWindow_Window: dummy release");
 }
 std::map<uint32_t, std::vector<std::shared_ptr<Window>>> Window::subWindowMap_;
 std::map<std::string, std::pair<uint32_t, std::shared_ptr<Window>>> Window::windowMap_;
@@ -60,6 +60,7 @@ Window::Window(std::shared_ptr<AbilityRuntime::Platform::Context> context)
 
 Window::~Window()
 {
+    LOGI("Rosenwindow rsWindow_Window: release id = %u", windowId_);
     ReleaseWindowView();
 }
 
@@ -92,12 +93,12 @@ void Window::DeleteFromWindowMap(Window* window)
 void Window::AddToSubWindowMap(std::shared_ptr<Window> window)
 {
     if (window == nullptr) {
-        HILOG_ERROR("window is null");
+        LOGE("window is null");
         return;
     }
     if (window->GetType() != OHOS::Rosen::WindowType::WINDOW_TYPE_APP_SUB_WINDOW ||
-        window->GetParentId() != INVALID_WINDOW_ID) {
-        HILOG_ERROR("window is not subwindow");
+        window->GetParentId() == INVALID_WINDOW_ID) {
+        LOGE("window is not subwindow");
         return;
     }
     DeleteFromSubWindowMap(window);
@@ -140,7 +141,7 @@ std::shared_ptr<Window> Window::Create(
 
     LOGI("Window::Create called. windowName=%s", windowName.c_str());
 
-    auto window = std::shared_ptr<Window>(new Window(context), DummyRelease<Window>);
+    auto window = std::shared_ptr<Window>(new Window(context), DummyWindowRelease);
     window->SetWindowView(env, windowView);
     window->SetWindowName(windowName);
 
@@ -175,7 +176,7 @@ std::shared_ptr<Window> Window::CreateSubWindow(
         jobject view = SubWindowManagerJni::GetContentView(option->GetWindowName());
         uint32_t windowId = SubWindowManagerJni::GetWindowId(option->GetWindowName());
 
-        auto window = std::make_shared<Window>(context);
+        auto window = std::shared_ptr<Window>(new Window(context), DummyWindowRelease);
         window->SetWindowId(windowId);
         window->SetWindowName(option->GetWindowName());
         window->SetWindowType(option->GetWindowType());
@@ -199,14 +200,17 @@ std::shared_ptr<Window> Window::CreateSubWindow(
 
 WMError Window::Destroy()
 {
+    LOGI("Window::Destroy: %s", this->GetWindowName().c_str());
     if (uiContent_ != nullptr) {
         uiContent_->Destroy();
         uiContent_ = nullptr;
     }
 
-    if (!this->GetWindowName().empty()) {
-        SubWindowManagerJni::DestroyWindow(this->GetWindowName());
+    if (GetType() == OHOS::Rosen::WindowType::WINDOW_TYPE_APP_SUB_WINDOW && !GetWindowName().empty()) {
+        SubWindowManagerJni::DestroyWindow(GetWindowName());
     }
+
+    NotifyBeforeDestroy(GetWindowName());
 
     ClearListenersById(GetWindowId());
 
@@ -218,9 +222,12 @@ WMError Window::Destroy()
                 subWindows.erase(iter);
                 continue;
             }
+
+            auto windowPtr = (*iter);
             subWindows.erase(iter);
-            DeleteFromWindowMap(*iter);
-            (*iter)->Destroy();
+            LOGI("Window::Destroy SubWindow %s", (windowPtr)->GetWindowName().c_str());
+            DeleteFromWindowMap(windowPtr);
+            (windowPtr)->Destroy();
         }
         subWindowMap_[GetWindowId()].clear();
         subWindowMap_.erase(GetWindowId());
@@ -247,6 +254,12 @@ WMError Window::Destroy()
 
     NotifyAfterBackground();
     return WMError::WM_OK;
+}
+
+void Window::RegisterWindowDestroyedListener(const NotifyNativeWinDestroyFunc& func)
+{
+    LOGD("Start register");
+    notifyNativefunc_ = std::move(func);
 }
 
 const std::vector<std::shared_ptr<Window>>& Window::GetSubWindow(uint32_t parentId)
@@ -299,6 +312,7 @@ WMError Window::ShowWindow()
 
     bool result = SubWindowManagerJni::ShowWindow(this->GetWindowName());
     if (result) {
+        NotifyAfterForeground();
         return WMError::WM_OK;
     } else {
         return WMError::WM_ERROR_INVALID_WINDOW;
@@ -583,7 +597,8 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
     density_ = density;
     surfaceNode_->SetBoundsWidth(surfaceWidth_);
     surfaceNode_->SetBoundsHeight(surfaceHeight_);
-
+    rect_.width_ = width;
+    rect_.height_ = height;
     if (!uiContent_) {
         LOGW("Window Notify uiContent_ Surface Changed, uiContent_ is nullptr, delay notify.");
         delayNotifySurfaceChanged_ = true;
@@ -618,10 +633,12 @@ void Window::WindowFocusChanged(bool hasWindowFocus)
     if (hasWindowFocus) {
         LOGI("Window: notify uiContent Focus");
         uiContent_->Focus();
+        NotifyAfterActive();
         isForground_ = true;
     } else {
         LOGI("Window: notify uiContent UnFocus");
         uiContent_->UnFocus();
+        NotifyAfterInactive();
         isForground_ = false;
     }
 }
@@ -634,7 +651,7 @@ void Window::Foreground()
     }
     LOGI("Window: notify uiContent Foreground");
     uiContent_->Foreground();
-
+    NotifyAfterForeground();
     isForground_ = true;
 }
 
@@ -646,6 +663,7 @@ void Window::Background()
     }
     LOGI("Window: notify uiContent Background");
     uiContent_->Background();
+    NotifyAfterBackground();
     isForground_ = false;
 }
 
@@ -656,6 +674,15 @@ bool Window::ProcessBackPressed()
         return false;
     }
     return uiContent_->ProcessBackPressed();
+}
+
+bool Window::ProcessBasicEvent(const std::vector<Ace::TouchEvent>& touchEvents)
+{
+    if (!uiContent_) {
+        LOGW("Window::ProcessBasicEvent uiContent_ is nullptr");
+        return false;
+    }
+    return uiContent_->ProcessBasicEvent(touchEvents);
 }
 
 bool Window::ProcessPointerEvent(const std::vector<uint8_t>& data)
@@ -724,6 +751,7 @@ int Window::SetUIContent(const std::string& contentInfo, NativeEngine* engine, N
 
     uiContent_->Foreground();
 
+    isUIContentInitialize_ = true;
     DelayNotifyUIContentIfNeeded();
     return 0;
 }

@@ -16,8 +16,8 @@
 #include "adapter/android/stage/uicontent/ace_container_sg.h"
 
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
-#include "adapter/android/entrance/java/jni/apk_asset_provider.h"
 #include "adapter/android/entrance/java/jni/ace_platform_plugin_jni.h"
+#include "adapter/android/entrance/java/jni/apk_asset_provider.h"
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
 #include "base/log/ace_trace.h"
 #include "base/log/event_report.h"
@@ -27,6 +27,7 @@
 #include "core/common/ace_engine.h"
 #include "core/common/ace_view.h"
 #include "core/common/connect_server_manager.h"
+#include "core/common/container.h"
 #include "core/common/container_scope.h"
 #include "core/common/flutter/flutter_asset_manager.h"
 #include "core/common/flutter/flutter_task_executor.h"
@@ -42,10 +43,11 @@
 #ifdef ENABLE_ROSEN_BACKEND
 #include "core/components_ng/render/adapter/rosen_window.h"
 #endif
-#include "core/pipeline/base/element.h"
-#include "core/pipeline_ng/pipeline_context.h"
 #include "event_handler.h"
 #include "event_runner.h"
+
+#include "core/pipeline/base/element.h"
+#include "core/pipeline_ng/pipeline_context.h"
 #ifdef NG_BUILD
 #include "frameworks/bridge/declarative_frontend/ng/declarative_frontend_ng.h"
 #else
@@ -273,13 +275,16 @@ void AceContainerSG::InitializeCallback()
         auto context = weak.Upgrade();
         CHECK_NULL_VOID(context);
         ContainerScope scope(instanceId);
-        context->GetTaskExecutor()->PostTask(
-            [weak, width, height, reason]() {
-                auto context = weak.Upgrade();
-                CHECK_NULL_VOID(context);
-                context->OnSurfaceChanged(width, height, reason);
-            },
-            TaskExecutor::TaskType::UI);
+        auto task = [weak, width, height, reason]() {
+            auto context = weak.Upgrade();
+            CHECK_NULL_VOID(context);
+            context->OnSurfaceChanged(width, height, reason);
+        };
+        if (Container::Current()->GetSettings().usePlatformAsUIThread) {
+            task();
+        } else {
+            context->GetTaskExecutor()->PostTask(task, TaskExecutor::TaskType::UI);
+        }
     };
     aceView_->RegisterViewChangeCallback(viewChangeCallback);
 
@@ -605,8 +610,7 @@ void AceContainerSG::InitThemeManager()
 {
     LOGI("Init theme manager");
     auto initThemeManagerTask = [pipelineContext = pipelineContext_, assetManager = assetManager_,
-                                    colorScheme = colorScheme_, resourceInfo = resourceInfo_,
-                                    aceView = aceView_]() {
+                                    colorScheme = colorScheme_, resourceInfo = resourceInfo_, aceView = aceView_]() {
         ACE_SCOPED_TRACE("OHOS::LoadThemes()");
         LOGI("UIContent load theme");
         ThemeConstants::InitDeviceType();
@@ -615,7 +619,6 @@ void AceContainerSG::InitThemeManager()
         themeManager->InitResource(resourceInfo);
         themeManager->LoadSystemTheme(resourceInfo.GetThemeId());
         themeManager->SetColorScheme(colorScheme);
-        themeManager->LoadCustomTheme(assetManager);
         themeManager->LoadResourceThemes();
         aceView->SetBackgroundColor(themeManager->GetBackgroundColor());
         if (colorScheme == ColorScheme::SCHEME_DARK) {
@@ -905,8 +908,8 @@ bool AceContainerSG::RunPage(int32_t instanceId, int32_t pageId, const std::stri
     return false;
 }
 
-void AceContainerSG::SetResPaths(const std::string& hapResPath,
-    const std::string& sysResPath, const ColorMode& colorMode)
+void AceContainerSG::SetResPaths(
+    const std::string& hapResPath, const std::string& sysResPath, const ColorMode& colorMode)
 {
     LOGI("SetResPaths, Use hap path to load resource");
     resourceInfo_.SetHapPath(hapResPath);

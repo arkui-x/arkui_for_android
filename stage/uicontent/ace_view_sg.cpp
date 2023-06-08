@@ -153,6 +153,22 @@ void AceViewSG::Launch()
     LOGI("Launch shell holder");
 }
 
+bool AceViewSG::DispatchBasicEvent(const std::vector<TouchEvent>& touchEvents)
+{
+    for (const auto& point : touchEvents) {
+        if (point.type == TouchType::UNKNOWN) {
+            LOGW("Unknown event");
+            continue;
+        }
+        if (touchEventCallback_) {
+            touchEventCallback_(point, nullptr);
+        }
+    }
+    // if it is last page, let os know to quit app
+    return !(IsLastPage());
+}
+
+
 bool AceViewSG::DispatchTouchEvent(const std::vector<uint8_t>& data)
 {
     std::vector<TouchEvent> touchEvents;

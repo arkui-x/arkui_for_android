@@ -37,6 +37,8 @@
 #include "core/common/container_scope.h"
 #include "core/common/flutter/flutter_asset_manager.h"
 
+#include "core/event/touch_event.h"
+
 namespace OHOS::Ace::Platform {
 namespace {
 const std::string START_PARAMS_KEY = "__startParams";
@@ -156,9 +158,10 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
 
             std::vector<std::string> hapAssetPaths { "", "ets", "ets/share", "resources/base/profile" };
             for (const auto& path : hapAssetPaths) {
-                auto apkAssetProvider = AceType::MakeRefPtr<ApkAssetProvider>(
-                    std::make_unique<flutter::APKAssetProvider>(env.get(),
-                        assetProvider->GetAssetManager(), hapPath + path), hapPath + path);
+                auto apkAssetProvider =
+                    AceType::MakeRefPtr<ApkAssetProvider>(std::make_unique<flutter::APKAssetProvider>(env.get(),
+                                                              assetProvider->GetAssetManager(), hapPath + path),
+                        hapPath + path);
                 apkAssetProvider->SetAssetManager(AAssetManager_fromJava(env.get(), assetProvider->GetAssetManager()));
                 flutterAssetManager->PushBack(std::move(apkAssetProvider));
             }
@@ -182,6 +185,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
         LOGI("acecontainer init instanceId_:%{public}d", instanceId_);
     }
 
+    AceTraceBegin("CreateAndInitConatienr");
     auto container = AceType::MakeRefPtr<Platform::AceContainerSG>(instanceId_, FrontendType::DECLARATIVE_JS, context_,
         info,
         std::make_unique<ContentEventCallback>(
@@ -240,13 +244,16 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     std::string sysResPath { "" };
     abilityContext->GetResourcePaths(hapResPath, sysResPath);
     container->SetResPaths(hapResPath, sysResPath, SystemProperties::GetColorMode());
+    AceTraceEnd();
 
+    AceTraceBegin("CreateAndSetView");
     auto aceView = Platform::AceViewSG::CreateView(instanceId_);
     if (!window_) {
         Platform::AceViewSG::SurfaceCreated(aceView, window_);
     }
     // set view
     Platform::AceContainerSG::SetView(aceView, density, 0, 0, window_);
+    AceTraceEnd();
 
     // Set sdk version in module json mode
     if (isModelJson) {
@@ -279,6 +286,7 @@ void UIContentImpl::InitOnceAceInfo()
 
 void UIContentImpl::InitAceInfoFromResConfig()
 {
+    ACE_FUNCTION_TRACE();
     auto context = context_.lock();
     CHECK_NULL_VOID(context);
     std::unique_ptr<Global::Resource::ResConfig> resConfig(Global::Resource::CreateResConfig());
@@ -388,7 +396,7 @@ void UIContentImpl::SetBackgroundColor(uint32_t color)
     LOGI("UIContentImpl: SetBackgroundColor color is %{public}u", color);
     auto container = AceEngine::Get().GetContainer(instanceId_);
     CHECK_NULL_VOID(container);
-    
+
     ContainerScope scope(instanceId_);
     auto taskExecutor = container->GetTaskExecutor();
     CHECK_NULL_VOID(taskExecutor);
@@ -414,6 +422,17 @@ bool UIContentImpl::ProcessBackPressed()
     }
     LOGI("ProcessBackPressed: Platform::AceContainerSG::OnBackPressed return false");
     return false;
+}
+
+bool UIContentImpl::ProcessBasicEvent(const std::vector<TouchEvent>& touchEvents)
+{
+    auto container = AceEngine::Get().GetContainer(instanceId_);
+    CHECK_NULL_RETURN_NOLOG(container, false);
+
+    auto aceView = static_cast<Platform::AceViewSG*>(container->GetView());
+    CHECK_NULL_RETURN_NOLOG(aceView, false);
+
+    return aceView->DispatchBasicEvent(touchEvents);
 }
 
 bool UIContentImpl::ProcessPointerEvent(const std::vector<uint8_t>& data)
@@ -456,8 +475,8 @@ void UIContentImpl::UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRunti
             CHECK_NULL_VOID_NOLOG(container);
             auto colorMode = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::SYSTEM_COLORMODE);
             auto direction = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_DIRECTION);
-            auto densityDpi = config->GetItem(
-                OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_DENSITYDPI);
+            auto densityDpi =
+                config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_DENSITYDPI);
             container->UpdateConfiguration(colorMode, direction, densityDpi);
         },
         TaskExecutor::TaskType::UI);
@@ -467,6 +486,7 @@ void UIContentImpl::UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRunti
 void UIContentImpl::UpdateViewportConfig(const ViewportConfig& config, OHOS::Rosen::WindowSizeChangeReason reason)
 {
     LOGI("UIContentImpl: UpdateViewportConfig %{public}s", config.ToString().c_str());
+    ACE_SCOPED_TRACE("UpdateViewportConfig %s", config.ToString().c_str());
     SystemProperties::SetResolution(config.Density());
     SystemProperties::SetDeviceOrientation(
         config.Height() >= config.Width() ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE);
@@ -474,22 +494,18 @@ void UIContentImpl::UpdateViewportConfig(const ViewportConfig& config, OHOS::Ros
     CHECK_NULL_VOID(container);
     auto taskExecutor = container->GetTaskExecutor();
     CHECK_NULL_VOID(taskExecutor);
-    taskExecutor->PostTask(
-        [config, container, reason]() {
-            container->SetWindowPos(config.Left(), config.Top());
-            auto pipelineContext = container->GetPipelineContext();
-            if (pipelineContext) {
-                pipelineContext->SetDisplayWindowRectInfo(
-                    Rect(Offset(config.Left(), config.Top()), Size(config.Width(), config.Height())));
-            }
-            auto aceView = static_cast<Platform::AceViewSG*>(container->GetAceView());
-            CHECK_NULL_VOID(aceView);
-            Platform::AceViewSG::SetViewportMetrics(aceView, config);
-            Platform::AceViewSG::SurfaceChanged(aceView, config.Width(), config.Height(), config.Orientation(),
-                static_cast<WindowSizeChangeReason>(reason));
-            Platform::AceViewSG::SurfacePositionChanged(aceView, config.Left(), config.Top());
-        },
-        TaskExecutor::TaskType::PLATFORM);
+    container->SetWindowPos(config.Left(), config.Top());
+    auto pipelineContext = container->GetPipelineContext();
+    if (pipelineContext) {
+        pipelineContext->SetDisplayWindowRectInfo(
+            Rect(Offset(config.Left(), config.Top()), Size(config.Width(), config.Height())));
+    }
+    auto aceView = static_cast<Platform::AceViewSG*>(container->GetAceView());
+    CHECK_NULL_VOID(aceView);
+    Platform::AceViewSG::SetViewportMetrics(aceView, config);
+    Platform::AceViewSG::SurfaceChanged(
+        aceView, config.Width(), config.Height(), config.Orientation(), static_cast<WindowSizeChangeReason>(reason));
+    Platform::AceViewSG::SurfacePositionChanged(aceView, config.Left(), config.Top());
 }
 
 void UIContentImpl::DumpInfo(const std::vector<std::string>& params, std::vector<std::string>& info)
