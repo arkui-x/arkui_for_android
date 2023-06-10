@@ -28,6 +28,7 @@ import java.security.cert.X509Certificate;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
+import java.net.HttpURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
@@ -81,16 +82,16 @@ public class DownloadManager {
         initSsl();
         byte[] buff = new byte[UNIT_BYTE_LENGTH];
         int len = 0;
-        HttpsURLConnection conn = null;
+        HttpURLConnection conn = null;
 
         try {
             URL url = new URL(urlStr);
             URLConnection connection = url.openConnection();
-            if (!(connection instanceof HttpsURLConnection)) {
+            if (!(connection instanceof HttpURLConnection)) {
                 ALog.e(LOG_TAG, "not http or https url");
                 return NULL_BYTE;
             }
-            conn = (HttpsURLConnection) connection;
+            conn = (HttpURLConnection) connection;
             conn.setRequestProperty("Content-Type", "plain/text;charset=" + DEFAULT_CHARSET);
             conn.setRequestProperty("charset", DEFAULT_CHARSET);
             conn.setRequestProperty("User-agent", "Ace");
