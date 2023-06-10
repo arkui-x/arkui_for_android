@@ -57,13 +57,18 @@ std::string ImageSourceAndroid::GetProperty(const std::string& key)
 
 RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap(int32_t width, int32_t height)
 {
+    return CreatePixelMap(0, width, height);
+}
+
+RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap(uint32_t index, int32_t width, int32_t height)
+{
     Media::DecodeOptions options {
         .desiredSize = { width, height },
     };
     uint32_t errorCode;
-    auto pixmap = imageSource_->CreatePixelMap(options, errorCode);
+    auto pixmap = imageSource_->CreatePixelMapEx(index, options, errorCode);
     if (errorCode != Media::SUCCESS) {
-        LOGE("create PixelMap from ImageSource failed, errorCode = %{public}u", errorCode);
+        LOGE("create PixelMap from ImageSource failed, index = %{public}u, errorCode = %{public}u", index, errorCode);
         return nullptr;
     }
     return PixelMap::Create(std::move(pixmap));
