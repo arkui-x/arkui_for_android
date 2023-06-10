@@ -33,6 +33,7 @@ import ohos.ace.adapter.AcePlatformPlugin;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 import ohos.ace.adapter.WindowView;
 
+import ohos.ace.adapter.capability.bridge.BridgeManager;
 import ohos.ace.adapter.capability.grantresult.GrantResult;
 import ohos.ace.adapter.capability.surface.AceSurfacePluginAosp;
 
@@ -146,6 +147,7 @@ public class StageActivity extends Activity {
         super.onDestroy();
         activityDelegate.dispatchOnDestroy(getInstanceName());
         windowView.destroy();
+        BridgeManager.deleteBridgeByInstanceId(this.instanceId);
     }
 
     @Override

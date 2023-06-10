@@ -15,9 +15,12 @@
 
 package ohos.ace.adapter.capability.bridge;
 
+import java.util.ArrayList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import ohos.ace.adapter.ALog;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -93,7 +96,7 @@ public class BridgeManager {
                 ALog.e(LOG_TAG, "The bridgeName Already exists");
                 return;
             } else {
-                ALog.i(LOG_TAG, "bridgeMap_.put success");
+                ALog.i(LOG_TAG, "registerBridgePlugin success");
                 bridgeMap_.put(bridgeName, bridgePlugin);
             }
         } finally {
@@ -119,6 +122,33 @@ public class BridgeManager {
             }
         } finally {
             unregisterLock.unlock();
+        }
+    }
+
+    /**
+     * Unregister Bridge plugin by instanceId.
+     *
+     * @param instanceId the id of instance.
+     */
+    public static void deleteBridgeByInstanceId(int instanceId) {
+        if (bridgeMap_.isEmpty()) {
+            return;
+        }
+        List<String> keyList = new ArrayList<>();
+        Lock deleteBridgeLock = new ReentrantLock();
+        deleteBridgeLock.lock();
+        try {
+            for (Map.Entry<String, BridgePlugin> entry : bridgeMap_.entrySet()) {
+                if (entry.getValue().getInstanceId() == instanceId) {
+                    keyList.add(entry.getKey());
+                }
+            }
+            for (String deleteKey : keyList) {
+                bridgeMap_.remove(deleteKey);
+                ALog.i("Successfully deleted bridge through instanceId, name is ", deleteKey);
+            }
+        } finally {
+            deleteBridgeLock.unlock();
         }
     }
 

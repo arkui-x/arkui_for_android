@@ -69,10 +69,10 @@ public abstract class BridgePlugin {
         registerLock.lock();
         try {
             if (methodsMap_.containsKey(methodName)) {
-                ALog.e(LOG_TAG, "The bridgeName Already exists");
+                ALog.e(LOG_TAG, "The methodName Already exists");
                 return;
             } else {
-                ALog.i(LOG_TAG, "methodsMap_.put success");
+                ALog.i(LOG_TAG, "registerMethod success");
                 methodsMap_.put(methodName, methods);
             }
         } finally {
