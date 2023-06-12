@@ -104,15 +104,8 @@ int32_t AbilityContextAdapter::StartAbility(const std::string& instanceName, con
         moduleName[0] = std::toupper(moduleName[0]);
     }
     LOGI("moduleName : %{public}s", moduleName.c_str());
-    std::string tempName = "Ability";
-    std::string activityName;
-    auto pos = abilityName.find(ABILITY_NAME);
-    if (pos != std::string::npos) {
-        activityName = bundleName + "." + moduleName + abilityName.replace(pos, ABILITY_NAME.size(), ACTIVITY_NAME);
-    } else {
-        activityName = bundleName + "." + moduleName + abilityName;
-    }
 
+    std::string activityName = bundleName + "." + moduleName + abilityName + ACTIVITY_NAME;
     LOGI("activityName : %{public}s", activityName.c_str());
     LOGI("params : %{public}s", want.ToJson().c_str());
     jstring jBundleName = env->NewStringUTF(bundleName.c_str());
