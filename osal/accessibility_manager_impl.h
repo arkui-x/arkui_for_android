@@ -27,13 +27,13 @@ struct ComponentInfo;
 
 namespace OHOS::Ace::Framework {
 
-class AccessibilityManagerImpl : public AccessibilityNodeManager {
+class ACE_EXPORT AccessibilityManagerImpl : public AccessibilityNodeManager {
     DECLARE_ACE_TYPE(AccessibilityManagerImpl, AccessibilityNodeManager);
 
 public:
     AccessibilityManagerImpl() = default;
     ~AccessibilityManagerImpl() override = default;
-    bool GetAllComponents(NodeId nodeID, std::vector<OHOS::Ace::Platform::ComponentInfo>& components);
+    bool GetAllComponents(NodeId nodeID, OHOS::Ace::Platform::ComponentInfo& rootComponent);
 
 protected:
     void DumpHandleEvent(const std::vector<std::string>& params) override;

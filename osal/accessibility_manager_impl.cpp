@@ -338,8 +338,8 @@ void AccessibilityManagerImpl::DumpTree(int32_t depth, NodeId nodeID)
     DumpTreeNG(rootNode, depth, nodeID, pageId);
 }
 
-void GetComponents(const RefPtr<NG::FrameNode>& parent, NodeId nodeID, int32_t pageId,
-    std::vector<OHOS::Ace::Platform::ComponentInfo>& components)
+void GetComponents(OHOS::Ace::Platform::ComponentInfo& parentComponent, const RefPtr<NG::FrameNode>& parent,
+    NodeId nodeID, int32_t pageId)
 {
     auto node = GetInspectorById(parent, nodeID);
     if (!node) {
@@ -351,7 +351,7 @@ void GetComponents(const RefPtr<NG::FrameNode>& parent, NodeId nodeID, int32_t p
 
     OHOS::Ace::Platform::ComponentInfo info;
     NG::RectF rect = node->GetTransformRectRelativeToWindow();
-    info.compid = node->GetInspectorId().value_or("");
+    info.compid = node->GetAccessibilityId();
     info.text = node->GetAccessibilityProperty<NG::AccessibilityProperty>()->GetText();
     info.top = rect.Top();
     info.width = rect.Width();
@@ -368,18 +368,19 @@ void GetComponents(const RefPtr<NG::FrameNode>& parent, NodeId nodeID, int32_t p
     info.focused = node->GetFocusHub() ? node->GetFocusHub()->IsCurrentFocus() : false;
     info.longClickable = gestureEventHub ? gestureEventHub->IsAccessibilityLongClickable() : false;
     info.type = node->GetTag();
-    components.push_back(info);
+    parentComponent = info;
+
     std::vector<int32_t> children;
     for (const auto& item : node->GetChildren()) {
         GetFrameNodeChildren(item, children, pageId);
+        parentComponent.children.emplace_back();
     }
-    for (auto nodeId : children) {
-        GetComponents(node, nodeId, pageId, components);
+    for (int index = 0; index < children.size(); index++) {
+        GetComponents(parentComponent.children[index], node, children[index], pageId);
     }
 }
 
-bool AccessibilityManagerImpl::GetAllComponents(
-    NodeId nodeID, std::vector<OHOS::Ace::Platform::ComponentInfo>& components)
+bool AccessibilityManagerImpl::GetAllComponents(NodeId nodeID, OHOS::Ace::Platform::ComponentInfo& rootComponent)
 {
     auto pipeline = context_.Upgrade();
     CHECK_NULL_RETURN(pipeline, false);
@@ -392,7 +393,7 @@ bool AccessibilityManagerImpl::GetAllComponents(
     auto page = stageManager->GetLastPage();
     CHECK_NULL_RETURN(page, false);
     auto pageId = page->GetPageId();
-    GetComponents(rootNode, nodeID, pageId, components);
+    GetComponents(rootComponent, rootNode, nodeID, pageId);
     return true;
 }
 
