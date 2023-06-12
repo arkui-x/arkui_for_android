@@ -151,7 +151,7 @@ int32_t AbilityContextAdapter::DoAbilityForeground(const std::string &fullName)
         return AAFwk::INNER_ERR;
     }
     auto doActivityForegroundMethod = env->GetMethodID(objClass, "doActivityForeground",
-        "(Ljava/lang/String;Ljava/lang/String;)I");
+        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
     if (doActivityForegroundMethod == nullptr) {
         LOGE("fail to get the method doActivityForeground id");
         return AAFwk::INNER_ERR;
@@ -162,13 +162,16 @@ int32_t AbilityContextAdapter::DoAbilityForeground(const std::string &fullName)
     std::string abilityName;
     GetThreeElement(fullName, bundleName, moduleName, abilityName);
     jstring jBundleName = env->NewStringUTF(bundleName.c_str());
+    jstring jModuleName = env->NewStringUTF(moduleName.c_str());
     jstring jActivityName = env->NewStringUTF(abilityName.c_str());
-    if (jBundleName == nullptr || jActivityName == nullptr) {
-        LOGE("jBundleName or jActivityName is nullptr");
+    if (jBundleName == nullptr || jModuleName == nullptr || jActivityName == nullptr) {
+        LOGE("jBundleName or jModuleName or jActivityName is nullptr");
         return AAFwk::INNER_ERR;
     }
-    auto result = env->CallIntMethod(stageActivity, doActivityForegroundMethod, jBundleName, jActivityName);
+    auto result = env->CallIntMethod(stageActivity, doActivityForegroundMethod, jBundleName, jModuleName,
+        jActivityName);
     env->DeleteLocalRef(jBundleName);
+    env->DeleteLocalRef(jModuleName);
     env->DeleteLocalRef(jActivityName);
 
     if (result != ERR_OK) {
@@ -199,13 +202,7 @@ void AbilityContextAdapter::GetThreeElement(const std::string &fullName, std::st
     if (!moduleName.empty()) {
         moduleName[0] = std::toupper(moduleName[0]);
     }
-    std::string activityName;
-    auto pos = abilityName.find(ABILITY_NAME);
-    if (pos != std::string::npos) {
-        activityName = moduleName + abilityName.replace(pos, ABILITY_NAME.size(), ACTIVITY_NAME);
-    } else {
-        activityName = moduleName + abilityName;
-    }
+    std::string activityName = moduleName + abilityName + ACTIVITY_NAME;
     
     LOGI("activityName : %{public}s", activityName.c_str());
 }
@@ -214,7 +211,15 @@ int32_t AbilityContextAdapter::DoAbilityBackground(const std::string &fullName)
 {
     LOGI("Do ability background");
     std::string activityName;
-    GetNewFullName(fullName, activityName);
+    std::string instanceName = ApplicationContextAdapter::GetInstance()->GetTopAbility();
+
+    auto pos = instanceName.find(fullName);
+    if (pos != std::string::npos) {
+        activityName = instanceName;
+    } else {
+        LOGI("Do ability background, alrady background %{public}s", fullName.c_str());
+        return ERR_OK;
+    }
     LOGI("DoAbilityBackground get activityName, activityName: %{public}s", activityName.c_str());
     auto finder = jobjects_.find(activityName);
     if (finder == jobjects_.end()) {
@@ -252,31 +257,6 @@ int32_t AbilityContextAdapter::DoAbilityBackground(const std::string &fullName)
         return AAFwk::INVALID_PARAMETERS_ERR;
     }
     return ERR_OK;
-}
-
-void AbilityContextAdapter::GetNewFullName(const std::string &fullName, std::string &newFullName)
-{
-    std::vector<std::string> vecList;
-    Ace::StringUtils::StringSplitter(fullName, ':', vecList);
-    int32_t VEC_LENS = 3;
-    size_t lens = vecList.size();
-    if (lens != VEC_LENS) {
-        LOGE("Enter DoAbilityForeground StringSplit fullName size not equal three!");
-        return;
-    }
-    auto bundleName = vecList[0];
-    auto moduleName = vecList[1];
-    auto abilityName = vecList[2];
-
-    std::string activityName;
-    auto pos = abilityName.find(ABILITY_NAME);
-    if (pos != std::string::npos) {
-        activityName = bundleName + ":" + moduleName + ":" + abilityName + ":1";
-    } else {
-        activityName = bundleName + ":" + moduleName + ":" + abilityName.replace(pos, ABILITY_NAME.size(),
-            ACTIVITY_NAME) + ":1";
-    }
-    newFullName = abilityName;
 }
 
 void AbilityContextAdapter::TerminateSelf(const std::string& instanceName)

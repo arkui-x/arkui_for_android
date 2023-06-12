@@ -19,7 +19,6 @@ import java.io.FileDescriptor;
 import java.io.PrintWriter;
 
 import android.app.Activity;
-import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
@@ -265,18 +264,20 @@ public class StageActivity extends Activity {
      * Switch to the foreground.
      *
      * @param bundleName   the package name.
+     * @param moduleName   the module name.
      * @param activityName the activity name.
      * @return Returns ERR_OK on success, others on failure.
      */
-    public int doActivityForeground(String bundleName, String activityName) {
-        Log.i(LOG_TAG, "doActivityForeground called, bundleName: " + bundleName + ", activityName: " + activityName);
+    public int doActivityForeground(String bundleName, String moduleName, String activityName) {
+        Log.i(LOG_TAG, "doActivityForeground called, bundleName: " + bundleName + ",moduleName: " + moduleName
+            + ", activityName: " + activityName);
         int error = ERR_OK;
         try {
-            Intent intent = new Intent(getApplicationContext(), Class.forName(bundleName + "." + activityName));
+            Intent intent = new Intent(getApplicationContext(), Class.forName(
+                bundleName + "." + moduleName + activityName));
             intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
-            pendingIntent.send();
-        } catch (ClassNotFoundException | PendingIntent.CanceledException exception) {
+            this.startActivity(intent);
+        } catch (ClassNotFoundException exception) {
             Log.e(LOG_TAG, "switch foreground err.");
             error = ERR_INVALID_PARAMETERS;
         }

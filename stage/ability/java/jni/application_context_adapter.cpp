@@ -77,13 +77,7 @@ int32_t ApplicationContextAdapter::StartAbility(const AAFwk::Want& want)
         moduleName[0] = std::toupper(moduleName[0]);
     }
     LOGI("AbilityDelegator:moduleName : %{public}s", moduleName.c_str());
-    std::string activityName;
-    auto pos = abilityName.find(ABILITY_NAME);
-    if (pos != std::string::npos) {
-        activityName = bundleName + "." + moduleName + abilityName.replace(pos, ABILITY_NAME.size(), ACTIVITY_NAME);
-    } else {
-        activityName = bundleName + "." + moduleName + abilityName;
-    }
+    std::string activityName = bundleName + "." + moduleName + abilityName + ACTIVITY_NAME;
 
     LOGI("AbilityDelegator:activityName : %{public}s", activityName.c_str());
     LOGI("AbilityDelegator:params : %{public}s", want.ToJson().c_str());
