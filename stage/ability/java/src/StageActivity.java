@@ -116,6 +116,9 @@ public class StageActivity extends Activity {
         Trace.beginSection("StageActivity::onResume");
         activityDelegate.dispatchOnForeground(getInstanceName());
         windowView.foreground();
+        if (platformPlugin != null) {
+            platformPlugin.notifyLifecycleChanged(false);
+        }
         Trace.endSection();
     }
 
@@ -138,6 +141,9 @@ public class StageActivity extends Activity {
         super.onStop();
         activityDelegate.dispatchOnBackground(getInstanceName());
         windowView.background();
+        if (platformPlugin != null) {
+            platformPlugin.notifyLifecycleChanged(true);
+        }
     }
 
     @Override

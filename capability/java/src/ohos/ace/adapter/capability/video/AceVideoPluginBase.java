@@ -126,4 +126,18 @@ public abstract class AceVideoPluginBase extends AceResourcePlugin {
         }
         objectMap.clear();
     }
+
+    /**
+     * notify activity lifecycle changed to plugin.
+     *
+     * @param isBackground to background state
+     */
+    @Override
+    public void notifyLifecycleChanged(Boolean isBackground) {
+        if (isBackground) {
+            onActivityPause();
+        } else {
+            onActivityResume();
+        }
+    }
 }

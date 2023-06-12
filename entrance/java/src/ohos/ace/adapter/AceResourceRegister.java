@@ -234,6 +234,17 @@ public final class AceResourceRegister {
         aceRegisterPtr = 0L;
     }
 
+    /**
+     * notify activity lifecycle changed to plugin.
+     *
+     * @param isBackground to background state
+     */
+    public void notifyLifecycleChanged(Boolean isBackground) {
+        for (Map.Entry<String, AceResourcePlugin> entry : pluginMap.entrySet()) {
+            entry.getValue().notifyLifecycleChanged(isBackground);
+        }
+    }
+
     private Map<String, String> buildParamMap(String params) {
         Map<String, String> paramMap = new HashMap<String, String>();
 
