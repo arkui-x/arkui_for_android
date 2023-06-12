@@ -24,6 +24,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import ohos.ace.adapter.AceSurfaceHolder;
@@ -36,7 +37,8 @@ import ohos.ace.adapter.IAceOnResourceEvent;
  *
  * @since 1
  */
-public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
+public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callback,
+    View.OnLayoutChangeListener {
     private static final String LOG_TAG = "AceSurfaceView";
 
     private static final String SUCCESS = "success";
@@ -92,6 +94,8 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         this.callMethodMap = new HashMap<String, IAceOnCallResourceMethod>();
         this.context = context;
         getHolder().addCallback(this);
+
+        addOnLayoutChangeListener(this);
 
         IAceOnCallResourceMethod callSetSurfaceSize = (param) -> setSurfaceBounds(param);
 
@@ -185,14 +189,28 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        ALog.i(LOG_TAG, "Surface Changed, width:" + width + " height:" + height);
         surfaceWidth = width;
         surfaceHeight = height;
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        ALog.i(LOG_TAG, "Surface Destroyed");
         surface = null;
         AceSurfaceHolder.removeSurface(id);
+    }
+
+    @Override
+    public void onLayoutChange(View view, int left, int top, int right, int bottom,
+    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+        ALog.i(LOG_TAG, "onLayoutChange: left:" + left + " top:" + top + " right:" + right + " bottom:" + bottom);
+        if (left != oldLeft || top != oldTop || right != oldRight || bottom != oldBottom) {
+            int width = right - left;
+            int height = bottom - top;
+            String param = "surfaceWidth=" + width + "&surfaceHeight=" + height;
+            callback.onEvent(SURFACE_FLAG + id + EVENT + PARAM_EQUALS + "onChanged" + PARAM_BEGIN, param);
+        }
     }
 
     private FrameLayout.LayoutParams buildLayoutParams(int left, int top, int width, int height) {

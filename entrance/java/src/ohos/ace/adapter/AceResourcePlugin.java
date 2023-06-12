@@ -119,6 +119,14 @@ public abstract class AceResourcePlugin {
     }
 
     /**
+     * notify activity lifecycle changed to plugin.
+     *
+     * @param isBackground to background state
+     */
+    public void notifyLifecycleChanged(Boolean isBackground) {
+    }
+
+    /**
      * Called to get resource plugin type
      *
      * @return type of resource plugin

@@ -68,9 +68,9 @@ public abstract class AceVideoBase {
         this.callback = callback;
         callMethodMap = new HashMap<>();
 
-        IAceOnCallResourceMethod callInit = (param) -> runAsync(() -> {
-            initMediaPlayer(param);
-        });
+        IAceOnCallResourceMethod callInit = (param) -> {
+            return initMediaPlayer(param);
+        };
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "init" + PARAM_BEGIN, callInit);
 
         IAceOnCallResourceMethod callStart = (param) -> runAsync(() -> {
@@ -82,6 +82,11 @@ public abstract class AceVideoBase {
             pause(param);
         });
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "pause" + PARAM_BEGIN, callPause);
+
+        IAceOnCallResourceMethod callStop = (param) -> runAsync(() -> {
+            stop(param);
+        });
+        callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "stop" + PARAM_BEGIN, callStop);
 
         IAceOnCallResourceMethod callGetPosition = (param) -> runAsync(() -> {
             getPosition(param);
@@ -122,6 +127,11 @@ public abstract class AceVideoBase {
             setSurface(param);
         });
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "setsurface" + PARAM_BEGIN, callSetSurface);
+
+        IAceOnCallResourceMethod callUpdateSrc = (param) -> runAsync(() -> {
+            updateResource(param);
+        });
+        callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "updateresource" + PARAM_BEGIN, callUpdateSrc);
     }
 
     /**
@@ -222,6 +232,14 @@ public abstract class AceVideoBase {
     public abstract String pause(Map<String, String> params);
 
     /**
+     * This is called to stop player.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String stop(Map<String, String> params);
+
+    /**
      * This is called to seek video.
      *
      * @param params is param map.
@@ -284,6 +302,14 @@ public abstract class AceVideoBase {
      * @return result of call.
      */
     public abstract String setSurface(Map<String, String> params);
+
+    /**
+     * This is called to update video resource
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String updateResource(Map<String, String> params);
 
     /**
      * This is called to fire prepared event.

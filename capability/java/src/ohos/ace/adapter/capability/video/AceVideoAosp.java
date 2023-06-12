@@ -21,6 +21,7 @@ import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -63,7 +64,7 @@ public class AceVideoAosp extends AceVideoBase
     private static final AudioAttributes ATTR_VIDEO = new AudioAttributes.Builder().setUsage(
             AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
 
-    private final MediaPlayer mediaPlayer;
+    private MediaPlayer mediaPlayer;
 
     private final Context context;
 
@@ -78,6 +79,33 @@ public class AceVideoAosp extends AceVideoBase
     private HandlerThread handlerThread;
 
     private boolean stageMode = true;
+
+    private float speed = 1.0f;
+
+    private boolean isSpeedChanged = false;
+
+    private boolean isSetSurfaced = false;
+
+    private String source;
+
+    private long surfaceId = 0L;
+
+    private int position = 0;
+
+    private boolean isResumePlaying = false;
+
+    private boolean isNeedResume = false;
+
+    private PlayState state = PlayState.IDLE;
+
+    public enum PlayState {
+        IDLE,
+        PREPARED,
+        STARTED,
+        PAUSED,
+        STOPPED,
+        PLAYBACK_COMPLETE
+    }
 
     /**
      * constructor of AceVideo on AOSP platform
@@ -94,6 +122,7 @@ public class AceVideoAosp extends AceVideoBase
         mediaPlayer = new MediaPlayer();
         if (surface != null) {
             mediaPlayer.setSurface(surface);
+            isSetSurfaced = true;
             stageMode = false;
         }
         this.context = context;
@@ -116,6 +145,10 @@ public class AceVideoAosp extends AceVideoBase
 
     @Override
     public void release() {
+        if (mediaPlayer == null) {
+            ALog.w(LOG_TAG, "media player is null.");
+            return;
+        }
         mediaPlayer.stop();
         mediaPlayer.release();
         if (handlerThread != null) {
@@ -137,41 +170,16 @@ public class AceVideoAosp extends AceVideoBase
             ALog.e(LOG_TAG, "param is null");
             return false;
         }
-
+        source = param;
+        if (mediaPlayer == null) {
+            ALog.w(LOG_TAG, "media player is null.");
+            return false;
+        }
         try {
             if (param.startsWith(FILE_SCHEME)) {
                 mediaPlayer.setDataSource(param.substring(FILE_SCHEME.length()));
             } else if (param.startsWith(HAP_SCHEME)) {
-                AssetManager assetManage = context.getAssets();
-                if (assetManage == null) {
-                    ALog.e(LOG_TAG, "setDataSource null assetManager");
-                    return false;
-                }
-                AssetFileDescriptor assetFd;
-                if (stageMode) {
-                    try {
-                        String filePath = "arkui-x" + File.separator + instanceName + File.separator + "ets" + param;
-                        ALog.i(LOG_TAG, "setDataSourc hapPath:" + filePath);
-                        assetFd = assetManage.openFd(filePath);
-                        mediaPlayer.setDataSource(assetFd.getFileDescriptor(), assetFd.getStartOffset(),
-                                assetFd.getLength());
-                    } catch (IOException ignored) {
-                        ALog.e(LOG_TAG, "not found asset in instance path, now begin to search asset in share path");
-                    }
-                } else {
-                    try {
-                        assetFd = assetManage.openFd(
-                                "js" + File.separator + instanceName + File.separator
-                                        + param.substring(HAP_SCHEME.length()));
-                    } catch (IOException ignored) {
-                        ALog.e(LOG_TAG, "not found asset in instance path, now begin to search asset in share path");
-                        assetFd = assetManage.openFd(
-                                "js" + File.separator + "share" + File.separator
-                                        + param.substring(HAP_SCHEME.length()));
-                    }
-                    mediaPlayer.setDataSource(assetFd.getFileDescriptor(), assetFd.getStartOffset(),
-                            assetFd.getLength());
-                }
+                return setDataSourceWithFd(param);
             } else {
                 mediaPlayer.setDataSource(param);
             }
@@ -190,6 +198,10 @@ public class AceVideoAosp extends AceVideoBase
             return FAIL;
         }
         super.initMediaPlayer(param);
+        if (mediaPlayer == null) {
+            ALog.w(LOG_TAG, "media player is null.");
+            return FAIL;
+        }
         try {
             if (!param.containsKey(KEY_SOURCE) || !setDataSource(param.get(KEY_SOURCE))) {
                 return FAIL;
@@ -200,6 +212,7 @@ public class AceVideoAosp extends AceVideoBase
             mediaPlayer.setOnCompletionListener(this);
             mediaPlayer.setOnBufferingUpdateListener(this);
             mediaPlayer.prepare();
+            state = PlayState.PREPARED;
         } catch (IOException ignored) {
             ALog.e(LOG_TAG, "initMediaPlayer failed, IOException");
             return FAIL;
@@ -217,14 +230,48 @@ public class AceVideoAosp extends AceVideoBase
             ALog.e(LOG_TAG, "onPrepared failed, MediaPlayer is null");
             return;
         }
-        if (isAutoPlay()) {
+        if (!isNeedResume && isAutoPlay()) {
             mp.start();
+            state = PlayState.STARTED;
             setKeepScreenOn(true);
+            runOnUIThread(() -> {
+                firePlayStatusChange(true);
+            });
         }
 
         if (isMute()) {
             mp.setVolume(0.0f, 0.0f);
         }
+
+        if (isSpeedChanged) {
+            setSpeedWithCheckVersion(speed);
+            isSpeedChanged = false;
+        }
+
+        if (isNeedResume) {
+            if (isResumePlaying) {
+                if (!mediaPlayer.isPlaying()) {
+                    mediaPlayer.start();
+                    state = PlayState.STARTED;
+                    setKeepScreenOn(true);
+                }
+                runOnUIThread(() -> {
+                    firePlayStatusChange(true);
+                });
+                isResumePlaying = false;
+            } else {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                }
+            }
+            isNeedResume = false;
+            return;
+        }
+
+        if (!isAutoPlay() && mediaPlayer.isPlaying()) {
+            mediaPlayer.pause();
+        }
+
         runOnUIThread(() -> {
             firePrepared(mp.getVideoWidth(), mp.getVideoHeight(), mp.getDuration(), isAutoPlay(), false);
         });
@@ -236,7 +283,14 @@ public class AceVideoAosp extends AceVideoBase
         runOnUIThread(() -> {
             fireError();
         });
+
         setKeepScreenOn(false);
+        reset();
+        runAsync(() -> {
+            if (!resume()) {
+                ALog.w(LOG_TAG, "media player resume failed.");
+            }
+        });
         return false;
     }
 
@@ -245,6 +299,7 @@ public class AceVideoAosp extends AceVideoBase
         runOnUIThread(() -> {
             fireCompletion();
         });
+        state = PlayState.PLAYBACK_COMPLETE;
         setKeepScreenOn(false);
     }
 
@@ -265,7 +320,31 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public String start(Map<String, String> params) {
         ALog.i(LOG_TAG, "start param:" + params);
+        if (mediaPlayer == null) {
+            ALog.w(LOG_TAG, "media player is null.");
+            return FAIL;
+        }
+        if (!isSetSurfaced) {
+            Surface surface = AceSurfaceHolder.getSurface(surfaceId);
+            if (surface != null && mediaPlayer != null) {
+                mediaPlayer.setSurface(surface);
+                isSetSurfaced = true;
+            }
+        }
+        if (state == PlayState.STOPPED) {
+            try {
+                mediaPlayer.prepare();
+                state = PlayState.PREPARED;
+            } catch (IOException ignored) {
+                ALog.e(LOG_TAG, "start failed, IOException");
+                return FAIL;
+            } catch (IllegalStateException ignored) {
+                ALog.e(LOG_TAG, "start failed, IllegalStateException.");
+                return FAIL;
+            }
+        }
         mediaPlayer.start();
+        state = PlayState.STARTED;
         setKeepScreenOn(true);
         return SUCCESS;
     }
@@ -273,7 +352,25 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public String pause(Map<String, String> params) {
         ALog.i(LOG_TAG, "pause param:" + params);
+        if (mediaPlayer == null) {
+            ALog.w(LOG_TAG, "media player is null.");
+            return FAIL;
+        }
         mediaPlayer.pause();
+        state = PlayState.PAUSED;
+        setKeepScreenOn(false);
+        return SUCCESS;
+    }
+
+    @Override
+    public String stop(Map<String, String> params) {
+        ALog.i(LOG_TAG, "stop param:" + params);
+        if (mediaPlayer == null) {
+            ALog.w(LOG_TAG, "media player is null.");
+            return FAIL;
+        }
+        mediaPlayer.stop();
+        state = PlayState.STOPPED;
         setKeepScreenOn(false);
         return SUCCESS;
     }
@@ -288,9 +385,18 @@ public class AceVideoAosp extends AceVideoBase
             ALog.e(LOG_TAG, "seekTo failed: value is illegal");
             return FAIL;
         }
+        if (mediaPlayer == null) {
+            ALog.w(LOG_TAG, "media player is null.");
+            return FAIL;
+        }
         try {
-            int msec = Integer.parseInt(params.get(KEY_VALUE)) * SECOND_TO_MSEC;
-            mediaPlayer.seekTo(msec);
+            int msec = Integer.parseInt(params.get(KEY_VALUE));
+            if (params.containsKey("seekMode")) {
+                int mode = Integer.parseInt(params.get("seekMode"));
+                mediaPlayer.seekTo(msec, mode);
+            } else {
+                mediaPlayer.seekTo(msec);
+            }
         } catch (NumberFormatException ignored) {
             ALog.e(LOG_TAG, "NumberFormatException, seek failed. value = " + params.get(KEY_VALUE));
             return FAIL;
@@ -308,6 +414,10 @@ public class AceVideoAosp extends AceVideoBase
             ALog.e(LOG_TAG, "setVolume failed: value is illegal");
             return FAIL;
         }
+        if (mediaPlayer == null) {
+            ALog.w(LOG_TAG, "media player is null.");
+            return FAIL;
+        }
         try {
             float volume = Float.parseFloat(params.get(KEY_VALUE));
             mediaPlayer.setVolume(volume, volume);
@@ -321,7 +431,11 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public String getPosition(Map<String, String> params) {
         // the current position in milliseconds.
-        int position = mediaPlayer.getCurrentPosition();
+        if (mediaPlayer == null) {
+            ALog.w(LOG_TAG, "media player is null.");
+            return FAIL;
+        }
+        position = mediaPlayer.getCurrentPosition();
         runOnUIThread(() -> {
             fireGetCurrenttime(position / SECOND_TO_MSEC);
         });
@@ -333,7 +447,10 @@ public class AceVideoAosp extends AceVideoBase
         if (params == null) {
             return FAIL;
         }
-
+        if (mediaPlayer == null) {
+            ALog.w(LOG_TAG, "media player is null.");
+            return FAIL;
+        }
         try {
             if (params.containsKey("loop")) {
                 if (Integer.parseInt(params.get("loop")) == 1) {
@@ -360,8 +477,18 @@ public class AceVideoAosp extends AceVideoBase
             return FAIL;
         }
         try {
-            float speed = Float.parseFloat(params.get(KEY_VALUE));
-            //mediaPlayer.setPlaybackParams(mediaPlayer.easyPlaybackParams(speed, 0));
+            speed = Float.parseFloat(params.get(KEY_VALUE));
+            isSpeedChanged = true;
+            if (state == PlayState.STARTED) {
+                setSpeedWithCheckVersion(speed);
+            } else if (state == PlayState.PAUSED) {
+                setSpeedWithCheckVersion(speed);
+                if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                }
+            } else {
+                ALog.w(LOG_TAG, "If the speed is greater than 0, the video will start playing.");
+            }
         } catch (NumberFormatException ignored) {
             ALog.e(LOG_TAG, "NumberFormatException, setSpeed failed. value = " + params.get(KEY_VALUE));
             return FAIL;
@@ -390,29 +517,69 @@ public class AceVideoAosp extends AceVideoBase
             return FAIL;
         }
         try {
-            long surfaceId = Integer.parseInt(params.get(KEY_VALUE));
+            surfaceId = Integer.parseInt(params.get(KEY_VALUE));
             ALog.i(LOG_TAG, "setSurface id:" + surfaceId);
             Surface surface = AceSurfaceHolder.getSurface(surfaceId);
-            if (surface != null) {
+            if (surface != null && mediaPlayer != null) {
                 ALog.i(LOG_TAG, "MediaPlayer SetSurface");
                 mediaPlayer.setSurface(surface);
+                isSetSurfaced = true;
             }
         } catch (NumberFormatException ignored) {
-            ALog.e(LOG_TAG, "NumberFormatException, seek failed. value = " + params.get(KEY_VALUE));
+            ALog.e(LOG_TAG, "NumberFormatException, setSurface failed. value = " + params.get(KEY_VALUE));
             return FAIL;
         }
         return FAIL;
     }
 
     @Override
+    public String updateResource(Map<String, String> params) {
+        ALog.i(LOG_TAG, "updateResource param:" + params);
+        if (params == null) {
+            ALog.e(LOG_TAG, "updateResource failed, param is null");
+            return FAIL;
+        }
+        try {
+            ALog.i(LOG_TAG, "updateResource state:" + state.toString());
+            mediaPlayer.reset();
+            state = PlayState.IDLE;
+            if (!params.containsKey(KEY_SOURCE) || !setDataSource(params.get(KEY_SOURCE))) {
+            return FAIL;
+        }
+        mediaPlayer.prepare();
+        state = PlayState.PREPARED;
+        mediaPlayer.start();
+        state = PlayState.STARTED;
+        mediaPlayer.pause();
+        state = PlayState.PAUSED;
+            setKeepScreenOn(false);
+        } catch (IOException ignored) {
+            ALog.e(LOG_TAG, "updateResource failed, IOException");
+            return FAIL;
+        } catch (IllegalStateException ignored) {
+            ALog.e(LOG_TAG, "updateResource failed, IllegalStateException.");
+            return FAIL;
+        }
+
+        return SUCCESS;
+    }
+
+    @Override
     public void onActivityResume() {
+        runAsync(() -> {
+            if (!resume()) {
+                ALog.w(LOG_TAG, "media player resume failed.");
+            }
+        });
     }
 
     @Override
     public void onActivityPause() {
         runAsync(() -> {
-            if (mediaPlayer.isPlaying()) {
-                mediaPlayer.pause();
+            if (mediaPlayer != null) {
+                isNeedResume = true;
+                isResumePlaying = mediaPlayer.isPlaying();
+                reset();
                 setKeepScreenOn(false);
                 runOnUIThread(() -> {
                     firePlayStatusChange(false);
@@ -437,6 +604,22 @@ public class AceVideoAosp extends AceVideoBase
         }
     }
 
+    private void setSpeedWithCheckVersion(Float speed) {
+        try {
+            if (mediaPlayer == null) {
+                ALog.w(LOG_TAG, "media player is null.");
+                return;
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                mediaPlayer.setPlaybackParams(mediaPlayer.getPlaybackParams().setSpeed(speed));
+            } else {
+                ALog.w(LOG_TAG, "build version not suporrt set speed.");
+            }
+        } catch (IllegalArgumentException e) {
+            ALog.e(LOG_TAG, "setSpeedWithCheckVersion failed.");
+        }
+    }
+
     private Window getWindow() {
         if (!(context instanceof Activity)) {
             ALog.e(LOG_TAG, "Cannot get activity.");
@@ -453,6 +636,102 @@ public class AceVideoAosp extends AceVideoBase
         } else {
             mainHandler.post(task);
         }
+    }
+
+    private void reset() {
+        if (mediaPlayer == null) {
+            ALog.w(LOG_TAG, "media player is null.");
+            return;
+        }
+        position = mediaPlayer.getCurrentPosition();
+        mediaPlayer.reset();
+        mediaPlayer.release();
+        mediaPlayer = null;
+        state = PlayState.IDLE;
+        isSetSurfaced = false;
+        isSpeedChanged = true;
+    }
+
+    private boolean resume() {
+        ALog.i(LOG_TAG, "MediaPlayer resuming");
+        mediaPlayer = new MediaPlayer();
+        Surface surface = AceSurfaceHolder.getSurface(surfaceId);
+        if (surface != null) {
+            ALog.i(LOG_TAG, "MediaPlayer SetSurface");
+            mediaPlayer.setSurface(surface);
+            isSetSurfaced = true;
+        }
+        try {
+            mediaPlayer.setAudioAttributes(ATTR_VIDEO);
+        } catch (IllegalArgumentException e) {
+            ALog.e(LOG_TAG, "setAudioAttributes failed.");
+            return false;
+        }
+        if (!source.isEmpty() && !setDataSource(source)) {
+            ALog.e(LOG_TAG, "setDataSource failed.");
+            return false;
+        }
+        try {
+            mediaPlayer.setOnPreparedListener(this);
+            mediaPlayer.setOnErrorListener(this);
+            mediaPlayer.setOnSeekCompleteListener(this);
+            mediaPlayer.setOnCompletionListener(this);
+            mediaPlayer.setOnBufferingUpdateListener(this);
+            mediaPlayer.prepare();
+            state = PlayState.PREPARED;
+            if (position > 0) {
+                mediaPlayer.seekTo(position);
+            }
+        } catch (IOException ignored) {
+            ALog.e(LOG_TAG, "initMediaPlayer failed, IOException");
+            return false;
+        } catch (IllegalStateException ignored) {
+            ALog.e(LOG_TAG, "initMediaPlayer failed, IllegalStateException.");
+            return false;
+        }
+        ALog.i(LOG_TAG, "MediaPlayer resumed.");
+        return true;
+    }
+
+    private boolean setDataSourceWithFd(String param) {
+        AssetManager assetManage = context.getAssets();
+        if (assetManage == null) {
+            ALog.e(LOG_TAG, "setDataSource null assetManager");
+            return false;
+        }
+        AssetFileDescriptor assetFd;
+        try {
+            if (stageMode) {
+                try {
+                    String filePath = "arkui-x" + File.separator + instanceName + File.separator + "ets" + param;
+                    ALog.i(LOG_TAG, "setDataSourc hapPath:" + filePath);
+                    assetFd = assetManage.openFd(filePath);
+                } catch (IOException ignored) {
+                    ALog.e(LOG_TAG, "not found asset in instance path, now begin to search asset in share path");
+                    return false;
+                }
+                mediaPlayer.setDataSource(assetFd.getFileDescriptor(), assetFd.getStartOffset(),
+                            assetFd.getLength());
+            } else {
+                try {
+                    assetFd = assetManage.openFd(
+                            "js" + File.separator + instanceName + File.separator
+                                    + param.substring(HAP_SCHEME.length()));
+                } catch (IOException ignored) {
+                    ALog.e(LOG_TAG, "not found asset in instance path, now begin to search asset in share path");
+                    assetFd = assetManage.openFd(
+                            "js" + File.separator + "share" + File.separator
+                                    + param.substring(HAP_SCHEME.length()));
+                    return false;
+                }
+                mediaPlayer.setDataSource(assetFd.getFileDescriptor(), assetFd.getStartOffset(),
+                        assetFd.getLength());
+            }
+        } catch (IOException ignored) {
+            ALog.e(LOG_TAG, "setDataSource failed, IOException");
+            return false;
+        }
+        return true;
     }
 
     @Override

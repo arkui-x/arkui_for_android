@@ -141,6 +141,15 @@ public class AcePlatformPlugin implements InputConnectionClient {
         addResourcePlugin(AceTexturePluginAosp.createRegister(textureImpl));
     }
 
+    /**
+     * notify activity lifecycle changed to plugin.
+     *
+     * @param isBackground to background state
+     */
+    public void notifyLifecycleChanged(Boolean isBackground) {
+        resRegister.notifyLifecycleChanged(isBackground);
+    }
+
     private native long nativeInitResRegister(long viewPtr, AceResourceRegister resRegister, int instanceId);
     private native void nativeRegisterSurface(int instanceId, long textureId, Object surface);
     private native void nativeUnregisterSurface(int instanceId, long textureId);
