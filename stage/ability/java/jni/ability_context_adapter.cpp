@@ -202,9 +202,7 @@ void AbilityContextAdapter::GetThreeElement(const std::string &fullName, std::st
     if (!moduleName.empty()) {
         moduleName[0] = std::toupper(moduleName[0]);
     }
-    std::string activityName = moduleName + abilityName + ACTIVITY_NAME;
-    
-    LOGI("activityName : %{public}s", activityName.c_str());
+    abilityName.append(ACTIVITY_NAME);
 }
 
 int32_t AbilityContextAdapter::DoAbilityBackground(const std::string &fullName)
