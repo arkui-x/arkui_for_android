@@ -55,4 +55,8 @@ void EventReport::ANRShowDialog(
 
 void EventReport::SendEventInner(const EventInfo& eventInfo) {}
 
+void EventReport::JankFrameReport(int64_t startTime, int64_t duration, const std::vector<uint16_t>& jank,
+    const std::string& pageUrl, uint32_t jankStatusVersion)
+{}
+
 } // namespace OHOS::Ace
