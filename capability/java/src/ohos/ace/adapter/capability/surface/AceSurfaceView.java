@@ -31,6 +31,7 @@ import ohos.ace.adapter.AceSurfaceHolder;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.IAceOnCallResourceMethod;
 import ohos.ace.adapter.IAceOnResourceEvent;
+import ohos.ace.adapter.WindowView;
 
 /**
  * This class handles the lifecycle of a surface texture.
@@ -101,6 +102,11 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
         this.callMethodMap.put("surface@" + id + METHOD + PARAM_EQUALS + "setSurfaceBounds" + PARAM_BEGIN,
                 callSetSurfaceSize);
+        
+        IAceOnCallResourceMethod callSetIsFullScreen = (param) -> setIsFullScreen(param);
+
+        this.callMethodMap.put("surface@" + id + METHOD + PARAM_EQUALS + "setIsFullScreen" + PARAM_BEGIN,
+                callSetIsFullScreen);
     }
 
     /**
@@ -142,6 +148,42 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             }
         } catch (NumberFormatException e) {
             ALog.e(LOG_TAG, "NumberFormatException, setSurfaceSize failed");
+            return FALSE;
+        }
+        return SUCCESS;
+    }
+    
+    /**
+     * Set is fullscreen
+     *
+     * @param params isfullscreen params
+     * @return result of setting fullscreen
+     */
+    public String setIsFullScreen(Map<String, String> params) {
+        if (!params.containsKey("isFullScreen")) {
+            return FALSE;
+        }
+        try {
+            ALog.i(LOG_TAG, "isFullScreen:" + params.get("isFullScreen"));
+            int isFullScreen = Integer.parseInt(params.get("isFullScreen"));
+            ViewGroup viewGroup = ((ViewGroup) this.getParent());
+            ALog.i(LOG_TAG, "this surfaceview count:" + viewGroup.getChildCount());
+            for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                View view = viewGroup.getChildAt(i);
+                ALog.i(LOG_TAG, "this surfaceview name:" + view.getClass().getName().toString());
+                if (view instanceof WindowView || view == this) {
+                    ALog.i(LOG_TAG, "this surfaceview is window view.");
+                    continue;
+                }
+                SurfaceView surfaceView = (SurfaceView)view;
+                if (isFullScreen == 0) {  
+                    surfaceView.setVisibility(View.VISIBLE);
+                } else {
+                    surfaceView.setVisibility(View.INVISIBLE);
+                }
+            }
+        } catch (NumberFormatException e) {
+            ALog.e(LOG_TAG, "NumberFormatException, setIsFullScreen failed");
             return FALSE;
         }
         return SUCCESS;

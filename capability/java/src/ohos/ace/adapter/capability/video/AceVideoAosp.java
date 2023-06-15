@@ -64,7 +64,7 @@ public class AceVideoAosp extends AceVideoBase
     private static final AudioAttributes ATTR_VIDEO = new AudioAttributes.Builder().setUsage(
             AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
 
-    private MediaPlayer mediaPlayer;
+    private volatile MediaPlayer mediaPlayer;
 
     private final Context context;
 
