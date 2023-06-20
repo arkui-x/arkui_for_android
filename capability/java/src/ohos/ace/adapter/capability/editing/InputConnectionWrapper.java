@@ -92,7 +92,6 @@ class InputConnectionWrapper extends BaseInputConnection {
         extractedText.selectionStart = Selection.getSelectionStart(editable);
         extractedText.selectionEnd = Selection.getSelectionEnd(editable);
         extractedText.startOffset = 0;
-        extractedText.hint = hint;
         if ((request.flags & GET_TEXT_WITH_STYLES) != 0) {
             extractedText.text = new SpannableString(editable);
         } else {
@@ -252,7 +251,6 @@ class InputConnectionWrapper extends BaseInputConnection {
         extractedText.selectionEnd = selectionEnd;
         extractedText.flags = 0;
         extractedText.text = content.subSequence(0, length);
-        extractedText.hint = hint;
         imm.updateExtractedText(aceView, extractedTextRequestToken, extractedText);
 
         delegate.updateEditingState(clientId, editable.toString(), selectionStart, selectionEnd, composingStart,

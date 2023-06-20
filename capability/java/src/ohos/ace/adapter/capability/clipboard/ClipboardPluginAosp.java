@@ -86,7 +86,7 @@ public class ClipboardPluginAosp extends ClipboardPluginBase {
     @Override
     public void clear() {
         if (clipManager != null) {
-            clipManager.clearPrimaryClip();
+            clipManager.setPrimaryClip(ClipData.newPlainText(null, null));
         }
     }
 }
