@@ -107,7 +107,17 @@ public class AceTexture {
         this.textureImpl = textureImpl;
         this.callback = callback;
         this.callMethodMap = new HashMap<String, IAceOnCallResourceMethod>();
-        IAceOnCallResourceMethod callSetTextureSize = (param) -> setTextureSize(param);
+        IAceOnCallResourceMethod callSetTextureSize = new IAceOnCallResourceMethod() {
+
+            /**
+             * Set the size of the texture
+             * @param params size params
+             * @return result of setting texture size
+             */
+            public String onCall(Map<String, String> param) {
+                return setTextureSize(param);
+            }
+        };
         this.callMethodMap.put("texture@" + id + METHOD + PARAM_EQUALS + "setTextureSize" + PARAM_BEGIN, callSetTextureSize);
 
         if (initParam.containsKey(TEXTURE_INIT_PARAM_KEY)

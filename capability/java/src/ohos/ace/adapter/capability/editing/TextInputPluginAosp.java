@@ -131,12 +131,19 @@ public class TextInputPluginAosp extends TextInputPluginBase {
     @Override
     public void showTextInput(boolean isFocusViewChanged) {
         ALog.d(LOG_TAG, "showTextInput");
-        runOnUIThread(() -> {
-            view.requestFocus();
-            if (imm != null) {
-                imm.showSoftInput(view, 0);
-            }
-        });
+        runOnUIThread(
+            new Runnable() {
+
+                /**
+                 * Show keyboard.
+                 */
+                public void run() {
+                    view.requestFocus();
+                    if (imm != null) {
+                        imm.showSoftInput(view, 0);
+                    }
+                }
+            });
     }
 
     /**
@@ -145,11 +152,18 @@ public class TextInputPluginAosp extends TextInputPluginBase {
     @Override
     public void hideTextInput() {
         ALog.d(LOG_TAG, "hideTextInput");
-        runOnUIThread(() -> {
-            if (imm != null) {
-                imm.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
-            }
-        });
+        runOnUIThread(
+            new Runnable() {
+
+                /**
+                 * Hide keyboard.
+                 */
+                public void run() {
+                    if (imm != null) {
+                        imm.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
+                    }
+                }
+            });
     }
 
     /**

@@ -98,7 +98,18 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
         addOnLayoutChangeListener(this);
 
-        IAceOnCallResourceMethod callSetSurfaceSize = (param) -> setSurfaceBounds(param);
+        IAceOnCallResourceMethod callSetSurfaceSize = new IAceOnCallResourceMethod() {
+
+            /**
+             * Set the size of the texture
+             *
+             * @param param size params
+             * @return result of setting texture size
+             */
+            public String onCall(Map<String, String> param) {
+                return setSurfaceBounds(param);
+            }
+        };
 
         this.callMethodMap.put("surface@" + id + METHOD + PARAM_EQUALS + "setSurfaceBounds" + PARAM_BEGIN,
                 callSetSurfaceSize);

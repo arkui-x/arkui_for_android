@@ -55,6 +55,22 @@ public abstract class AceVideoBase {
     private final Map<String, IAceOnCallResourceMethod> callMethodMap;
 
     /**
+     * InnerProcessor.
+     */
+    public abstract class InnerProcessor implements Runnable {
+        Map<String, String> param;
+
+        /**
+         * InnerProcessor to keep calling param value to member var :param;
+         *
+         * @param param calling param
+         */
+        public InnerProcessor(Map<String, String> param) {
+            this.param = param;
+        }
+    };
+
+    /**
      * base constructor of AceVideo
      *
      * @param id id of plugin
@@ -68,19 +84,73 @@ public abstract class AceVideoBase {
         this.callback = callback;
         callMethodMap = new HashMap<>();
 
-        IAceOnCallResourceMethod callInit = (param) -> {
-            return initMediaPlayer(param);
+        IAceOnCallResourceMethod callInit = new IAceOnCallResourceMethod() {
+
+            /**
+             * This is called to init media player.
+             *
+             * @param params calling param
+             * @return result of calling
+             */
+            public String onCall(Map<String, String> param) {
+                runAsync(new InnerProcessor(param) {
+
+                    /**
+                     * This is called to init media player.
+                     */
+                    public void run() {
+                        initMediaPlayer(param);
+                    }
+                });
+                return "";
+            }
         };
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "init" + PARAM_BEGIN, callInit);
 
-        IAceOnCallResourceMethod callStart = (param) -> runAsync(() -> {
-            start(param);
-        });
+        IAceOnCallResourceMethod callStart = new IAceOnCallResourceMethod() {
+
+            /**
+             * This is called to start player.
+             *
+             * @param param
+             * @return unused
+             */
+            public String onCall(Map<String, String> param) {
+                runAsync(new InnerProcessor(param) {
+
+                    /**
+                     * This is called to start player.
+                     */
+                    public void run() {
+                        start(param);
+                    }
+                });
+                return "";
+            }
+        };
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "start" + PARAM_BEGIN, callStart);
 
-        IAceOnCallResourceMethod callPause = (param) -> runAsync(() -> {
-            pause(param);
-        });
+        IAceOnCallResourceMethod callPause = new IAceOnCallResourceMethod() {
+
+            /**
+             * This is called to pause player.
+             *
+             * @param param
+             * @return unused
+             */
+            public String onCall(Map<String, String> param) {
+                runAsync(new InnerProcessor(param) {
+
+                    /**
+                     * This is called to pause player.
+                     */
+                    public void run() {
+                        pause(param);
+                    }
+                });
+                return "";
+            }
+        };
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "pause" + PARAM_BEGIN, callPause);
 
         IAceOnCallResourceMethod callStop = (param) -> runAsync(() -> {
@@ -88,44 +158,188 @@ public abstract class AceVideoBase {
         });
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "stop" + PARAM_BEGIN, callStop);
 
-        IAceOnCallResourceMethod callGetPosition = (param) -> runAsync(() -> {
-            getPosition(param);
-        });
+        IAceOnCallResourceMethod callGetPosition = new IAceOnCallResourceMethod() {
+
+            /**
+             * This is called to get video position.
+             *
+             * @param param
+             * @return unused
+             */
+            public String onCall(Map<String, String> param) {
+                runAsync(new InnerProcessor(param) {
+
+                    /**
+                     * This is called to get video position.
+                     */
+                    public void run() {
+                        getPosition(param);
+                    }
+                });
+                return "";
+            }
+        };
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "getposition" + PARAM_BEGIN, callGetPosition);
 
-        IAceOnCallResourceMethod callSeekTo = (param) -> runAsync(() -> {
-            seekTo(param);
-        });
+        IAceOnCallResourceMethod callSeekTo = new IAceOnCallResourceMethod() {
+
+            /**
+             * This is called to seek video.
+             *
+             * @param param
+             * @return unused
+             */
+            public String onCall(Map<String, String> param) {
+                runAsync(new InnerProcessor(param) {
+
+                    /**
+                     * This is called to seek video.
+                     */
+                    public void run() {
+                        seekTo(param);
+                    }
+                });
+                return "";
+            }
+        };
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "seekto" + PARAM_BEGIN, callSeekTo);
 
-        IAceOnCallResourceMethod setVolume = (param) -> runAsync(() -> {
-            setVolume(param);
-        });
+        IAceOnCallResourceMethod setVolume = new IAceOnCallResourceMethod() {
+
+            /**
+             * This is called to set volume.
+             *
+             * @param param
+             * @return unused
+             */
+            public String onCall(Map<String, String> param) {
+                runAsync(new InnerProcessor(param) {
+
+                    /**
+                     * This is called to set volume.
+                     */
+                    public void run() {
+                        setVolume(param);
+                    }
+                });
+                return "";
+            }
+        };
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "setvolume" + PARAM_BEGIN, setVolume);
 
-        IAceOnCallResourceMethod enableLooping = (param) -> runAsync(() -> {
-            enableLooping(param);
-        });
+        IAceOnCallResourceMethod enableLooping = new IAceOnCallResourceMethod() {
+
+            /**
+             * This is called to enable single looping.
+             *
+             * @param param
+             * @return unused
+             */
+            public String onCall(Map<String, String> param) {
+                runAsync(new InnerProcessor(param) {
+
+                    /**
+                     * This is called to enable single looping.
+                     */
+                    public void run() {
+                        enableLooping(param);
+                    }
+                });
+                return "";
+            }
+        };
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "enablelooping" + PARAM_BEGIN, enableLooping);
 
-        IAceOnCallResourceMethod setSpeed = (param) -> runAsync(() -> {
-            setSpeed(param);
-        });
+        IAceOnCallResourceMethod setSpeed = new IAceOnCallResourceMethod() {
+
+            /**
+             * This is called to set video speed.
+             *
+             * @param param
+             * @return unused
+             */
+            public String onCall(Map<String, String> param) {
+                runAsync(new InnerProcessor(param) {
+
+                    /**
+                     * This is called to set video speed.
+                     */
+                    public void run() {
+                        setSpeed(param);
+                    }
+                });
+                return "";
+            }
+        };
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "setspeed" + PARAM_BEGIN, setSpeed);
 
-        IAceOnCallResourceMethod setDirection = (param) -> runAsync(() -> {
-            setDirection(param);
-        });
+        IAceOnCallResourceMethod setDirection = new IAceOnCallResourceMethod() {
+
+            /**
+             * This is called to set video direction.
+             *
+             * @param param
+             * @return unused
+             */
+            public String onCall(Map<String, String> param) {
+                runAsync(new InnerProcessor(param) {
+
+                    /**
+                     * This is called to set video direction.
+                     */
+                    public void run() {
+                        setDirection(param);
+                    }
+                });
+                return "";
+            }
+        };
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "setdirection" + PARAM_BEGIN, setDirection);
 
-        IAceOnCallResourceMethod setLandscape = (param) -> runAsync(() -> {
-            setLandscape(param);
-        });
+        IAceOnCallResourceMethod setLandscape = new IAceOnCallResourceMethod() {
+
+            /**
+             * This is called to set video direction LANDSCAPE.
+             *
+             * @param param
+             * @return unused
+             */
+            public String onCall(Map<String, String> param) {
+                runAsync(new InnerProcessor(param) {
+
+                    /**
+                     * This is called to set video direction LANDSCAPE.
+                     */
+                    public void run() {
+                        setLandscape(param);
+                    }
+                });
+                return "";
+            }
+        };
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "setlandscape" + PARAM_BEGIN, setLandscape);
 
-        IAceOnCallResourceMethod callSetSurface = (param) -> runAsync(() -> {
-            setSurface(param);
-        });
+        IAceOnCallResourceMethod callSetSurface = new IAceOnCallResourceMethod() {
+
+            /**
+             * This is called to set video surface
+             *
+             * @param param
+             * @return unused
+             */
+            public String onCall(Map<String, String> param) {
+                runAsync(new InnerProcessor(param) {
+
+                    /**
+                     * This is called to set video surface
+                     */
+                    public void run() {
+                        setSurface(param);
+                    }
+                });
+                return "";
+            }
+        };
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "setsurface" + PARAM_BEGIN, callSetSurface);
 
         IAceOnCallResourceMethod callUpdateSrc = (param) -> runAsync(() -> {

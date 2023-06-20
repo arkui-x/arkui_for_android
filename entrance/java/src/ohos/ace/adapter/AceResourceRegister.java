@@ -34,6 +34,8 @@ public final class AceResourceRegister {
 
     private static final int SPLIT_COUNT = 2;
 
+    AceResourceRegister self = this;
+
     private Map<String, AceResourcePlugin> pluginMap;
 
     private Map<String, IAceOnCallResourceMethod> callMethodMap;
@@ -42,10 +44,24 @@ public final class AceResourceRegister {
 
     private long aceRegisterPtr;
 
+    /**
+     * Constructor of resource register.
+     */
     public AceResourceRegister() {
         pluginMap = new HashMap<String, AceResourcePlugin>();
         callMethodMap = new HashMap<String, IAceOnCallResourceMethod>();
-        callbackHandler = (eventId, param) -> onEvent(eventId, param);
+        callbackHandler = new IAceOnResourceEvent() {
+
+            /**
+             * Fire event to native
+             *
+             * @param eventId event id
+             * @param param param
+             */
+            public void onEvent(String eventId, String param) {
+                self.onEvent(eventId, param);
+            }
+        };
     }
 
     /**
