@@ -249,16 +249,22 @@ public final class AceApplicationInfo {
             return;
         }
         applicationLanguage = tempLanguage;
-        CompletableFuture.runAsync(() -> {
-            StringJoiner stringJoiner = new StringJoiner("-");
-            stringJoiner.add(getLanguage());
-            stringJoiner.add(getScript());
-            stringJoiner.add(getCountryOrRegion());
-            stringJoiner.add(getKeywordsAndValues());
-            languageTag = stringJoiner.toString();
+        CompletableFuture.runAsync(
+            new Runnable() {
 
-            nativeLocaleChanged(getLanguage(), getCountryOrRegion(), getScript(), getKeywordsAndValues());
-        });
+                /**
+                 * Set the locale asynchronous
+                 */
+                public void run() {
+                    StringJoiner stringJoiner = new StringJoiner("-");
+                    stringJoiner.add(getLanguage());
+                    stringJoiner.add(getScript());
+                    stringJoiner.add(getCountryOrRegion());
+                    stringJoiner.add(getKeywordsAndValues());
+                    languageTag = stringJoiner.toString();
+                    nativeLocaleChanged(getLanguage(), getCountryOrRegion(), getScript(), getKeywordsAndValues());
+                }
+            });
     }
 
     /**

@@ -272,17 +272,31 @@ public class AceVideoAosp extends AceVideoBase
             mediaPlayer.pause();
         }
 
-        runOnUIThread(() -> {
-            firePrepared(mp.getVideoWidth(), mp.getVideoHeight(), mp.getDuration(), isAutoPlay(), false);
-        });
+        runOnUIThread(
+            new Runnable() {
+
+                /**
+                 * This is called to fire prepared event.
+                 */
+                public void run() {
+                    firePrepared(mp.getVideoWidth(), mp.getVideoHeight(), mp.getDuration(), isAutoPlay(), false);
+                }
+            });
     }
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         ALog.i(LOG_TAG, "onError");
-        runOnUIThread(() -> {
-            fireError();
-        });
+        runOnUIThread(
+            new Runnable() {
+
+                /**
+                 * This is called to fire error event.
+                 */
+                public void run() {
+                    fireError();
+                }
+            });
 
         setKeepScreenOn(false);
         reset();
@@ -296,25 +310,46 @@ public class AceVideoAosp extends AceVideoBase
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        runOnUIThread(() -> {
-            fireCompletion();
-        });
+        runOnUIThread(
+            new Runnable() {
+
+                /**
+                 * This is called to fire completion event.
+                 */
+                public void run() {
+                    fireCompletion();
+                }
+            });
         state = PlayState.PLAYBACK_COMPLETE;
         setKeepScreenOn(false);
     }
 
     @Override
     public void onSeekComplete(MediaPlayer mp) {
-        runOnUIThread(() -> {
-            fireSeekComplete(mediaPlayer.getCurrentPosition() / SECOND_TO_MSEC);
-        });
+        runOnUIThread(
+            new Runnable() {
+
+                /**
+                 * This is called to fire seek complete event.
+                 */
+                public void run() {
+                    fireSeekComplete(mediaPlayer.getCurrentPosition() / SECOND_TO_MSEC);
+                }
+            });
     }
 
     @Override
     public void onBufferingUpdate(MediaPlayer mp, int percent) {
-        runOnUIThread(() -> {
-            fireBufferingUpdate(percent);
-        });
+        runOnUIThread(
+            new Runnable() {
+
+                /**
+                 * This is called to fire buffering update event.
+                 */
+                public void run() {
+                    fireBufferingUpdate(percent);
+                }
+            });
     }
 
     @Override
@@ -436,9 +471,17 @@ public class AceVideoAosp extends AceVideoBase
             return FAIL;
         }
         position = mediaPlayer.getCurrentPosition();
-        runOnUIThread(() -> {
-            fireGetCurrenttime(position / SECOND_TO_MSEC);
-        });
+        runOnUIThread(
+            new Runnable() {
+
+                /**
+                 * This is called to fire play currenttime.
+                 */
+                public void run() {
+                    fireGetCurrenttime(position / SECOND_TO_MSEC);
+                }
+            });
+
         return "currentpos=" + position / SECOND_TO_MSEC;
     }
 
@@ -581,26 +624,55 @@ public class AceVideoAosp extends AceVideoBase
                 isResumePlaying = mediaPlayer.isPlaying();
                 reset();
                 setKeepScreenOn(false);
-                runOnUIThread(() -> {
-                    firePlayStatusChange(false);
-                });
+                runAsync(
+                    new Runnable() {
+
+                        /**
+                         * This is called to fire play currenttime.
+                         */
+                        public void run() {
+                            runOnUIThread(
+                                new Runnable() {
+                                    /**
+                                     * This is called to fire play status change event.
+                                     */
+                                    public void run() {
+                                        firePlayStatusChange(false);
+                                    }
+                                });
+                        }
+                    });
             }
         });
     }
 
     private void setKeepScreenOn(boolean screenOn) {
         if (screenOn) {
-            runOnUIThread(() -> {
-                if (window != null) {
-                    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                }
-            });
+            runOnUIThread(
+                new Runnable() {
+
+                    /**
+                     * Add flags if window is not null.
+                     */
+                    public void run() {
+                        if (window != null) {
+                            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                        }
+                    }
+                });
         } else {
-            runOnUIThread(() -> {
-                if (window != null) {
-                    window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                }
-            });
+            runOnUIThread(
+                new Runnable() {
+
+                    /**
+                     * Clear flags if window is not null.
+                     */
+                    public void run() {
+                        if (window != null) {
+                            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                        }
+                    }
+                });
         }
     }
 
