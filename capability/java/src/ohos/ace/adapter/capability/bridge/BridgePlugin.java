@@ -39,6 +39,8 @@ public abstract class BridgePlugin {
 
     private final Context context_;
 
+    private boolean isAvailable = false;
+
     private IMessageListener iMessageListener;
 
     private IMethodResult iMethodResult;
@@ -60,7 +62,7 @@ public abstract class BridgePlugin {
         this.instanceId_ = instanceId;
         this.context_ = context;
         this.bridgeManager_ = BridgeManager.getInstance();
-        this.bridgeManager_.registerBridgePlugin(bridgeName, this);
+        this.isAvailable = this.bridgeManager_.registerBridgePlugin(bridgeName, this);
         this.methodsMap_ = new HashMap<String, Method>();
     }
 
@@ -147,6 +149,10 @@ public abstract class BridgePlugin {
      * @param methodData Method packaging structure.
      */
     public void callMethod(MethodData methodData) {
+        if (!this.isAvailable) {
+            ALog.e(LOG_TAG, "The bridge is not available");
+            return;
+        }
         BridgeErrorCode errorCode = this.bridgeManager_.platformCallMethod(bridgeName_, methodData);
         if (this.iMethodResult != null && errorCode.getId() != 0) {
             this.iMethodResult.onError(methodData.getMethodName(), errorCode.getId(), errorCode.getErrorMessage());
@@ -159,6 +165,10 @@ public abstract class BridgePlugin {
      * @param data Data to be sent.
      */
     public void sendMessage(Object data) {
+        if (!this.isAvailable) {
+            ALog.e(LOG_TAG, "The bridge is not available");
+            return;
+        }
         this.bridgeManager_.platformSendMessage(this.bridgeName_, data);
     }
 

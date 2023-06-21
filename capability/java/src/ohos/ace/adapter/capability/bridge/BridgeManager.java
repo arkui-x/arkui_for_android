@@ -44,6 +44,8 @@ public class BridgeManager {
 
     private static final String DATA_ERROR = "data_error";
 
+    private static final String SEPARATOR = "$";
+
     private static final int NO_PARAM = 4;
 
     private static final Object INSTANCE_LOCK = new Object();
@@ -87,17 +89,19 @@ public class BridgeManager {
      *
      * @param bridgeName name of bridge.
      * @param bridgePlugin bridgePlugin object.
+     * @return Success or not.
      */
-    public void registerBridgePlugin(String bridgeName, BridgePlugin bridgePlugin) {
+    public boolean registerBridgePlugin(String bridgeName, BridgePlugin bridgePlugin) {
         Lock registerLock = new ReentrantLock();
         registerLock.lock();
         try {
             if (bridgeMap_.containsKey(bridgeName)) {
                 ALog.e(LOG_TAG, "The bridgeName Already exists");
-                return;
+                return false;
             } else {
                 ALog.i(LOG_TAG, "registerBridgePlugin success");
                 bridgeMap_.put(bridgeName, bridgePlugin);
+                return true;
             }
         } finally {
             registerLock.unlock();
@@ -189,6 +193,14 @@ public class BridgeManager {
         }
     }
 
+    private String splitMethodName(String methodName) {
+        if (methodName != null && methodName.contains(SEPARATOR)) {
+            return methodName.substring(0, methodName.indexOf(SEPARATOR));
+        } else {
+            return methodName;
+        }
+    }
+
     /**
      * Other platforms call methods.
      *
@@ -211,15 +223,16 @@ public class BridgeManager {
         try {
             Object object = null;
             MethodData methodData = null;
+            String splitName = splitMethodName(methodName);
             if (parameters.length() != NO_PARAM) {
                 ALog.i(LOG_TAG, "The calling method has parameters");
                 JSONObject paramJsonObj = new JSONObject(parameters);
-                methodData = new MethodData(methodName, ParameterHelper.jsonTransformObject(paramJsonObj));
+                methodData = new MethodData(splitName, ParameterHelper.jsonTransformObject(paramJsonObj));
                 object = bridgePlugin.jsCallMethod(bridgePlugin, methodData);
             } else {
                 ALog.i(LOG_TAG, "The calling method has no parameters");
                 Object[] objectParamters = {};
-                methodData = new MethodData(methodName, objectParamters);
+                methodData = new MethodData(splitName, objectParamters);
                 object = bridgePlugin.jsCallMethod(bridgePlugin, methodData);
             }
             if (object == null) {
