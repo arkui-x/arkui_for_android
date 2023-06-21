@@ -284,8 +284,8 @@ public class StageActivity extends Activity {
      * @return Returns ERR_OK on success, others on failure.
      */
     public int startActivityForResult(String bundleName, String activityName, String params, int requestCode) {
-        Log.i(LOG_TAG, "startActivityForResult called, bundleName: " + bundleName + ", activityName: " + activityName +
-            ", requestCode: " + requestCode);
+        Log.i(LOG_TAG, "startActivityForResult called, bundleName: " + bundleName + ", activityName: " + activityName
+            + ", requestCode: " + requestCode);
         int error = ERR_OK;
         try {
             Intent intent = new Intent();
