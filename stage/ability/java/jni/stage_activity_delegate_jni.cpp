@@ -69,6 +69,11 @@ bool StageActivityDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
             .signature = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&CreateAbilityDelegator),
         },
+        {
+            .name = "nativeDispatchOnAbilityResult",
+            .signature = "(Ljava/lang/String;IILjava/lang/String;)V",
+            .fnPtr = reinterpret_cast<void*>(&DispatchOnAbilityResult),
+        },
     };
     if (!env) {
         LOGE("JNI StageActivityDelegate: null java env");
@@ -212,6 +217,22 @@ void StageActivityDelegateJni::CreateAbilityDelegator(JNIEnv* env, jclass myclas
         return;
     }
     AppMain::GetInstance()->PrepareAbilityDelegator(bundleName, moduleName, testName, timeout);
+}
+
+void StageActivityDelegateJni::DispatchOnAbilityResult(
+    JNIEnv* env, jclass myclass, jstring str, jint requestCode, jint resultCode, jstring resultWantParams)
+{
+    if (env == nullptr) {
+        LOGE("env is nullptr");
+        return;
+    }
+    auto instanceName = env->GetStringUTFChars(str, nullptr);
+    auto parameters = env->GetStringUTFChars(resultWantParams, nullptr);
+    if (instanceName != nullptr && parameters != nullptr) {
+        AppMain::GetInstance()->DispatchOnAbilityResult(instanceName, requestCode, resultCode, parameters);
+        env->ReleaseStringUTFChars(str, instanceName);
+        env->ReleaseStringUTFChars(resultWantParams, parameters);
+    }
 }
 } // namespace Platform
 } // namespace AbilityRuntime

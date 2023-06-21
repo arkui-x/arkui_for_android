@@ -42,8 +42,13 @@ public:
     void GetThreeElement(const std::string &fullName, std::string &bundleName,
         std::string &moduleName, std::string &abilityName);
     void GetNewFullName(const std::string &fullName, std::string &newFullName);
-
+    int32_t StartAbilityForResult(
+        const std::string& instanceName, const AAFwk::Want& want, int32_t requestCode);
+    int32_t TerminateAbilityWithResult(
+        const std::string& instanceName, const AAFwk::Want& resultWant, int32_t resultCode);
 private:
+    void ParseWant(
+        const AAFwk::Want& want, std::string& bundleName, std::string& activityName, std::string& wantParams);
     static std::shared_ptr<AbilityContextAdapter> instance_;
     static std::mutex mutex_;
     std::unordered_map<std::string, Ace::Platform::JniEnvironment::JavaGlobalRef> jobjects_;

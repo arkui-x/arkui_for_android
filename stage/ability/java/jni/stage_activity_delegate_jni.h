@@ -38,6 +38,8 @@ public:
     static void SetWindowView(JNIEnv* env, jclass myclass, jstring str, jobject jwindowView);
     static void CreateAbilityDelegator(JNIEnv* env, jclass myclass, jstring jbundleName,
         jstring jmoduleName, jstring jtestName, jstring timeout);
+    static void DispatchOnAbilityResult(
+        JNIEnv* env, jclass myclass, jstring str, jint requestCode, jint resultCode, jstring resultWantParams);
 };
 } // namespace Platform
 } // namespace AbilityRuntime
