@@ -62,6 +62,7 @@ if (xcomponent_components_support) {
 if (defined(enable_rosen_backend) && enable_rosen_backend) {
   defines += [ "ENABLE_ROSEN_BACKEND" ]
   defines += [ "VIRTUAL_RS_WINDOW" ]
+  defines += [ "QUICK_PUSH_TRANSITION" ]
 }
 
 if (defined(video_components_support) && video_components_support) {
