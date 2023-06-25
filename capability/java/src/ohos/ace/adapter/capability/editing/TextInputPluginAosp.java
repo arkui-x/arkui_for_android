@@ -19,6 +19,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.InputType;
 import android.text.Selection;
 import android.view.View;
@@ -158,6 +159,16 @@ public class TextInputPluginAosp extends TextInputPluginBase {
     @Override
     protected void onInited() {
         editable = Editable.Factory.getInstance().newEditable("");
+        final TextInputConfiguration config = getConfiguration();
+        if (config != null) {
+            String inputFilterRule = config.getInputFilterRule();
+            if (!inputFilterRule.isEmpty()) {
+                InputFilter[] filters = new InputFilter[1];
+                TextInputFilter inputFilter = new TextInputFilter(inputFilterRule);
+                filters[0] = inputFilter;
+                editable.setFilters(filters);
+            }
+        }
 
         // setTextInputClient will be followed by a call to setTextInputEditingState.
         // Do a restartInput at that time.

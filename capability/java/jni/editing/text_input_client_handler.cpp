@@ -55,7 +55,7 @@ void TextInputClientHandler::PerformAction(const int32_t clientId, const TextInp
                 }
                 auto client = currentConnection->GetClient();
                 if (client) {
-                    client->PerformAction(action);
+                    client->PerformAction(action, true);
                 }
             },
             TaskExecutor::TaskType::UI);
