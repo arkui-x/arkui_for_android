@@ -136,4 +136,10 @@ void AcePlatformPluginJni::UnregisterSurface(JNIEnv* env, jobject myObject, jint
 
     iter->second.erase(static_cast<int64_t>(textureId));
 }
+
+void AcePlatformPluginJni::ReleaseInstance(int32_t instanceId)
+{
+    g_nativeWindowMaps.erase(instanceId);
+    g_resRegisters.erase(instanceId);
+}
 } // namespace OHOS::Ace::Platform

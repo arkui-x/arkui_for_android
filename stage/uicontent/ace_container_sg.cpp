@@ -15,6 +15,7 @@
 
 #include "adapter/android/stage/uicontent/ace_container_sg.h"
 
+#include "adapter/android/capability/java/jni/editing/text_input_jni.h"
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/ace_platform_plugin_jni.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
@@ -868,6 +869,8 @@ void AceContainerSG::DestroyContainer(int32_t instanceId, const std::function<vo
     container->DestroyView(); // Stop all threads(ui,gpu,io) for current ability.
     auto removeContainerTask = [instanceId, destroyCallback] {
         LOGI("Remove on Platform thread...");
+        TextInputJni::ReleaseInstance(instanceId);
+        AcePlatformPluginJni::ReleaseInstance(instanceId);
         EngineHelper::RemoveEngine(instanceId);
         AceEngine::Get().RemoveContainer(instanceId);
         if (destroyCallback) {
