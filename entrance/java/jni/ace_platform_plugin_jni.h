@@ -39,6 +39,7 @@ public:
         jint instanceId, jlong texture_id, jobject surface);
     static void UnregisterSurface(JNIEnv* env, jobject myObject, jint instanceId, jlong texture_id);
     static void* GetNativeWindow(int32_t instanceId, int64_t textureId);
+    static void ReleaseInstance(int32_t instanceId);
 
 private:
     ACE_DISALLOW_COPY_AND_MOVE(AcePlatformPluginJni);
