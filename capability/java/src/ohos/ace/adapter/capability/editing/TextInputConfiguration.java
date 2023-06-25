@@ -31,15 +31,17 @@ public class TextInputConfiguration {
     private final boolean autoCorrect;
     private final String capitalization;
     private final String keyboardAppearance;
+    private final String inputFilterRule;
 
     private TextInputConfiguration(
-        TextInputType type,
-        boolean obscure,
-        TextInputAction action,
-        String actionLabel,
-        boolean autoCorrect,
-        String capitalization,
-        String keyboardAppearance) {
+            TextInputType type,
+            boolean obscure,
+            TextInputAction action,
+            String actionLabel,
+            boolean autoCorrect,
+            String capitalization,
+            String keyboardAppearance,
+            String inputFilterRule) {
         this.type = type;
         this.obscure = obscure;
         this.action = action;
@@ -47,12 +49,13 @@ public class TextInputConfiguration {
         this.autoCorrect = autoCorrect;
         this.capitalization = capitalization;
         this.keyboardAppearance = keyboardAppearance;
+        this.inputFilterRule = inputFilterRule;
     }
 
     /**
      * Deserialize TextInputConfiguration from JSON.
      *
-     * @param config  Configuration in JSON format.
+     * @param config Configuration in JSON format.
      * @return IME configuration.
      */
     public static TextInputConfiguration fromJson(JSONObject config) throws JSONException {
@@ -66,6 +69,8 @@ public class TextInputConfiguration {
         boolean autoCorrect = false;
         String capitalization = "";
         String keyboardAppearance = "";
+        String inputFilter = "";
+
         if (config.has("type")) {
             type = config.getInt("type");
         }
@@ -87,9 +92,11 @@ public class TextInputConfiguration {
         if (config.has("keyboardAppearance")) {
             keyboardAppearance = config.getString("keyboardAppearance");
         }
-
+        if (config.has("inputFilter")) {
+            inputFilter = config.getString("inputFilter");
+        }
         return new TextInputConfiguration(TextInputType.of(type), obscure, TextInputAction.of(action),
-            actionLabel, autoCorrect, capitalization, keyboardAppearance);
+                actionLabel, autoCorrect, capitalization, keyboardAppearance, inputFilter);
     }
 
     /**
@@ -153,5 +160,14 @@ public class TextInputConfiguration {
      */
     public String getKeyboardAppearance() {
         return keyboardAppearance;
+    }
+
+    /**
+     * Gets the input filter rule.
+     *
+     * @return The input filter rule config.
+     */
+    public String getInputFilterRule() {
+        return inputFilterRule;
     }
 }

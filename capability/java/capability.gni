@@ -36,6 +36,7 @@ common_capability_java_files = [
 android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/clipboard/ClipboardPluginAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/InputConnectionWrapper.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputFilter.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputPluginAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/environment/EnvironmentAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/grantresult/GrantResult.java",
