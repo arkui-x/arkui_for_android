@@ -16,6 +16,7 @@
 #include "ability_context_adapter.h"
 
 #include <cctype>
+#include <list>
 
 #include "ability_manager_errors.h"
 #include "application_context_adapter.h"
@@ -32,6 +33,7 @@ const std::string ACTIVITY_NAME = "Activity";
 
 std::shared_ptr<AbilityContextAdapter> AbilityContextAdapter::instance_ = nullptr;
 std::mutex AbilityContextAdapter::mutex_;
+std::list<std::string> objectsList;
 AbilityContextAdapter::AbilityContextAdapter() {}
 
 AbilityContextAdapter::~AbilityContextAdapter() {}
@@ -57,6 +59,7 @@ void AbilityContextAdapter::AddStageActivity(const std::string& instanceName, jo
         return;
     }
     jobjects_.emplace(instanceName, Ace::Platform::JniEnvironment::MakeJavaGlobalRef(env, stageActivity));
+    objectsList.push_back(instanceName);
 }
 
 int32_t AbilityContextAdapter::StartAbility(const std::string& instanceName, const AAFwk::Want& want)
@@ -129,8 +132,7 @@ int32_t AbilityContextAdapter::StartAbility(const std::string& instanceName, con
 int32_t AbilityContextAdapter::DoAbilityForeground(const std::string &fullName)
 {
     LOGI("Do ability foreground, caller full name: %{public}s", fullName.c_str());
-    std::string instanceName = ApplicationContextAdapter::GetInstance()->GetTopAbility();
-    auto finder = jobjects_.find(instanceName);
+    auto finder = jobjects_.find(fullName);
     if (finder == jobjects_.end()) {
         LOGE("Activity caller is not exist.");
         return AAFwk::INNER_ERR;
@@ -150,59 +152,21 @@ int32_t AbilityContextAdapter::DoAbilityForeground(const std::string &fullName)
         LOGE("GetObjectClass return null");
         return AAFwk::INNER_ERR;
     }
-    auto doActivityForegroundMethod = env->GetMethodID(objClass, "doActivityForeground",
-        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
+    auto doActivityForegroundMethod = env->GetMethodID(objClass, "doActivityForeground", "()I");
     if (doActivityForegroundMethod == nullptr) {
         LOGE("fail to get the method doActivityForeground id");
         return AAFwk::INNER_ERR;
     }
-    env->DeleteLocalRef(objClass);
-    std::string bundleName;
-    std::string moduleName;
-    std::string abilityName;
-    GetThreeElement(fullName, bundleName, moduleName, abilityName);
-    jstring jBundleName = env->NewStringUTF(bundleName.c_str());
-    jstring jModuleName = env->NewStringUTF(moduleName.c_str());
-    jstring jActivityName = env->NewStringUTF(abilityName.c_str());
-    if (jBundleName == nullptr || jModuleName == nullptr || jActivityName == nullptr) {
-        LOGE("jBundleName or jModuleName or jActivityName is nullptr");
-        return AAFwk::INNER_ERR;
-    }
-    auto result = env->CallIntMethod(stageActivity, doActivityForegroundMethod, jBundleName, jModuleName,
-        jActivityName);
-    env->DeleteLocalRef(jBundleName);
-    env->DeleteLocalRef(jModuleName);
-    env->DeleteLocalRef(jActivityName);
-
+    auto result = env->CallIntMethod(stageActivity, doActivityForegroundMethod);
     if (result != ERR_OK) {
         LOGE("DoAbilityForeground INVALID_PARAMETERS_ERR");
         return AAFwk::INVALID_PARAMETERS_ERR;
     }
+    auto objectsIt = std::find(objectsList.begin(), objectsList.end(), fullName);
+    if (objectsIt != objectsList.end()) {
+        objectsList.splice(objectsList.end(), objectsList, objectsIt);
+    }
     return ERR_OK;
-}
-
-void AbilityContextAdapter::GetThreeElement(const std::string &fullName, std::string &bundleName,
-    std::string &moduleName, std::string &abilityName)
-{
-    std::vector<std::string> vecList;
-    Ace::StringUtils::StringSplitter(fullName, ':', vecList);
-    int32_t VEC_LENS = 3;
-    size_t lens = vecList.size();
-    if (lens != VEC_LENS) {
-        LOGE("Enter DoAbilityForeground StringSplit fullName size not equal three!");
-        return;
-    }
-    int abilityNameIndex = 2;
-    bundleName = vecList[0];
-    moduleName = vecList[1];
-    abilityName = vecList[abilityNameIndex];
-    LOGI("bundleName: %{public}s, moduleName: %{public}s, abilityName: %{public}s", bundleName.c_str(),
-        moduleName.c_str(), abilityName.c_str());
-    
-    if (!moduleName.empty()) {
-        moduleName[0] = std::toupper(moduleName[0]);
-    }
-    abilityName.append(ACTIVITY_NAME);
 }
 
 int32_t AbilityContextAdapter::DoAbilityBackground(const std::string &fullName)
@@ -215,16 +179,16 @@ int32_t AbilityContextAdapter::DoAbilityBackground(const std::string &fullName)
     if (pos != std::string::npos) {
         activityName = instanceName;
     } else {
-        LOGI("Do ability background, alrady background %{public}s", fullName.c_str());
+        LOGI("Do ability background, already background %{public}s", fullName.c_str());
         return ERR_OK;
     }
     LOGI("DoAbilityBackground get activityName, activityName: %{public}s", activityName.c_str());
-    auto finder = jobjects_.find(activityName);
+    auto objectsName = std::prev(objectsList.end(), 2);
+    auto finder = jobjects_.find(*objectsName);
     if (finder == jobjects_.end()) {
         LOGE("Activity caller is not exist.");
         return AAFwk::INNER_ERR;
     }
-
     jobject stageActivity = finder->second.get();
     if (stageActivity == nullptr) {
         LOGE("stageActivity is nullptr");
@@ -253,6 +217,10 @@ int32_t AbilityContextAdapter::DoAbilityBackground(const std::string &fullName)
     if (result != ERR_OK) {
         LOGE("DoAbilityBackground INVALID_PARAMETERS_ERR");
         return AAFwk::INVALID_PARAMETERS_ERR;
+    }
+    auto objectsIt = std::find(objectsList.begin(), objectsList.end(), *objectsName);
+    if (objectsIt != objectsList.end()) {
+        objectsList.splice(objectsList.end(), objectsList, objectsIt);
     }
     return ERR_OK;
 }
@@ -300,6 +268,7 @@ void AbilityContextAdapter::RemoveStageActivity(const std::string& instanceName)
     auto finder = jobjects_.find(instanceName);
     if (finder != jobjects_.end()) {
         jobjects_.erase(finder);
+        objectsList.remove(instanceName);
     }
 }
 } // namespace Platform

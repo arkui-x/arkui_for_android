@@ -263,21 +263,16 @@ public class StageActivity extends Activity {
     /**
      * Switch to the foreground.
      *
-     * @param bundleName   the package name.
-     * @param moduleName   the module name.
-     * @param activityName the activity name.
      * @return Returns ERR_OK on success, others on failure.
      */
-    public int doActivityForeground(String bundleName, String moduleName, String activityName) {
-        Log.i(LOG_TAG, "doActivityForeground called, bundleName: " + bundleName + ",moduleName: " + moduleName
-            + ", activityName: " + activityName);
+    public int doActivityForeground() {
+        Log.i(LOG_TAG, "doActivityForeground called");
         int error = ERR_OK;
         try {
-            Intent intent = new Intent(getApplicationContext(), Class.forName(
-                bundleName + "." + moduleName + activityName));
+	    Intent intent = new Intent(getApplicationContext(), this.getClass());
             intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             this.startActivity(intent);
-        } catch (ClassNotFoundException exception) {
+        } catch (ActivityNotFoundException exception) {
             Log.e(LOG_TAG, "switch foreground err.");
             error = ERR_INVALID_PARAMETERS;
         }
@@ -293,7 +288,9 @@ public class StageActivity extends Activity {
         Log.i(LOG_TAG, "doActivityBackground called");
         int error = ERR_OK;
         try {
-            finish();
+            Intent intent = new Intent(getApplicationContext(), this.getClass());
+            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            this.startActivity(intent);
         } catch (ActivityNotFoundException exception) {
             Log.e(LOG_TAG, "switch background err.");
             error = ERR_INVALID_PARAMETERS;
