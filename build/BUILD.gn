@@ -24,6 +24,7 @@ ohos_shared_library("libarkui_android") {
     "$ace_root/build:libace_static_android",
     "//foundation/appframework:appframework_napis",
     "//foundation/appframework/icu_data:static_icudata",
+    "//plugins/interfaces/native:ace_plugin_util_inner_android",
   ]
   if (defined(ark_engine)) {
     deps += [
