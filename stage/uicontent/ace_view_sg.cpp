@@ -175,11 +175,12 @@ bool AceViewSG::DispatchTouchEvent(const std::vector<uint8_t>& data)
     ConvertTouchEvent(data, touchEvents);
     LOGI(" ProcessTouchEvent event size%zu", touchEvents.size());
     bool forbiddenToPlatform = false;
-    for (const auto& point : touchEvents) {
+    for (auto& point : touchEvents) {
         if (point.type == TouchType::UNKNOWN) {
             LOGW("Unknown event");
             continue;
         }
+        point.sourceType = SourceType::TOUCH;
         if (touchEventCallback_) {
             touchEventCallback_(point, nullptr);
         }
