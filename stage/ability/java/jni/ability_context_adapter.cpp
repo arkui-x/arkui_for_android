@@ -173,12 +173,9 @@ int32_t AbilityContextAdapter::DoAbilityForeground(const std::string &fullName)
 int32_t AbilityContextAdapter::DoAbilityBackground(const std::string &fullName)
 {
     LOGI("Do ability background, caller full name: %{public}s", fullName.c_str());
-    std::string activityName;
     std::string instanceName = ApplicationContextAdapter::GetInstance()->GetTopAbility();
     auto pos = instanceName.find(fullName);
-    if (pos != std::string::npos) {
-        activityName = instanceName;
-    } else {
+    if (pos == std::string::npos) {
         LOGI("Do ability background, invalid fullName: %{public}s", fullName.c_str());
         return ERR_OK;
     }
