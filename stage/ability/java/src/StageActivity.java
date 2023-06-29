@@ -269,7 +269,7 @@ public class StageActivity extends Activity {
         Log.i(LOG_TAG, "doActivityForeground called");
         int error = ERR_OK;
         try {
-	    Intent intent = new Intent(getApplicationContext(), this.getClass());
+            Intent intent = new Intent(getApplicationContext(), this.getClass());
             intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             this.startActivity(intent);
         } catch (ActivityNotFoundException exception) {
