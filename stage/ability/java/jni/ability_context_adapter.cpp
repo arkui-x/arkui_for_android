@@ -175,7 +175,6 @@ int32_t AbilityContextAdapter::DoAbilityBackground(const std::string &fullName)
     LOGI("Do ability background, caller full name: %{public}s", fullName.c_str());
     std::string activityName;
     std::string instanceName = ApplicationContextAdapter::GetInstance()->GetTopAbility();
-
     auto pos = instanceName.find(fullName);
     if (pos != std::string::npos) {
         activityName = instanceName;
@@ -183,7 +182,8 @@ int32_t AbilityContextAdapter::DoAbilityBackground(const std::string &fullName)
         LOGI("Do ability background, invalid fullName: %{public}s", fullName.c_str());
         return ERR_OK;
     }
-    if (objectsList.size() < 2) {
+    int minListSize = 2;
+    if (objectsList.size() < minListSize) {
         LOGE("The length of the list is less than 2");
         return AAFwk::INNER_ERR;
     }
@@ -198,19 +198,16 @@ int32_t AbilityContextAdapter::DoAbilityBackground(const std::string &fullName)
         LOGE("stageActivity is nullptr");
         return AAFwk::INNER_ERR;
     }
-
     auto env = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
     if (env == nullptr) {
         LOGE("env is nullptr");
         return AAFwk::INNER_ERR;
     }
-
     const jclass objClass = env->GetObjectClass(stageActivity);
     if (objClass == nullptr) {
         LOGE("GetObjectClass return null");
         return AAFwk::INNER_ERR;
     }
-
     auto doActivityBackgroundMethod = env->GetMethodID(objClass, "doActivityBackground", "()I");
     if (doActivityBackgroundMethod == nullptr) {
         LOGE("fail to get the method doActivityBackground id");
