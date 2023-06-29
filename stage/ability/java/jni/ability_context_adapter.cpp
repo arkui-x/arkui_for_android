@@ -34,6 +34,7 @@ const std::string ACTIVITY_NAME = "Activity";
 std::shared_ptr<AbilityContextAdapter> AbilityContextAdapter::instance_ = nullptr;
 std::mutex AbilityContextAdapter::mutex_;
 std::list<std::string> objectsList;
+
 AbilityContextAdapter::AbilityContextAdapter() {}
 
 AbilityContextAdapter::~AbilityContextAdapter() {}
