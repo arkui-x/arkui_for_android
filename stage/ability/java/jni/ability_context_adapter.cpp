@@ -172,7 +172,7 @@ int32_t AbilityContextAdapter::DoAbilityForeground(const std::string &fullName)
 
 int32_t AbilityContextAdapter::DoAbilityBackground(const std::string &fullName)
 {
-    LOGI("Do ability background");
+    LOGI("Do ability background, caller full name: %{public}s", fullName.c_str());
     std::string activityName;
     std::string instanceName = ApplicationContextAdapter::GetInstance()->GetTopAbility();
 
@@ -180,10 +180,13 @@ int32_t AbilityContextAdapter::DoAbilityBackground(const std::string &fullName)
     if (pos != std::string::npos) {
         activityName = instanceName;
     } else {
-        LOGI("Do ability background, already background %{public}s", fullName.c_str());
+        LOGI("Do ability background, invalid fullName: %{public}s", fullName.c_str());
         return ERR_OK;
     }
-    LOGI("DoAbilityBackground get activityName, activityName: %{public}s", activityName.c_str());
+    if (objectsList.size() < 2) {
+        LOGE("The length of the list is less than 2");
+        return AAFwk::INNER_ERR;
+    }
     auto objectsName = std::prev(objectsList.end(), 2);
     auto finder = jobjects_.find(*objectsName);
     if (finder == jobjects_.end()) {
