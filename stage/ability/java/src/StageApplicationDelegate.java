@@ -27,7 +27,9 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.Build;
 import android.os.Process;
 import android.util.Log;
 
@@ -119,9 +121,14 @@ public class StageApplicationDelegate {
 
         copyAllModuleResources();
         setResourcesFilePrefixPath(stageApplication.getExternalFilesDir((String) null).getAbsolutePath());
-
-        setLocale(
-                Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(), Locale.getDefault().getScript());
+        String language;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            language = Resources.getSystem().getConfiguration().getLocales().get(0).getLanguage();
+        } else {
+            language = Locale.getDefault().getLanguage();
+        }
+        Log.i(LOG_TAG, "language: " + language);
+        setLocale(language, Locale.getDefault().getCountry(), Locale.getDefault().getScript());
 
         launchApplication();
         initConfiguration();
