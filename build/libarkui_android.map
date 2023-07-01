@@ -101,6 +101,7 @@
       Json::CharReaderBuilder::*;
       Json::ValueIteratorBase::*;
       Json::StreamWriterBuilder::*;
+      Json::Reader::*;
       NativeModuleManager::*;
       NativeEngine::*;
       SkBitmap::*;
