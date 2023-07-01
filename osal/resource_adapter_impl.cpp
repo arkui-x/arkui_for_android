@@ -91,6 +91,7 @@ const char* PATTERN_MAP[] = {
     THEME_PATTERN_APP_BAR,
     THEME_PATTERN_ADVANCED_PATTERN,
     THEME_PATTERN_SECURITY_COMPONENT,
+    THEME_PATTERN_SIDE_BAR
 };
 
 bool IsDirExist(const std::string& path)
@@ -253,6 +254,7 @@ Dimension ResourceAdapterImpl::GetDimension(uint32_t resId)
         if (state != Global::Resource::SUCCESS) {
             LOGE("GetDimension error, id=%{public}u", resId);
         }
+        return Dimension(static_cast<double>(dimensionFloat), ParseDimensionUnit(unit));
     }
     return Dimension(static_cast<double>(dimensionFloat));
 }
