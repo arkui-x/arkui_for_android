@@ -169,6 +169,20 @@ public class StageActivity extends Activity {
         AceEnv.dump(instanceId, prefix, fd, writer, args);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        Log.i(LOG_TAG, "onActivityResult called");
+        super.onActivityResult(requestCode, resultCode, intent);
+        String resultWantParams = "";
+        if (intent != null) {
+            resultWantParams = intent.getStringExtra(WANT_PARAMS);
+            if (resultWantParams == null) {
+                resultWantParams = "";
+            }
+        }
+        activityDelegate.dispatchOnActivityResult(getInstanceName(), requestCode, resultCode, resultWantParams);
+    }
+
     /**
      * Set the instance name, should called before super.onCreate()
      *
@@ -258,6 +272,53 @@ public class StageActivity extends Activity {
             error = ERR_INVALID_PARAMETERS;
         }
         return error;
+    }
+
+    /**
+     * Start a new activity for which you would like a result when it finished.
+     *
+     * @param bundleName   the package name.
+     * @param activityName the activity name.
+     * @param params       the want params.
+     * @param requestCode  If >= 0, this code will be returned in onActivityResult() when the activity exits.
+     * @return Returns ERR_OK on success, others on failure.
+     */
+    public int startActivityForResult(String bundleName, String activityName, String params, int requestCode) {
+        Log.i(LOG_TAG, "startActivityForResult called, bundleName: " + bundleName + ", activityName: " + activityName
+            + ", requestCode: " + requestCode);
+        int error = ERR_OK;
+        try {
+            Intent intent = new Intent();
+            String packageName = getApplicationContext().getPackageName();
+            Log.i(LOG_TAG, "Current package name: " + packageName);
+            ComponentName componentName = null;
+            if (packageName == bundleName) {
+                componentName = new ComponentName(getBaseContext(), activityName);
+            } else {
+                componentName = new ComponentName(bundleName, activityName);
+            }
+            intent.setComponent(componentName);
+            intent.putExtra(WANT_PARAMS, params);
+            this.startActivityForResult(intent, requestCode);
+        } catch (ActivityNotFoundException exception) {
+            Log.e(LOG_TAG, "start activity for result err: " + exception.getMessage());
+            error = ERR_INVALID_PARAMETERS;
+        }
+        return error;
+    }
+
+    /**
+     * Sets the result code and data to be returned by this Page ability to the caller and destroys this Page ability.
+     *
+     * @param resultWantParams  the data returned after the ability is destroyed.
+     * @param resultCode        the result code returned after the ability is destroyed.
+     */
+    public void terminateActivityWithResult(String resultWantParams, int resultCode) {
+        Log.i(LOG_TAG, "terminateActivityWithResult called, resultCode: " + resultCode);
+        Intent intent = new Intent();
+        intent.putExtra(WANT_PARAMS, resultWantParams);
+        setResult(resultCode, intent);
+        this.finish();
     }
 
     /**

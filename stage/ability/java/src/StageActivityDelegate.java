@@ -121,6 +121,20 @@ public class StageActivityDelegate {
         nativeCreateAbilityDelegator(bundleName, moduleName, testRunerName, timeout);
     }
 
+    /**
+     * Dispatch the onAbilityResult to native.
+     *
+     * @param instanceName the activity instance name.
+     * @param requestCode the request code returned after the ability is started.
+     * @param resultCode the result code returned after the ability is destroyed.
+     * @param resultWantParams the data returned after the ability is destroyed.
+     */
+    public void dispatchOnActivityResult(
+        String instanceName, int requestCode, int resultCode, String resultWantParams) {
+        Log.i(LOG_TAG, "dispatchOnActivityResult called");
+        nativeDispatchOnAbilityResult(instanceName, requestCode, resultCode, resultWantParams);
+    }
+
     private native void nativeAttachStageActivity(String instanceName, StageActivity object);
 
     private native void nativeDispatchOnCreate(String instanceName, String params);
@@ -137,4 +151,7 @@ public class StageActivityDelegate {
 
     private native void nativeCreateAbilityDelegator(String bundleName, String moduleName,
                                                         String testRunerName, String timeout);
+
+    private native void nativeDispatchOnAbilityResult(
+        String instanceName, int requestCode, int resultCode, String resultWantParams);
 }
