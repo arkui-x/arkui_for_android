@@ -138,7 +138,6 @@ void AceContainerSG::Destroy()
     resRegister_.Reset();
     assetManager_.Reset();
     pipelineContext_.Reset();
-    aceView_ = nullptr;
 }
 
 void AceContainerSG::InitializeFrontend()
