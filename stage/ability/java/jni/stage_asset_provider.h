@@ -19,6 +19,7 @@
 #include <list>
 #include <map>
 #include <mutex>
+#include <string>
 
 #include "jni.h"
 #include "jni_environment.h"
@@ -82,6 +83,8 @@ public:
     Ace::RefPtr<AssetProvider> CreateAndFindAssetProvider(const std::string& path);
     void SetCacheDir(const std::string& filesRootDir);
     void SetFileDir(const std::string& filesRootDir);
+    void SetAppLibDir(const std::string& libDir);
+    std::string GetAppLibDir() const;
     std::string GetBundleCodeDir() const;
     std::string GetCacheDir() const;
     std::string GetTempDir() const;
@@ -102,6 +105,7 @@ private:
     std::string tempDir_;
     std::string filesDir_;
     std::string databaseDir_;
+    std::string appLibDir_;
     std::string preferenceDir_;
     std::string resourcesFilePrefixPath_;
     static std::shared_ptr<StageAssetProvider> instance_;
