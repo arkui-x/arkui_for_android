@@ -43,6 +43,7 @@ template("ace_osal_android_source_set") {
       "subwindow.cpp",
       "system_properties.cpp",
       "trace_id_impl.cpp",
+      "socperf_client_impl.cpp",
     ]
 
     include_dirs = [ "$ace_root/frameworks/core/common" ]
