@@ -15,6 +15,8 @@
 
 #include "stage_asset_provider.h"
 
+#include <string>
+
 #include "base/log/log.h"
 #include "base/utils/string_utils.h"
 
@@ -118,8 +120,8 @@ std::list<std::vector<uint8_t>> StageAssetProvider::GetModuleJsonBufferList()
     return bufferList;
 }
 
-std::vector<uint8_t> StageAssetProvider::GetModuleBuffer(const std::string& moduleName,
-    std::string& modulePath, bool esmodule)
+std::vector<uint8_t> StageAssetProvider::GetModuleBuffer(
+    const std::string& moduleName, std::string& modulePath, bool esmodule)
 {
     std::string fullAbilityName;
     if (esmodule) {
@@ -163,8 +165,8 @@ std::vector<uint8_t> StageAssetProvider::GetModuleBuffer(const std::string& modu
     return buffer;
 }
 
-std::vector<uint8_t> StageAssetProvider::GetModuleAbilityBuffer(const std::string& moduleName,
-    const std::string& abilityName, std::string& modulePath, bool esmodule)
+std::vector<uint8_t> StageAssetProvider::GetModuleAbilityBuffer(
+    const std::string& moduleName, const std::string& abilityName, std::string& modulePath, bool esmodule)
 {
     LOGI("Get Module Ability Buffer");
     std::string fullAbilityName;
@@ -270,6 +272,16 @@ void StageAssetProvider::SetFileDir(const std::string& filesRootDir)
     databaseDir_ = filesRootDir + DATABASE_DIR;
 }
 
+void StageAssetProvider::SetAppLibDir(const std::string& libDir)
+{
+    appLibDir_ = libDir;
+}
+
+std::string StageAssetProvider::GetAppLibDir() const
+{
+    return appLibDir_;
+}
+
 std::string StageAssetProvider::GetBundleCodeDir() const
 {
     return appPath_ + ASSETS_DIR;
@@ -304,8 +316,7 @@ void StageAssetProvider::GetResIndexPath(
     const std::string& moduleName, std::string& appResIndexPath, std::string& sysResIndexPath)
 {
     appResIndexPath = resourcesFilePrefixPath_ + SEPARATOR + moduleName + SEPARATOR + RESOURCES_INDEX_NAME;
-    sysResIndexPath =
-        resourcesFilePrefixPath_ + SEPARATOR + SYSTEM_RES_INDEX_NAME + SEPARATOR + RESOURCES_INDEX_NAME;
+    sysResIndexPath = resourcesFilePrefixPath_ + SEPARATOR + SYSTEM_RES_INDEX_NAME + SEPARATOR + RESOURCES_INDEX_NAME;
 }
 
 void StageAssetProvider::SetResourcesFilePrefixPath(const std::string& resourcesFilePrefixPath)

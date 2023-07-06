@@ -148,7 +148,10 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     LOGI("Initialize UIContent isModelJson:%{public}s", isModelJson ? "true" : "false");
     if (isModelJson) {
         auto hapPath = info != nullptr ? info->hapPath : "";
-        hapPath = hapPath.empty() ? "arkui-x/" + moduleName + "/" : hapPath;
+        hapPath = hapPath.empty() ? "arkui-x/" + moduleName : hapPath;
+        if (hapPath.at(hapPath.size() - 1) == '/') {
+            hapPath = hapPath.substr(0, hapPath.size() - 1);
+        }
         LOGI("hapPath:%{public}s", hapPath.c_str());
         // first use hap provider
         if (flutterAssetManager && !hapPath.empty()) {
@@ -156,7 +159,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
             CHECK_NULL_VOID(assetProvider);
             auto env = JniEnvironment::GetInstance().GetJniEnv();
 
-            std::vector<std::string> hapAssetPaths { "", "ets", "ets/share", "resources/base/profile" };
+            std::vector<std::string> hapAssetPaths { "", "/ets", "/ets/share", "/resources/base/profile" };
             for (const auto& path : hapAssetPaths) {
                 auto apkAssetProvider =
                     AceType::MakeRefPtr<ApkAssetProvider>(std::make_unique<flutter::APKAssetProvider>(env.get(),

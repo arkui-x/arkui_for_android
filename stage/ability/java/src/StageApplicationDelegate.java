@@ -117,6 +117,8 @@ public class StageApplicationDelegate {
         setNativeAssetManager(stageApplication.getAssets());
 
         setAssetsFileRelativePath(getAssetsPath());
+        Log.i(LOG_TAG, "AppLib Path:" + context.getApplicationInfo().nativeLibraryDir);
+        nativeSetAppLibDir(context.getApplicationInfo().nativeLibraryDir);
         createStagePath();
 
         copyAllModuleResources();
@@ -618,6 +620,8 @@ public class StageApplicationDelegate {
     private native void nativeSetCacheDir(String cacheDir);
 
     private native void nativeSetFileDir(String filesDir);
+
+    private native void nativeSetAppLibDir(String libDir);
 
     private native void nativeSetResourcesFilePrefixPath(String path);
 
