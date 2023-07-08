@@ -237,7 +237,7 @@ public:
     
     int64_t GetVSyncPeriod()
     {
-      return static_cast<int64_t> (1000000000.0f/60);
+     return static_cast<int64_t>(1000000000.0f/60); // SyncPeriod of 60 fps
     }
 
 private:
