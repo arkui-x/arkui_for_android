@@ -20,6 +20,7 @@
 
 
       OHOS::Ace::AceApplicationInfo::*;
+      OHOS::Ace::AceEngine::*;
       OHOS::Ace::Animator::*;
       "OHOS::Ace::BaseId::BaseId()";
       OHOS::Ace::Container::*;

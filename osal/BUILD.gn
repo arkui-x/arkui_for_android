@@ -40,6 +40,7 @@ template("ace_osal_android_source_set") {
       "resource_convertor.cpp",
       "resource_theme_style.cpp",
       "ressched_report.cpp",
+      "socperf_client_impl.cpp",
       "subwindow.cpp",
       "system_properties.cpp",
       "trace_id_impl.cpp",
