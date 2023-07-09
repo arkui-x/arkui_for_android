@@ -38,7 +38,7 @@
 #include "core/common/flutter/flutter_asset_manager.h"
 
 #include "core/event/touch_event.h"
-#include "foundation/arkui/ace_engine/adapter/android/osal/accessibility_manager_impl.h"
+#include "adapter/android/osal/accessibility_manager_impl.h"
 
 namespace OHOS::Ace::Platform {
 namespace {
@@ -513,13 +513,13 @@ void UIContentImpl::UpdateViewportConfig(const ViewportConfig& config, OHOS::Ros
     Platform::AceViewSG::SurfacePositionChanged(aceView, config.Left(), config.Top());
 }
 
-//Control filtering
+// Control filtering
 bool UIContentImpl::GetAllComponents(NodeId nodeID, OHOS::Ace::Platform::ComponentInfo& components)
 {
     LOGI("UIContentImpl::GetAllComponents enter.");
     auto container = Platform::AceContainerSG::GetContainer(instanceId_);
     CHECK_NULL_RETURN(container, false);
-    if(container->GetPipelineContext()) {
+    if (container->GetPipelineContext()) {
         auto abManager = container->GetPipelineContext()->GetAccessibilityManager();
         if (abManager) {
             auto abNodeManager = AceType::DynamicCast<OHOS::Ace::Framework::AccessibilityNodeManager>(abManager);
