@@ -21,24 +21,54 @@
 
       OHOS::Ace::AceApplicationInfo::*;
       OHOS::Ace::AceEngine::*;
+      OHOS::Ace::Alignment::*;
       OHOS::Ace::Animator::*;
       "OHOS::Ace::BaseId::BaseId()";
+      OHOS::Ace::Color::*;
+      OHOS::Ace::CommonNapiUtils::*;
       OHOS::Ace::Container::*;
       OHOS::Ace::Curves::*;
+      OHOS::Ace::Dimension::*;
       OHOS::Ace::EngineHelper::*;
       OHOS::Ace::Framework::*;
       OHOS::Ace::GridSystemManager::*;
+      OHOS::Ace::JsonUtil::*;
       OHOS::Ace::JsonValue::*;
       OHOS::Ace::Localization::*;
       OHOS::Ace::LogWrapper::*;
+      OHOS::Ace::NapiAsyncEvnet::*;
+      "OHOS::Ace::NG::AddPaddingToSize(OHOS::Ace::NG::PaddingPropertyT<float> const&, OHOS::Ace::NG::SizeT<float>&)";
+      OHOS::Ace::NG::BoxLayoutAlgorithm::*;
+      "OHOS::Ace::NG::CreateIdealSize(OHOS::Ace::NG::LayoutConstraintT<float> const&, OHOS::Ace::Axis, OHOS::Ace::NG::MeasureType)";
+      "OHOS::Ace::NG::CreateIdealSize(OHOS::Ace::NG::LayoutConstraintT<float> const&, OHOS::Ace::Axis, OHOS::Ace::NG::MeasureType, bool)";
+      OHOS::Ace::NG::GestureEventHub::*;
+      OHOS::Ace::NG::FrameNode::*;
+      OHOS::Ace::NG::LayoutProperty::*;
+      OHOS::Ace::NG::LayoutWrapper::*;
+      "OHOS::Ace::NG::MinusPaddingToSize(OHOS::Ace::NG::PaddingPropertyT<float> const&, OHOS::Ace::NG::SizeT<float>&)";
+      OHOS::Ace::NG::Modifier::*;
+      OHOS::Ace::NG::ModifierAdapter::*;
+      OHOS::Ace::NG::ViewAbstract::*;
+      OHOS::Ace::NG::ViewStackProcessor::*;
       OHOS::Ace::Platform::AceApplicationInfoImpl::*;
+      OHOS::Ace::PipelineBase::*;
       OHOS::Ace::Scheduler::*;
       OHOS::Ace::ScopedDelegate::*;
       "OHOS::Ace::SystemGridInfo::ToString() const";
       OHOS::Ace::ThemeConstants::*;
+      "OHOS::Ace::ToRSColor(OHOS::Ace::LinearColor const&)";
       OHOS::Ace::MemoryMonitor::*;
       "OHOS::Ace::SystemProperties::GetDebugEnabled()";
+      OHOS::Ace::V2::PATTERN_LOCK_ETS_TAG;
+      OHOS::Ace::V2::QRCODE_ETS_TAG;
+      OHOS::Ace::V2::RELATIVE_CONTAINER_ETS_TAG;
+      OHOS::Ace::ViewAbstractModel::*;
       OHOS::Media::PixelMapNapi::*;
+      OHOS::Rosen::Drawing::Bitmap::*;
+      OHOS::Rosen::Drawing::CoreCanvas::*;
+      OHOS::Rosen::Drawing::Pen::*;
+      OHOS::Rosen::Drawing::ShaderEffect::*;
+      OHOS::Rosen::Drawing::Brush::*;
 
       virtual?thunk?to?OHOS::Ace::Animator::~Animator??;
 
@@ -54,11 +84,19 @@
       vtable?for?OHOS::Ace::Scheduler;
       vtable?for?OHOS::Ace::ThemeConstants;
 
+      vtable?for?OHOS::Ace::NG::BoxLayoutAlgorithm;
+      vtable?for?OHOS::Ace::NG::LayoutProperty;
+      vtable?for?OHOS::Ace::NG::TouchEventActuator;
+
       VTT?for?OHOS::Ace::Animator;
       VTT?for?OHOS::Ace::Container;
       VTT?for?OHOS::Ace::Framework::MediaQueryInfo;
       VTT?for?OHOS::Ace::Scheduler;
       VTT?for?OHOS::Ace::ThemeConstants;
+
+      VTT?for?OHOS::Ace::NG::BoxLayoutAlgorithm;
+      VTT?for?OHOS::Ace::NG::LayoutProperty;
+      VTT?for?OHOS::Ace::NG::TouchEventActuator;
 
       JNI_OnLoad;
 

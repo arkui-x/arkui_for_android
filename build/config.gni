@@ -39,6 +39,7 @@ build_container_scope_lib = true
 video_components_support = true
 pixel_map_support = true
 use_curl_download = false
+use_components_lib = true
 
 cflags_cc = [
   "-std=c++17",
@@ -57,6 +58,10 @@ libace_target =
 
 if (xcomponent_components_support) {
   defines += [ "XCOMPONENT_SUPPORTED" ]
+}
+
+if (use_components_lib) {
+  defines += [ "USE_COMPONENTS_LIB" ]
 }
 
 if (defined(enable_rosen_backend) && enable_rosen_backend) {

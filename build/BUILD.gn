@@ -13,6 +13,8 @@
 
 import("//build/ohos.gni")
 import("//foundation/arkui/ace_engine/ace_config.gni")
+import(
+    "//foundation/arkui/ace_engine/frameworks/core/components_ng/components_plugin.gni")
 import("//foundation/arkui/ace_engine/interfaces/napi/kits/napi_lib.gni")
 import("//foundation/arkui/napi/napi.gni")
 import("//plugins/plugin_lib.gni")
@@ -90,6 +92,20 @@ foreach(module, common_plugin_libs) {
   common_plugin_modules += [ ":$module_name" ]
 }
 
+component_plugin_modules = []
+
+foreach(module, component_plugins) {
+  sub_name = string_replace(module, "_", "")
+  module_name = "arkui_$sub_name"
+  ohos_shared_library(module_name) {
+    deps = [ "$ace_root/frameworks/core/components_ng/pattern/${module}:components_plugins_${module}_source_android" ]
+
+    part_name = "arkui_components"
+    subsystem_name = "arkui"
+  }
+  component_plugin_modules += [ ":$module_name" ]
+}
+
 # Install packages
 group("ace_packages") {
   deps = [
@@ -107,4 +123,7 @@ group("ace_packages") {
 
   deps += common_napi_modules
   deps += common_plugin_modules
+  if (defined(use_components_lib) && use_components_lib) {
+    deps += component_plugin_modules
+  }
 }
