@@ -24,6 +24,8 @@
 #include "native_engine/native_value.h"
 
 #include "core/event/touch_event.h"
+#include "foundation/arkui/ace_engine/frameworks/core/accessibility/accessibility_node.h"
+#include "foundation/appframework/arkui/uicontent/component_info.h"
 
 namespace OHOS {
 class Window;
@@ -36,6 +38,7 @@ public:
     ~UIContentImpl()
     {
         DestroyCallback();
+        Ace::Platform::UIContent::RemoveUIContent(instanceId_);
     }
     std::unique_ptr<NativeEngine> nativeEngine_;
     // UI content lifecycles
@@ -63,6 +66,9 @@ public:
     // Window color
     uint32_t GetBackgroundColor() override;
     void SetBackgroundColor(uint32_t color) override;
+
+    //Control filtering
+    bool GetAllComponents(NodeId nodeID, OHOS::Ace::Platform::ComponentInfo& components) override;
 
     void DumpInfo(const std::vector<std::string>& params, std::vector<std::string>& info) override;
 
