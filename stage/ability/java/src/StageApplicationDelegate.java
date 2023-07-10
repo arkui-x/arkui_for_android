@@ -134,6 +134,7 @@ public class StageApplicationDelegate {
 
         launchApplication();
         initConfiguration();
+        setPackageName();
 
         initActivity();
     }
@@ -609,9 +610,16 @@ public class StageApplicationDelegate {
         nativeAttachStageApplicationDelegate(this);
     }
 
+    private void setPackageName() {
+        String packageName = stageApplication.getApplicationContext().getPackageName();
+        nativeSetPackageName((packageName != null) ? packageName : "");
+    }
+
     private native void nativeSetAssetManager(Object assetManager);
 
     private native void nativeSetHapPath(String hapPath);
+
+    private native void nativeSetPackageName(String hapPath);
 
     private native void nativeLaunchApplication();
 

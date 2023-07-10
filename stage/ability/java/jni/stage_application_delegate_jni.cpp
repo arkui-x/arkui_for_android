@@ -15,6 +15,7 @@
 
 #include "stage_application_delegate_jni.h"
 
+#include "ability_context_adapter.h"
 #include "app_main.h"
 #include "application_context_adapter.h"
 #include "foundation/arkui/ace_engine/adapter/android/entrance/java/jni/apk_asset_provider.h"
@@ -46,6 +47,11 @@ bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
             .name = "nativeSetHapPath",
             .signature = "(Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&SetHapPath),
+        },
+        {
+            .name = "nativeSetPackageName",
+            .signature = "(Ljava/lang/String;)V",
+            .fnPtr = reinterpret_cast<void*>(&SetPackageName),
         },
         {
             .name = "nativeLaunchApplication",
@@ -135,6 +141,20 @@ void StageApplicationDelegateJni::SetHapPath(JNIEnv* env, jclass myclass, jstrin
     if (hapPath != nullptr) {
         StageAssetProvider::GetInstance()->SetAppPath(hapPath);
         env->ReleaseStringUTFChars(str, hapPath);
+    }
+}
+
+void StageApplicationDelegateJni::SetPackageName(JNIEnv* env, jclass myclass, jstring packageName)
+{
+    LOGI("Set package name");
+    if (env == nullptr) {
+        LOGE("env is nullptr");
+        return;
+    }
+    auto platformBundleName = env->GetStringUTFChars(packageName, nullptr);
+    if (platformBundleName != nullptr) {
+        AbilityContextAdapter::GetInstance()->SetPlatformBundleName(platformBundleName);
+        env->ReleaseStringUTFChars(packageName, platformBundleName);
     }
 }
 
