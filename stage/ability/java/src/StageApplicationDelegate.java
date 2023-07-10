@@ -130,7 +130,22 @@ public class StageApplicationDelegate {
             language = Locale.getDefault().getLanguage();
         }
         Log.i(LOG_TAG, "language: " + language);
-        setLocale(language, Locale.getDefault().getCountry(), Locale.getDefault().getScript());
+        String script;
+        switch (language) {
+            case "ug": {
+                script = "Arab";
+                break;
+            }
+            case "bo": {
+                script = "Tibt";
+                break;
+            }
+            default: {
+                script = Locale.getDefault().getScript();
+                break;
+            }
+        }
+        setLocale(language, Locale.getDefault().getCountry(), script);
 
         launchApplication();
         initConfiguration();
