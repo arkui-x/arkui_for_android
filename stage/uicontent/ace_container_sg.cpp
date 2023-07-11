@@ -562,8 +562,10 @@ void AceContainerSG::UpdateConfiguration(
     ContainerScope scope(instanceId_);
     auto themeManager = pipelineContext_->GetThemeManager();
     CHECK_NULL_VOID(themeManager);
+    OnConfigurationChange configurationChange;
     auto resConfig = GetResourceConfiguration();
     if (!colorMode.empty()) {
+        configurationChange.colorModeUpdate = true;
         if (colorMode == "dark") {
             SystemProperties::SetColorMode(ColorMode::DARK);
             SetColorScheme(ColorScheme::SCHEME_DARK);
@@ -601,7 +603,7 @@ void AceContainerSG::UpdateConfiguration(
         pipelineContext_->SetAppBgColor(Color::WHITE);
     }
     pipelineContext_->RefreshRootBgColor();
-    pipelineContext_->NotifyConfigurationChange();
+    pipelineContext_->NotifyConfigurationChange(configurationChange);
     pipelineContext_->FlushReload();
     pipelineContext_->FlushReloadTransition();
 }
