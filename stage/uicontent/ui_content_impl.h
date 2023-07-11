@@ -49,6 +49,7 @@ public:
     void UnFocus() override;
     void Destroy() override;
     void OnNewWant(const OHOS::AAFwk::Want& want) override;
+    void Finish() override;
 
     // UI content event process
     bool ProcessBackPressed() override;
