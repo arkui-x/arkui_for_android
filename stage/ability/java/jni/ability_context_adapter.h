@@ -46,12 +46,15 @@ public:
         const std::string& instanceName, const AAFwk::Want& want, int32_t requestCode);
     int32_t TerminateAbilityWithResult(
         const std::string& instanceName, const AAFwk::Want& resultWant, int32_t resultCode);
+    void SetPlatformBundleName(const std::string& platformBundleName);
+    std::string GetPlatformBundleName();
 private:
     void ParseWant(
         const AAFwk::Want& want, std::string& bundleName, std::string& activityName, std::string& wantParams);
     static std::shared_ptr<AbilityContextAdapter> instance_;
     static std::mutex mutex_;
     std::unordered_map<std::string, Ace::Platform::JniEnvironment::JavaGlobalRef> jobjects_;
+    std::string platformBundleName_;
 };
 } // namespace Platform
 } // namespace AbilityRuntime

@@ -302,6 +302,7 @@ int32_t AbilityContextAdapter::StartAbilityForResult(
     std::string activityName;
     std::string wantParams;
     ParseWant(want, bundleName, activityName, wantParams);
+    LOGI("bundleName : %{public}s, activityName : %{public}s", activityName.c_str(), activityName.c_str());
 
     jstring jBundleName = env->NewStringUTF(bundleName.c_str());
     jstring jActivityName = env->NewStringUTF(activityName.c_str());
@@ -368,22 +369,39 @@ int32_t AbilityContextAdapter::TerminateAbilityWithResult(
 void AbilityContextAdapter::ParseWant(
     const AAFwk::Want& want, std::string& bundleName, std::string& activityName, std::string& wantParams)
 {
-    bundleName = want.GetBundleName();
-    auto moduleName = want.GetModuleName();
-    auto abilityName = want.GetAbilityName();
-    LOGI("bundleName: %{public}s, moduleName: %{public}s, abilityName: %{public}s", bundleName.c_str(),
-        moduleName.c_str(), abilityName.c_str());
+    wantParams = want.ToJson();
 
+    auto moduleName = want.GetModuleName();
     if (!moduleName.empty()) {
         moduleName[0] = std::toupper(moduleName[0]);
     }
-    LOGI("moduleName : %{public}s", moduleName.c_str());
+
+    bundleName = want.GetBundleName();
+    auto abilityName = want.GetAbilityName();
+    if (!platformBundleName_.empty() && bundleName == platformBundleName_) {
+        if (abilityName.find(".") != std::string::npos) {
+            activityName = abilityName + ACTIVITY_NAME;
+            return;
+        }
+
+        std::string elementBundleName = want.GetStringParam(AAFwk::Want::ELEMENT_BUNDLE_NAME);
+        if (!elementBundleName.empty()) {
+            activityName = elementBundleName + "." + moduleName + abilityName + ACTIVITY_NAME;
+            return;
+        }
+    }
 
     activityName = bundleName + "." + moduleName + abilityName + ACTIVITY_NAME;
-    LOGI("activityName : %{public}s", activityName.c_str());
+}
 
-    wantParams = want.ToJson();
-    LOGI("wantParams : %{public}s", wantParams.c_str());
+void AbilityContextAdapter::SetPlatformBundleName(const std::string& platformBundleName)
+{
+    platformBundleName_ = platformBundleName;
+}
+
+std::string AbilityContextAdapter::GetPlatformBundleName()
+{
+    return platformBundleName_;
 }
 } // namespace Platform
 } // namespace AbilityRuntime
