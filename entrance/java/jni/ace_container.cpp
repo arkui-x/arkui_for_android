@@ -656,8 +656,10 @@ void AceContainer::UpdateResourceConfiguration(const std::string& jsonStr)
     if (!resConfig.UpdateFromJsonString(jsonStr, updateFlags)) {
         return;
     }
+    OnConfigurationChange configurationChange;
     resourceInfo_.SetResourceConfiguration(resConfig);
     if (!ResourceConfiguration::TestFlag(updateFlags, ResourceConfiguration::COLOR_MODE_UPDATED_FLAG)) {
+        configurationChange.colorModeUpdate = true;
         SystemProperties::SetColorMode(resConfig.GetColorMode());
         if (frontend_) {
             frontend_->FlushReload();
@@ -697,7 +699,7 @@ void AceContainer::UpdateResourceConfiguration(const std::string& jsonStr)
     themeManager->UpdateConfig(resConfig);
     taskExecutor_->PostTask(
         [weakThemeManager = WeakPtr<ThemeManager>(themeManager), colorScheme = colorScheme_, config = resConfig,
-            weakContext = WeakPtr<PipelineBase>(pipelineContext_)]() {
+            weakContext = WeakPtr<PipelineBase>(pipelineContext_), configurationChange]() {
             auto themeManager = weakThemeManager.Upgrade();
             auto context = weakContext.Upgrade();
             if (!themeManager || !context) {
@@ -706,7 +708,7 @@ void AceContainer::UpdateResourceConfiguration(const std::string& jsonStr)
             themeManager->LoadResourceThemes();
             themeManager->ParseSystemTheme();
             themeManager->SetColorScheme(colorScheme);
-            context->NotifyConfigurationChange();
+            context->NotifyConfigurationChange(configurationChange);
             context->FlushReload();
         },
         TaskExecutor::TaskType::UI);
