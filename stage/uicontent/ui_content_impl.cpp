@@ -28,6 +28,7 @@
 #include "adapter/android/stage/uicontent/ace_container_sg.h"
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
 #include "adapter/android/stage/uicontent/platform_event_callback.h"
+#include "adapter/android/osal/accessibility_manager_impl.h"
 #include "base/log/ace_trace.h"
 #include "base/log/event_report.h"
 #include "base/log/log.h"
@@ -38,7 +39,6 @@
 #include "core/common/flutter/flutter_asset_manager.h"
 
 #include "core/event/touch_event.h"
-#include "adapter/android/osal/accessibility_manager_impl.h"
 
 namespace OHOS::Ace::Platform {
 namespace {
@@ -528,11 +528,13 @@ bool UIContentImpl::GetAllComponents(NodeId nodeID, OHOS::Ace::Platform::Compone
     auto container = Platform::AceContainerSG::GetContainer(instanceId_);
     CHECK_NULL_RETURN(container, false);
     if (container->GetPipelineContext()) {
-        auto abManager = container->GetPipelineContext()->GetAccessibilityManager();
-        if (abManager) {
-            auto abNodeManager = AceType::DynamicCast<OHOS::Ace::Framework::AccessibilityNodeManager>(abManager);
-            auto abManagerImpl = AceType::DynamicCast<OHOS::Ace::Framework::AccessibilityManagerImpl>(abNodeManager);
-            auto ret =  abManagerImpl->GetAllComponents(nodeID, components);
+        auto accessibilityManager = container->GetPipelineContext()->GetAccessibilityManager();
+        if (accessibilityManager) {
+            auto accessibilityNodeManager =
+                AceType::DynamicCast<OHOS::Ace::Framework::AccessibilityNodeManager>(accessibilityManager);
+            auto accessibilityManagerImpl =
+                AceType::DynamicCast<OHOS::Ace::Framework::AccessibilityManagerImpl>(accessibilityNodeManager);
+            auto ret =  accessibilityManagerImpl->GetAllComponents(nodeID, components);
             LOGI("UIContentImpl::GetAllComponents ret = %d", ret);
             return ret;
         }

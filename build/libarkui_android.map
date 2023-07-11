@@ -133,6 +133,9 @@
       OHOS::Ace::Platform::GrantResultManager::*;
       OHOS::Ace::Platform::BridgeManager::*;
 
+      "OHOS::AppExecFwk::AbilityDelegatorRegistry::GetAbilityDelegator()";
+      "OHOS::AppExecFwk::AbilityDelegator::GetCurrentTopAbility()";
+      "OHOS::AppExecFwk::AbilityDelegator::GetUIContent(int)";
       "OHOS::Global::Resource::ResourceManagerImpl::GetResourcePaths()";
       "OHOS::Global::Resource::CreateResConfig()";
 
@@ -338,9 +341,6 @@
       "icu_69::UnicodeString::replace(int, int, int)";
       "icu_69::Transliterator::createInstance(icu_69::UnicodeString const&, UTransDirection, UErrorCode&)";
       "icu_69::Transliterator::getAvailableIDs(UErrorCode&)";
-      "OHOS::AppExecFwk::AbilityDelegatorRegistry::GetAbilityDelegator()";
-      "OHOS::AppExecFwk::AbilityDelegator::GetCurrentTopAbility()";
-      "OHOS::AppExecFwk::AbilityDelegator::GetUIContent(int)";
 
       vtable?for?icu_69::UnicodeString;
       vtable?for?icu_69::FieldPosition;

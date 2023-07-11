@@ -17,15 +17,15 @@
 #define FOUNDATION_ACE_ADAPTER_ANDROID_STAGE_UI_CONTENT_IMPL_H
 
 #include "base/utils/macros.h"
+#include "core/accessibility/accessibility_node.h"
 #include "core/event/key_event.h"
+#include "foundation/appframework/arkui/uicontent/component_info.h"
 #include "foundation/appframework/arkui/uicontent/ui_content.h"
 #include "interfaces/inner_api/ace/viewport_config.h"
 #include "native_engine/native_engine.h"
 #include "native_engine/native_value.h"
 
 #include "core/event/touch_event.h"
-#include "core/accessibility/accessibility_node.h"
-#include "foundation/appframework/arkui/uicontent/component_info.h"
 
 namespace OHOS {
 class Window;
