@@ -424,6 +424,10 @@ public class AceVideoAosp extends AceVideoBase
             ALog.w(LOG_TAG, "media player is null.");
             return FAIL;
         }
+        if (state == PlayState.STOPPED) {
+            ALog.w(LOG_TAG, "media player has stopped.");
+            return SUCCESS;
+        }
         try {
             int msec = Integer.parseInt(params.get(KEY_VALUE));
             if (params.containsKey("seekMode")) {
