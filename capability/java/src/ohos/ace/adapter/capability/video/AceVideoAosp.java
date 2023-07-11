@@ -149,8 +149,12 @@ public class AceVideoAosp extends AceVideoBase
             ALog.w(LOG_TAG, "media player is null.");
             return;
         }
-        mediaPlayer.stop();
-        mediaPlayer.release();
+        try {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+        } catch (IllegalStateException ignored) {
+            ALog.e(LOG_TAG, "mediaPlayer release failed, IllegalStateException.");
+        }
         if (handlerThread != null) {
             handlerThread.quitSafely();
             handlerThread = null;
@@ -299,7 +303,12 @@ public class AceVideoAosp extends AceVideoBase
             });
 
         setKeepScreenOn(false);
-        reset();
+        try {
+            reset();
+        } catch (IllegalStateException ignored) {
+            ALog.e(LOG_TAG, "reset failed, IllegalStateException.");
+            return false;
+        }
         runAsync(() -> {
             if (!resume()) {
                 ALog.w(LOG_TAG, "media player resume failed.");
@@ -333,7 +342,11 @@ public class AceVideoAosp extends AceVideoBase
                  * This is called to fire seek complete event.
                  */
                 public void run() {
-                    fireSeekComplete(mediaPlayer.getCurrentPosition() / SECOND_TO_MSEC);
+                    try {
+                        fireSeekComplete(mediaPlayer.getCurrentPosition() / SECOND_TO_MSEC);
+                    } catch (IllegalStateException ignored) {
+                        ALog.e(LOG_TAG, "run failed, IllegalStateException.");
+                    }
                 }
             });
     }
@@ -391,7 +404,12 @@ public class AceVideoAosp extends AceVideoBase
             ALog.w(LOG_TAG, "media player is null.");
             return FAIL;
         }
-        mediaPlayer.pause();
+        try {
+            mediaPlayer.pause();
+        } catch (IllegalStateException ignored) {
+            ALog.e(LOG_TAG, "pause failed, IllegalStateException.");
+            return FAIL;
+        }
         state = PlayState.PAUSED;
         setKeepScreenOn(false);
         return SUCCESS;
@@ -404,7 +422,12 @@ public class AceVideoAosp extends AceVideoBase
             ALog.w(LOG_TAG, "media player is null.");
             return FAIL;
         }
-        mediaPlayer.stop();
+        try {
+            mediaPlayer.stop();
+        } catch (IllegalStateException ignored) {
+            ALog.e(LOG_TAG, "stop failed, IllegalStateException.");
+            return FAIL;
+        }
         state = PlayState.STOPPED;
         setKeepScreenOn(false);
         return SUCCESS;
@@ -474,7 +497,12 @@ public class AceVideoAosp extends AceVideoBase
             ALog.w(LOG_TAG, "media player is null.");
             return FAIL;
         }
-        position = mediaPlayer.getCurrentPosition();
+        try {
+            position = mediaPlayer.getCurrentPosition();
+        } catch (IllegalStateException ignored) {
+            ALog.e(LOG_TAG, "getCurrentPosition failed, IllegalStateException.");
+            return FAIL;
+        }
         runOnUIThread(
             new Runnable() {
 
@@ -582,7 +610,7 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public String updateResource(Map<String, String> params) {
         ALog.i(LOG_TAG, "updateResource param:" + params);
-        if (params == null) {
+        if (params == null || mediaPlayer == null) {
             ALog.e(LOG_TAG, "updateResource failed, param is null");
             return FAIL;
         }
@@ -591,14 +619,14 @@ public class AceVideoAosp extends AceVideoBase
             mediaPlayer.reset();
             state = PlayState.IDLE;
             if (!params.containsKey(KEY_SOURCE) || !setDataSource(params.get(KEY_SOURCE))) {
-            return FAIL;
-        }
-        mediaPlayer.prepare();
-        state = PlayState.PREPARED;
-        mediaPlayer.start();
-        state = PlayState.STARTED;
-        mediaPlayer.pause();
-        state = PlayState.PAUSED;
+                return FAIL;
+            }
+            mediaPlayer.prepare();
+            state = PlayState.PREPARED;
+            mediaPlayer.start();
+            state = PlayState.STARTED;
+            mediaPlayer.pause();
+            state = PlayState.PAUSED;
             setKeepScreenOn(false);
         } catch (IOException ignored) {
             ALog.e(LOG_TAG, "updateResource failed, IOException");
@@ -719,9 +747,14 @@ public class AceVideoAosp extends AceVideoBase
             ALog.w(LOG_TAG, "media player is null.");
             return;
         }
-        position = mediaPlayer.getCurrentPosition();
-        mediaPlayer.reset();
-        mediaPlayer.release();
+        try {
+            position = mediaPlayer.getCurrentPosition();
+            mediaPlayer.reset();
+            mediaPlayer.release();
+        } catch (IllegalStateException ignored) {
+            ALog.e(LOG_TAG, "mediaPlayer.release, IllegalStateException.");
+            return;
+        }
         mediaPlayer = null;
         state = PlayState.IDLE;
         isSetSurfaced = false;
