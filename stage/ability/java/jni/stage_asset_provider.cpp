@@ -140,6 +140,7 @@ std::vector<uint8_t> StageAssetProvider::GetModuleBuffer(
     }
 
     std::vector<uint8_t> buffer;
+    moduleName = SEPARATOR + moduleName + SEPARATOR;
     for (auto& path : abcPath) {
         if (path.find(moduleName) != std::string::npos) {
             modulePath = path;
@@ -186,6 +187,7 @@ std::vector<uint8_t> StageAssetProvider::GetModuleAbilityBuffer(
         }
     }
     std::vector<uint8_t> buffer;
+    moduleName = SEPARATOR + moduleName + SEPARATOR;
     for (auto& path : abcPath) {
         if (path.find(moduleName) != std::string::npos) {
             modulePath = path;
