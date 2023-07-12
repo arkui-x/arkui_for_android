@@ -351,7 +351,7 @@ void GetComponents(OHOS::Ace::Platform::ComponentInfo& parentComponent, const Re
 
     OHOS::Ace::Platform::ComponentInfo info;
     NG::RectF rect = node->GetTransformRectRelativeToWindow();
-    info.compid = node->GetAccessibilityId();
+    info.compid = node->GetInspectorId().value_or("");
     info.text = node->GetAccessibilityProperty<NG::AccessibilityProperty>()->GetText();
     info.top = rect.Top();
     info.width = rect.Width();
