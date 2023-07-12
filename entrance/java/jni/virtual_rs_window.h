@@ -230,11 +230,6 @@ public:
 
     void UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRuntime::Platform::Configuration>& config);
 
-    bool GetIsUIContentInitialize() const
-    {
-        return isUIContentInitialize_;
-    }
-    
     int64_t GetVSyncPeriod()
     {
         return static_cast<int64_t>(1000000000.0f / 60); // SyncPeriod of 60 fps
@@ -255,7 +250,6 @@ private:
     WindowType windowType_;
     Rect rect_ = { 0, 0, 0, 0 };
     bool isForground_ = false;
-    bool isUIContentInitialize_ = false;
 
     uint32_t backgroundColor_;
     float brightness_;

@@ -35,9 +35,7 @@ using namespace OHOS::Ace::Platform;
 namespace OHOS::Rosen {
 void DummyWindowRelease(Window* window)
 {
-    if (!window->GetIsUIContentInitialize()) {
-        delete window;
-    }
+    window->DecStrongRef(window);
     LOGI("Rosenwindow rsWindow_Window: dummy release");
 }
 std::map<uint32_t, std::vector<std::shared_ptr<Window>>> Window::subWindowMap_;
@@ -154,7 +152,7 @@ std::shared_ptr<Window> Window::Create(
         LOGI("info->name = %s, info->instanceId = %d", info->name.c_str(), info->instanceId);
         window->SetWindowId(info->instanceId);
     }
-
+    window->IncStrongRef(window.get());
     AddToWindowMap(window);
     return window;
 }
@@ -183,7 +181,7 @@ std::shared_ptr<Window> Window::CreateSubWindow(
         window->SetParentId(option->GetParentId());
         window->SetWindowMode(option->GetWindowMode());
         window->SetRect(option);
-
+        window->IncStrongRef(window.get());
         AddToSubWindowMap(window);
         AddToWindowMap(window);
 
@@ -748,10 +746,7 @@ int Window::SetUIContent(const std::string& contentInfo, NativeEngine* engine, N
     uiContent->Initialize(this, contentInfo, storage);
     // make uiContent available after Initialize/Restore
     uiContent_ = std::move(uiContent);
-
     uiContent_->Foreground();
-
-    isUIContentInitialize_ = true;
     DelayNotifyUIContentIfNeeded();
     return 0;
 }
