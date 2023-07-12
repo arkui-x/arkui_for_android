@@ -140,9 +140,9 @@ std::vector<uint8_t> StageAssetProvider::GetModuleBuffer(
     }
 
     std::vector<uint8_t> buffer;
-    moduleName = SEPARATOR + moduleName + SEPARATOR;
+    std::string moduleNameMark = SEPARATOR + moduleName + SEPARATOR;
     for (auto& path : abcPath) {
-        if (path.find(moduleName) != std::string::npos) {
+        if (path.find(moduleNameMark) != std::string::npos) {
             modulePath = path;
             LOGI("modulePath : %{public}s", modulePath.c_str());
             auto lastPos = path.find_last_of('/');
@@ -187,9 +187,9 @@ std::vector<uint8_t> StageAssetProvider::GetModuleAbilityBuffer(
         }
     }
     std::vector<uint8_t> buffer;
-    moduleName = SEPARATOR + moduleName + SEPARATOR;
+    std::string moduleNameMark = SEPARATOR + moduleName + SEPARATOR;
     for (auto& path : abcPath) {
-        if (path.find(moduleName) != std::string::npos) {
+        if (path.find(moduleNameMark) != std::string::npos) {
             modulePath = path;
             LOGI("modulePath : %{public}s", modulePath.c_str());
             auto lastPos = path.find_last_of('/');
