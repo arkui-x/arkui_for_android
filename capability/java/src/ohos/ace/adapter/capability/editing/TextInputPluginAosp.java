@@ -108,7 +108,7 @@ public class TextInputPluginAosp extends TextInputPluginBase {
             }
         }
 
-        if (config.getActionLabel() != null) {
+        if (config.getActionLabel() != null && config.getActionLabel().length() > 0) {
             outAttrs.actionLabel = config.getActionLabel();
             outAttrs.actionId = enterAction;
         }
