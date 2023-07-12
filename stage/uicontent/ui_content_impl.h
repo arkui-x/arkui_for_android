@@ -17,7 +17,9 @@
 #define FOUNDATION_ACE_ADAPTER_ANDROID_STAGE_UI_CONTENT_IMPL_H
 
 #include "base/utils/macros.h"
+#include "core/accessibility/accessibility_node.h"
 #include "core/event/key_event.h"
+#include "foundation/appframework/arkui/uicontent/component_info.h"
 #include "foundation/appframework/arkui/uicontent/ui_content.h"
 #include "interfaces/inner_api/ace/viewport_config.h"
 #include "native_engine/native_engine.h"
@@ -36,6 +38,7 @@ public:
     ~UIContentImpl()
     {
         DestroyCallback();
+        Ace::Platform::UIContent::RemoveUIContent(instanceId_);
     }
     std::unique_ptr<NativeEngine> nativeEngine_;
     // UI content lifecycles
@@ -46,6 +49,7 @@ public:
     void UnFocus() override;
     void Destroy() override;
     void OnNewWant(const OHOS::AAFwk::Want& want) override;
+    void Finish() override;
 
     // UI content event process
     bool ProcessBackPressed() override;
@@ -63,6 +67,9 @@ public:
     // Window color
     uint32_t GetBackgroundColor() override;
     void SetBackgroundColor(uint32_t color) override;
+
+    // Control filtering
+    bool GetAllComponents(NodeId nodeID, OHOS::Ace::Platform::ComponentInfo& components) override;
 
     void DumpInfo(const std::vector<std::string>& params, std::vector<std::string>& info) override;
 

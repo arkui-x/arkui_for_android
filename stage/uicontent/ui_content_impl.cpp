@@ -28,6 +28,7 @@
 #include "adapter/android/stage/uicontent/ace_container_sg.h"
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
 #include "adapter/android/stage/uicontent/platform_event_callback.h"
+#include "adapter/android/osal/accessibility_manager_impl.h"
 #include "base/log/ace_trace.h"
 #include "base/log/event_report.h"
 #include "base/log/log.h"
@@ -186,6 +187,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     if (info) {
         instanceId_ = window->IsSubWindow() ? window->GetWindowId() : info->instanceId;
         LOGI("acecontainer init instanceId_:%{public}d", instanceId_);
+        Ace::Platform::UIContent::AddUIContent(instanceId_, this);
     }
 
     AceTraceBegin("CreateAndInitConatienr");
@@ -372,6 +374,14 @@ void UIContentImpl::OnNewWant(const OHOS::AAFwk::Want& want)
     Platform::AceContainerSG::OnNewRequest(instanceId_, params);
 }
 
+void UIContentImpl::Finish()
+{
+    LOGI("UIContent Finish");
+    auto container = Platform::AceContainerSG::GetContainer(instanceId_);
+    CHECK_NULL_VOID(container);
+    container->OnFinish();
+}
+
 uint32_t UIContentImpl::GetBackgroundColor()
 {
     auto container = Platform::AceContainerSG::GetContainer(instanceId_);
@@ -509,6 +519,28 @@ void UIContentImpl::UpdateViewportConfig(const ViewportConfig& config, OHOS::Ros
     Platform::AceViewSG::SurfaceChanged(
         aceView, config.Width(), config.Height(), config.Orientation(), static_cast<WindowSizeChangeReason>(reason));
     Platform::AceViewSG::SurfacePositionChanged(aceView, config.Left(), config.Top());
+}
+
+// Control filtering
+bool UIContentImpl::GetAllComponents(NodeId nodeID, OHOS::Ace::Platform::ComponentInfo& components)
+{
+    LOGI("UIContentImpl::GetAllComponents enter.");
+    auto container = Platform::AceContainerSG::GetContainer(instanceId_);
+    CHECK_NULL_RETURN(container, false);
+    if (container->GetPipelineContext()) {
+        auto accessibilityManager = container->GetPipelineContext()->GetAccessibilityManager();
+        if (accessibilityManager) {
+            auto accessibilityNodeManager =
+                AceType::DynamicCast<OHOS::Ace::Framework::AccessibilityNodeManager>(accessibilityManager);
+            auto accessibilityManagerImpl =
+                AceType::DynamicCast<OHOS::Ace::Framework::AccessibilityManagerImpl>(accessibilityNodeManager);
+            auto ret =  accessibilityManagerImpl->GetAllComponents(nodeID, components);
+            LOGI("UIContentImpl::GetAllComponents ret = %d", ret);
+            return ret;
+        }
+    }
+    LOGI("UIContentImpl::GetAllComponents exit.");
+    return false;
 }
 
 void UIContentImpl::DumpInfo(const std::vector<std::string>& params, std::vector<std::string>& info)

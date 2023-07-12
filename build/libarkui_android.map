@@ -133,6 +133,9 @@
       OHOS::Ace::Platform::GrantResultManager::*;
       OHOS::Ace::Platform::BridgeManager::*;
 
+      "OHOS::AppExecFwk::AbilityDelegatorRegistry::GetAbilityDelegator()";
+      "OHOS::AppExecFwk::AbilityDelegator::GetCurrentTopAbility()";
+      "OHOS::AppExecFwk::AbilityDelegator::GetUIContent(int)";
       "OHOS::Global::Resource::ResourceManagerImpl::GetResourcePaths()";
       "OHOS::Global::Resource::CreateResConfig()";
 
