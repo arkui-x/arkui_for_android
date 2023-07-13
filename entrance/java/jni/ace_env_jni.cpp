@@ -14,6 +14,9 @@
  */
 
 #include "adapter/android/entrance/java/jni/ace_env_jni.h"
+#include <jni.h>
+
+#include "jni_environment.h"
 
 #include "base/log/log.h"
 #include "base/utils/utils.h"
@@ -43,8 +46,31 @@ bool AceEnvJni::Register(const std::shared_ptr<JNIEnv>& env)
     return ret;
 }
 
-void AceEnvJni::SetupFirstFrameHandler(JNIEnv* env, jclass clazz, jint platfrom)
+bool AceEnvJni::SetThreadInfo(int32_t threadId)
 {
+    if (threadId < 0) {
+        return false;
+    }
+    auto jniEnv = JniEnvironment::GetInstance().GetJniEnv();
+    CHECK_NULL_RETURN_NOLOG(jniEnv, false);
+
+    const jclass clazz = jniEnv->FindClass("ohos/ace/runtime/AceVipThreadUtility");
+    CHECK_NULL_RETURN_NOLOG(clazz, false);
+
+    jmethodID setInfoMethod = jniEnv->GetStaticMethodID(clazz, "setHmThreadToRtg", "(II)Z");
+    CHECK_NULL_RETURN_NOLOG(setInfoMethod, false);
+
+    jboolean ret = jniEnv->CallStaticBooleanMethod(clazz, setInfoMethod, static_cast<jint>(threadId), 0);
+    jniEnv->DeleteLocalRef(clazz);
+    if (jniEnv->ExceptionCheck()) {
+        LOGE("CallMethod has expection!");
+        jniEnv->ExceptionDescribe();
+        jniEnv->ExceptionClear();
+        return false;
+    }
+    return ret;
 }
+
+void AceEnvJni::SetupFirstFrameHandler(JNIEnv* env, jclass clazz, jint platfrom) {}
 
 } // namespace OHOS::Ace::Platform

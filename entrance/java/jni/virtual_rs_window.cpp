@@ -15,20 +15,24 @@
 
 #include "virtual_rs_window.h"
 
+#include <cstdint>
 #include <memory>
 
 #include "ability_context.h"
 #include "flutter/shell/platform/android/vsync_waiter_android.h"
 #include "foundation/appframework/arkui/uicontent/ui_content.h"
 #include "hilog.h"
+#include "render_service_client/core/pipeline/rs_render_thread.h"
 #include "shell/common/vsync_waiter.h"
 #include "subwindow_manager_jni.h"
 #include "transaction/rs_interfaces.h"
 #include "window_view_adapter.h"
-#include "core/event/touch_event.h"
+
+#include "adapter/android/entrance/java/jni/ace_env_jni.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/log/log.h"
 #include "base/utils/utils.h"
+#include "core/event/touch_event.h"
 
 using namespace OHOS::Ace::Platform;
 
@@ -524,6 +528,7 @@ void Window::RequestVsync(const std::shared_ptr<VsyncCallback>& vsyncCallback)
 {
     // stage model
     if (receiver_) {
+        SetUpThreadInfo();
         auto callback = [vsyncCallback](int64_t timestamp, void*) { vsyncCallback->onCallback(timestamp); };
         VSyncReceiver::FrameCallback fcb = {
             .userData_ = this,
@@ -793,4 +798,17 @@ void Window::UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRuntime::Pla
         uiContent_->UpdateConfiguration(config);
     }
 }
+
+void Window::SetUpThreadInfo()
+{
+    static int32_t renderTid = -1;
+    if (renderTid < 0) {
+        int32_t tid = -1;
+        RSRenderThread::Instance().PostSyncTask([&tid]() { tid = gettid(); });
+        renderTid = tid;
+        bool ret = AceEnvJni::SetThreadInfo(renderTid);
+        LOGI("Window::SetUpThreadInfo tid:%{public}d ret:%{public}d.", renderTid, ret);
+    }
+}
+
 } // namespace OHOS::Rosen
