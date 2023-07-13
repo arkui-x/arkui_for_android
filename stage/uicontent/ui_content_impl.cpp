@@ -490,7 +490,8 @@ void UIContentImpl::UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRunti
             auto direction = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_DIRECTION);
             auto densityDpi =
                 config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_DENSITYDPI);
-            container->UpdateConfiguration(colorMode, direction, densityDpi);
+            auto language = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_LANGUAGE);
+            container->UpdateConfiguration(colorMode, direction, densityDpi, language);
         },
         TaskExecutor::TaskType::UI);
     LOGI("UIContentImpl: UpdateConfiguration called End");
