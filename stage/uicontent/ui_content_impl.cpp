@@ -37,7 +37,6 @@
 #include "core/common/container.h"
 #include "core/common/container_scope.h"
 #include "core/common/flutter/flutter_asset_manager.h"
-
 #include "core/event/touch_event.h"
 
 namespace OHOS::Ace::Platform {

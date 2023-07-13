@@ -235,6 +235,8 @@ public:
         return static_cast<int64_t>(1000000000.0f / 60); // SyncPeriod of 60 fps
     }
 
+    void SetUpThreadInfo();
+
 private:
     void SetWindowView(JNIEnv* env, jobject windowView);
     void SetSubWindowView(JNIEnv* env, jobject windowView);
