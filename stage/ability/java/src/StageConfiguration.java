@@ -29,6 +29,8 @@ public class StageConfiguration {
 
     private static final String COLOR_MODE_KEY = "ohos.system.colorMode";
 
+    private static final String LANGUAGE_MODE_KEY = "ohos.system.language";
+
     private static final String COLOR_MODE_LIGHT = "light";
 
     private static final String COLOR_MODE_DARK = "dark";
@@ -78,6 +80,7 @@ public class StageConfiguration {
             }
             int den = config.densityDpi;
             json.put(DENSITY_KEY, String.valueOf(den));
+            json.put(LANGUAGE_MODE_KEY, config.locale);
         } catch (JSONException ignored) {
             Log.e(LOG_TAG, "convertConfiguration parse Configuration failed");
             return json;
