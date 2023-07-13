@@ -20,6 +20,7 @@
 #include "adapter/android/entrance/java/jni/ace_platform_plugin_jni.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
+#include "base/i18n/localization.h"
 #include "base/log/ace_trace.h"
 #include "base/log/event_report.h"
 #include "base/log/log.h"
@@ -67,6 +68,37 @@ const std::string DENSITY_KEY { "densityDpi" };
 constexpr double DPI_BASE { 160.0f };
 constexpr int THEME_ID_LIGHT = 117440515;
 constexpr int THEME_ID_DARK = 117440516;
+constexpr int INDEX_LANGUAGE = 0;
+constexpr int INDEX_REGION = 1;
+constexpr int INDEX_SCRIPT = 2;
+void ParseLocaleTag(
+    const std::string& localeTag, std::string& language, std::string& script, std::string& region)
+{
+    if (localeTag.empty()) {
+        return;
+    }
+    std::size_t previous = 0;
+    std::size_t current = localeTag.find('_');
+    std::vector<std::string> elems;
+    while (current != std::string::npos) {
+        if (current > previous) {
+            elems.push_back(localeTag.substr(previous, current - previous));
+        }
+        previous = current + 1;
+        current = localeTag.find('_', previous);
+    }
+    if (previous != localeTag.size()) {
+        elems.push_back(localeTag.substr(previous));
+    }
+    if (elems.size() == INDEX_REGION + 1) {
+        language = elems[INDEX_LANGUAGE];
+        region = elems[INDEX_REGION];
+    } else if (elems.size() == INDEX_SCRIPT + 1) {
+        language = elems[INDEX_LANGUAGE];
+        region = elems[INDEX_REGION];
+        script = elems[INDEX_SCRIPT].substr(elems[INDEX_SCRIPT].find("#") + 1);
+    }
+}
 } // namespace
 AceContainerSG::AceContainerSG(int32_t instanceId, FrontendType type,
     std::weak_ptr<OHOS::AbilityRuntime::Platform::Context> runtimeContext,
@@ -548,13 +580,13 @@ void AceContainerSG::AttachView(
     frontend_->AttachPipelineContext(pipelineContext_);
 }
 
-void AceContainerSG::UpdateConfiguration(
-    const std::string& colorMode, const std::string& direction, const std::string& densityDpi)
+void AceContainerSG::UpdateConfiguration(const std::string& colorMode,
+    const std::string& direction, const std::string& densityDpi, const std::string& languageTag)
 {
-    LOGI("AceContainerSG::UpdateConfiguration, colorMode:%{public}s, direction:%{public}s, densityDpi:%{public}s",
-        colorMode.c_str(), direction.c_str(), densityDpi.c_str());
-
-    if (colorMode.empty() && direction.empty() && densityDpi.empty()) {
+    LOGI("AceContainerSG::UpdateConfiguration, colorMode:%{public}s, direction:%{public}s, densityDpi:%{public}s,"
+        "language:%{public}s",
+        colorMode.c_str(), direction.c_str(), densityDpi.c_str(), languageTag.c_str());
+    if (colorMode.empty() && direction.empty() && densityDpi.empty() && languageTag.empty()) {
         LOGW("AceContainerSG::UpdateResourceConfiguration param is empty");
         return;
     }
@@ -591,6 +623,18 @@ void AceContainerSG::UpdateConfiguration(
         double density = std::stoi(densityDpi) / DPI_BASE;
         LOGI("resconfig density : %{public}f", density);
         resConfig.SetDensity(density);
+    }
+    if (!languageTag.empty()) {
+        std::string language;
+        std::string script;
+        std::string region;
+        ParseLocaleTag(languageTag, language, script, region);
+        LOGI("language:%{public}s, script:%{public}s, region:%{public}s",
+            language.c_str(), script.c_str(), region.c_str());
+        if (!language.empty() || !script.empty() || !region.empty()) {
+            configurationChange.languageUpdate = true;
+            AceApplicationInfo::GetInstance().SetLocale(language, region, script, "");
+        }
     }
     SetResourceConfiguration(resConfig);
     themeManager->UpdateConfig(resConfig);

@@ -123,29 +123,7 @@ public class StageApplicationDelegate {
 
         copyAllModuleResources();
         setResourcesFilePrefixPath(stageApplication.getExternalFilesDir((String) null).getAbsolutePath());
-        String language;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            language = Resources.getSystem().getConfiguration().getLocales().get(0).getLanguage();
-        } else {
-            language = Locale.getDefault().getLanguage();
-        }
-        Log.i(LOG_TAG, "language: " + language);
-        String script;
-        switch (language) {
-            case "ug": {
-                script = "Arab";
-                break;
-            }
-            case "bo": {
-                script = "Tibt";
-                break;
-            }
-            default: {
-                script = Locale.getDefault().getScript();
-                break;
-            }
-        }
-        setLocale(language, Locale.getDefault().getCountry(), script);
+        setLocaleInfo();
 
         launchApplication();
         initConfiguration();
@@ -603,6 +581,7 @@ public class StageApplicationDelegate {
      * @param newConfig the configuration.
      */
     public void onConfigurationChanged(Configuration newConfig) {
+        setLocaleInfo();
         JSONObject json = StageConfiguration.convertConfiguration(newConfig);
         nativeOnConfigurationChanged(json.toString());
     }
@@ -628,6 +607,32 @@ public class StageApplicationDelegate {
     private void setPackageName() {
         String packageName = stageApplication.getApplicationContext().getPackageName();
         nativeSetPackageName((packageName != null) ? packageName : "");
+    }
+
+    private void setLocaleInfo() {
+        String language;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            language = Resources.getSystem().getConfiguration().getLocales().get(0).getLanguage();
+        } else {
+            language = Locale.getDefault().getLanguage();
+        }
+        Log.i(LOG_TAG, "language: " + language);
+        String script;
+        switch (language) {
+            case "ug": {
+                script = "Arab";
+                break;
+            }
+            case "bo": {
+                script = "Tibt";
+                break;
+            }
+            default: {
+                script = Locale.getDefault().getScript();
+                break;
+            }
+        }
+        setLocale(language, Locale.getDefault().getCountry(), script);
     }
 
     private native void nativeSetAssetManager(Object assetManager);
