@@ -625,9 +625,9 @@ void AceContainerSG::UpdateConfiguration(const std::string& colorMode,
         resConfig.SetDensity(density);
     }
     if (!languageTag.empty()) {
-        std::string language { "" };
-        std::string script { "" };
-        std::string region { "" };
+        std::string language;
+        std::string script;
+        std::string region;
         ParseLocaleTag(languageTag, language, script, region);
         LOGI("language:%{public}s, script:%{public}s, region:%{public}s",
             language.c_str(), script.c_str(), region.c_str());
