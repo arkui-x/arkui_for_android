@@ -52,6 +52,8 @@ public abstract class AceVideoBase {
 
     private float speed;
 
+    private boolean isLooping;
+
     private final Map<String, IAceOnCallResourceMethod> callMethodMap;
 
     /**
@@ -80,6 +82,7 @@ public abstract class AceVideoBase {
         this.id = id;
         this.isAutoPlay = false;
         this.isMute = false;
+        this.isLooping = false;
         speed = 1.0f;
         this.callback = callback;
         callMethodMap = new HashMap<>();
@@ -421,12 +424,48 @@ public abstract class AceVideoBase {
     }
 
     /**
+     * set mute.
+     *
+     * @param params is video mute.
+     */
+    public void setIsMute(boolean isMute) {
+        this.isMute = isMute;
+    }
+
+    /**
      * This is called to get speed.
      *
      * @return is video speed.
      */
     public float getSpeed() {
         return speed;
+    }
+
+    /**
+     * This is called to set speed.
+     *
+     * @param is video speed.
+     */
+    public void setSpeed(float speed) {
+        this.speed = speed;
+    }
+
+    /**
+     * This is called to get looping.
+     *
+     * @return is video looping.
+     */
+    public boolean isLooping() {
+        return isLooping;
+    }
+
+    /**
+     * This is called to set looping.
+     *
+     * @param is video looping.
+     */
+    public void setLooping(boolean isLooping) {
+        this.isLooping = isLooping;
     }
 
     /**
