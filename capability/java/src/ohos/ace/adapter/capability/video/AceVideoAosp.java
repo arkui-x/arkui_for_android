@@ -80,8 +80,6 @@ public class AceVideoAosp extends AceVideoBase
 
     private boolean stageMode = true;
 
-    private float speed = 1.0f;
-
     private boolean isSpeedChanged = false;
 
     private boolean isSetSurfaced = false;
@@ -242,23 +240,14 @@ public class AceVideoAosp extends AceVideoBase
                 firePlayStatusChange(true);
             });
         }
-
-        if (isMute()) {
-            mp.setVolume(0.0f, 0.0f);
-        }
-
-        if (isSpeedChanged) {
-            setSpeedWithCheckVersion(speed);
-            isSpeedChanged = false;
-        }
-
+        resetFromParams(mp);
         if (isNeedResume) {
             if (isResumePlaying) {
                 if (!mediaPlayer.isPlaying()) {
                     mediaPlayer.start();
-                    state = PlayState.STARTED;
-                    setKeepScreenOn(true);
                 }
+                state = PlayState.STARTED;
+                setKeepScreenOn(true);
                 runOnUIThread(() -> {
                     firePlayStatusChange(true);
                 });
@@ -267,18 +256,17 @@ public class AceVideoAosp extends AceVideoBase
                 if (mediaPlayer.isPlaying()) {
                     mediaPlayer.pause();
                 }
+                state = PlayState.PAUSED;
             }
             isNeedResume = false;
             return;
         }
-
         if (!isAutoPlay() && mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
+            state = PlayState.PAUSED;
         }
-
         runOnUIThread(
             new Runnable() {
-
                 /**
                  * This is called to fire prepared event.
                  */
@@ -286,6 +274,21 @@ public class AceVideoAosp extends AceVideoBase
                     firePrepared(mp.getVideoWidth(), mp.getVideoHeight(), mp.getDuration(), isAutoPlay(), false);
                 }
             });
+    }
+
+    private void resetFromParams(MediaPlayer mp) {
+        if (isMute()) {
+            mp.setVolume(0.0f, 0.0f);
+        }
+
+        if (isLooping()) {
+            mp.setLooping(true);
+        }
+
+        if (isSpeedChanged || isNeedResume) {
+            setSpeedWithCheckVersion(getSpeed());
+            isSpeedChanged = false;
+        }
     }
 
     @Override
@@ -483,6 +486,12 @@ public class AceVideoAosp extends AceVideoBase
         try {
             float volume = Float.parseFloat(params.get(KEY_VALUE));
             mediaPlayer.setVolume(volume, volume);
+            if (Math.abs(volume) < 0.00001) {
+                setIsMute(true);
+            } else {
+                setIsMute(false);
+            }
+            ALog.i(LOG_TAG, "setVolume ." + volume);
         } catch (NumberFormatException ignored) {
             ALog.e(LOG_TAG, "NumberFormatException, setVolume failed. value = " + params.get(KEY_VALUE));
             return FAIL;
@@ -530,8 +539,10 @@ public class AceVideoAosp extends AceVideoBase
             if (params.containsKey("loop")) {
                 if (Integer.parseInt(params.get("loop")) == 1) {
                     mediaPlayer.setLooping(true);
+                    setLooping(true);
                 } else {
                     mediaPlayer.setLooping(false);
+                    setLooping(false);
                 }
             }
             return SUCCESS;
@@ -552,12 +563,12 @@ public class AceVideoAosp extends AceVideoBase
             return FAIL;
         }
         try {
-            speed = Float.parseFloat(params.get(KEY_VALUE));
+            setSpeed(Float.parseFloat(params.get(KEY_VALUE)));
             isSpeedChanged = true;
             if (state == PlayState.STARTED) {
-                setSpeedWithCheckVersion(speed);
+                setSpeedWithCheckVersion(getSpeed());
             } else if (state == PlayState.PAUSED) {
-                setSpeedWithCheckVersion(speed);
+                setSpeedWithCheckVersion(getSpeed());
                 if (mediaPlayer != null && mediaPlayer.isPlaying()) {
                     mediaPlayer.pause();
                 }
