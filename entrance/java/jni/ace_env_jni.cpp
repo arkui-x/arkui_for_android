@@ -55,10 +55,19 @@ bool AceEnvJni::SetThreadInfo(int32_t threadId)
     CHECK_NULL_RETURN_NOLOG(jniEnv, false);
 
     const jclass clazz = jniEnv->FindClass("ohos/ace/runtime/AceVipThreadUtility");
-    CHECK_NULL_RETURN_NOLOG(clazz, false);
+    if (!clazz || jniEnv->ExceptionCheck()) {
+        LOGI("no thread uility, clear exception.");
+        jniEnv->ExceptionDescribe();
+        jniEnv->ExceptionClear();
+        return false;
+    }
 
     jmethodID setInfoMethod = jniEnv->GetStaticMethodID(clazz, "setHmThreadToRtg", "(II)Z");
-    CHECK_NULL_RETURN_NOLOG(setInfoMethod, false);
+    if (!setInfoMethod || jniEnv->ExceptionCheck()) {
+        jniEnv->ExceptionDescribe();
+        jniEnv->ExceptionClear();
+        return false;
+    }
 
     jboolean ret = jniEnv->CallStaticBooleanMethod(clazz, setInfoMethod, static_cast<jint>(threadId), 0);
     jniEnv->DeleteLocalRef(clazz);
