@@ -38,6 +38,7 @@
 #include "core/common/container_scope.h"
 #include "core/common/flutter/flutter_asset_manager.h"
 #include "core/event/touch_event.h"
+#include "frameworks/bridge/declarative_frontend/ng/declarative_frontend_ng.h"
 
 namespace OHOS::Ace::Platform {
 namespace {
@@ -114,6 +115,21 @@ void UIContentImpl::Initialize(OHOS::Rosen::Window* window, const std::string& u
     Platform::AceContainerSG::RunPage(
         instanceId_, Platform::AceContainerSG::GetContainer(instanceId_)->GeneratePageId(), startUrl_, "");
     LOGI("RunPage UIContentImpl done.");
+}
+
+NativeValue* UIContentImpl::GetUIContext()
+{
+    auto container = Platform::AceContainerSG::GetContainer(instanceId_);
+    ContainerScope scope(instanceId_);
+    auto frontend = container->GetFrontend();
+    CHECK_NULL_RETURN(frontend, nullptr);
+    if (frontend->GetType() == FrontendType::DECLARATIVE_JS) {
+        auto declarativeFrontend = AceType::DynamicCast<DeclarativeFrontendNG>(frontend);
+        CHECK_NULL_RETURN(declarativeFrontend, nullptr);
+        return declarativeFrontend->GetContextValue();
+    }
+
+    return nullptr;
 }
 
 void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::string& url, NativeValue* storage)

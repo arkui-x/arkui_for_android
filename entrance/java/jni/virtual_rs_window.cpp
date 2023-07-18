@@ -756,6 +756,11 @@ int Window::SetUIContent(const std::string& contentInfo, NativeEngine* engine, N
     return 0;
 }
 
+UIContent* Window::GetUIContent()
+{
+    return uiContent_.get();
+}
+
 void Window::SetWindowView(JNIEnv* env, jobject windowView)
 {
     if (windowView == nullptr) {

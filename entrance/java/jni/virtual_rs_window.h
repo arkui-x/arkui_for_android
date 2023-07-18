@@ -128,6 +128,7 @@ public:
 
     int SetUIContent(const std::string& contentInfo, NativeEngine* engine, NativeValue* storage, bool isdistributed,
         AbilityRuntime::Platform::Ability* ability);
+    Ace::Platform::UIContent* GetUIContent();
 
     WMError SetBackgroundColor(uint32_t color);
     uint32_t GetBackgroundColor() const
