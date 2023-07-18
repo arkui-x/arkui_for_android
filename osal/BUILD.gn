@@ -24,6 +24,7 @@ template("ace_osal_android_source_set") {
 
     sources = [
       "accessibility_manager_impl.cpp",
+      "ace_checker.cpp",
       "ace_engine_ext.cpp",
       "ace_trace.cpp",
       "drag_window.cpp",
@@ -44,6 +45,7 @@ template("ace_osal_android_source_set") {
       "subwindow.cpp",
       "system_properties.cpp",
       "trace_id_impl.cpp",
+      "ui_extension_helper_impl.cpp",
     ]
 
     include_dirs = [ "$ace_root/frameworks/core/common" ]

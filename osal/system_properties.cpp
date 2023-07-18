@@ -57,7 +57,6 @@ bool SystemProperties::windowAnimationEnabled_ = false;
 bool SystemProperties::debugBoundaryEnabled_ = false;
 bool SystemProperties::extSurfaceEnabled_ = true;
 uint32_t SystemProperties::dumpFrameCount_ = 0;
-PerformancePtr SystemProperties::performanceProps_ = nullptr;
 
 void SystemProperties::InitDeviceType(DeviceType type)
 {
@@ -159,17 +158,6 @@ bool SystemProperties::GetIsUseMemoryMonitor()
 {
     return false;
 }
-void SystemProperties::InitPerformanceParameters() {}
-
-bool SystemProperties::IsPerformanceCheckEnabled()
-{
-    return false;
-}
-
-int32_t SystemProperties::GetPerformanceParameterWithType(PerformanceParameterType type)
-{
-    return 0;
-}
 
 bool SystemProperties::IsFormAnimationLimited()
 {
@@ -185,5 +173,7 @@ bool SystemProperties::IsSceneBoardEnabled()
 {
     return false;
 }
+
+void SystemProperties::GetAppBarInfo(std::string& bundleName, std::string& abilityName) {}
 
 } // namespace OHOS::Ace
