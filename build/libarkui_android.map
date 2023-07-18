@@ -197,6 +197,13 @@
       u_isJavaSpaceChar_69;
       ucase_toupper_69;
       uloc_toLegacyType_69;
+      ucnv_open_69;
+      UCNV_TO_U_CALLBACK_STOP_69;
+      ucnv_setToUCallBack_69;
+      ucnv_close_69;
+      ucnv_getMinCharSize_69;
+      ucnv_toUnicode_69;
+      ucnv_reset_69;
       ulocdata_getMeasurementSystem_69;
       "icu_69::ByteSink::GetAppendBuffer(int, int, char*, int, int*)";
       "icu_69::ByteSink::~ByteSink()";
