@@ -93,11 +93,15 @@ public class StageActivity extends Activity {
 
         activityDelegate = new StageActivityDelegate();
         activityDelegate.attachStageActivity(getInstanceName(), this);
-        getIntentToCreateDelegator();
+        getIntentToCreateDelegator(intent);
+        Trace.beginSection("createWindowView");
         windowView = new WindowView(this);
+        Trace.endSection();
         initPlatformPlugin(this, instanceId, windowView);
 
+        Trace.beginSection("setContentView");
         setContentView(windowView);
+        Trace.endSection();
         activityDelegate.setWindowView(getInstanceName(), windowView);
         activityDelegate.dispatchOnCreate(getInstanceName(), params);
         Trace.endSection();
@@ -223,8 +227,7 @@ public class StageActivity extends Activity {
         return instanceName;
     }
 
-    private void getIntentToCreateDelegator() {
-        Intent intent = getIntent();
+    private void getIntentToCreateDelegator(Intent intent) {
         if (intent == null) {
             Log.w(LOG_TAG, "Intent is null.");
             return;

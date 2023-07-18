@@ -15,6 +15,7 @@
 
 package ohos.stage.ability.adapter;
 
+import android.os.Trace;
 import android.util.Log;
 
 import ohos.ace.adapter.WindowView;
@@ -42,9 +43,11 @@ public class StageActivityDelegate {
      * @param object       the stage activity.
      */
     public void attachStageActivity(String instanceName, StageActivity object) {
+        Trace.beginSection("attachStageActivity");
         nativeAttachStageActivity(instanceName, object);
         SubWindowManager.getInstance().setActivity(object);
         DisplayInfo.getInstance().setContext(object);
+        Trace.endSection();
     }
 
     /**
@@ -54,8 +57,9 @@ public class StageActivityDelegate {
      * @param params       the want params
      */
     public void dispatchOnCreate(String instanceName, String params) {
-        Log.i(LOG_TAG, "dispatchOnCreate called");
+        Trace.beginSection("attachStageActivity");
         nativeDispatchOnCreate(instanceName, params);
+        Trace.endSection();
     }
 
     /**
@@ -105,8 +109,9 @@ public class StageActivityDelegate {
      * @param windowView   the window view.
      */
     public void setWindowView(String instanceName, WindowView windowView) {
-        Log.i(LOG_TAG, "SetWindowView called");
+        Trace.beginSection("setWindowView");
         nativeSetWindowView(instanceName, windowView);
+        Trace.endSection();
     }
 
     /**
