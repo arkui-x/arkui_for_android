@@ -31,6 +31,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Build;
 import android.os.Process;
+import android.os.Trace;
 import android.util.Log;
 
 import java.io.File;
@@ -105,6 +106,7 @@ public class StageApplicationDelegate {
 
         ALog.setLogger(new LoggerAosp());
         AceEnv.getInstance();
+        Trace.beginSection("initApplication");
         AppModeConfig.setAppMode("stage");
 
         attachStageApplication();
@@ -112,24 +114,26 @@ public class StageApplicationDelegate {
         Context context = stageApplication.getApplicationContext();
         setPidAndUid(Process.myPid(), getUid(context));
 
+        Trace.beginSection("prepareAssets");
         String apkPath = context.getPackageCodePath();
         setHapPath(apkPath);
         setNativeAssetManager(stageApplication.getAssets());
 
         setAssetsFileRelativePath(getAssetsPath());
-        Log.i(LOG_TAG, "AppLib Path:" + context.getApplicationInfo().nativeLibraryDir);
         nativeSetAppLibDir(context.getApplicationInfo().nativeLibraryDir);
         createStagePath();
 
         copyAllModuleResources();
         setResourcesFilePrefixPath(stageApplication.getExternalFilesDir((String) null).getAbsolutePath());
         setLocaleInfo();
+        Trace.endSection();
 
         launchApplication();
         initConfiguration();
         setPackageName();
 
         initActivity();
+        Trace.endSection();
     }
 
     private void initActivity() {
