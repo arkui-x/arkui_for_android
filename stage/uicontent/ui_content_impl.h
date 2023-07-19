@@ -43,6 +43,7 @@ public:
     std::unique_ptr<NativeEngine> nativeEngine_;
     // UI content lifecycles
     void Initialize(OHOS::Rosen::Window* window, const std::string& url, NativeValue* storage) override;
+    NativeValue* GetUIContext() override;
     void Foreground() override;
     void Background() override;
     void Focus() override;
