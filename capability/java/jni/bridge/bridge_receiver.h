@@ -26,12 +26,14 @@ using AceCallMethodCallback = std::function<void(const std::string& methodName, 
 using AceMethodResultCallback = std::function<void(const std::string& methodName, const std::string& resultValue)>;
 using AceSendMessageCallback = std::function<void(const std::string& data)>;
 using AceSendMessageResponseCallback = std::function<void(const std::string& data)>;
+using AceSendWillTerminateResponseCallback = std::function<void(bool success)>;
 
 struct ACE_EXPORT BridgeReceiver {
     AceCallMethodCallback callMethodCallback_ = nullptr;
     AceMethodResultCallback methodResultCallback_ = nullptr;
     AceSendMessageCallback sendMessageCallback_ = nullptr;
     AceSendMessageResponseCallback sendMessageResponseCallback_ = nullptr;
+    AceSendWillTerminateResponseCallback sendWillTerminateResponseCallback_ = nullptr;
 };
 } // namespace OHOS::Ace::Platform
 #endif // FOUNDATION_ACE_ADAPTER_CAPABILITY_JAVA_JNI_BRIDGE_RECEIVER_H
