@@ -126,8 +126,8 @@ public:
     bool ProcessKeyEvent(
         int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp = 0, int64_t timeStampStart = 0);
 
-    int SetUIContent(const std::string& contentInfo, NativeEngine* engine, NativeValue* storage, bool isdistributed,
-        AbilityRuntime::Platform::Ability* ability);
+    WMError SetUIContent(const std::string& contentInfo, NativeEngine* engine, NativeValue* storage,
+        bool isdistributed, AbilityRuntime::Platform::Ability* ability);
     Ace::Platform::UIContent* GetUIContent();
 
     WMError SetBackgroundColor(uint32_t color);
