@@ -15,11 +15,14 @@
 
 package ohos.ace.adapter.capability.editing;
 
+import java.util.ArrayList;
+
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.text.InputFilter.LengthFilter;
 import android.text.InputType;
 import android.text.Selection;
 import android.view.View;
@@ -175,12 +178,19 @@ public class TextInputPluginAosp extends TextInputPluginBase {
         editable = Editable.Factory.getInstance().newEditable("");
         final TextInputConfiguration config = getConfiguration();
         if (config != null) {
+            ArrayList<InputFilter> filterArray = new ArrayList<InputFilter>();
             String inputFilterRule = config.getInputFilterRule();
             if (!inputFilterRule.isEmpty()) {
-                InputFilter[] filters = new InputFilter[1];
                 TextInputFilter inputFilter = new TextInputFilter(inputFilterRule);
-                filters[0] = inputFilter;
-                editable.setFilters(filters);
+                filterArray.add(inputFilter);
+            }
+            int maxInputLength = config.getMaxInputLength();
+            if (maxInputLength > 0) {
+                LengthFilter lengthFilter = new InputFilter.LengthFilter(maxInputLength);
+                filterArray.add(lengthFilter);
+            }
+            if (filterArray.size() > 0) {
+                editable.setFilters(filterArray.toArray(new InputFilter[filterArray.size()]));
             }
         }
 
