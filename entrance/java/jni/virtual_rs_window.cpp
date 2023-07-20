@@ -379,14 +379,18 @@ WMError Window::SetBackgroundColor(uint32_t color)
 
     if (uiContent_) {
         uiContent_->SetBackgroundColor(color);
+        return WMError::WM_OK;
     }
-    return WMError::WM_OK;
+    return WMError::WM_ERROR_INVALID_OPERATION;
 }
 
 WMError Window::SetBrightness(float brightness)
 {
     LOGI("Window::SetBrightness called. brightness=%.3f", brightness);
-
+    if (brightness < MINIMUM_BRIGHTNESS || brightness > MAXIMUM_BRIGHTNESS) {
+        LOGE("invalid brightness value: %{public}f", brightness);
+        return WMError::WM_ERROR_INVALID_PARAM;
+    }
     bool result = SubWindowManagerJni::SetAppScreenBrightness(brightness);
 
     brightness_ = brightness;
@@ -738,22 +742,22 @@ void Window::DelayNotifyUIContentIfNeeded()
     }
 }
 
-int Window::SetUIContent(const std::string& contentInfo, NativeEngine* engine, NativeValue* storage, bool isdistributed,
-    AbilityRuntime::Platform::Ability* ability)
+WMError Window::SetUIContent(const std::string& contentInfo, NativeEngine* engine, NativeValue* storage,
+    bool isdistributed, AbilityRuntime::Platform::Ability* ability)
 {
     using namespace OHOS::Ace::Platform;
     (void)ability;
     std::unique_ptr<UIContent> uiContent;
     uiContent = UIContent::Create(context_.get(), engine);
     if (uiContent == nullptr) {
-        return -1;
+        return WMError::WM_ERROR_NULLPTR;
     }
     uiContent->Initialize(this, contentInfo, storage);
     // make uiContent available after Initialize/Restore
     uiContent_ = std::move(uiContent);
     uiContent_->Foreground();
     DelayNotifyUIContentIfNeeded();
-    return 0;
+    return WMError::WM_OK;
 }
 
 UIContent* Window::GetUIContent()
