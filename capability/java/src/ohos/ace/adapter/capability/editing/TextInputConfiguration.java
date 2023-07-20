@@ -32,6 +32,7 @@ public class TextInputConfiguration {
     private final String capitalization;
     private final String keyboardAppearance;
     private final String inputFilterRule;
+    private final int maxInputLength;
 
     private TextInputConfiguration(
             TextInputType type,
@@ -41,7 +42,8 @@ public class TextInputConfiguration {
             boolean autoCorrect,
             String capitalization,
             String keyboardAppearance,
-            String inputFilterRule) {
+            String inputFilterRule,
+            int maxInputLength) {
         this.type = type;
         this.obscure = obscure;
         this.action = action;
@@ -50,6 +52,7 @@ public class TextInputConfiguration {
         this.capitalization = capitalization;
         this.keyboardAppearance = keyboardAppearance;
         this.inputFilterRule = inputFilterRule;
+        this.maxInputLength = maxInputLength;
     }
 
     /**
@@ -70,6 +73,7 @@ public class TextInputConfiguration {
         String capitalization = "";
         String keyboardAppearance = "";
         String inputFilter = "";
+        int maxLength = -1;
 
         if (config.has("type")) {
             type = config.getInt("type");
@@ -95,8 +99,11 @@ public class TextInputConfiguration {
         if (config.has("inputFilter")) {
             inputFilter = config.getString("inputFilter");
         }
+        if (config.has("maxLength")) {
+            maxLength = config.getInt("maxLength");
+        }
         return new TextInputConfiguration(TextInputType.of(type), obscure, TextInputAction.of(action),
-                actionLabel, autoCorrect, capitalization, keyboardAppearance, inputFilter);
+                actionLabel, autoCorrect, capitalization, keyboardAppearance, inputFilter, maxLength);
     }
 
     /**
@@ -169,5 +176,14 @@ public class TextInputConfiguration {
      */
     public String getInputFilterRule() {
         return inputFilterRule;
+    }
+
+    /**
+     * Gets the max input length.
+     *
+     * @return The max input length config.
+     */
+    public int getMaxInputLength() {
+        return maxInputLength;
     }
 }

@@ -16,8 +16,9 @@
 package ohos.ace.adapter.capability.editing;
 
 import android.text.InputFilter;
-import android.text.SpannableStringBuilder;
+import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.TextUtils;
 
 /**
  * TextInputFilter is a filter for filtering text input.
@@ -43,27 +44,24 @@ public class TextInputFilter implements InputFilter {
 
     @Override
     public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-        int len = dest.length() - (dend - dstart);
-        if (maxLength > 0) {
-            if (len == maxLength) {
-                return "";
-            }
+        if (TextUtils.isEmpty(source.toString())) {
+            return "";
         }
 
-        SpannableStringBuilder spannableString = new SpannableStringBuilder();
+        StringBuilder resultStr = new StringBuilder();
         for (int i = start; i < end; i++) {
             char inputChar = source.charAt(i);
             if (isMatch(inputChar)) {
-                spannableString.append(inputChar);
+                resultStr.append(inputChar);
             }
         }
 
-        if (maxLength > 0) {
-            int newLen = len + spannableString.length();
-            if (newLen > maxLength) {
-                spannableString.delete(maxLength - len, spannableString.length());
-            }
+        if (source instanceof Spanned) {
+            SpannableString resultSpStr = new SpannableString(resultStr);
+            TextUtils.copySpansFrom((Spanned) source, start, resultStr.length(), null, resultSpStr, 0);
+            return resultSpStr;
+        } else {
+            return resultStr;
         }
-        return spannableString;
     }
 }
