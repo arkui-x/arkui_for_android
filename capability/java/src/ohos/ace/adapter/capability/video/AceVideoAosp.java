@@ -36,6 +36,8 @@ import ohos.ace.adapter.IAceOnResourceEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This class handles the lifecycle of a media player.
@@ -65,6 +67,8 @@ public class AceVideoAosp extends AceVideoBase
             AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
 
     private volatile MediaPlayer mediaPlayer;
+
+    private Lock mediaPlayerLock = new ReentrantLock();
 
     private final Context context;
 
@@ -147,11 +151,16 @@ public class AceVideoAosp extends AceVideoBase
             ALog.w(LOG_TAG, "media player is null.");
             return;
         }
+        mediaPlayerLock.lock();
         try {
-            mediaPlayer.stop();
-            mediaPlayer.release();
-        } catch (IllegalStateException ignored) {
-            ALog.e(LOG_TAG, "mediaPlayer release failed, IllegalStateException.");
+            try {
+                mediaPlayer.stop();
+                mediaPlayer.release();
+            } catch (IllegalStateException ignored) {
+                ALog.e(LOG_TAG, "mediaPlayer release failed, IllegalStateException.");
+            }
+        } finally {
+            mediaPlayerLock.unlock();
         }
         if (handlerThread != null) {
             handlerThread.quitSafely();
@@ -228,7 +237,7 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public void onPrepared(MediaPlayer mp) {
         ALog.i(LOG_TAG, "onPrepared");
-        if (mp == null) {
+        if (mp == null || mediaPlayer == null) {
             ALog.e(LOG_TAG, "onPrepared failed, MediaPlayer is null");
             return;
         }
@@ -271,17 +280,29 @@ public class AceVideoAosp extends AceVideoBase
                  * This is called to fire prepared event.
                  */
                 public void run() {
-                    firePrepared(mp.getVideoWidth(), mp.getVideoHeight(), mp.getDuration(), isAutoPlay(), false);
+                    if (mp != null) {
+                        mediaPlayerLock.lock();
+                        try {
+                            try {
+                                firePrepared(mp.getVideoWidth(), mp.getVideoHeight(),
+                                    mp.getDuration(), isAutoPlay(), false);
+                            } catch (IllegalStateException ignored) {
+                                ALog.e(LOG_TAG, "run firePrepared, IllegalStateException.");
+                            }
+                        } finally {
+                            mediaPlayerLock.unlock();
+                        }
+                    }
                 }
             });
     }
 
     private void resetFromParams(MediaPlayer mp) {
-        if (isMute()) {
+        if (mp != null && isMute()) {
             mp.setVolume(0.0f, 0.0f);
         }
 
-        if (isLooping()) {
+        if (mp != null && isLooping()) {
             mp.setLooping(true);
         }
 
@@ -345,10 +366,17 @@ public class AceVideoAosp extends AceVideoBase
                  * This is called to fire seek complete event.
                  */
                 public void run() {
-                    try {
-                        fireSeekComplete(mediaPlayer.getCurrentPosition() / SECOND_TO_MSEC);
-                    } catch (IllegalStateException ignored) {
-                        ALog.e(LOG_TAG, "run failed, IllegalStateException.");
+                    if (mp != null) {
+                        mediaPlayerLock.lock();
+                        try {
+                            try {
+                                fireSeekComplete(mp.getCurrentPosition() / SECOND_TO_MSEC);
+                            } catch (IllegalStateException ignored) {
+                                ALog.e(LOG_TAG, "run failed, IllegalStateException.");
+                            }
+                        } finally {
+                            mediaPlayerLock.unlock();
+                        }
                     }
                 }
             });
@@ -758,18 +786,23 @@ public class AceVideoAosp extends AceVideoBase
             ALog.w(LOG_TAG, "media player is null.");
             return;
         }
+        mediaPlayerLock.lock();
         try {
-            position = mediaPlayer.getCurrentPosition();
-            mediaPlayer.reset();
-            mediaPlayer.release();
-        } catch (IllegalStateException ignored) {
-            ALog.e(LOG_TAG, "mediaPlayer.release, IllegalStateException.");
-            return;
+            try {
+                position = mediaPlayer.getCurrentPosition();
+                mediaPlayer.reset();
+                mediaPlayer.release();
+            } catch (IllegalStateException ignored) {
+                ALog.e(LOG_TAG, "mediaPlayer.release, IllegalStateException.");
+                return;
+            }
+            mediaPlayer = null;
+            state = PlayState.IDLE;
+            isSetSurfaced = false;
+            isSpeedChanged = true;
+        } finally {
+            mediaPlayerLock.unlock();
         }
-        mediaPlayer = null;
-        state = PlayState.IDLE;
-        isSetSurfaced = false;
-        isSpeedChanged = true;
     }
 
     private boolean resume() {
