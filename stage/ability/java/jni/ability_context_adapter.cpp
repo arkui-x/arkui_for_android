@@ -117,7 +117,7 @@ int32_t AbilityContextAdapter::StartAbility(const std::string& instanceName, con
     env->DeleteLocalRef(jParams);
 
     if (result != ERR_OK) {
-        return AAFwk::INVALID_PARAMETERS_ERR;
+        return AAFwk::RESOLVE_ABILITY_ERR;
     }
     return ERR_OK;
 }
