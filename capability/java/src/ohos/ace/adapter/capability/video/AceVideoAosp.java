@@ -142,6 +142,8 @@ public class AceVideoAosp extends AceVideoBase
             mediaPlayer.setAudioAttributes(ATTR_VIDEO);
         } catch (IllegalArgumentException e) {
             ALog.e(LOG_TAG, "setAudioAttributes failed.");
+        } catch (IllegalStateException e) {
+            ALog.e(LOG_TAG, "setAudioAttributes failed.");
         }
     }
 
@@ -298,17 +300,23 @@ public class AceVideoAosp extends AceVideoBase
     }
 
     private void resetFromParams(MediaPlayer mp) {
-        if (mp != null && isMute()) {
-            mp.setVolume(0.0f, 0.0f);
-        }
+        try {
+            if (mp != null && isMute()) {
+                mp.setVolume(0.0f, 0.0f);
+            }
 
-        if (mp != null && isLooping()) {
-            mp.setLooping(true);
-        }
+            if (mp != null && isLooping()) {
+                mp.setLooping(true);
+            }
 
-        if (isSpeedChanged || isNeedResume) {
-            setSpeedWithCheckVersion(getSpeed());
-            isSpeedChanged = false;
+            if (isSpeedChanged || isNeedResume) {
+                setSpeedWithCheckVersion(getSpeed());
+                isSpeedChanged = false;
+            }
+        } catch (IllegalArgumentException e) {
+            ALog.e(LOG_TAG, "resetFromParams, IllegalArgumentException.");
+        } catch (IllegalStateException e) {
+            ALog.e(LOG_TAG, "resetFromParams, IllegalStateException.");
         }
     }
 
@@ -577,6 +585,12 @@ public class AceVideoAosp extends AceVideoBase
         } catch (NumberFormatException ignored) {
             ALog.e(LOG_TAG, "NumberFormatException");
             return FAIL;
+        } catch (IllegalStateException ignored) {
+            ALog.e(LOG_TAG, "IllegalStateException");
+            return FAIL;
+        } catch (IllegalArgumentException ignored) {
+            ALog.e(LOG_TAG, "IllegalArgumentException");
+            return FAIL;
         }
     }
 
@@ -760,6 +774,8 @@ public class AceVideoAosp extends AceVideoBase
             }
         } catch (IllegalArgumentException e) {
             ALog.e(LOG_TAG, "setSpeedWithCheckVersion failed.");
+        } catch (IllegalStateException e) {
+            ALog.e(LOG_TAG, "setSpeedWithCheckVersion failed.");
         }
     }
 
@@ -816,15 +832,11 @@ public class AceVideoAosp extends AceVideoBase
         }
         try {
             mediaPlayer.setAudioAttributes(ATTR_VIDEO);
-        } catch (IllegalArgumentException e) {
-            ALog.e(LOG_TAG, "setAudioAttributes failed.");
-            return false;
-        }
-        if (!source.isEmpty() && !setDataSource(source)) {
-            ALog.e(LOG_TAG, "setDataSource failed.");
-            return false;
-        }
-        try {
+            if (!source.isEmpty() && !setDataSource(source)) {
+                ALog.e(LOG_TAG, "setDataSource failed.");
+                return false;
+            }
+
             mediaPlayer.setOnPreparedListener(this);
             mediaPlayer.setOnErrorListener(this);
             mediaPlayer.setOnSeekCompleteListener(this);
@@ -840,6 +852,9 @@ public class AceVideoAosp extends AceVideoBase
             return false;
         } catch (IllegalStateException ignored) {
             ALog.e(LOG_TAG, "initMediaPlayer failed, IllegalStateException.");
+            return false;
+        } catch (IllegalArgumentException ignored) {
+            ALog.e(LOG_TAG, "initMediaPlayer failed, IllegalArgumentException.");
             return false;
         }
         ALog.i(LOG_TAG, "MediaPlayer resumed.");
