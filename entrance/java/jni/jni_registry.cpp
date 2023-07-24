@@ -17,7 +17,10 @@
 
 #include "flutter/fml/platform/android/jni_util.h"
 
+#ifndef NG_BUILD
 #include "flutter/shell/platform/android/platform_view_android.h"
+#endif
+
 #include "flutter/shell/platform/android/vsync_waiter_android.h"
 
 #include "adapter/android/capability/java/jni/bridge/bridge_jni.h"
