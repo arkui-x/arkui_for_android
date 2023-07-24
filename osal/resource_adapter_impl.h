@@ -58,14 +58,28 @@ public:
     std::string GetMediaPathByName(const std::string& resName) override;
     std::string GetRawfile(const std::string& fileName) override;
     bool GetRawFileData(const std::string& rawFile, size_t& len, std::unique_ptr<uint8_t[]> &dest) override;
-    bool GetMediaData(uint32_t resId, size_t& len, std::unique_ptr<uint8_t[]> &dest) override;
-    bool GetMediaData(const std::string& resName, size_t& len, std::unique_ptr<uint8_t[]> &dest) override;
+    bool GetRawFileData(const std::string& rawFile, size_t& len, std::unique_ptr<uint8_t[]>& dest,
+        const std::string& bundleName, const std::string& moduleName) override;
+    bool GetMediaData(uint32_t resId, size_t& len, std::unique_ptr<uint8_t[]>& dest) override;
+    bool GetMediaData(uint32_t resId, size_t& len, std::unique_ptr<uint8_t[]>& dest, const std::string& bundleName,
+        const std::string& moduleName) override;
+    bool GetMediaData(const std::string& resName, size_t& len, std::unique_ptr<uint8_t[]>& dest) override;
+    bool GetMediaData(const std::string& resName, size_t& len, std::unique_ptr<uint8_t[]>& dest,
+        const std::string& bundleName, const std::string& moduleName) override;
     void UpdateResourceManager(const std::string& bundleName, const std::string& moduleName) override;
     bool GetRawFileDescription(const std::string& rawfileName, RawfileDescription& rawfileDescription) const override;
     bool GetMediaById(const int32_t& resId, std::string& mediaPath) const override;
 
 private:
     std::string GetActualResourceName(const std::string& resName) const;
+    std::shared_ptr<Global::Resource::ResourceManager> GetResourceManager(
+        const std::string& bundleName, const std::string& moduleName);
+
+    inline std::shared_ptr<Global::Resource::ResourceManager> GetResourceManager() const
+    {
+        std::shared_lock<std::shared_mutex> lock(resourceMutex_);
+        return resourceManager_;
+    }
 
     std::shared_ptr<Global::Resource::ResourceManager> resourceManager_;
     std::string packagePathStr_;
