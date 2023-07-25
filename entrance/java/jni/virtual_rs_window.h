@@ -90,7 +90,7 @@ public:
     explicit Window(std::shared_ptr<AbilityRuntime::Platform::Context> context, uint32_t windowId);
     ~Window() override;
 
-    static const std::vector<std::shared_ptr<Window>>& GetSubWindow(uint32_t parentId);
+    static std::vector<std::shared_ptr<Window>> GetSubWindow(uint32_t parentId);
     static std::shared_ptr<Window> FindWindow(const std::string& name);
     static std::shared_ptr<Window> GetTopWindow(
         const std::shared_ptr<OHOS::AbilityRuntime::Platform::Context>& context);
