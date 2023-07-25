@@ -94,7 +94,7 @@ int32_t ApplicationContextAdapter::StartAbility(const AAFwk::Want& want)
     env->DeleteLocalRef(jActivityName);
     
     if (result != ERR_OK) {
-        return AAFwk::INVALID_PARAMETERS_ERR;
+        return AAFwk::RESOLVE_ABILITY_ERR;
     }
     return ERR_OK;
 }
