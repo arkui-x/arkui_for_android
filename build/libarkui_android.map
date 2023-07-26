@@ -348,6 +348,10 @@
       "icu_69::UnicodeString::replace(int, int, int)";
       "icu_69::Transliterator::createInstance(icu_69::UnicodeString const&, UTransDirection, UErrorCode&)";
       "icu_69::Transliterator::getAvailableIDs(UErrorCode&)";
+      "icu_69::number::Scale::powerOfTen(int)";
+      "icu_69::number::Precision::fixedFraction(int)";
+      "icu_69::number::NumberFormatterSettings<icu_69::number::LocalizedNumberFormatter>::scale(icu_69::number::Scale const&) &&";
+      "icu_69::number::NumberFormatterSettings<icu_69::number::LocalizedNumberFormatter>::precision(icu_69::number::Precision const&) &&";
 
       vtable?for?icu_69::UnicodeString;
       vtable?for?icu_69::FieldPosition;
