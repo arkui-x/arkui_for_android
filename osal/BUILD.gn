@@ -27,6 +27,7 @@ template("ace_osal_android_source_set") {
       "ace_checker.cpp",
       "ace_engine_ext.cpp",
       "ace_trace.cpp",
+      "app_bar_helper_impl.cpp",
       "drag_window.cpp",
       "event_report.cpp",
       "frame_report.cpp",
@@ -45,7 +46,6 @@ template("ace_osal_android_source_set") {
       "subwindow.cpp",
       "system_properties.cpp",
       "trace_id_impl.cpp",
-      "ui_extension_helper_impl.cpp",
     ]
 
     include_dirs = [ "$ace_root/frameworks/core/common" ]

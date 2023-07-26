@@ -13,18 +13,23 @@
  * limitations under the License.
  */
 
-#include "core/common/ui_extension_helper.h"
+#include "core/common/app_bar_helper.h"
 
 #include "core/components_ng/pattern/ui_extension/ui_extension_model_ng.h"
 
 namespace OHOS::Ace {
 
-RefPtr<NG::FrameNode> UIExtensionHelper::CreateUIExtensionNode(const std::string& bundleName,
+RefPtr<NG::FrameNode> AppBarHelper::CreateUIExtensionNode(const std::string& bundleName,
     const std::string& abilityName, const std::map<std::string, std::string>& params,
     std::function<void(int32_t)>&& onRelease,
     std::function<void(int32_t, const std::string&, const std::string&)>&& onError)
 {
     return nullptr;
+}
+
+std::string AppBarHelper::QueryAppGalleryBundleName()
+{
+    return "";
 }
 
 } // namespace OHOS::Ace

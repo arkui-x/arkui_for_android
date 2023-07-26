@@ -264,7 +264,7 @@ void Window::RegisterWindowDestroyedListener(const NotifyNativeWinDestroyFunc& f
     notifyNativefunc_ = std::move(func);
 }
 
-const std::vector<std::shared_ptr<Window>>& Window::GetSubWindow(uint32_t parentId)
+std::vector<std::shared_ptr<Window>> Window::GetSubWindow(uint32_t parentId)
 {
     LOGI("Window::GetSubWindow called. parentId=%d", parentId);
     if (subWindowMap_.find(parentId) == subWindowMap_.end()) {
