@@ -41,6 +41,11 @@ static const JNINativeMethod COMMON_METHODS[] = {
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::SurfaceChanged),
     },
     {
+        .name = "nativeKeyboardHeightChanged",
+        .signature = "(JI)V",
+        .fnPtr = reinterpret_cast<void*>(&WindowViewJni::KeyboardHeightChanged),
+    },
+    {
         .name = "nativeSurfaceDestroyed",
         .signature = "(J)V",
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::SurfaceDestroyed),
@@ -98,6 +103,15 @@ void WindowViewJni::SurfaceChanged(
     auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
     if (windowPtr != nullptr) {
         windowPtr->NotifySurfaceChanged(width, height, density);
+    }
+}
+
+void WindowViewJni::KeyboardHeightChanged(
+    JNIEnv* env, jobject myObject, jlong window, jint height)
+{
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
+    if (windowPtr != nullptr) {
+        windowPtr->NotifyKeyboardHeightChanged(height);
     }
 }
 

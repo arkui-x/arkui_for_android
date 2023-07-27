@@ -44,6 +44,7 @@ void DummyWindowRelease(Window* window)
 }
 std::map<uint32_t, std::vector<std::shared_ptr<Window>>> Window::subWindowMap_;
 std::map<std::string, std::pair<uint32_t, std::shared_ptr<Window>>> Window::windowMap_;
+std::map<uint32_t, std::vector<sptr<IOccupiedAreaChangeListener>>> Window::occupiedAreaChangeListeners_;
 std::map<uint32_t, std::vector<sptr<IWindowLifeCycle>>> Window::lifecycleListeners_;
 std::recursive_mutex Window::globalMutex_;
 
@@ -262,6 +263,20 @@ void Window::RegisterWindowDestroyedListener(const NotifyNativeWinDestroyFunc& f
 {
     LOGD("Start register");
     notifyNativefunc_ = std::move(func);
+}
+
+WMError Window::RegisterOccupiedAreaChangeListener(const sptr<IOccupiedAreaChangeListener>& listener)
+{
+    LOGD("Start register");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return RegisterListener(occupiedAreaChangeListeners_[GetWindowId()], listener);
+}
+
+WMError Window::UnregisterOccupiedAreaChangeListener(const sptr<IOccupiedAreaChangeListener>& listener)
+{
+    LOGD("Start unregister");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return UnregisterListener(occupiedAreaChangeListeners_[GetWindowId()], listener);
 }
 
 std::vector<std::shared_ptr<Window>> Window::GetSubWindow(uint32_t parentId)
@@ -615,6 +630,17 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
         config.SetSize(surfaceWidth_, surfaceHeight_);
         LOGI("Window Notify uiContent_ Surface Changed %{public}s", config.ToString().c_str());
         uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE);
+    }
+}
+
+void Window::NotifyKeyboardHeightChanged(int32_t height)
+{
+    auto occupiedAreaChangeListeners = GetListeners<IOccupiedAreaChangeListener>();
+    for (auto& listener : occupiedAreaChangeListeners) {
+        if (listener != nullptr) {
+            Rect rect = { 0, 0, 0, height };
+            listener->OnSizeChange(rect, OccupiedAreaType::TYPE_INPUT);
+        }
     }
 }
 
