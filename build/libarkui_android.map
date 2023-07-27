@@ -49,6 +49,7 @@
       OHOS::Ace::NG::Modifier::*;
       OHOS::Ace::NG::ModifierAdapter::*;
       "OHOS::Ace::NG::PanEventActuator::PanEventActuator(OHOS::Ace::WeakPtr<OHOS::Ace::NG::GestureEventHub> const&, OHOS::Ace::PanDirection, int, float)";
+      "OHOS::Ace::NG::PipelineContext::GetCurrentContext()";
       OHOS::Ace::NG::ViewAbstract::*;
       OHOS::Ace::NG::ViewStackProcessor::*;
       OHOS::Ace::Platform::AceApplicationInfoImpl::*;
