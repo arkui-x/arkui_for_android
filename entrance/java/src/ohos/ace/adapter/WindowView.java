@@ -113,6 +113,18 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    /**
+     * Called by activity to notify keyboard height changed.
+     * @param height the height of keyboard
+     */
+    public void keyboardHeightChanged(int height) {
+        if (nativeWindowPtr == 0L) {
+            ALog.w(LOG_TAG, "keyboardHeightChanged nativeWindow not ready.");
+        } else {
+            nativeKeyboardHeightChanged(nativeWindowPtr, height);
+        }
+    }
+
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         setFocusable(true);
@@ -266,6 +278,8 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     private native void nativeSurfaceCreated(long windowPtr, Surface surface);
 
     private native void nativeSurfaceChanged(long windowPtr, int width, int height, float density);
+
+    private native void nativeKeyboardHeightChanged(long windowPtr, int height);
 
     private native void nativeSurfaceDestroyed(long windowPtr);
 

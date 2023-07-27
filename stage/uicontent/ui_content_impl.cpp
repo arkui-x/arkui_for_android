@@ -82,6 +82,34 @@ private:
     ContentStartAbilityCallback onStartAbility_;
 };
 
+class OccupiedAreaChangeListener : public OHOS::Rosen::IOccupiedAreaChangeListener {
+public:
+    explicit OccupiedAreaChangeListener(int32_t instanceId) : instanceId_(instanceId) {}
+    ~OccupiedAreaChangeListener() = default;
+
+    void OnSizeChange(const OHOS::Rosen::Rect& rect, const OHOS::Rosen::OccupiedAreaType type)
+    {
+        Rect keyboardRect = Rect(rect.posX_, rect.posY_, rect.width_, rect.height_);
+        if (type == OHOS::Rosen::OccupiedAreaType::TYPE_INPUT) {
+            auto container = Platform::AceContainerSG::GetContainer(instanceId_);
+            CHECK_NULL_VOID(container);
+            auto taskExecutor = container->GetTaskExecutor();
+            CHECK_NULL_VOID(taskExecutor);
+            ContainerScope scope(instanceId_);
+            taskExecutor->PostTask(
+                [container, keyboardRect] {
+                    auto context = container->GetPipelineContext();
+                    CHECK_NULL_VOID_NOLOG(context);
+                    context->OnVirtualKeyboardAreaChange(keyboardRect);
+                },
+                TaskExecutor::TaskType::UI);
+        }
+    }
+
+private:
+    int32_t instanceId_ = -1;
+};
+
 UIContentImpl::UIContentImpl(OHOS::AbilityRuntime::Platform::Context* context, NativeEngine* runtime)
     : runtime_(reinterpret_cast<void*>(runtime))
 {
@@ -274,6 +302,10 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     // set view
     Platform::AceContainerSG::SetView(aceView, density, 0, 0, window_);
     AceTraceEnd();
+    if (window_) {
+        occupiedAreaChangeListener_ = new OccupiedAreaChangeListener(instanceId_);
+        window_->RegisterOccupiedAreaChangeListener(occupiedAreaChangeListener_);
+    }
 
     // Set sdk version in module json mode
     if (isModelJson) {

@@ -35,6 +35,8 @@ import ohos.ace.adapter.WindowView;
 import ohos.ace.adapter.capability.bridge.BridgeManager;
 import ohos.ace.adapter.capability.grantresult.GrantResult;
 import ohos.ace.adapter.capability.surface.AceSurfacePluginAosp;
+import ohos.ace.adapter.capability.keyboard.KeyboardHeightObserver;
+import ohos.ace.adapter.capability.keyboard.KeyboardHeightProvider;
 
 /**
  * A base class for the Ability Cross-platform Environment of the stage model to
@@ -44,7 +46,7 @@ import ohos.ace.adapter.capability.surface.AceSurfacePluginAosp;
  *
  * @since 1
  */
-public class StageActivity extends Activity {
+public class StageActivity extends Activity implements KeyboardHeightObserver {
     private static final String LOG_TAG = "StageActivity";
 
     private static final String INSTANCE_DEFAULT_NAME = "default";
@@ -74,6 +76,15 @@ public class StageActivity extends Activity {
     private static final int ERR_INVALID_PARAMETERS = -1;
 
     private static final int ERR_OK = 0;
+
+    private KeyboardHeightProvider keyboardHeightProvider;
+
+    @Override
+    public void onKeyboardHeightChanged(int height) {
+        if (windowView != null) {
+            windowView.keyboardHeightChanged(height);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +116,14 @@ public class StageActivity extends Activity {
         activityDelegate.setWindowView(getInstanceName(), windowView);
         activityDelegate.dispatchOnCreate(getInstanceName(), params);
         Trace.endSection();
+
+        keyboardHeightProvider = new KeyboardHeightProvider(this);
+ 
+        windowView.post(new Runnable() {
+            public void run() {
+                keyboardHeightProvider.start();
+            }
+        });
     }
 
     @Override
@@ -124,6 +143,8 @@ public class StageActivity extends Activity {
             platformPlugin.notifyLifecycleChanged(false);
         }
         Trace.endSection();
+
+        keyboardHeightProvider.setKeyboardHeightObserver(this);
     }
 
     @Override
@@ -157,6 +178,8 @@ public class StageActivity extends Activity {
         activityDelegate.dispatchOnDestroy(getInstanceName());
         windowView.destroy();
         BridgeManager.deleteBridgeByInstanceId(this.instanceId);
+
+        keyboardHeightProvider.close();
     }
 
     @Override
