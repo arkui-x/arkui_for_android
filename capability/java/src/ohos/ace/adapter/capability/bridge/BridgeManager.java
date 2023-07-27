@@ -235,9 +235,6 @@ public class BridgeManager {
                 methodData = new MethodData(splitName, objectParamters);
                 object = bridgePlugin.jsCallMethod(bridgePlugin, methodData);
             }
-            if (object == null) {
-                bridgeErrorCode = BridgeErrorCode.BRIDGE_METHOD_UNIMPL;
-            }
             if (object != null && !ParameterHelper.isExceedJsSafeInteger(object)) {
                 bridgeErrorCode = BridgeErrorCode.BRIDGE_EXCEEDS_SAFE_INTEGER;
             }
