@@ -41,7 +41,7 @@ DisplayInfo::DisplayInfo()
     SetHeight(height);
     SetRefreshRate(refreshRate);
 
-    DisplayOrientation arkOrientation = DisplayOrientation::UNKNOWN;
+    DisplayOrientation arkOrientation = DisplayOrientation::PORTRAIT;
     switch( orentation ) {
         case ROTATION_0: {
             arkOrientation = DisplayOrientation::PORTRAIT;
