@@ -70,21 +70,6 @@
                 <!--filteritem type="filepath" name="abcdefg/.*.uvwxyz" desc="Describe the reason for filtering scan results"/-->
                 <!--filteritem type="filepath" name="projectroot/[a-zA-Z0-9]{20,}.sh" desc="Temp files"/-->
 				<filteritem type="filename" name="*.jpg|*.png|*.gif|*.pdf" desc="already checked"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp" desc="Image resources provided by the Android project template"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" desc="Image resources provided by the Android project template"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-hdpi/ic_launcher.webp" desc="Image resources provided by the Android project template"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-hdpi/ic_launcher_round.webp" desc="Image resources provided by the Android project template"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-mdpi/ic_launcher.webp" desc="Image resources provided by the Android project template"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-mdpi/ic_launcher_round.webp" desc="Image resources provided by the Android project template"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xhdpi/ic_launcher.webp" desc="Image resources provided by the Android project template"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xhdpi/ic_launcher_round.webp" desc="Image resources provided by the Android project template"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xxhdpi/ic_launcher.webp" desc="Image resources provided by the Android project template"/>
-                <filteritem type="filepath" name="test/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.webp" desc="Image resources provided by the Android project template"/>
-                <filteritem type="filepath" name="test/gradle/wrapper/gradle-wrapper.jar" desc="Packing tool provided by the Android project template"/>
-                <filteritem type="filepath" name="test/app/libs/ace_android_adapter.jar" desc="Sourced from the code repository: foundation/arkui/ace_engine/adapter/android"/>
-                <filteritem type="filepath" name="test/app/src/main/jni/arm64-v8a/libace_android.so" desc="Sourced from the code repository: foundation/arkui/ace_engine和foundation/arkui/ace_engine/adapter/android"/>
-                <filteritem type="filepath" name="test/app/src/main/jni/arm64-v8a/libace_napi_quickjs.so" desc="Sourced from the code repository: foundation/arkui/ace_engine"/>
-                <filteritem type="filepath" name="test/app/src/main/jni/arm64-v8a/libace_napi.so" desc="Sourced from the code repository: foundation/arkui/ace_engine"/>
             </filefilter>
 
         </filefilterlist>
