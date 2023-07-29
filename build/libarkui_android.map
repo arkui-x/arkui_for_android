@@ -202,6 +202,9 @@
       ucnv_open_69;
       UCNV_TO_U_CALLBACK_STOP_69;
       ucnv_setToUCallBack_69;
+      ucnv_setFromUCallBack_69;
+      UCNV_TO_U_CALLBACK_SUBSTITUTE_69;
+      UCNV_FROM_U_CALLBACK_SUBSTITUTE_69;
       ucnv_close_69;
       ucnv_getMinCharSize_69;
       ucnv_toUnicode_69;
