@@ -8,6 +8,7 @@
       construction?vtable?for?OHOS::Ace::AceType-in-OHOS::Ace::ThemeConstants;
       construction?vtable?for?OHOS::Ace::Container-in-OHOS::Ace::Platform::AceContainer;
       construction?vtable?for?OHOS::Ace::ScheduleTask-in-OHOS::Ace::Scheduler;
+      construction?vtable?for?OHOS::Ace::ScheduleTask-in-OHOS::Ace::Scheduler;
 
       guard?variable?for?OHOS::Ace::Animator::TypeId??::myTypeId;
       guard?variable?for?OHOS::Ace::Container::TypeId??::myTypeId;
@@ -367,6 +368,15 @@
       ARKUI_X_Plugin_*;
       OHOS::Plugin::PluginUtilsInner::*;
       OHOS::Plugin::PluginUtilsNApi::*;
+
+      "OHOS::Ace::ToRSColor(OHOS::Ace::Color const&)";
+      OHOS::Rosen::Drawing::Filter::*;
+      OHOS::Rosen::Drawing::MaskFilter::*;
+      OHOS::Rosen::Drawing::Path::*;
+      OHOS::Ace::AnimationUtils::*;
+      OHOS::Ace::NG::FocusHub::*;
+      OHOS::Ace::NG::InputEventHub::*;
+      OHOS::Ace::NG::InputEventActuator::*;
     };
   local:
     *;
