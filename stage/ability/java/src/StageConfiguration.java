@@ -37,6 +37,8 @@ public class StageConfiguration {
 
     private static final String ORI_MODE_KEY = "ohos.application.direction";
 
+    private static final String DEVICE_TYPE = "const.build.characteristics";
+
     private static final String ORI_MODE_LANDSCAPE = "horizontal";
 
     private static final String ORI_MODE_PORTRAIT = "vertical";
@@ -45,13 +47,17 @@ public class StageConfiguration {
 
     private static final String DENSITY_KEY = "ohos.application.densitydpi";
 
+    private static final String DEVICE_TYPE_PHONE = "Phone";
+
+    private static final String DEVICE_TYPE_TABLET = "Tablet";
+
     /**
      * Convert configuration.
      *
      * @param config the configuration.
      * @return the json object.
      */
-    public static JSONObject convertConfiguration(Configuration config) {
+    public static JSONObject convertConfiguration(Configuration config, double diagonalSize) {
         JSONObject json = new JSONObject();
         try {
             int currentNightMode = config.uiMode & Configuration.UI_MODE_NIGHT_MASK;
@@ -81,6 +87,18 @@ public class StageConfiguration {
             int den = config.densityDpi;
             json.put(DENSITY_KEY, String.valueOf(den));
             json.put(LANGUAGE_MODE_KEY, config.locale);
+            int minScreenWidth = config.smallestScreenWidthDp;
+            if (minScreenWidth == Configuration.SMALLEST_SCREEN_WIDTH_DP_UNDEFINED) {
+                if (diagonalSize <= 6.9 && diagonalSize >= 0) {
+                    json.put(DEVICE_TYPE, DEVICE_TYPE_PHONE);
+                } else if (diagonalSize > 6.9) {
+                    json.put(DEVICE_TYPE, DEVICE_TYPE_TABLET);
+                }
+            } else if (minScreenWidth >= 600) {
+                json.put(DEVICE_TYPE, DEVICE_TYPE_TABLET);
+            } else {
+                json.put(DEVICE_TYPE, DEVICE_TYPE_PHONE);
+            }
         } catch (JSONException ignored) {
             Log.e(LOG_TAG, "convertConfiguration parse Configuration failed");
             return json;
