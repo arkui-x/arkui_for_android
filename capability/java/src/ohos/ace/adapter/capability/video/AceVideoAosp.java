@@ -98,6 +98,8 @@ public class AceVideoAosp extends AceVideoBase
 
     private boolean isNeedResume = false;
 
+    private boolean isPaused = false;
+
     private PlayState state = PlayState.IDLE;
 
     public enum PlayState {
@@ -149,15 +151,18 @@ public class AceVideoAosp extends AceVideoBase
 
     @Override
     public void release() {
-        if (mediaPlayer == null) {
-            ALog.w(LOG_TAG, "media player is null.");
-            return;
-        }
+        ALog.i(LOG_TAG, "media player will release.");
+        isPaused = true;
         mediaPlayerLock.lock();
         try {
+            if (mediaPlayer == null) {
+                ALog.w(LOG_TAG, "media player is null.");
+                return;
+            }
             try {
                 mediaPlayer.stop();
                 mediaPlayer.release();
+                mediaPlayer = null;
             } catch (IllegalStateException ignored) {
                 ALog.e(LOG_TAG, "mediaPlayer release failed, IllegalStateException.");
             }
@@ -211,12 +216,12 @@ public class AceVideoAosp extends AceVideoBase
             return FAIL;
         }
         super.initMediaPlayer(param);
-        if (mediaPlayer == null) {
-            ALog.w(LOG_TAG, "media player is null.");
-            return FAIL;
-        }
         mediaPlayerLock.lock();
         try {
+            if (mediaPlayer == null) {
+                ALog.w(LOG_TAG, "media player is null.");
+                return FAIL;
+            }
             try {
                 if (!param.containsKey(KEY_SOURCE) || !setDataSource(param.get(KEY_SOURCE))) {
                     return FAIL;
@@ -230,9 +235,11 @@ public class AceVideoAosp extends AceVideoBase
                 state = PlayState.PREPARED;
             } catch (IOException ignored) {
                 ALog.e(LOG_TAG, "initMediaPlayer failed, IOException");
+                reset();
                 return FAIL;
             } catch (IllegalStateException ignored) {
                 ALog.e(LOG_TAG, "initMediaPlayer failed, IllegalStateException.");
+                reset();
                 return FAIL;
             }
         } finally {
@@ -244,26 +251,29 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public void onPrepared(MediaPlayer mp) {
         ALog.i(LOG_TAG, "onPrepared");
-        if (mp == null || mediaPlayer == null) {
-            ALog.e(LOG_TAG, "onPrepared failed, MediaPlayer is null");
-            return;
-        }
         mediaPlayerLock.lock();
         try {
+            if (mp == null || mediaPlayer == null) {
+                ALog.e(LOG_TAG, "onPrepared failed, MediaPlayer is null");
+                return;
+            }
             if (!isNeedResume && isAutoPlay()) {
-                mp.start();
+                mediaPlayer.start();
                 state = PlayState.STARTED;
                 setKeepScreenOn(true);
                 runOnUIThread(() -> {
                     firePlayStatusChange(true);
                 });
             }
-            resetFromParams(mp);
+            resetFromParams(mediaPlayer);
             try {
                 if (isNeedResume) {
                     if (isResumePlaying) {
                         if (!mediaPlayer.isPlaying()) {
                             mediaPlayer.start();
+                            if (position > 0) {
+                                mediaPlayer.seekTo(position);
+                            }
                         }
                         state = PlayState.STARTED;
                         setKeepScreenOn(true);
@@ -296,18 +306,19 @@ public class AceVideoAosp extends AceVideoBase
                  * This is called to fire prepared event.
                  */
                 public void run() {
-                    if (mp != null) {
-                        mediaPlayerLock.lock();
-                        try {
+                    mediaPlayerLock.lock();
+                    try {
+                        if (mediaPlayer != null) {
                             try {
-                                firePrepared(mp.getVideoWidth(), mp.getVideoHeight(),
-                                    mp.getDuration(), isAutoPlay(), false);
+                                firePrepared(mediaPlayer.getVideoWidth(), mediaPlayer.getVideoHeight(),
+                                mediaPlayer.getDuration(), isAutoPlay(), false);
                             } catch (IllegalStateException ignored) {
                                 ALog.e(LOG_TAG, "run firePrepared, IllegalStateException.");
                             }
-                        } finally {
-                            mediaPlayerLock.unlock();
                         }
+                    }
+                    finally {
+                        mediaPlayerLock.unlock();
                     }
                 }
             });
@@ -352,10 +363,12 @@ public class AceVideoAosp extends AceVideoBase
 
         runAsync(() -> {
             mediaPlayerLock.lock();
+            isNeedResume = true;
             try {
                 reset();
                 if (!resume()) {
                     ALog.w(LOG_TAG, "media player resume failed.");
+                    reset();
                 }
             } finally {
                 mediaPlayerLock.unlock();
@@ -389,17 +402,17 @@ public class AceVideoAosp extends AceVideoBase
                  * This is called to fire seek complete event.
                  */
                 public void run() {
-                    if (mp != null) {
-                        mediaPlayerLock.lock();
-                        try {
+                    mediaPlayerLock.lock();
+                    try {
+                        if (mediaPlayer != null) {
                             try {
-                                fireSeekComplete(mp.getCurrentPosition() / SECOND_TO_MSEC);
+                                fireSeekComplete(mediaPlayer.getCurrentPosition() / SECOND_TO_MSEC);
                             } catch (IllegalStateException ignored) {
                                 ALog.e(LOG_TAG, "run failed, IllegalStateException.");
                             }
-                        } finally {
-                            mediaPlayerLock.unlock();
-                        }
+                        } 
+                    } finally {
+                        mediaPlayerLock.unlock();
                     }
                 }
             });
@@ -426,6 +439,7 @@ public class AceVideoAosp extends AceVideoBase
             ALog.w(LOG_TAG, "media player is null.");
             return FAIL;
         }
+        isPaused = false;
         mediaPlayerLock.lock();
         try {
             if (!isSetSurfaced) {
@@ -464,6 +478,9 @@ public class AceVideoAosp extends AceVideoBase
             return FAIL;
         }
         mediaPlayerLock.lock();
+        state = PlayState.PAUSED;
+        isPaused = true;
+        setKeepScreenOn(false);
         try {
             try {
                 mediaPlayer.pause();
@@ -474,14 +491,13 @@ public class AceVideoAosp extends AceVideoBase
         } finally {
             mediaPlayerLock.unlock();
         }
-        state = PlayState.PAUSED;
-        setKeepScreenOn(false);
         return SUCCESS;
     }
 
     @Override
     public String stop(Map<String, String> params) {
         ALog.i(LOG_TAG, "stop param:" + params);
+        isPaused = true;
         if (mediaPlayer == null) {
             ALog.w(LOG_TAG, "media player is null.");
             return FAIL;
@@ -763,6 +779,7 @@ public class AceVideoAosp extends AceVideoBase
             try {
                 if (!resume()) {
                     ALog.w(LOG_TAG, "media player resume failed.");
+                    reset();
                 }
             } finally {
                 mediaPlayerLock.unlock();
@@ -773,36 +790,36 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public void onActivityPause() {
         runAsync(() -> {
-            if (mediaPlayer != null) {
-                isNeedResume = true;
-                mediaPlayerLock.lock();
-                try {
-                    isResumePlaying = mediaPlayer.isPlaying();
+            mediaPlayerLock.lock();
+            try {
+                if (mediaPlayer != null) {
+                    isNeedResume = true;
+                    isResumePlaying = (mediaPlayer.isPlaying() || isAutoPlay()) && !isPaused;
                     reset();
-                } finally {
-                    mediaPlayerLock.unlock();
                 }
-                setKeepScreenOn(false);
-                runAsync(
-                    new Runnable() {
-
-                        /**
-                         * This is called to fire play currenttime.
-                         */
-                        public void run() {
-                            runOnUIThread(
-                                new Runnable() {
-                                    /**
-                                     * This is called to fire play status change event.
-                                     */
-                                    public void run() {
-                                        firePlayStatusChange(false);
-                                    }
-                                });
-                        }
-                    });
+            } finally {
+                mediaPlayerLock.unlock();
             }
-        });
+            setKeepScreenOn(false);
+            runAsync(
+                new Runnable() {
+
+                    /**
+                     * This is called to fire play currenttime.
+                     */
+                    public void run() {
+                        runOnUIThread(
+                            new Runnable() {
+                                /**
+                                 * This is called to fire play status change event.
+                                 */
+                                public void run() {
+                                    firePlayStatusChange(false);
+                                }
+                            });
+                    }
+                });
+            });
     }
 
     private void setKeepScreenOn(boolean screenOn) {
@@ -872,6 +889,10 @@ public class AceVideoAosp extends AceVideoBase
     }
 
     private void reset() {
+        state = PlayState.IDLE;
+        isSetSurfaced = false;
+        isSpeedChanged = true;
+
         if (mediaPlayer == null) {
             ALog.w(LOG_TAG, "media player is null.");
             return;
@@ -880,18 +901,21 @@ public class AceVideoAosp extends AceVideoBase
             position = mediaPlayer.getCurrentPosition();
             mediaPlayer.reset();
             mediaPlayer.release();
+            mediaPlayer = null;
         } catch (IllegalStateException ignored) {
             ALog.e(LOG_TAG, "mediaPlayer.release, IllegalStateException.");
+            mediaPlayer = null;
             return;
         }
-        mediaPlayer = null;
-        state = PlayState.IDLE;
-        isSetSurfaced = false;
-        isSpeedChanged = true;
+        
     }
 
     private boolean resume() {
-        ALog.i(LOG_TAG, "MediaPlayer resuming");
+        ALog.i(LOG_TAG, "MediaPlayer resuming.");
+        if (mediaPlayer != null && !isNeedResume) {
+            ALog.i(LOG_TAG, "MediaPlayer no need to resume.");
+            return true;
+        }
         mediaPlayer = new MediaPlayer();
         Surface surface = AceSurfaceHolder.getSurface(surfaceId);
         if (surface != null) {
@@ -913,17 +937,14 @@ public class AceVideoAosp extends AceVideoBase
             mediaPlayer.setOnBufferingUpdateListener(this);
             mediaPlayer.prepare();
             state = PlayState.PREPARED;
-            if (position > 0) {
-                mediaPlayer.seekTo(position);
-            }
         } catch (IOException ignored) {
-            ALog.e(LOG_TAG, "initMediaPlayer failed, IOException");
+            ALog.e(LOG_TAG, "resume failed, IOException");
             return false;
         } catch (IllegalStateException ignored) {
-            ALog.e(LOG_TAG, "initMediaPlayer failed, IllegalStateException.");
+            ALog.e(LOG_TAG, "resume failed, IllegalStateException.");
             return false;
         } catch (IllegalArgumentException ignored) {
-            ALog.e(LOG_TAG, "initMediaPlayer failed, IllegalArgumentException.");
+            ALog.e(LOG_TAG, "resume failed, IllegalArgumentException.");
             return false;
         }
         ALog.i(LOG_TAG, "MediaPlayer resumed.");
