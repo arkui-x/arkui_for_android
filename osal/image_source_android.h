@@ -29,8 +29,9 @@ public:
     explicit ImageSourceAndroid(std::unique_ptr<Media::ImageSource>&& source) : imageSource_(std::move(source)) {}
 
     std::string GetProperty(const std::string& key) override;
-    RefPtr<PixelMap> CreatePixelMap(int32_t width, int32_t height) override;
-    RefPtr<PixelMap> CreatePixelMap(uint32_t index, int32_t width, int32_t height) override;
+    RefPtr<PixelMap> CreatePixelMap(const Size& size) override;
+    RefPtr<PixelMap> CreatePixelMap(uint32_t index, const Size& size) override;
+    Size GetImageSize() override;
 
 private:
     std::unique_ptr<Media::ImageSource> imageSource_;

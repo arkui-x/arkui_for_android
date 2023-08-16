@@ -55,22 +55,34 @@ std::string ImageSourceAndroid::GetProperty(const std::string& key)
     return value;
 }
 
-RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap(int32_t width, int32_t height)
+RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap(const Size& size)
 {
-    return CreatePixelMap(0, width, height);
+    return CreatePixelMap(0, size);
 }
 
-RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap(uint32_t index, int32_t width, int32_t height)
+RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap(uint32_t index, const Size& size)
 {
-    Media::DecodeOptions options {
-        .desiredSize = { width, height },
-    };
+    Media::DecodeOptions options;
+    if (size.first > 0 && size.second > 0) {
+        options.desiredSize = { size.first, size.second };
+    }
     uint32_t errorCode;
     auto pixmap = imageSource_->CreatePixelMapEx(index, options, errorCode);
     if (errorCode != Media::SUCCESS) {
-        LOGE("create PixelMap from ImageSource failed, index = %{public}u, errorCode = %{public}u", index, errorCode);
+        LOGW("create PixelMap from ImageSource failed, index = %{public}u, errorCode = %{public}u", index, errorCode);
         return nullptr;
     }
     return PixelMap::Create(std::move(pixmap));
+}
+
+ImageSource::Size ImageSourceAndroid::GetImageSize()
+{
+    Media::ImageInfo info;
+    auto errorCode = imageSource_->GetImageInfo(info);
+    if (errorCode != Media::SUCCESS) {
+        LOGW("Get ImageSource info failed, errorCode = %{public}u", errorCode);
+        return { 0, 0 };
+    }
+    return { info.size.width, info.size.height };
 }
 } // namespace OHOS::Ace
