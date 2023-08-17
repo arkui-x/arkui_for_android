@@ -18,6 +18,11 @@
 namespace OHOS::Ace {
 std::string FileUriHelper::GetRealPath(std::string fileUriStr)
 {
-    return "";
+    const std::string fileHead = "file://";
+    size_t pos = fileUriStr.find(fileHead);
+    if (pos != std::string::npos) {
+        return fileUriStr.substr(pos + fileHead.length());
+    }
+    return {};
 }
 } // namespace OHOS::Ace
