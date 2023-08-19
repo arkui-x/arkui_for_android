@@ -31,6 +31,7 @@ import org.json.JSONObject;
  * @since 10
  */
 public class ParameterHelper {
+    private static final String LOG_TAG = "ParameterHelper";
 
     private static List<Object> arraysObject = new ArrayList<Object>();
 
@@ -70,14 +71,28 @@ public class ParameterHelper {
     }
 
     /**
+     * 
+     *
+     * @param 
+     * @return Parameter in the form of Object.
+     */
+    public static Object[] binaryTransformObject(Object paramBinaryObj) {
+        if (paramBinaryObj instanceof List) {
+            List<Object> list = (List) paramBinaryObj;
+            return list.toArray();
+        }
+        return null;
+    }
+
+    /**
      * JSONObject transform Object.
      *
      * @param paramJsonObj Parameter in the form of JSONObject.
      * @return Parameter in the form of Object.
      */
     public static Object[] jsonTransformObject(JSONObject paramJsonObj) {
-        Lock findBridgeLock = new ReentrantLock();
-        findBridgeLock.lock();
+        Lock transformObjectLock = new ReentrantLock();
+        transformObjectLock.lock();
         try {
             arraysObject.clear();
             Iterator<String> keys = paramJsonObj.keys();
@@ -94,10 +109,9 @@ public class ParameterHelper {
             }
             return arraysObject.toArray();
         } catch (JSONException e) {
-            arraysObject.clear();
-            e.printStackTrace();
+            ALog.e(LOG_TAG, "jsonTransformObject failed, JSONException.");
         } finally {
-            findBridgeLock.unlock();
+            transformObjectLock.unlock();
         }
         return null;
     }
@@ -121,7 +135,7 @@ public class ParameterHelper {
                 return;
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            ALog.e(LOG_TAG, "addArraysObject failed, JSONException.");
         }
     }
 
@@ -138,7 +152,7 @@ public class ParameterHelper {
             }
             arraysObject.add(stringArray);
         } catch (JSONException e) {
-            e.printStackTrace();
+            ALog.e(LOG_TAG, "addArraysString failed, JSONException.");
         }
     }
 
@@ -155,7 +169,7 @@ public class ParameterHelper {
             }
             arraysObject.add(intArray);
         } catch (JSONException e) {
-            e.printStackTrace();
+            ALog.e(LOG_TAG, "addArraysInteger failed, JSONException.");
         }
     }
 
@@ -172,7 +186,7 @@ public class ParameterHelper {
             }
             arraysObject.add(boolArray);
         } catch (JSONException e) {
-            e.printStackTrace();
+            ALog.e(LOG_TAG, "addArraysBoolean failed, JSONException.");
         }
     }
 
@@ -189,7 +203,7 @@ public class ParameterHelper {
             }
             arraysObject.add(charArray);
         } catch (JSONException e) {
-            e.printStackTrace();
+            ALog.e(LOG_TAG, "addArraysCharacter failed, JSONException.");
         }
     }
 
@@ -206,7 +220,7 @@ public class ParameterHelper {
             }
             arraysObject.add(doubleArray);
         } catch (JSONException e) {
-            e.printStackTrace();
+            ALog.e(LOG_TAG, "addArraysDouble failed, JSONException.");
         }
     }
 
@@ -223,7 +237,7 @@ public class ParameterHelper {
             }
             arraysObject.add(floatArray);
         } catch (JSONException e) {
-            e.printStackTrace();
+            ALog.e(LOG_TAG, "addArraysFloat failed, JSONException.");
         }
     }
 
@@ -257,7 +271,7 @@ public class ParameterHelper {
             }
             return jsonParamters;
         } catch (JSONException e) {
-            e.printStackTrace();
+            ALog.e(LOG_TAG, "objectTransformJson failed, JSONException.");
         }
         return null;
     }
@@ -313,7 +327,7 @@ public class ParameterHelper {
                 return null;
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            ALog.e(LOG_TAG, "objectTransformJsonArray failed, JSONException.");
             return null;
         }
         return JsonArray;

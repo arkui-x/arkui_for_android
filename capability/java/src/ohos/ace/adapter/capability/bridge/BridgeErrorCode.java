@@ -31,7 +31,9 @@ public enum BridgeErrorCode {
     BRIDGE_METHOD_PARAM_ERROR(7, "Method parameter error!"),
     BRIDGE_METHOD_EXISTS(8, "Method already exists!"),
     BRIDGE_DATA_ERROR(9, "Data error"),
-    BRIDGE_EXCEEDS_SAFE_INTEGER(10, "Data exceeds safe integer");
+    BRIDGE_EXCEEDS_SAFE_INTEGER(10, "Data exceeds safe integer"),
+    BRIDGE_CODEC_TYPE_MISMATCH(11, "Bridge codec type mismatch"),
+    BRIDGE_CODEC_INVALID(12, "Bridge codec is invalid");
 
     private int id;
     private String errorMessage;

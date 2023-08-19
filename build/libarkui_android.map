@@ -134,6 +134,7 @@
       OHOS::Ace::Platform::PluginManagerJni::*;
       OHOS::Ace::Platform::GrantResultManager::*;
       OHOS::Ace::Platform::BridgeManager::*;
+      OHOS::Ace::Platform::BufferMapping::*;
 
       "OHOS::AppExecFwk::AbilityDelegatorRegistry::GetAbilityDelegator()";
       "OHOS::AppExecFwk::AbilityDelegator::GetCurrentTopAbility()";
