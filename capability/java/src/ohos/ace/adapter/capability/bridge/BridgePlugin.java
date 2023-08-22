@@ -49,6 +49,8 @@ public abstract class BridgePlugin {
 
     private HashMap<String, Method> methodsMap_;
 
+    private BridgeType bridgeType_ = BridgeType.JSON_TYPE;
+
     /**
      * Bridge dependent plugin.
      *
@@ -61,6 +63,25 @@ public abstract class BridgePlugin {
         this.bridgeName_ = bridgeName;
         this.instanceId_ = instanceId;
         this.context_ = context;
+        this.bridgeManager_ = BridgeManager.getInstance();
+        this.isAvailable = this.bridgeManager_.registerBridgePlugin(bridgeName, this);
+        this.methodsMap_ = new HashMap<String, Method>();
+    }
+
+    /**
+     * Bridge dependent plugin by BINARY_TYPE.
+     *
+     * @param context context of the application.
+     * @param bridgeName name of bridge.
+     * @param instanceId the id of instance.
+     * @param bridgeType the bridge of type.
+     * @return BridgePlugin object.
+     */
+    public BridgePlugin(Context context, String bridgeName, int instanceId, BridgeType bridgeType) {
+        this.bridgeName_ = bridgeName;
+        this.instanceId_ = instanceId;
+        this.context_ = context;
+        this.bridgeType_ = bridgeType;
         this.bridgeManager_ = BridgeManager.getInstance();
         this.isAvailable = this.bridgeManager_.registerBridgePlugin(bridgeName, this);
         this.methodsMap_ = new HashMap<String, Method>();
@@ -89,7 +110,7 @@ public abstract class BridgePlugin {
             if (methodsMap_.containsKey(methodName)) {
                 return methodsMap_.get(methodName);
             } else {
-                ALog.e(LOG_TAG, "The methodName is no storage.");
+                ALog.i(LOG_TAG, "The first call of methodName.");
                 return null;
             }
         } finally {
@@ -102,7 +123,7 @@ public abstract class BridgePlugin {
      *
      * @return The BridgeName.
      */
-    public String getBridgeName() {
+    protected String getBridgeName() {
         return this.bridgeName_;
     }
 
@@ -111,8 +132,17 @@ public abstract class BridgePlugin {
      *
      * @return The InstanceId.
      */
-    public int getInstanceId() {
+    protected int getInstanceId() {
         return this.instanceId_;
+    }
+
+    /**
+     * Get bridge type.
+     *
+     * @return The BridgeType.
+     */
+    public BridgeType getBridgeType() {
+        return this.bridgeType_;
     }
 
     /**
@@ -150,10 +180,15 @@ public abstract class BridgePlugin {
      */
     public void callMethod(MethodData methodData) {
         if (!this.isAvailable) {
-            ALog.e(LOG_TAG, "The bridge is not available");
+            ALog.e(LOG_TAG, "callMethod is fail, The bridge is not available" + this.bridgeName_);
             return;
         }
-        BridgeErrorCode errorCode = this.bridgeManager_.platformCallMethod(bridgeName_, methodData);
+        BridgeErrorCode errorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
+        if (this.bridgeType_ == BridgeType.BINARY_TYPE) {
+            errorCode = this.bridgeManager_.platformCallMethodBinary(bridgeName_, methodData);
+        } else {
+            errorCode = this.bridgeManager_.platformCallMethod(bridgeName_, methodData);
+        }
         if (this.iMethodResult != null && errorCode.getId() != 0) {
             this.iMethodResult.onError(methodData.getMethodName(), errorCode.getId(), errorCode.getErrorMessage());
         }
@@ -166,7 +201,11 @@ public abstract class BridgePlugin {
      */
     public void sendMessage(Object data) {
         if (!this.isAvailable) {
-            ALog.e(LOG_TAG, "The bridge is not available");
+            ALog.e(LOG_TAG, "sendMessage is fail, The bridge is not available" + this.bridgeName_);
+            return;
+        }
+        if (this.bridgeType_ == BridgeType.BINARY_TYPE) {
+            this.bridgeManager_.platformSendMessageBinary(this.bridgeName_, data);
             return;
         }
         this.bridgeManager_.platformSendMessage(this.bridgeName_, data);
@@ -179,7 +218,7 @@ public abstract class BridgePlugin {
      * @param methodData Method packaging structure.
      * @return Return the call result.
      */
-    public Object jsCallMethod(Object object, MethodData methodData) {
+    protected Object jsCallMethod(Object object, MethodData methodData) {
         Object[] parametersObject = methodData.getMethodParameter();
         Class clazz = object.getClass();
         Object resValues = null;
@@ -197,8 +236,8 @@ public abstract class BridgePlugin {
                 registerMethod(methodData.getMethodName(), callMethod);
             }
         } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-            return null;
+            ALog.e(LOG_TAG, "jsCallMethod failed, NoSuchMethodException.");
+            return BridgeErrorCode.BRIDGE_METHOD_NAME_ERROR;
         }
         try {
             if (callMethod != null && parametersObject != null && parametersObject.length != 0) {
@@ -208,13 +247,13 @@ public abstract class BridgePlugin {
             }
             return resValues;
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            ALog.e(LOG_TAG, "jsCallMethod failed, IllegalAccessException.");
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
+            ALog.e(LOG_TAG, "jsCallMethod failed, IllegalArgumentException.");
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            ALog.e(LOG_TAG, "jsCallMethod failed, InvocationTargetException.");
         }
-        return null;
+        return BridgeErrorCode.BRIDGE_METHOD_UNIMPL;
     }
 
     /**
@@ -222,7 +261,7 @@ public abstract class BridgePlugin {
      *
      * @param data Data to be sent.
      */
-    public void jsSendMessage(Object data) {
+    protected void jsSendMessage(Object data) {
         if (this.iMessageListener != null) {
             Object dataResponse = this.iMessageListener.onMessage(data);
             this.bridgeManager_.platformSendMessageResponse(this.bridgeName_, dataResponse);
@@ -237,7 +276,7 @@ public abstract class BridgePlugin {
      * @param errorCode Code of error.
      * @param errorMessage Message of error.
      */
-    public void jsSendMethodResult(Object result, String methodName, int errorCode,
+    protected void jsSendMethodResult(Object result, String methodName, int errorCode,
         String errorMessage) {
         if (this.iMethodResult == null) {
             return;
@@ -254,7 +293,7 @@ public abstract class BridgePlugin {
      *
      * @param data Data to be sent.
      */
-    public void jsSendMessageResponse(Object data) {
+    protected void jsSendMessageResponse(Object data) {
         if (this.iMessageListener != null) {
             this.iMessageListener.onMessageResponse(data);
         }
@@ -266,9 +305,15 @@ public abstract class BridgePlugin {
      * @param bridgeName Object of bridgePlugin.
      * @param methodName Name of method.
      */
-    public void jsCancelMethod(String methodName) {
+    protected void jsCancelMethod(String methodName) {
         if (this.iMethodResult != null) {
             this.iMethodResult.onMethodCancel(methodName);
         }
     }
+
+    public enum BridgeType {
+        JSON_TYPE,
+        BINARY_TYPE;
+    }
+
 }

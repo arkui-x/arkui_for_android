@@ -17,7 +17,9 @@
 #define FOUNDATION_ACE_ADAPTER_CAPABILITY_JAVA_JNI_BRIDGE_ACE_BRIDGE_JNI_H
 
 #include <functional>
+#include <vector>
 
+#include "adapter/android/capability/java/jni/bridge/buffer_mapping.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/thread/task_executor.h"
 #include "base/log/log.h"
@@ -48,6 +50,18 @@ public:
     static void PlatformSendMessage(JNIEnv *env, jobject jobj, jstring jBridgeName, jstring jData, jint instanceId);
     static void JSSendMessageResponseJni(const std::string& bridgeName, const std::string& data);
     static void JSCancelMethodJni(const std::string& bridgeName, const std::string& methodName);
+
+    static void JSSendMessageBinaryJni(const std::string& bridgeName, const std::vector<uint8_t>& data);
+    static void PlatformSendMessageBinary(JNIEnv *env, jobject jobj,
+        jstring jBridgeName, jobject jBuffer, jint instanceId);
+    static void JSCallMethodBinaryJni(const std::string& bridgeName,
+        const std::string& methodName, const std::vector<uint8_t>& data);
+    static void PlatformSendMethodResultBinary(JNIEnv *env, jobject jobj, jstring jBridgeName, jstring jMethodName,
+        jobject jBuffer, jint instanceId, jint jErrorCode, jstring jErrorMessage);
+    static void PlatformCallMethodBinary(JNIEnv *env, jobject jobj,
+        jstring jBridgeName, jstring jMethodName, jobject jBuffer, jint instanceId);
+    static void JSSendMethodResultBinaryJni(const std::string& bridgeName, const std::string& methodName,
+        int errorCode, const std::string& errorMessage, std::unique_ptr<std::vector<uint8_t>> result);
 };
 }  // namespace OHOS::Ace::Platform
 #endif  // FOUNDATION_ACE_ADAPTER_CAPABILITY_JAVA_JNI_BRIDGE_ACE_BRIDGE_JNI_H

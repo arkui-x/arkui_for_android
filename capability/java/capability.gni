@@ -52,9 +52,12 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoPluginAosp.java",
 
   # bridge files
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeBaseCodec.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeBinaryCodec.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeErrorCode.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeManager.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgePlugin.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeSerializer.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/IMessageListener.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/IMethodResult.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/MethodData.java",
