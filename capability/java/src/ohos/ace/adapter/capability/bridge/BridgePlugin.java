@@ -311,9 +311,13 @@ public abstract class BridgePlugin {
         }
     }
 
+    /**
+     * Encoding type of Bridge.
+     *
+     * @since 10
+     */
     public enum BridgeType {
         JSON_TYPE,
         BINARY_TYPE;
     }
-
 }

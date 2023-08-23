@@ -22,7 +22,6 @@ import java.nio.ByteOrder;
 import ohos.ace.adapter.ALog;
 
 public class BridgeBinaryCodec implements BridgeBaseCodec<Object> {
-
     private static final Object INSTANCE_LOCK = new Object();
 
     private static volatile BridgeBinaryCodec INSTANCE = null;

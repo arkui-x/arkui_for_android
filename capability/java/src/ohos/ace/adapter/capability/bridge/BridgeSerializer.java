@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import ohos.ace.adapter.ALog;
 
-
 /**
  * Serializer used by Bridge.
  *
