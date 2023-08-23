@@ -28,6 +28,7 @@ import android.text.TextUtils;
 public class TextInputFilter implements InputFilter {
     private String filterRule;
     private int maxLength = -1;
+    private TextInputErrorTextHandler handler = null;
 
     public TextInputFilter(String filterRule) {
         this.filterRule = filterRule;
@@ -42,6 +43,14 @@ public class TextInputFilter implements InputFilter {
         return charStr.matches(filterRule);
     }
 
+    /**
+     * Set textinput error text handler.
+     * @param handler the handler
+     */
+    public void setTextInputErrorTextHandler(TextInputErrorTextHandler handler) {
+        this.handler = handler;
+    }
+
     @Override
     public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
         if (TextUtils.isEmpty(source.toString())) {
@@ -49,11 +58,17 @@ public class TextInputFilter implements InputFilter {
         }
 
         StringBuilder resultStr = new StringBuilder();
+        StringBuilder errorTextStr = new StringBuilder();
         for (int i = start; i < end; i++) {
             char inputChar = source.charAt(i);
             if (isMatch(inputChar)) {
                 resultStr.append(inputChar);
+            } else {
+                errorTextStr.append(inputChar);
             }
+        }
+        if (handler != null && errorTextStr.length() > 0) {
+            handler.onTextInputErrorTextChanged(errorTextStr.toString());
         }
 
         if (source instanceof Spanned) {

@@ -36,6 +36,7 @@ public:
     static void NativeInit(JNIEnv* env, jobject jobj, jint instanceId);
     static void UpdateEditingState(JNIEnv* env, jclass clazz, jint inputClientId, jstring editingState);
     static void PerformAction(JNIEnv* env, jclass clazz, jint clientId, jint actionValue);
+    static void UpdateInputFilterErrorText(JNIEnv* env, jclass clazz, jint inputClientId, jstring errorText);
 
     // Called by C++
     static bool SetClient(int32_t clientId, const TextInputConfiguration& config, const int32_t instanceId);

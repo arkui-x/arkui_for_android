@@ -38,7 +38,7 @@ import ohos.ace.adapter.ALog;
  *
  * @since 1
  */
-public class TextInputPluginAosp extends TextInputPluginBase {
+public class TextInputPluginAosp extends TextInputPluginBase implements TextInputErrorTextHandler{
     private static final String LOG_TAG = "Ace_IME";
 
     private final View view;
@@ -54,6 +54,8 @@ public class TextInputPluginAosp extends TextInputPluginBase {
 
     // Indicate whether need to call IMM restartInput.
     private boolean isRestartInputPending = false;
+
+    private InputConnectionWrapper wrapper = null;
 
     /**
      * constructor of TextInputPlugin on AOSP platform
@@ -120,7 +122,8 @@ public class TextInputPluginAosp extends TextInputPluginBase {
         final TextInputDelegate delegate = new Delegate();
         outAttrs.initialSelStart = Selection.getSelectionStart(editable);
         outAttrs.initialSelEnd = Selection.getSelectionEnd(editable);
-        return new InputConnectionWrapper(view, clientId(), delegate, editable, hint);
+        wrapper = new InputConnectionWrapper(view, clientId(), delegate, editable, hint);
+        return wrapper;
     }
 
     // Just for ensure that JNI is called from Ace UI thread.
@@ -170,6 +173,13 @@ public class TextInputPluginAosp extends TextInputPluginBase {
             });
     }
 
+    @Override
+    public void onTextInputErrorTextChanged(String errorText) {
+        if (wrapper != null) {
+            wrapper.updateInputFilterErrorText(errorText);
+        }
+    }
+
     /**
      * Called when clientId and configuration are initialized.
      */
@@ -182,6 +192,7 @@ public class TextInputPluginAosp extends TextInputPluginBase {
             String inputFilterRule = config.getInputFilterRule();
             if (!inputFilterRule.isEmpty()) {
                 TextInputFilter inputFilter = new TextInputFilter(inputFilterRule);
+                inputFilter.setTextInputErrorTextHandler(this);
                 filterArray.add(inputFilter);
             }
             int maxInputLength = config.getMaxInputLength();

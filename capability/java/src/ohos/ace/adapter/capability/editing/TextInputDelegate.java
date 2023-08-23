@@ -41,4 +41,12 @@ public interface TextInputDelegate {
      * @param action The action identifier
      */
     void performAction(int clientId, TextInputAction action);
+
+    /**
+     * Called to pass the error text when the error text changes.
+     *
+     * @param clientId The client identifier
+     * @param errorText The error text content
+     */
+    void updateInputFilterErrorText(int client, String errorText);
 }
