@@ -15,7 +15,14 @@
 
 #include "stage_asset_provider.h"
 
-#include <string>
+#include <cstdio>
+#include <dirent.h>
+#include <fstream>
+#include <iostream>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "base/log/log.h"
 #include "base/utils/string_utils.h"
@@ -30,6 +37,8 @@ const std::string ABILITY_STAGE_ABC_NAME = "AbilityStage.abc";
 const std::string MODULE_STAGE_ABC_NAME = "modules.abc";
 const std::string TEMP_DIR = "/temp";
 const std::string FILES_DIR = "/files";
+const std::string ARKUI_X_ASSETS_DIR = "/arkui-x";
+const std::string EXTERN_LIB_DIR = "/lib";
 const std::string PREFERENCE_DIR = "/preference";
 const std::string DATABASE_DIR = "/database";
 const std::string ASSETS_DIR = "/assets";
@@ -129,6 +138,11 @@ std::vector<uint8_t> StageAssetProvider::GetModuleBuffer(
     } else {
         fullAbilityName = ABILITY_STAGE_ABC_NAME;
     }
+
+    std::vector<uint8_t> buffer;
+    auto dynamicLoadFlag = true;
+    std::string moduleNameMark = SEPARATOR + moduleName + SEPARATOR;
+
     std::vector<std::string> abcPath;
     {
         std::lock_guard<std::mutex> lock(allFilePathMutex_);
@@ -136,31 +150,57 @@ std::vector<uint8_t> StageAssetProvider::GetModuleBuffer(
             if (path.find(fullAbilityName) != std::string::npos) {
                 abcPath.emplace_back(path);
             }
+            if (path.find(moduleNameMark) != std::string::npos) {
+                dynamicLoadFlag = false;
+            }
         }
     }
 
-    std::vector<uint8_t> buffer;
-    std::string moduleNameMark = SEPARATOR + moduleName + SEPARATOR;
-    for (auto& path : abcPath) {
-        if (path.find(moduleNameMark) != std::string::npos) {
-            modulePath = path;
-            LOGI("modulePath : %{public}s", modulePath.c_str());
-            auto lastPos = path.find_last_of('/');
-            std::string fileName = path.substr(lastPos + 1, path.size());
-            std::string filePath = path.substr(0, lastPos);
-            auto assetProvider = CreateAndFindAssetProvider(filePath);
-            auto mapping = assetProvider->GetAsMapping(fileName);
-            if (mapping == nullptr) {
-                LOGE("mapping is nullptr");
-                continue;
+    if (dynamicLoadFlag) {
+        auto path = GetAppDataModuleDir() + SEPARATOR + moduleName;
+        std::vector<std::string> fileFullPaths;
+        GetAppDataModuleAssetList(path, fileFullPaths, false);
+        for (auto& path : fileFullPaths) {
+            if (path.find(moduleNameMark) != std::string::npos && path.find(fullAbilityName) != std::string::npos) {
+                modulePath = path;
+                buffer = GetBufferByAppDataPath(path);
+                break;
             }
-            auto moduleMap = mapping->GetMapping();
-            if (moduleMap == nullptr) {
-                LOGE("moduleMap is nullptr");
-                continue;
+        }
+
+        // copy dynamic resource files
+        auto resourceDescDir = resourcesFilePrefixPath_ + SEPARATOR + moduleName;
+        if (ExistDir(path) && !ExistDir(resourceDescDir)) {
+            MakeDir(resourceDescDir);
+            CopyDir(path, resourceDescDir);
+        }
+        auto downloadPath = GetAppDataModuleDir() + SEPARATOR + SYSTEM_RES_INDEX_NAME;
+        auto systemresDescDir = resourcesFilePrefixPath_ + SEPARATOR + SYSTEM_RES_INDEX_NAME;
+        if (ExistDir(downloadPath) && !ExistDir(systemresDescDir)) {
+            MakeDir(systemresDescDir);
+            CopyDir(downloadPath, systemresDescDir);
+        }
+    } else {
+        for (auto& path : abcPath) {
+            if (path.find(moduleNameMark) != std::string::npos) {
+                modulePath = path;
+                auto lastPos = path.find_last_of('/');
+                std::string fileName = path.substr(lastPos + 1, (int)(path.size()));
+                std::string filePath = path.substr(0, lastPos);
+                auto assetProvider = CreateAndFindAssetProvider(filePath);
+                auto mapping = assetProvider->GetAsMapping(fileName);
+                if (mapping == nullptr) {
+                    LOGE("mapping is nullptr");
+                    continue;
+                }
+                auto moduleMap = mapping->GetMapping();
+                if (moduleMap == nullptr) {
+                    LOGE("moduleMap is nullptr");
+                    continue;
+                }
+                buffer.assign(&moduleMap[0], &moduleMap[mapping->GetSize()]);
+                break;
             }
-            buffer.assign(&moduleMap[0], &moduleMap[mapping->GetSize()]);
-            break;
         }
     }
     return buffer;
@@ -177,6 +217,10 @@ std::vector<uint8_t> StageAssetProvider::GetModuleAbilityBuffer(
         fullAbilityName = abilityName;
     }
     fullAbilityName.append(ABC_EXTENSION_NAME);
+
+    std::vector<uint8_t> buffer;
+    auto dynamicLoadFlag = true;
+    std::string moduleNameMark = SEPARATOR + moduleName + SEPARATOR;
     std::vector<std::string> abcPath;
     {
         std::lock_guard<std::mutex> lock(allFilePathMutex_);
@@ -184,30 +228,44 @@ std::vector<uint8_t> StageAssetProvider::GetModuleAbilityBuffer(
             if (path.find(fullAbilityName) != std::string::npos) {
                 abcPath.emplace_back(path);
             }
+            if (path.find(moduleNameMark) != std::string::npos) {
+                dynamicLoadFlag = false;
+            }
         }
     }
-    std::vector<uint8_t> buffer;
-    std::string moduleNameMark = SEPARATOR + moduleName + SEPARATOR;
-    for (auto& path : abcPath) {
-        if (path.find(moduleNameMark) != std::string::npos) {
-            modulePath = path;
-            LOGI("modulePath : %{public}s", modulePath.c_str());
-            auto lastPos = path.find_last_of('/');
-            std::string fileName = path.substr(lastPos + 1, path.size());
-            std::string filePath = path.substr(0, lastPos);
-            auto assetProvider = CreateAndFindAssetProvider(filePath);
-            auto mapping = assetProvider->GetAsMapping(fileName);
-            if (mapping == nullptr) {
-                LOGE("mapping is nullptr");
-                continue;
+
+    if (dynamicLoadFlag) {
+        auto path = GetAppDataModuleDir() + SEPARATOR + moduleName;
+        std::vector<std::string> fileFullPaths;
+        GetAppDataModuleAssetList(path, fileFullPaths, false);
+        for (auto& path : fileFullPaths) {
+            if (path.find(moduleNameMark) != std::string::npos && path.find(fullAbilityName) != std::string::npos) {
+                modulePath = path;
+                buffer = GetBufferByAppDataPath(path);
+                break;
             }
-            auto moduleMap = mapping->GetMapping();
-            if (moduleMap == nullptr) {
-                LOGE("moduleMap is nullptr");
-                continue;
+        }
+    } else {
+        for (auto& path : abcPath) {
+            if (path.find(moduleNameMark) != std::string::npos) {
+                modulePath = path;
+                auto lastPos = path.find_last_of('/');
+                std::string fileName = path.substr(lastPos + 1, path.size());
+                std::string filePath = path.substr(0, lastPos);
+                auto assetProvider = CreateAndFindAssetProvider(filePath);
+                auto mapping = assetProvider->GetAsMapping(fileName);
+                if (mapping == nullptr) {
+                    LOGE("mapping is nullptr");
+                    continue;
+                }
+                auto moduleMap = mapping->GetMapping();
+                if (moduleMap == nullptr) {
+                    LOGE("moduleMap is nullptr");
+                    continue;
+                }
+                buffer.assign(&moduleMap[0], &moduleMap[mapping->GetSize()]);
+                break;
             }
-            buffer.assign(&moduleMap[0], &moduleMap[mapping->GetSize()]);
-            break;
         }
     }
     return buffer;
@@ -272,6 +330,11 @@ void StageAssetProvider::SetFileDir(const std::string& filesRootDir)
     filesDir_ = filesRootDir + FILES_DIR;
     preferenceDir_ = filesRootDir + PREFERENCE_DIR;
     databaseDir_ = filesRootDir + DATABASE_DIR;
+    arkuiXAssetsDir_ = filesRootDir + ARKUI_X_ASSETS_DIR;
+    size_t lastSlashPos = appLibDir_.find_last_of('/');
+    if (lastSlashPos != std::string::npos) {
+        appDataLibDir_ = filesRootDir + ARKUI_X_ASSETS_DIR + EXTERN_LIB_DIR + appLibDir_.substr(lastSlashPos);
+    }
 }
 
 void StageAssetProvider::SetAppLibDir(const std::string& libDir)
@@ -324,6 +387,183 @@ void StageAssetProvider::GetResIndexPath(
 void StageAssetProvider::SetResourcesFilePrefixPath(const std::string& resourcesFilePrefixPath)
 {
     resourcesFilePrefixPath_ = resourcesFilePrefixPath;
+}
+
+std::string StageAssetProvider::GetAppDataModuleDir() const
+{
+    return arkuiXAssetsDir_;
+}
+
+std::string StageAssetProvider::GetAppDataLibDir() const
+{
+    return appDataLibDir_;
+}
+
+std::vector<std::string> StageAssetProvider::GetAllFilePath()
+{
+    return allFilePath_;
+}
+
+bool StageAssetProvider::GetAppDataModuleAssetList(
+    const std::string& path, std::vector<std::string>& fileFullPaths, bool onlyChild)
+{
+    DIR* pDir = nullptr;
+    struct dirent* ptr = nullptr;
+    if (!(pDir = opendir(path.c_str()))) {
+        return false;
+    }
+    while ((ptr = readdir(pDir)) != nullptr) {
+        if (strcmp(ptr->d_name, ".") != 0 && strcmp(ptr->d_name, "..") != 0) {
+            if (onlyChild) {
+                std::string file = path + SEPARATOR + ptr->d_name;
+                fileFullPaths.emplace_back(file);
+            } else if (ptr->d_type == DT_DIR && !GetAppDataModuleAssetList(path + "/" + ptr->d_name, fileFullPaths, false)) {
+                break;
+            } else if (ptr->d_type == DT_REG) {
+                std::string file = path + SEPARATOR + ptr->d_name;
+                fileFullPaths.emplace_back(file);
+            }
+        }
+    }
+    closedir(pDir);
+    return true;
+}
+
+std::vector<uint8_t> StageAssetProvider::GetBufferByAppDataPath(const std::string& fileFullPath)
+{
+    std::vector<uint8_t> buffer;
+    std::lock_guard<std::mutex> lock(allFilePathMutex_);
+    std::FILE* fp = std::fopen(fileFullPath.c_str(), "r");
+    if (fp == nullptr) {
+        return buffer;
+    }
+
+    if (std::fseek(fp, 0, SEEK_END) != 0) {
+        LOGE("seek file tail error");
+        std::fclose(fp);
+        return buffer;
+    }
+
+    int64_t size = std::ftell(fp);
+    if (size == -1L || size == 0L || size > FOO_MAX_LEN) {
+        LOGE("tell file error");
+        std::fclose(fp);
+        return buffer;
+    }
+    uint8_t* dataArray = new (std::nothrow) uint8_t[size];
+    if (dataArray == nullptr) {
+        LOGE("new uint8_t array failed");
+        std::fclose(fp);
+        return buffer;
+    }
+
+    rewind(fp);
+    std::unique_ptr<uint8_t[]> data(dataArray);
+    size_t result = std::fread(data.get(), 1, size, fp);
+    if (result != (size_t)size) {
+        LOGE("read file failed");
+        std::fclose(fp);
+        return buffer;
+    }
+
+    std::fclose(fp);
+    auto mapping = std::make_unique<FileAssetMapping>(std::move(data), size);
+    if (mapping == nullptr) {
+        LOGE("mapping is nullptr");
+        return buffer;
+    }
+    auto moduleMap = mapping->GetMapping();
+    if (moduleMap == nullptr) {
+        LOGE("moduleMap is nullptr");
+        return buffer;
+    }
+    buffer.assign(&moduleMap[0], &moduleMap[mapping->GetSize()]);
+    return buffer;
+}
+
+bool StageAssetProvider::CopyFile(std::string sourceFile, std::string newFile)
+{
+    std::ifstream in;
+    std::ofstream out;
+    in.open(sourceFile.c_str(), std::ios::binary);
+    if (in.fail()) {
+        LOGE("open sourcefile error!");
+        in.close();
+        out.close();
+        return false;
+    }
+    out.open(newFile.c_str(), std::ios::binary);
+    if (out.fail()) {
+        LOGE("new file error!");
+        out.close();
+        in.close();
+        return false;
+    }
+    out << in.rdbuf();
+    out.close();
+    in.close();
+    return true;
+}
+
+bool StageAssetProvider::ExistDir(std::string target)
+{
+    DIR* dir = nullptr;
+    if (!(dir = opendir(target.c_str()))) {
+        closedir(dir);
+        return false;
+    } else {
+        closedir(dir);
+        return true;
+    }
+}
+
+bool StageAssetProvider::MakeDir(std::string target)
+{
+    if (access(target.c_str(), 0) != 0) {
+        mkdir(target.c_str(), S_IRWXU | S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        return true;
+    } else {
+        LOGE("make dir error!");
+        return false;
+    }
+}
+
+bool StageAssetProvider::CopyDir(std::string source, const std::string& target)
+{
+    DIR* dir = nullptr;
+    struct stat st;
+    struct dirent* dp = nullptr;
+
+    if (stat(source.c_str(), &st) < 0 || !S_ISDIR(st.st_mode)) {
+        LOGE("source is null!");
+        return false;
+    }
+
+    if (!(dir = opendir(source.c_str()))) {
+        LOGE("source dir open error!");
+        return false;
+    }
+
+    while ((dp = readdir(dir)) != nullptr) {
+        if ((!strncmp(dp->d_name, ".", 1)) || (!strncmp(dp->d_name, ".", 2))) {
+            continue;
+        }
+        if (!strncmp(dp->d_name, "ets", 3) || !strncmp(dp->d_name, "module.json", 12)) {
+            continue;
+        }
+        std::string newpath = source + SEPARATOR + dp->d_name;
+        stat(newpath.c_str(), &st);
+        std::string newtarget = target + SEPARATOR + dp->d_name;
+
+        if (S_ISDIR(st.st_mode)) {
+            MakeDir(newtarget);
+            CopyDir(newpath, newtarget);
+        } else {
+            CopyFile(newpath, newtarget);
+        }
+    }
+    closedir(dir);
+    return true;
 }
 } // namespace Platform
 } // namespace AbilityRuntime
