@@ -239,7 +239,7 @@ public class BridgeManager {
             if (object != null && !ParameterHelper.isExceedJsSafeInteger(object)) {
                 bridgeErrorCode = BridgeErrorCode.BRIDGE_EXCEEDS_SAFE_INTEGER;
             }
-            if (object.getClass() == BridgeErrorCode.class ) {
+            if (object != null && object.getClass() == BridgeErrorCode.class ) {
                 bridgeErrorCode = (BridgeErrorCode) object;
             }
             resultJsonObj = createJsonMethodResult(bridgeErrorCode, object);
@@ -571,7 +571,7 @@ public class BridgeManager {
             } else {
                 methodData = new MethodData(splitName, objects);
                 resultObject = bridgePlugin.jsCallMethod(bridgePlugin, methodData);
-                if (resultObject.getClass() == BridgeErrorCode.class) {
+                if (resultObject != null && resultObject.getClass() == BridgeErrorCode.class) {
                     bridgeErrorCode = (BridgeErrorCode) resultObject;
                 } else {
                     resultBuffer = bridgeBinaryCodec.encodeData(resultObject);
