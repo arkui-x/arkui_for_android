@@ -33,6 +33,8 @@ import android.os.Build;
 import android.os.Process;
 import android.os.Trace;
 import android.util.Log;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -397,8 +399,29 @@ public class StageApplicationDelegate {
     private void initConfiguration() {
         Log.i(LOG_TAG, "StageApplication initConfiguration called");
         Configuration cfg = stageApplication.getResources().getConfiguration();
-        JSONObject json = StageConfiguration.convertConfiguration(cfg);
+        double diagonalSize = getDeviceTypeByPhysicalSize();
+        JSONObject json = StageConfiguration.convertConfiguration(cfg, diagonalSize);
         nativeInitConfiguration(json.toString());
+    }
+
+    private double getDeviceTypeByPhysicalSize() {
+        // Find the current window manager, if none is found we default to the current device as a mobile phone.
+        WindowManager windowManager = (WindowManager) stageApplication.getSystemService(stageApplication.WINDOW_SERVICE);
+        if (windowManager == null) {
+            return 0;
+        }
+
+        DisplayMetrics metrics = new DisplayMetrics();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            windowManager.getDefaultDisplay().getRealMetrics(metrics);
+        } else {
+            windowManager.getDefaultDisplay().getMetrics(metrics);
+        }
+
+        double width = metrics.widthPixels / (double) metrics.xdpi;
+        double height = metrics.heightPixels / (double) metrics.ydpi;
+        double diagonalSize = Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2));
+        return diagonalSize;
     }
 
     /**
@@ -586,7 +609,7 @@ public class StageApplicationDelegate {
      */
     public void onConfigurationChanged(Configuration newConfig) {
         setLocaleInfo();
-        JSONObject json = StageConfiguration.convertConfiguration(newConfig);
+        JSONObject json = StageConfiguration.convertConfiguration(newConfig, -1.0);
         nativeOnConfigurationChanged(json.toString());
     }
 
