@@ -451,7 +451,9 @@ public class AceVideoAosp extends AceVideoBase
             }
             if (state == PlayState.STOPPED) {
                 try {
-                    mediaPlayer.prepare();
+                    if (mediaPlayer != null) {
+                        mediaPlayer.prepare();
+                    }
                     state = PlayState.PREPARED;
                 } catch (IOException ignored) {
                     ALog.e(LOG_TAG, "start failed, IOException");
@@ -461,7 +463,9 @@ public class AceVideoAosp extends AceVideoBase
                     return FAIL;
                 }
             }
-            mediaPlayer.start();
+            if (mediaPlayer != null) {
+                mediaPlayer.start();
+            }
         } finally {
             mediaPlayerLock.unlock();
         }
@@ -483,7 +487,9 @@ public class AceVideoAosp extends AceVideoBase
         setKeepScreenOn(false);
         try {
             try {
-                mediaPlayer.pause();
+                if (mediaPlayer != null) {
+                    mediaPlayer.pause();
+                }
             } catch (IllegalStateException ignored) {
                 ALog.e(LOG_TAG, "pause failed, IllegalStateException.");
                 return FAIL;
@@ -728,6 +734,9 @@ public class AceVideoAosp extends AceVideoBase
                 }
             } catch (NumberFormatException ignored) {
                 ALog.e(LOG_TAG, "NumberFormatException, setSurface failed. value = " + params.get(KEY_VALUE));
+                return FAIL;
+            } catch (IllegalArgumentException ignored) {
+                ALog.e(LOG_TAG, "IllegalArgumentException, setSurface failed. value = " + params.get(KEY_VALUE));
                 return FAIL;
             }
         } finally {
