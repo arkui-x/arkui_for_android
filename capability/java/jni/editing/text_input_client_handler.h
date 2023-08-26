@@ -41,6 +41,7 @@ public:
     void UpdateEditingValue(
         const int32_t clientId, const std::shared_ptr<TextEditingValue>& value, bool needFireChangeEvent = true);
     void PerformAction(const int32_t clientId, const TextInputAction action);
+    void UpdateInputFilterErrorText(const int32_t clientId, const std::string& errorText);
 
 private:
     // All operations must be called on Ace UI thread.

@@ -71,6 +71,13 @@ public abstract class TextInputPluginBase {
             }
             TextInputPluginBase.performAction(clientId, action.getValue());
         }
+
+        @Override
+        public void updateInputFilterErrorText(int clientId, String errorText) {
+            if (errorText.length() > 0) {
+                TextInputPluginBase.updateInputFilterErrorText(clientId, errorText);
+            }
+        }
     }
 
     /**
@@ -183,6 +190,8 @@ public abstract class TextInputPluginBase {
     private static native void updateEditingState(int client, String state);
 
     private static native void performAction(int client, int action);
+
+    private static native void updateInputFilterErrorText(int client, String errorText);
 
     /**
      * native func for Init.
