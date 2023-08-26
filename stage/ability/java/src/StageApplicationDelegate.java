@@ -121,11 +121,17 @@ public class StageApplicationDelegate {
         setHapPath(apkPath);
         setNativeAssetManager(stageApplication.getAssets());
 
-        setAssetsFileRelativePath(getAssetsPath());
         nativeSetAppLibDir(context.getApplicationInfo().nativeLibraryDir);
         createStagePath();
 
-        copyAllModuleResources();
+        try {
+            if (stageApplication.getAssets().list(ASSETS_SUB_PATH).length != 0) {
+                setAssetsFileRelativePath(getAssetsPath());
+                copyAllModuleResources();
+            }
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "get Assets path failed, error: " + e.getMessage());
+        }
         setResourcesFilePrefixPath(stageApplication.getExternalFilesDir((String) null).getAbsolutePath());
         setLocaleInfo();
         Trace.endSection();
