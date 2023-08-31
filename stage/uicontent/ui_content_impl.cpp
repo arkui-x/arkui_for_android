@@ -27,6 +27,7 @@
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
 #include "adapter/android/osal/accessibility_manager_impl.h"
 #include "adapter/android/osal/file_asset_provider.h"
+#include "adapter/android/osal/page_url_checker_android.h"
 #include "adapter/android/stage/uicontent/ace_container_sg.h"
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
 #include "adapter/android/stage/uicontent/platform_event_callback.h"
@@ -307,6 +308,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     container->SetFilesDataPath(context->GetFilesDir());
     container->SetModuleName(moduleName);
     container->SetIsModule(info->compileMode == AppExecFwk::CompileMode::ES_MODULE);
+    container->SetPageUrlChecker(AceType::MakeRefPtr<PageUrlCheckerAndroid>());
 
     std::string hapResPath { "" };
     std::string sysResPath { "" };
