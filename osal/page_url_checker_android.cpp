@@ -13,11 +13,9 @@
  * limitations under the License.
  */
 
-#include "page_url_checker.h"
+#include "page_url_checker_android.h"
 
 #include <string>
-
-#include "page_url_checker_android.h"
 
 namespace OHOS::Ace {
 const char BUNDLE_TAG[] = "@bundle:";
