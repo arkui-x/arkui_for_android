@@ -307,6 +307,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     container->SetFilesDataPath(context->GetFilesDir());
     container->SetModuleName(moduleName);
     container->SetIsModule(info->compileMode == AppExecFwk::CompileMode::ES_MODULE);
+    container->SetPageUrlChecker(AceType::MakeRefPtr<PageUrlCheckerAndroid>());
 
     std::string hapResPath { "" };
     std::string sysResPath { "" };
