@@ -20,6 +20,7 @@ import java.util.Map;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
