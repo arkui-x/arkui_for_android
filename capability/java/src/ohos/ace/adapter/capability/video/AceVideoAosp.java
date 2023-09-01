@@ -167,11 +167,11 @@ public class AceVideoAosp extends AceVideoBase
                 ALog.e(LOG_TAG, "mediaPlayer release failed, IllegalStateException.");
             }
         } finally {
+            if (handlerThread != null) {
+                handlerThread.quitSafely();
+                handlerThread = null;
+            }
             mediaPlayerLock.unlock();
-        }
-        if (handlerThread != null) {
-            handlerThread.quitSafely();
-            handlerThread = null;
         }
     }
 
