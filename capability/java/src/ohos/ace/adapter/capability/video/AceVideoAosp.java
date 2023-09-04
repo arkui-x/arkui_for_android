@@ -153,26 +153,28 @@ public class AceVideoAosp extends AceVideoBase
     public void release() {
         ALog.i(LOG_TAG, "media player will release.");
         isPaused = true;
-        mediaPlayerLock.lock();
-        try {
-            if (mediaPlayer == null) {
-                ALog.w(LOG_TAG, "media player is null.");
-                return;
-            }
+        runAsync(() -> {
+            mediaPlayerLock.lock();
             try {
-                mediaPlayer.stop();
-                mediaPlayer.release();
-                mediaPlayer = null;
-            } catch (IllegalStateException ignored) {
-                ALog.e(LOG_TAG, "mediaPlayer release failed, IllegalStateException.");
+                if (mediaPlayer == null) {
+                    ALog.w(LOG_TAG, "media player is null.");
+                    return;
+                }
+                try {
+                    mediaPlayer.stop();
+                    mediaPlayer.release();
+                    mediaPlayer = null;
+                } catch (IllegalStateException ignored) {
+                    ALog.e(LOG_TAG, "mediaPlayer release failed, IllegalStateException.");
+                }
+            } finally {
+                if (handlerThread != null) {
+                    handlerThread.quitSafely();
+                    handlerThread = null;
+                }
+                mediaPlayerLock.unlock();
             }
-        } finally {
-            if (handlerThread != null) {
-                handlerThread.quitSafely();
-                handlerThread = null;
-            }
-            mediaPlayerLock.unlock();
-        }
+        });
     }
 
     private String getUrl(String param) {
