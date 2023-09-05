@@ -22,6 +22,8 @@
 
 namespace OHOS::Ace::Platform {
 
+constexpr uint32_t KEYBOARD_SHOW_DELAY_TIME = 50;
+
 TextInputConnectionImpl::TextInputConnectionImpl(
     const WeakPtr<TextInputClient>& client, const RefPtr<TaskExecutor>& taskExecutor)
     : TextInputConnection(client, taskExecutor)
@@ -30,11 +32,11 @@ TextInputConnectionImpl::TextInputConnectionImpl(
 void TextInputConnectionImpl::Show(bool isFocusViewChanged, int32_t instanceId)
 {
     if (taskExecutor_ && Attached()) {
-        taskExecutor_->PostTask(
+        taskExecutor_->PostDelayedTask(
             [instanceId, isFocusViewChanged] {
                 TextInputJni::ShowTextInput(isFocusViewChanged, instanceId);
             },
-            TaskExecutor::TaskType::PLATFORM);
+            TaskExecutor::TaskType::PLATFORM, KEYBOARD_SHOW_DELAY_TIME);
     }
 }
 
@@ -53,7 +55,7 @@ void TextInputConnectionImpl::SetEditingState(
 void TextInputConnectionImpl::Close(int32_t instanceId)
 {
     if (taskExecutor_ && Attached()) {
-        taskExecutor_->PostTask(
+        taskExecutor_->PostSyncTask(
             [instanceId] {
                 TextInputJni::ClearClient(instanceId);
                 TextInputJni::HideTextInput(instanceId);
