@@ -20,7 +20,6 @@ import java.util.Map;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -122,7 +121,6 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
         FrameLayout.LayoutParams layoutParams = buildLayoutParams(0, 0, 0, 0);
         Activity activity = (Activity) context;
-        activity.getWindow().getDecorView().setBackgroundColor(Color.BLACK);
         activity.addContentView(this, layoutParams);
     }
 
