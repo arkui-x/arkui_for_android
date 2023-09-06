@@ -708,8 +708,8 @@ void AceContainer::UpdateResourceConfiguration(const std::string& jsonStr)
             themeManager->LoadResourceThemes();
             themeManager->ParseSystemTheme();
             themeManager->SetColorScheme(colorScheme);
-            context->NotifyConfigurationChange(configurationChange);
-            context->FlushReload();
+            context->NotifyConfigurationChange();
+            context->FlushReload(configurationChange);
         },
         TaskExecutor::TaskType::UI);
     if (frontend_) {
@@ -740,10 +740,11 @@ void AceContainer::UpdateColorMode(ColorMode colorMode)
     if (!themeManager) {
         return;
     }
+    OnConfigurationChange configurationChange;
     themeManager->UpdateConfig(resConfig);
     taskExecutor_->PostTask(
         [weakThemeManager = WeakPtr<ThemeManager>(themeManager), colorScheme = colorScheme_,
-            weakContext = WeakPtr<PipelineBase>(pipelineContext_)]() {
+            weakContext = WeakPtr<PipelineBase>(pipelineContext_), configurationChange]() {
             auto themeManager = weakThemeManager.Upgrade();
             auto context = weakContext.Upgrade();
             if (!themeManager || !context) {
@@ -753,7 +754,7 @@ void AceContainer::UpdateColorMode(ColorMode colorMode)
             themeManager->ParseSystemTheme();
             themeManager->SetColorScheme(colorScheme);
             context->RefreshRootBgColor();
-            context->FlushReload();
+            context->FlushReload(configurationChange);
         },
         TaskExecutor::TaskType::UI);
     if (frontend_) {
