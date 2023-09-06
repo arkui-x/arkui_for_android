@@ -45,6 +45,7 @@ const std::string ASSETS_DIR = "/assets";
 const std::string RESOURCES_INDEX_NAME = "resources.index";
 const std::string SYSTEM_RES_INDEX_NAME = "systemres";
 const std::string SEPARATOR = "/";
+const std::string RESOURCES_DIR_NAME = "resources";
 } // namespace
 std::shared_ptr<StageAssetProvider> StageAssetProvider::instance_ = nullptr;
 std::mutex StageAssetProvider::mutex_;
@@ -564,6 +565,31 @@ bool StageAssetProvider::CopyDir(std::string source, const std::string& target)
     }
     closedir(dir);
     return true;
+}
+
+void StageAssetProvider::CopyHspResourcePath(const std::string& moduleName)
+{
+    auto sourcePath = GetAppDataModuleDir() + SEPARATOR + moduleName;
+    if (!ExistDir(sourcePath)) {
+        LOGW("hsp does not exist, stop copying");
+        return;
+    }
+
+    auto resourcePath = sourcePath + SEPARATOR + RESOURCES_INDEX_NAME;
+    auto targetRootDir = resourcesFilePrefixPath_ + SEPARATOR + moduleName;
+    if (ExistDir(targetRootDir)) {
+        LOGW("dir exists, dir: %{public}s", targetRootDir.c_str());
+        return;
+    }
+
+    MakeDir(targetRootDir);
+    auto targetPath = targetRootDir + SEPARATOR + RESOURCES_INDEX_NAME;
+    CopyFile(resourcePath, targetPath);
+
+    auto targetDir = targetRootDir + SEPARATOR + RESOURCES_DIR_NAME;
+    MakeDir(targetDir);
+    auto resourceDir = sourcePath + SEPARATOR + RESOURCES_DIR_NAME;
+    CopyDir(resourceDir, targetDir);
 }
 } // namespace Platform
 } // namespace AbilityRuntime
