@@ -13,6 +13,7 @@
 
 defines = [
   "ANDROID_PLATFORM",
+  "NG_BUILD",
   "SK_BUILD_FOR_ANDROID",
 ]
 

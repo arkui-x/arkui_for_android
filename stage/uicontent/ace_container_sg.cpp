@@ -631,8 +631,8 @@ void AceContainerSG::UpdateConfiguration(const std::string& colorMode,
         pipelineContext_->SetAppBgColor(Color::WHITE);
     }
     pipelineContext_->RefreshRootBgColor();
-    pipelineContext_->NotifyConfigurationChange(configurationChange);
-    pipelineContext_->FlushReload();
+    pipelineContext_->NotifyConfigurationChange();
+    pipelineContext_->FlushReload(configurationChange);
     pipelineContext_->FlushReloadTransition();
 }
 
