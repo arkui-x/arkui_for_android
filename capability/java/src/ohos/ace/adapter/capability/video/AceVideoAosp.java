@@ -213,13 +213,13 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public String initMediaPlayer(Map<String, String> param) {
         ALog.i(LOG_TAG, "initMediaPlayer param:" + param);
-        if (param == null) {
-            ALog.e(LOG_TAG, "initMediaPlayer failed, param is null");
-            return FAIL;
-        }
-        super.initMediaPlayer(param);
         mediaPlayerLock.lock();
         try {
+            if (param == null) {
+                ALog.e(LOG_TAG, "initMediaPlayer failed, param is null");
+                return FAIL;
+            }
+            super.initMediaPlayer(param);
             if (mediaPlayer == null) {
                 ALog.w(LOG_TAG, "media player is null.");
                 return FAIL;
@@ -528,24 +528,24 @@ public class AceVideoAosp extends AceVideoBase
 
     @Override
     public String seekTo(Map<String, String> params) {
-        if (params == null) {
-            ALog.e(LOG_TAG, "seekTo failed: params is null");
-            return FAIL;
-        }
-        if (!params.containsKey(KEY_VALUE)) {
-            ALog.e(LOG_TAG, "seekTo failed: value is illegal");
-            return FAIL;
-        }
-        if (mediaPlayer == null) {
-            ALog.w(LOG_TAG, "media player is null.");
-            return FAIL;
-        }
-        if (state == PlayState.STOPPED) {
-            ALog.w(LOG_TAG, "media player has stopped.");
-            return SUCCESS;
-        }
         mediaPlayerLock.lock();
         try {
+            if (params == null) {
+                ALog.e(LOG_TAG, "seekTo failed: params is null");
+                return FAIL;
+            }
+            if (!params.containsKey(KEY_VALUE)) {
+                ALog.e(LOG_TAG, "seekTo failed: value is illegal");
+                return FAIL;
+            }
+            if (mediaPlayer == null) {
+                ALog.w(LOG_TAG, "media player is null.");
+                return FAIL;
+            }
+            if (state == PlayState.STOPPED) {
+                ALog.w(LOG_TAG, "media player has stopped.");
+                return SUCCESS;
+            }
             try {
                 int msec = Integer.parseInt(params.get(KEY_VALUE));
                 if (params.containsKey("seekMode")) {
@@ -566,20 +566,20 @@ public class AceVideoAosp extends AceVideoBase
 
     @Override
     public String setVolume(Map<String, String> params) {
-        if (params == null) {
-            ALog.e(LOG_TAG, "setVolume failed: params is null");
-            return FAIL;
-        }
-        if (!params.containsKey(KEY_VALUE)) {
-            ALog.e(LOG_TAG, "setVolume failed: value is illegal");
-            return FAIL;
-        }
-        if (mediaPlayer == null) {
-            ALog.w(LOG_TAG, "media player is null.");
-            return FAIL;
-        }
         mediaPlayerLock.lock();
         try {
+            if (params == null) {
+                ALog.e(LOG_TAG, "setVolume failed: params is null");
+                return FAIL;
+            }
+            if (!params.containsKey(KEY_VALUE)) {
+                ALog.e(LOG_TAG, "setVolume failed: value is illegal");
+                return FAIL;
+            }
+            if (mediaPlayer == null) {
+                ALog.w(LOG_TAG, "media player is null.");
+                return FAIL;
+            }
             try {
                 float volume = Float.parseFloat(params.get(KEY_VALUE));
                 mediaPlayer.setVolume(volume, volume);
@@ -633,15 +633,15 @@ public class AceVideoAosp extends AceVideoBase
 
     @Override
     public String enableLooping(Map<String, String> params) {
-        if (params == null) {
-            return FAIL;
-        }
-        if (mediaPlayer == null) {
-            ALog.w(LOG_TAG, "media player is null.");
-            return FAIL;
-        }
         mediaPlayerLock.lock();
         try {
+            if (params == null) {
+                return FAIL;
+            }
+            if (mediaPlayer == null) {
+                ALog.w(LOG_TAG, "media player is null.");
+                return FAIL;
+            }
             try {
                 if (params.containsKey("loop")) {
                     if (Integer.parseInt(params.get("loop")) == 1) {
@@ -670,16 +670,16 @@ public class AceVideoAosp extends AceVideoBase
 
     @Override
     public String setSpeed(Map<String, String> params) {
-        if (params == null) {
-            ALog.e(LOG_TAG, "setSpeed failed: params is null");
-            return FAIL;
-        }
-        if (!params.containsKey(KEY_VALUE)) {
-            ALog.e(LOG_TAG, "setSpeed failed: value is illegal");
-            return FAIL;
-        }
         mediaPlayerLock.lock();
         try {
+            if (params == null) {
+                ALog.e(LOG_TAG, "setSpeed failed: params is null");
+                return FAIL;
+            }
+            if (!params.containsKey(KEY_VALUE)) {
+                ALog.e(LOG_TAG, "setSpeed failed: value is illegal");
+                return FAIL;
+            }
             try {
                 setSpeed(Float.parseFloat(params.get(KEY_VALUE)));
                 isSpeedChanged = true;
@@ -715,16 +715,16 @@ public class AceVideoAosp extends AceVideoBase
 
     @Override
     public String setSurface(Map<String, String> params) {
-        if (params == null) {
-            ALog.e(LOG_TAG, "setSurface failed: params is null");
-            return FAIL;
-        }
-        if (!params.containsKey(KEY_VALUE)) {
-            ALog.e(LOG_TAG, "setSurface failed: value is illegal");
-            return FAIL;
-        }
         mediaPlayerLock.lock();
         try {
+            if (params == null) {
+                ALog.e(LOG_TAG, "setSurface failed: params is null");
+                return FAIL;
+            }
+            if (!params.containsKey(KEY_VALUE)) {
+                ALog.e(LOG_TAG, "setSurface failed: value is illegal");
+                return FAIL;
+            }
             try {
                 surfaceId = Integer.parseInt(params.get(KEY_VALUE));
                 ALog.i(LOG_TAG, "setSurface id:" + surfaceId);
@@ -750,12 +750,12 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public String updateResource(Map<String, String> params) {
         ALog.i(LOG_TAG, "updateResource param:" + params);
-        if (params == null || mediaPlayer == null) {
-            ALog.e(LOG_TAG, "updateResource failed, param is null");
-            return FAIL;
-        }
         mediaPlayerLock.lock();
         try {
+            if (params == null || mediaPlayer == null) {
+                ALog.e(LOG_TAG, "updateResource failed, param is null");
+                return FAIL;
+            }
             try {
                 ALog.i(LOG_TAG, "updateResource state:" + state.toString());
                 mediaPlayer.reset();
