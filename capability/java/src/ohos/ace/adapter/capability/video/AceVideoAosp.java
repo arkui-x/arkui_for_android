@@ -102,6 +102,8 @@ public class AceVideoAosp extends AceVideoBase
 
     private PlayState state = PlayState.IDLE;
 
+    private boolean isTrueBack = false;
+
     public enum PlayState {
         IDLE,
         PREPARED,
@@ -788,6 +790,11 @@ public class AceVideoAosp extends AceVideoBase
         runAsync(() -> {
             mediaPlayerLock.lock();
             try {
+                if(!isTrueBack){
+                    isNeedResume = true;
+                    isResumePlaying = (mediaPlayer.isPlaying() || isAutoPlay()) && !isPaused;
+                    reset();
+                }
                 if (!resume()) {
                     ALog.w(LOG_TAG, "media player resume failed.");
                     reset();
@@ -804,6 +811,7 @@ public class AceVideoAosp extends AceVideoBase
             mediaPlayerLock.lock();
             try {
                 if (mediaPlayer != null) {
+                    isTrueBack = true;
                     isNeedResume = true;
                     isResumePlaying = (mediaPlayer.isPlaying() || isAutoPlay()) && !isPaused;
                     reset();
@@ -927,6 +935,7 @@ public class AceVideoAosp extends AceVideoBase
             ALog.i(LOG_TAG, "MediaPlayer no need to resume.");
             return true;
         }
+        isTrueBack = false;
         mediaPlayer = new MediaPlayer();
         Surface surface = AceSurfaceHolder.getSurface(surfaceId);
         if (surface != null) {
