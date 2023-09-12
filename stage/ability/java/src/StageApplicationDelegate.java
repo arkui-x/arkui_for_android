@@ -36,7 +36,12 @@ import android.util.Log;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
@@ -85,6 +90,8 @@ public class StageApplicationDelegate {
     private static final int ERR_INVALID_PARAMETERS = -1;
 
     private static final int ERR_OK = 0;
+
+    private static final String CACERT_FILE = "/cacert.ca";
 
     private Application stageApplication = null;
 
@@ -139,6 +146,7 @@ public class StageApplicationDelegate {
         launchApplication();
         initConfiguration();
         setPackageName();
+        createCacertFile(stageApplication.getExternalFilesDir((String) null).getAbsolutePath());
 
         initActivity();
         Trace.endSection();
@@ -666,6 +674,62 @@ public class StageApplicationDelegate {
             }
         }
         setLocale(language, Locale.getDefault().getCountry(), script);
+    }
+
+    private void readFile(BufferedWriter writer, File file) {
+        if (!file.isFile() || !file.canRead()) {
+            return;
+        }
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(file.getPath()));
+            try {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    writer.write(line);
+                    writer.newLine();
+                }
+            } finally {
+                reader.close();
+            }
+        } catch (FileNotFoundException e) {
+            Log.e(LOG_TAG, "read cacert err: " + e.getMessage());
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "read cacert err: " + e.getMessage());
+        }
+    }
+
+    private void createCacertFile(String path) {
+        try {
+            File file = new File(path + CACERT_FILE);
+            if (file.exists()) {
+                file.deleteOnExit();
+            }
+            if (!file.createNewFile()) {
+                return;
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "write cacert err: " + e.getMessage());
+        }
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(path + CACERT_FILE));
+            try {
+                File dir = new File("/system/etc/security/cacerts/");
+                File[] files = dir.listFiles();
+                if (files == null) {
+                    return;
+                }
+                for (File file: files) {
+                    readFile(writer, file);
+                }
+            } finally {
+                writer.close();
+            }
+        } catch (FileNotFoundException e) {
+            Log.e(LOG_TAG, "read cacert err: " + e.getMessage());
+         } catch (IOException e) {
+            Log.e(LOG_TAG, "read cacert err: " + e.getMessage());
+        }
     }
 
     private native void nativeSetAssetManager(Object assetManager);
