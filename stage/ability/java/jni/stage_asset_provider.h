@@ -123,6 +123,7 @@ public:
     bool ExistDir(std::string target);
     bool MakeDir(std::string target);
     bool CopyDir(std::string source, const std::string& target);
+    void CopyHspResourcePath(const std::string& moduleName);
 
 private:
     std::string appPath_;
