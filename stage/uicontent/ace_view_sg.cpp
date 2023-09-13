@@ -192,16 +192,16 @@ bool AceViewSG::DispatchTouchEvent(const std::vector<uint8_t>& data)
 bool AceViewSG::IsLastPage() const
 {
     auto container = AceEngine::Get().GetContainer(instanceId_);
-    CHECK_NULL_RETURN_NOLOG(container, false);
+    CHECK_NULL_RETURN(container, false);
     ContainerScope scope(instanceId_);
     auto context = container->GetPipelineContext();
-    CHECK_NULL_RETURN_NOLOG(context, false);
+    CHECK_NULL_RETURN(context, false);
     return context->IsLastPage();
 }
 
 bool AceViewSG::DispatchKeyEvent(const KeyEventInfo& eventInfo)
 {
-    CHECK_NULL_RETURN_NOLOG(keyEventCallback_, false);
+    CHECK_NULL_RETURN(keyEventCallback_, false);
 
     auto keyEvents = keyEventRecognizer_.GetKeyEvents(eventInfo.keyCode, eventInfo.keyAction, eventInfo.repeatTime,
         eventInfo.timeStamp, eventInfo.timeStampStart, eventInfo.metaKey, eventInfo.sourceDevice, eventInfo.deviceId);
@@ -236,7 +236,7 @@ void AceViewSG::NotifyDensityChanged(double density)
 
 void AceViewSG::SetViewportMetrics(AceViewSG* view, const ViewportConfig& config)
 {
-    CHECK_NULL_VOID_NOLOG(view);
+    CHECK_NULL_VOID(view);
     view->NotifyDensityChanged(config.Density());
 }
 
@@ -257,7 +257,7 @@ void AceViewSG::SurfaceChanged(AceViewSG* view, int32_t width, int32_t height, i
 
 void AceViewSG::SurfacePositionChanged(AceViewSG* view, int32_t posX, int32_t posY)
 {
-    CHECK_NULL_VOID_NOLOG(view);
+    CHECK_NULL_VOID(view);
     view->NotifySurfacePositionChanged(posX, posY);
 }
 
