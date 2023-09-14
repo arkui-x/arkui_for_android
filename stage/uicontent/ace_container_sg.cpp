@@ -875,7 +875,7 @@ void AceContainerSG::OnNewRequest(int32_t instanceId, const std::string& data)
 void AceContainerSG::DestroyView()
 {
     ContainerScope scope(instanceId_);
-    CHECK_NULL_VOID_NOLOG(aceView_);
+    CHECK_NULL_VOID(aceView_);
     auto aceView = static_cast<AceViewSG*>(aceView_);
     if (aceView) {
         aceView->DecRefCount();

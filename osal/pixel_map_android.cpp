@@ -103,14 +103,14 @@ int32_t PixelMapAndroid::GetRowBytes() const
 
 int32_t PixelMapAndroid::GetByteCount() const
 {
-    CHECK_NULL_RETURN_NOLOG(pixmap_, 0);
+    CHECK_NULL_RETURN(pixmap_, 0);
     return pixmap_->GetByteCount();
 }
 
 void* PixelMapAndroid::GetPixelManager() const
 {
     Media::InitializationOptions opts;
-    CHECK_NULL_RETURN_NOLOG(pixmap_, nullptr);
+    CHECK_NULL_RETURN(pixmap_, nullptr);
     auto newPixelMap = Media::PixelMap::Create(*pixmap_, opts);
     return reinterpret_cast<void*>(new Media::PixelMapManager(newPixelMap.release()));
 }
