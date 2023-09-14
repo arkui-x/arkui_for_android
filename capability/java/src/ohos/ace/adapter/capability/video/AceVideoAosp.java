@@ -439,13 +439,13 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public String start(Map<String, String> params) {
         ALog.i(LOG_TAG, "start param:" + params);
-        if (mediaPlayer == null) {
-            ALog.w(LOG_TAG, "media player is null.");
-            return FAIL;
-        }
-        isPaused = false;
         mediaPlayerLock.lock();
         try {
+            if (mediaPlayer == null) {
+                ALog.w(LOG_TAG, "media player is null.");
+                return FAIL;
+            }
+            isPaused = false;
             if (!isSetSurfaced) {
                 Surface surface = AceSurfaceHolder.getSurface(surfaceId);
                 if (surface != null && mediaPlayer != null) {
@@ -481,19 +481,17 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public String pause(Map<String, String> params) {
         ALog.i(LOG_TAG, "pause param:" + params);
-        if (mediaPlayer == null) {
-            ALog.w(LOG_TAG, "media player is null.");
-            return FAIL;
-        }
         mediaPlayerLock.lock();
-        state = PlayState.PAUSED;
-        isPaused = true;
-        setKeepScreenOn(false);
         try {
+            if (mediaPlayer == null) {
+                ALog.w(LOG_TAG, "media player is null.");
+                return FAIL;
+            }
+            state = PlayState.PAUSED;
+            isPaused = true;
+            setKeepScreenOn(false);
             try {
-                if (mediaPlayer != null) {
-                    mediaPlayer.pause();
-                }
+                mediaPlayer.pause();
             } catch (IllegalStateException ignored) {
                 ALog.e(LOG_TAG, "pause failed, IllegalStateException.");
                 return FAIL;
@@ -507,13 +505,13 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public String stop(Map<String, String> params) {
         ALog.i(LOG_TAG, "stop param:" + params);
-        isPaused = true;
-        if (mediaPlayer == null) {
-            ALog.w(LOG_TAG, "media player is null.");
-            return FAIL;
-        }
         mediaPlayerLock.lock();
         try {
+            isPaused = true;
+            if (mediaPlayer == null) {
+                ALog.w(LOG_TAG, "media player is null.");
+                return FAIL;
+            }
             try {
                 mediaPlayer.stop();
             } catch (IllegalStateException ignored) {
@@ -604,12 +602,12 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public String getPosition(Map<String, String> params) {
         // the current position in milliseconds.
-        if (mediaPlayer == null) {
-            ALog.w(LOG_TAG, "media player is null.");
-            return FAIL;
-        }
         mediaPlayerLock.lock();
         try {
+            if (mediaPlayer == null) {
+                ALog.w(LOG_TAG, "media player is null.");
+                return FAIL;
+            }
             try {
                 position = mediaPlayer.getCurrentPosition();
             } catch (IllegalStateException ignored) {
