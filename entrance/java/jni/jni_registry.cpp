@@ -41,6 +41,7 @@
 #include "adapter/android/entrance/java/jni/window_view_jni.h"
 #include "adapter/android/entrance/java/jni/subwindow_manager_jni.h"
 #include "adapter/android/entrance/java/jni/display_info_jni.h"
+#include "adapter/android/entrance/java/jni/web_adapter_jni.h"
 #include "base/log/log.h"
 
 namespace OHOS::Ace::Platform {
@@ -169,6 +170,11 @@ bool JniRegistry::Register(bool isStageMode)
 
     if (!DisplayInfoJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register GrantResultJni");
+        return false;
+    }
+
+    if (!WebAdapterJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register WebAdapterJni");
         return false;
     }
 
