@@ -76,7 +76,7 @@ jboolean AceContainerJni::HandlePage(JNIEnv* env, jint instanceId, jstring conte
     const char* paramsStr = env->GetStringUTFChars(params, nullptr);
     ContainerScope scope(instanceId);
     if (type == HandlePageType::RUN_PAGE) {
-        front->RunPage(0, contentStr != nullptr ? contentStr : "", paramsStr != nullptr ? paramsStr : "");
+        front->RunPage(contentStr != nullptr ? contentStr : "", paramsStr != nullptr ? paramsStr : "");
     } else {
         front->PushPage(contentStr != nullptr ? contentStr : "", paramsStr != nullptr ? paramsStr : "");
     }

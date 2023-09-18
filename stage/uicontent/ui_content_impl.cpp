@@ -40,6 +40,7 @@
 #include "core/common/container_scope.h"
 #include "core/common/flutter/flutter_asset_manager.h"
 #include "core/event/touch_event.h"
+#include "core/image/image_file_cache.h"
 #include "frameworks/bridge/declarative_frontend/ng/declarative_frontend_ng.h"
 
 namespace OHOS::Ace::Platform {
@@ -353,8 +354,8 @@ void UIContentImpl::InitOnceAceInfo()
         AceApplicationInfo::GetInstance().SetDataFileDirPath(context->GetFilesDir());
         AceApplicationInfo::GetInstance().SetUid(context->GetApplicationInfo()->uid);
         AceApplicationInfo::GetInstance().SetPid(context->GetApplicationInfo()->pid);
-        ImageCache::SetImageCacheFilePath(context->GetCacheDir());
-        ImageCache::SetCacheFileInfo();
+        ImageFileCache::GetInstance().SetImageCacheFilePath(context->GetCacheDir());
+        ImageFileCache::GetInstance().SetCacheFileInfo();
     });
 }
 

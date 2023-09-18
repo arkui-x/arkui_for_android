@@ -932,7 +932,7 @@ bool AceContainerSG::RunPage(int32_t instanceId, int32_t pageId, const std::stri
     auto front = container->GetFrontend();
     if (front) {
         LOGD("RunPage content=[%{private}s]", content.c_str());
-        front->RunPage(pageId, content, params);
+        front->RunPage(content, params);
         return true;
     }
 
