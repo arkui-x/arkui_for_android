@@ -42,6 +42,7 @@ import org.json.JSONException;
 
 import ohos.ace.adapter.capability.grantresult.GrantResult;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
+import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.AppModeConfig;;
 
 /**
@@ -285,6 +286,7 @@ public class AceActivity extends Activity {
         }
         aceView.viewCreated();
         aceView.addResourcePlugin(AceVideoPluginAosp.createRegister(this, getInstanceName()));
+        aceView.addResourcePlugin(AceWebPluginAosp.createRegister(this));
     }
 
     private void initAsset() {

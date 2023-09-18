@@ -32,6 +32,10 @@ common_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/plugin/PluginManager.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoBase.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoPluginBase.java",
+
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebPluginBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/IAceWebErrorReceiveObject.java",
 ]
 
 # android capability java files
@@ -51,6 +55,10 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/vibrator/VibratorPluginAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoPluginAosp.java",
+
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWeb.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebPluginAosp.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebErrorReceiveObject.java",
 
   # bridge files
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeBaseCodec.java",

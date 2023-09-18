@@ -30,6 +30,7 @@ import android.os.Trace;
 import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.AcePlatformPlugin;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
+import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.WindowView;
 
 import ohos.ace.adapter.capability.bridge.BridgeManager;
@@ -407,6 +408,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             windowView.setInputConnectionClient(platformPlugin);
             platformPlugin.initTexturePlugin(instanceId);
             platformPlugin.addResourcePlugin(AceVideoPluginAosp.createRegister(context, moduleName));
+            platformPlugin.addResourcePlugin(AceWebPluginAosp.createRegister(context));
             platformPlugin.addResourcePlugin(AceSurfacePluginAosp.createRegister(context));
         }
         Trace.endSection();

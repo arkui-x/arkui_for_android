@@ -41,6 +41,7 @@ video_components_support = true
 pixel_map_support = true
 use_curl_download = false
 use_components_lib = true
+web_components_support = true
 
 cflags_cc = [
   "-std=c++17",
@@ -77,4 +78,8 @@ if (defined(video_components_support) && video_components_support) {
 
 if (defined(pixel_map_support) && pixel_map_support) {
   defines += [ "PIXEL_MAP_SUPPORTED" ]
+}
+
+if (defined(web_components_support) && web_components_support) {
+  defines += [ "WEB_SUPPORTED" ]
 }
