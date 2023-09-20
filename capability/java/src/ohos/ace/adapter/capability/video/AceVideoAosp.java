@@ -423,18 +423,7 @@ public class AceVideoAosp extends AceVideoBase
     }
 
     @Override
-    public void onBufferingUpdate(MediaPlayer mp, int percent) {
-        runOnUIThread(
-            new Runnable() {
-
-                /**
-                 * This is called to fire buffering update event.
-                 */
-                public void run() {
-                    fireBufferingUpdate(percent);
-                }
-            });
-    }
+    public void onBufferingUpdate(MediaPlayer mp, int percent) {}
 
     @Override
     public String start(Map<String, String> params) {
@@ -790,7 +779,7 @@ public class AceVideoAosp extends AceVideoBase
             try {
                 if(!isTrueBack){
                     isNeedResume = true;
-                    isResumePlaying = (mediaPlayer.isPlaying() || isAutoPlay()) && !isPaused;
+                    isResumePlaying = ((mediaPlayer != null && mediaPlayer.isPlaying()) || isAutoPlay()) && !isPaused;
                     reset();
                 }
                 if (!resume()) {
