@@ -230,17 +230,6 @@ public class AceWeb extends AceWebBase {
         webView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN && isWebOnPage) {
-                    if (keyCode == KeyEvent.KEYCODE_BACK) {
-                        if (webView.canGoBack()) {
-                            webView.goBack();
-                            return true;
-                        } else {
-                            AceWeb.this.removeWebFromSurface(webView);
-                            webView.destroy();
-                        }
-                    }
-                }
                 return false;
             }
         });
@@ -278,7 +267,6 @@ public class AceWeb extends AceWebBase {
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 AceWebErrorReceiveObject object = new AceWebErrorReceiveObject(error, request);
-                ALog.i(LOG_TAG, "jcz onReceivedError");
                 AceWeb.this.fireErrorReceive(object);
             }
 
@@ -722,7 +710,6 @@ public class AceWeb extends AceWebBase {
 
     @Override
     public String updateLayout(Map<String, String> params) {
-        ALog.e(LOG_TAG, "jcz updateLayout");
         if (webView != null) {
             try {
                 left = Float.parseFloat(params.get(WEBVIEW_POSITION_LEFT));
