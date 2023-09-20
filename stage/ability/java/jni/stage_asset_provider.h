@@ -124,8 +124,12 @@ public:
     bool MakeDir(std::string target);
     bool CopyDir(std::string source, const std::string& target);
     void CopyHspResourcePath(const std::string& moduleName);
+    void CopyNativeLibToAppDataModuleDir(const std::string& bundleName);
+    void SetNativeLibPaths(const std::string& bundleName, const std::vector<std::string>& moduleNames);
 
 private:
+    bool MakeMultipleDir(const std::string& path);
+    bool CopyBufferToFile(std::vector<uint8_t>& buffer, const std::string& newFile);
     std::string appPath_;
     std::vector<std::string> allFilePath_;
     std::mutex allFilePathMutex_;

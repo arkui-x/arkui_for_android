@@ -26,6 +26,7 @@
 
 #include "base/log/log.h"
 #include "base/utils/string_utils.h"
+#include "native_module_manager.h"
 
 namespace OHOS {
 namespace AbilityRuntime {
@@ -46,6 +47,9 @@ const std::string RESOURCES_INDEX_NAME = "resources.index";
 const std::string SYSTEM_RES_INDEX_NAME = "systemres";
 const std::string SEPARATOR = "/";
 const std::string RESOURCES_DIR_NAME = "resources";
+const std::string ARCH_ARM64 = "/arm64-v8a";
+const std::string SO_SUFFIX = ".so";
+const std::string EXTERN_LIBS_DIR = "/libs";
 } // namespace
 std::shared_ptr<StageAssetProvider> StageAssetProvider::instance_ = nullptr;
 std::mutex StageAssetProvider::mutex_;
@@ -590,6 +594,106 @@ void StageAssetProvider::CopyHspResourcePath(const std::string& moduleName)
     MakeDir(targetDir);
     auto resourceDir = sourcePath + SEPARATOR + RESOURCES_DIR_NAME;
     CopyDir(resourceDir, targetDir);
+}
+
+bool StageAssetProvider::MakeMultipleDir(const std::string& path)
+{
+    if (ExistDir(path)) {
+        return true;
+    }
+    auto lastPos = path.find_last_of(SEPARATOR);
+    std::string filePath = path.substr(0, lastPos);
+    return MakeMultipleDir(filePath) ? MakeDir(path) : false;
+}
+
+bool StageAssetProvider::CopyBufferToFile(std::vector<uint8_t>& buffer, const std::string& newFile)
+{
+    std::ofstream out;
+    out.open(newFile.c_str(), std::ios::binary);
+    if (out.fail()) {
+        LOGE("new file error!");
+        out.close();
+        return false;
+    }
+    out.write(reinterpret_cast<char*>(buffer.data()), buffer.size());
+    out.close();
+    return true;
+}
+
+void StageAssetProvider::CopyNativeLibToAppDataModuleDir(const std::string& bundleName)
+{
+    std::vector<std::string> libPaths;
+    for (auto& path : allFilePath_) {
+        if (path.find(ARCH_ARM64) != std::string::npos && path.find(SO_SUFFIX) != std::string::npos) {
+            libPaths.emplace_back(path);
+        }
+    }
+
+    for (auto& path : libPaths) {
+        auto lastPos = path.find_last_of(SEPARATOR);
+        std::string fileName = path.substr(lastPos + 1, path.size());
+        std::string filePath = path.substr(0, lastPos);
+
+        auto assetProvider = CreateAndFindAssetProvider(filePath);
+        auto mapping = assetProvider->GetAsMapping(fileName);
+        if (mapping == nullptr) {
+            LOGE("mapping is nullptr");
+            continue;
+        }
+        auto moduleMap = mapping->GetMapping();
+        if (moduleMap == nullptr) {
+            LOGE("moduleMap is nullptr");
+            continue;
+        }
+        std::vector<uint8_t> buffer;
+        buffer.assign(&moduleMap[0], &moduleMap[mapping->GetSize()]);
+
+        auto beginPos = filePath.find(ARKUI_X_ASSETS_DIR);
+        auto endPath = filePath.substr(beginPos + ARKUI_X_ASSETS_DIR.length() + 1, filePath.size() - 1);
+        auto endPos = endPath.find_first_of(SEPARATOR);
+        auto moduleName = endPath.substr(0, endPos);
+
+        auto newLibDir = GetAppDataModuleDir() + SEPARATOR + moduleName + EXTERN_LIBS_DIR + ARCH_ARM64;
+        if (!MakeMultipleDir(newLibDir)) {
+            LOGE("make multilevel dir failed");
+            continue;
+        }
+
+        auto newFile = newLibDir + SEPARATOR + fileName;
+        if (!CopyBufferToFile(buffer, newFile)) {
+            LOGE("copy file failed");
+            continue;
+        }
+    }
+}
+
+void StageAssetProvider::SetNativeLibPaths(
+    const std::string& bundleName, const std::vector<std::string>& moduleNames)
+{
+    std::map<std::string, std::vector<std::string>> nativeLibPaths;
+    for (const auto& moduleName : moduleNames) {
+        auto path = GetAppDataModuleDir() + SEPARATOR + moduleName;
+        if (!ExistDir(path)) {
+            continue;
+        }
+        std::vector<std::string> fileFullPaths;
+        GetAppDataModuleAssetList(path, fileFullPaths, false);
+        for (auto& path : fileFullPaths) {
+            if (path.find(ARCH_ARM64) != std::string::npos && path.find(SO_SUFFIX) != std::string::npos) {
+                auto lastPos = path.find_last_of(SEPARATOR);
+                std::string filePath = path.substr(0, lastPos);
+                auto key = bundleName + SEPARATOR + moduleName;
+                if (nativeLibPaths.find(key) == nativeLibPaths.end()) {
+                    std::vector<std::string> tempPaths { filePath };
+                    nativeLibPaths[key] = tempPaths;
+                }
+            }
+        }
+    }
+
+    for (auto& nativeLibPath : nativeLibPaths) {
+        NativeModuleManager::GetInstance()->SetAppLibPath(nativeLibPath.first, nativeLibPath.second);
+    }
 }
 } // namespace Platform
 } // namespace AbilityRuntime
