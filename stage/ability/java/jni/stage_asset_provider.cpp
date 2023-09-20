@@ -39,7 +39,6 @@ const std::string MODULE_STAGE_ABC_NAME = "modules.abc";
 const std::string TEMP_DIR = "/temp";
 const std::string FILES_DIR = "/files";
 const std::string ARKUI_X_ASSETS_DIR = "/arkui-x";
-const std::string EXTERN_LIB_DIR = "/lib";
 const std::string PREFERENCE_DIR = "/preference";
 const std::string DATABASE_DIR = "/database";
 const std::string ASSETS_DIR = "/assets";
@@ -48,6 +47,8 @@ const std::string SYSTEM_RES_INDEX_NAME = "systemres";
 const std::string SEPARATOR = "/";
 const std::string RESOURCES_DIR_NAME = "resources";
 const std::string ARCH_ARM64 = "/arm64-v8a";
+const std::string ARCH_ARM = "/armeabi-v7a";
+const std::string ARCH_X86 = "/x86_64";
 const std::string SO_SUFFIX = ".so";
 const std::string EXTERN_LIBS_DIR = "/libs";
 } // namespace
@@ -338,7 +339,13 @@ void StageAssetProvider::SetFileDir(const std::string& filesRootDir)
     arkuiXAssetsDir_ = filesRootDir + ARKUI_X_ASSETS_DIR;
     size_t lastSlashPos = appLibDir_.find_last_of('/');
     if (lastSlashPos != std::string::npos) {
-        appDataLibDir_ = filesRootDir + ARKUI_X_ASSETS_DIR + EXTERN_LIB_DIR + appLibDir_.substr(lastSlashPos);
+        if (appLibDir_.substr(lastSlashPos) == "/arm64") {
+            appDataLibDir_ = filesRootDir + ARKUI_X_ASSETS_DIR + EXTERN_LIBS_DIR + ARCH_ARM64;
+        } else if (appLibDir_.substr(lastSlashPos) == "/arm") {
+            appDataLibDir_ = filesRootDir + ARKUI_X_ASSETS_DIR + EXTERN_LIBS_DIR + ARCH_ARM;
+        } else {
+            appDataLibDir_ = filesRootDir + ARKUI_X_ASSETS_DIR + EXTERN_LIBS_DIR + ARCH_X86;
+        }
     }
 }
 
