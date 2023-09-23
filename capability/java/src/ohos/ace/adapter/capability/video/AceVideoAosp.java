@@ -275,9 +275,6 @@ public class AceVideoAosp extends AceVideoBase
                     if (isResumePlaying) {
                         if (!mediaPlayer.isPlaying()) {
                             mediaPlayer.start();
-                            if (position > 0) {
-                                mediaPlayer.seekTo(position);
-                            }
                         }
                         state = PlayState.STARTED;
                         setKeepScreenOn(true);
@@ -336,6 +333,12 @@ public class AceVideoAosp extends AceVideoBase
 
             if (mp != null && isLooping()) {
                 mp.setLooping(true);
+            }
+
+            if (isNeedResume) {
+                if (position > 0) {
+                    mediaPlayer.seekTo(position);
+                }
             }
 
             if (isSpeedChanged || isNeedResume) {
@@ -598,7 +601,13 @@ public class AceVideoAosp extends AceVideoBase
                 return FAIL;
             }
             try {
-                position = mediaPlayer.getCurrentPosition();
+                if (isNeedResume) {
+                    ALog.i(LOG_TAG, "getPosition return:  "+"currentpos=" + position / SECOND_TO_MSEC);
+                    return "currentpos=" + position / SECOND_TO_MSEC;
+                }
+                if (!isNeedResume) {
+                    position = mediaPlayer.getCurrentPosition();
+                }
             } catch (IllegalStateException ignored) {
                 ALog.e(LOG_TAG, "getCurrentPosition failed, IllegalStateException.");
                 return FAIL;
