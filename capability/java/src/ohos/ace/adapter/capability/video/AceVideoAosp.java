@@ -604,8 +604,7 @@ public class AceVideoAosp extends AceVideoBase
                 if (isNeedResume) {
                     ALog.i(LOG_TAG, "getPosition return:  "+"currentpos=" + position / SECOND_TO_MSEC);
                     return "currentpos=" + position / SECOND_TO_MSEC;
-                }
-                if (!isNeedResume) {
+                } else {
                     position = mediaPlayer.getCurrentPosition();
                 }
             } catch (IllegalStateException ignored) {
