@@ -31,6 +31,7 @@
 #include "core/common/container.h"
 #include "core/common/container_scope.h"
 #include "core/components/calendar/calendar_data_adapter.h"
+#include "core/image/image_file_cache.h"
 
 namespace OHOS::Ace::Platform {
 namespace {
@@ -448,8 +449,8 @@ void FlutterAceViewJni::InitCacheFilePath(
     }
     const char* imagePathStr = env->GetStringUTFChars(imagePath, nullptr);
     if (imagePathStr != nullptr) {
-        ImageCache::SetImageCacheFilePath(std::string(imagePathStr));
-        ImageCache::SetCacheFileInfo();
+        ImageFileCache::GetInstance().SetImageCacheFilePath(std::string(imagePathStr));
+        ImageFileCache::GetInstance().SetCacheFileInfo();
         auto viewPtr = JavaLongToPointer<FlutterAceView>(view);
         if (viewPtr != nullptr) {
             viewPtr->SetCachePath(std::string(imagePathStr));
