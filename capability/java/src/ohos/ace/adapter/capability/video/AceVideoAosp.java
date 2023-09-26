@@ -683,7 +683,6 @@ public class AceVideoAosp extends AceVideoBase
                 if (state == PlayState.STARTED) {
                     setSpeedWithCheckVersion(getSpeed());
                 } else if (state == PlayState.PAUSED) {
-                    setSpeedWithCheckVersion(getSpeed());
                     if (mediaPlayer != null && mediaPlayer.isPlaying()) {
                         mediaPlayer.pause();
                     }
