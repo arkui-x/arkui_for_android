@@ -142,7 +142,7 @@ public class AceWeb extends AceWebBase {
     @Override
     public String updateWebLayout(Map<String, String> params) {
         if ((!params.containsKey(WEBVIEW_POSITION_LEFT)) || (!params.containsKey(WEBVIEW_POSITION_TOP)) ||
-        (!params.containsKey(WEBVIEW_WIDTH)) || (!params.containsKey(WEBVIEW_HEIGHT))) {
+                (!params.containsKey(WEBVIEW_WIDTH)) || (!params.containsKey(WEBVIEW_HEIGHT))) {
             ALog.w(LOG_TAG, "setWebLayout fail");
             return FAIL_TAG;
         }
@@ -200,17 +200,17 @@ public class AceWeb extends AceWebBase {
             return;
         }
         if (webView.getParent() instanceof ViewGroup) {
-            ((ViewGroup)webView.getParent()).removeView(webView);
+            ((ViewGroup) webView.getParent()).removeView(webView);
         }
     }
 
     /**
      * This is called to set the size and position of webview.
      *
-     * @param width the width of the webview size.
+     * @param width  the width of the webview size.
      * @param height the height of the webview size.
-     * @param left the left of the webview pos.
-     * @param top the top of the webview pos.
+     * @param left   the left of the webview pos.
+     * @param top    the top of the webview pos.
      */
     public void setWebLayout(float width, float height, float left, float top) {
         this.width = width;
@@ -250,7 +250,8 @@ public class AceWeb extends AceWebBase {
                 if (url == null) {
                     return false;
                 }
-                if (url.startsWith("http://") || url.startsWith("https://")) {
+                if (url.startsWith("http://") || url.startsWith("https://")
+                        || url.startsWith("file://")) {
                     view.loadUrl(url);
                     return false; // false means to continue to load the url as normal.
                 } else {
@@ -304,8 +305,8 @@ public class AceWeb extends AceWebBase {
     /**
      * This is called when an error occured.
      *
-     * @param url the url of current webview is loading.
-     * @param errorCode the specific code of the error.
+     * @param url         the url of current webview is loading.
+     * @param errorCode   the specific code of the error.
      * @param description the detail description of the error.
      */
     public void onError(String url, int errorCode, String description) {
@@ -345,7 +346,7 @@ public class AceWeb extends AceWebBase {
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
 
-        webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
         webSettings.setAllowFileAccess(true);
         webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
         webSettings.setLoadsImagesAutomatically(true);
@@ -353,16 +354,16 @@ public class AceWeb extends AceWebBase {
         webSettings.setDomStorageEnabled(true);
 
         webSettings.setAllowFileAccessFromFileURLs(true);
-        webView.setWebContentsDebuggingEnabled(true);
+        WebView.setWebContentsDebuggingEnabled(true);
     }
 
     /**
      * This is called to use basic size and pos to create the layout type.
      *
-     * @param width the width of the webview size.
+     * @param width  the width of the webview size.
      * @param height the height of the webview size.
-     * @param left the left of the webview pos.
-     * @param top the top of the webview pos.
+     * @param left   the left of the webview pos.
+     * @param top    the top of the webview pos.
      * @return LayoutParams
      */
     public FrameLayout.LayoutParams buildLayoutParams(float width, float height, float left, float top) {
@@ -498,7 +499,7 @@ public class AceWeb extends AceWebBase {
         if (!params.containsKey(WEBVIEW_SRC)) {
             return FAIL_TAG;
         }
-        String webSrc =  params.get(WEBVIEW_SRC);
+        String webSrc = params.get(WEBVIEW_SRC);
         if (webView != null) {
             this.webView.loadUrl(webSrc);
             return SUCCESS_TAG;
@@ -526,7 +527,7 @@ public class AceWeb extends AceWebBase {
         if (webView == null || !params.containsKey(WEBVIEW_PAGE_URL)) {
             return FAIL_TAG;
         }
-        String newPageUrl =  params.get(WEBVIEW_PAGE_URL);
+        String newPageUrl = params.get(WEBVIEW_PAGE_URL);
         if (newPageUrl.equals(currentPageUrl)) {
             addWebToSurface(buildLayoutParams(width, height, left, top));
             webView.onResume();
@@ -540,9 +541,9 @@ public class AceWeb extends AceWebBase {
         if (webView == null || !params.containsKey(WEBVIEW_PAGE_INVALID)) {
             return FAIL_TAG;
         }
-        String isPagePathInvalid =  params.get(WEBVIEW_PAGE_INVALID);
+        String isPagePathInvalid = params.get(WEBVIEW_PAGE_INVALID);
         if (!routerUrl.equals(currentPageUrl) && webView != null
-        && PAGE_INVALID_FLAG.equals(isPagePathInvalid)) {
+                && PAGE_INVALID_FLAG.equals(isPagePathInvalid)) {
             isWebOnPage = false;
             removeWebFromSurface(webView);
             webView.onPause();
@@ -562,7 +563,8 @@ public class AceWeb extends AceWebBase {
     }
 
     /**
-     * This is called to sets whether the WebView should support for the "viewport" HTML meta tag
+     * This is called to sets whether the WebView should support for the "viewport"
+     * HTML meta tag
      * or should use a wide viewport.
      *
      * @param isSupport the boolean var to specify.

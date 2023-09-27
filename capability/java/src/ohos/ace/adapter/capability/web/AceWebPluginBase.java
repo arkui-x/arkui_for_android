@@ -147,4 +147,18 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
             webBase.loadUrl(url, header);
         }
     }
+
+    /**
+     * notify activity lifecycle changed to plugin.
+     *
+     * @param isBackground to background state
+     */
+    @Override
+    public void notifyLifecycleChanged(Boolean isBackground) {
+        if (isBackground) {
+            onActivityPause();
+        } else {
+            onActivityResume();
+        }
+    }
 }
