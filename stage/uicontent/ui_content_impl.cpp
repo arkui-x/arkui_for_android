@@ -15,6 +15,8 @@
 
 #include "adapter/android/stage/uicontent/ui_content_impl.h"
 
+#include <algorithm>
+
 #include "ability.h"
 #include "ability_context.h"
 #include "ability_info.h"
@@ -311,10 +313,10 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     container->SetIsModule(info->compileMode == AppExecFwk::CompileMode::ES_MODULE);
     container->SetPageUrlChecker(AceType::MakeRefPtr<PageUrlCheckerAndroid>());
 
-    std::string hapResPath { "" };
+    std::vector<std::string> resourcePaths;
     std::string sysResPath { "" };
-    abilityContext->GetResourcePaths(hapResPath, sysResPath);
-    container->SetResPaths(hapResPath, sysResPath, SystemProperties::GetColorMode());
+    abilityContext->GetResourcePaths(resourcePaths, sysResPath);
+    container->SetResPaths(resourcePaths, sysResPath, SystemProperties::GetColorMode());
     AceTraceEnd();
 
     AceTraceBegin("CreateAndSetView");

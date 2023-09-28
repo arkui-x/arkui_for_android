@@ -82,6 +82,8 @@ private:
     }
 
     std::shared_ptr<Global::Resource::ResourceManager> resourceManager_;
+    std::map<std::string, std::shared_ptr<Global::Resource::ResourceManager>> resourceManagers_;
+    std::map<std::string, std::string> rawFilePaths_;
     std::string packagePathStr_;
     mutable std::shared_mutex resourceMutex_;
     ACE_DISALLOW_COPY_AND_MOVE(ResourceAdapterImpl);

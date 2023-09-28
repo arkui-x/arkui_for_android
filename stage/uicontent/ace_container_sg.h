@@ -248,7 +248,7 @@ public:
         return resourceInfo_.GetHapPath();
     }
 
-    void SetResPaths(const std::string& hapPath, const std::string& path, const ColorMode& colorMode);
+    void SetResPaths(const std::vector<std::string>& hapPath, const std::string& path, const ColorMode& colorMode);
 
     bool WindowIsShow() const override
     {
