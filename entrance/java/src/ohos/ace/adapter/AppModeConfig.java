@@ -20,18 +20,11 @@ package ohos.ace.adapter;
  */
 public class AppModeConfig {
 
-    private static String appMode = "stage";  // stage or fa
-
     private AppModeConfig() {}
 
-    public static void setAppMode(String mode) {
-        appMode = mode;
-        nativeSetAppMode(mode);
+    public static void InitAppMode() {
+        nativeInitAppMode();
     }
 
-    private static String getAppMode() {
-        return appMode;
-    }
-
-    private static native void nativeSetAppMode(String mode);
+    private static native void nativeInitAppMode();
 }

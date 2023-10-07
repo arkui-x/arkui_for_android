@@ -36,10 +36,6 @@ public final class AceEnv {
 
     private static final Object INSTANCE_LOCK = new Object();
 
-    private IAceViewCreator creator;
-
-    private int containerType = AceContainer.CONTAINER_TYPE_JS;
-
     private boolean isLoadSuccess = false;
 
     private AceEnv() {
@@ -87,69 +83,6 @@ public final class AceEnv {
     }
 
     /**
-     * Set the view creator
-     *
-     * @param creator the creator to create AceView
-     */
-    public static void setViewCreator(IAceViewCreator creator) {
-        getInstance().setViewCreatorInner(creator);
-    }
-
-    private void setViewCreatorInner(IAceViewCreator creator) {
-        this.creator = creator;
-    }
-
-    /**
-     * Set the type of container
-     *
-     * @param type the type to set
-     */
-    public static void setContainerType(int type) {
-        getInstance().setContainerTypeInner(type);
-    }
-
-    private void setContainerTypeInner(int type) {
-        if (type >= AceContainer.CONTAINER_TYPE_UNKNOWN && type <= AceContainer.CONTAINER_TYPE_DECLARATIVE_JS) {
-            containerType = type;
-        }
-    }
-
-    /**
-     * Create a new container with parameters
-     *
-     * @param callback the callback interface the receive callback event
-     * @param instanceId the id of container instance
-     * @param name the name of the container
-     * @return the new container
-     */
-    public static AceContainer createContainer(AceEventCallback callback, int instanceId, String name) {
-        return getInstance().createContainerInner(callback, instanceId, name);
-    }
-
-    private AceContainer createContainerInner(AceEventCallback callback, int instanceId, String name) {
-        if (creator == null) {
-            return null;
-        }
-        return new AceContainer(instanceId, containerType, creator, callback, name);
-    }
-
-    /**
-     * Destroy the container
-     *
-     * @param container the container to destroy
-     */
-    public static void destroyContainer(AceContainer container) {
-        getInstance().destroyContainerInner(container);
-    }
-
-    private void destroyContainerInner(AceContainer container) {
-        if (container == null) {
-            return;
-        }
-        container.destroyContainer();
-    }
-
-    /**
      * Dump the debug information
      *
      * @param instanceId id of instance
@@ -161,15 +94,4 @@ public final class AceEnv {
     public static void dump(int instanceId, String prefix, FileDescriptor fd, PrintWriter writer, String[] args) {
         DumpHelper.dump(instanceId, prefix, fd, writer, args);
     }
-
-    /**
-     * Set up first frame handler
-     *
-     * @param platform current platform type
-     */
-    public void setupFirstFrameHandler(int platform) {
-        nativeSetupFirstFrameHandler(platform);
-    }
-
-    private native void nativeSetupFirstFrameHandler(int platform);
 }

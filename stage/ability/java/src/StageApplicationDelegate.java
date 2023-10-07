@@ -116,7 +116,7 @@ public class StageApplicationDelegate {
         ALog.setLogger(new LoggerAosp());
         AceEnv.getInstance();
         Trace.beginSection("initApplication");
-        AppModeConfig.setAppMode("stage");
+        AppModeConfig.InitAppMode();
 
         attachStageApplication();
 

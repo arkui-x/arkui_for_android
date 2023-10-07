@@ -28,7 +28,7 @@ public:
     ~JniAppModeConfig() = delete;
 
     static bool Register();
-    static void SetAppMode(JNIEnv* env, jclass myclass, jstring str);
+    static void InitAppMode(JNIEnv* env, jclass myclass);
 };
 } // namespace OHOS::Ace::Platform
 #endif // FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_APP_MODE_CONFIG_H

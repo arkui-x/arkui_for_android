@@ -22,30 +22,6 @@
 #include "base/utils/utils.h"
 
 namespace OHOS::Ace::Platform {
-
-bool AceEnvJni::Register(const std::shared_ptr<JNIEnv>& env)
-{
-    static const JNINativeMethod methods[] = { {
-        .name = "nativeSetupFirstFrameHandler",
-        .signature = "(I)V",
-        .fnPtr = reinterpret_cast<void*>(&SetupFirstFrameHandler),
-    } };
-
-    if (!env) {
-        LOGE("JNI AceEnv: null java env");
-        return false;
-    }
-
-    const jclass clazz = env->FindClass("ohos/ace/adapter/AceEnv");
-    if (clazz == nullptr) {
-        LOGE("JNI AceEnv: can't find java class AceEnv");
-        return false;
-    }
-    bool ret = env->RegisterNatives(clazz, methods, ArraySize(methods)) == 0;
-    env->DeleteLocalRef(clazz);
-    return ret;
-}
-
 bool AceEnvJni::SetThreadInfo(int32_t threadId)
 {
     if (threadId < 0) {
@@ -79,7 +55,4 @@ bool AceEnvJni::SetThreadInfo(int32_t threadId)
     }
     return ret;
 }
-
-void AceEnvJni::SetupFirstFrameHandler(JNIEnv* env, jclass clazz, jint platfrom) {}
-
 } // namespace OHOS::Ace::Platform

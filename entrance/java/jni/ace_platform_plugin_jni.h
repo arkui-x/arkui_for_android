@@ -32,7 +32,7 @@ public:
 
     static bool Register(const std::shared_ptr<JNIEnv>& env);
 
-    static jlong InitResRegister(JNIEnv* env, jobject myObject, jlong view, jobject resRegister, jint instanceId);
+    static jlong InitResRegister(JNIEnv* env, jobject myObject, jobject resRegister, jint instanceId);
 
     static RefPtr<AceResourceRegister> GetResRegister(int32_t instanceId);
     static void RegisterSurface(JNIEnv* env, jobject myObject,

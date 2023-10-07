@@ -25,8 +25,6 @@ template("ace_android_jni_source_set") {
 
     sources = [
       "$ace_root/adapter/android/entrance/java/jni/ace_platform_plugin_jni.cpp",
-      "$ace_root/adapter/android/entrance/java/jni/flutter_ace_view.cpp",
-      "$ace_root/adapter/android/entrance/java/jni/flutter_ace_view_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/window_view_jni.cpp",
     ]
 
@@ -64,9 +62,6 @@ template("ace_common_jni_source_set") {
 
     sources = [
       "$ace_root/adapter/android/entrance/java/jni/ace_application_info_impl.cpp",
-      "$ace_root/adapter/android/entrance/java/jni/ace_application_info_jni.cpp",
-      "$ace_root/adapter/android/entrance/java/jni/ace_container.cpp",
-      "$ace_root/adapter/android/entrance/java/jni/ace_container_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/ace_env_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/ace_resource_register.cpp",
       "$ace_root/adapter/android/entrance/java/jni/display_info.cpp",

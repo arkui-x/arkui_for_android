@@ -18,7 +18,6 @@
 #include "adapter/android/entrance/java/jni/ace_platform_plugin_jni.h"
 #include "adapter/android/entrance/java/jni/ace_resource_register.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
-#include "adapter/android/entrance/java/jni/native_window_surface.h"
 #include "adapter/android/stage/uicontent/ace_container_sg.h"
 #include "base/log/dump_log.h"
 #include "base/log/event_report.h"

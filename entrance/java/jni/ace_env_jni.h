@@ -27,11 +27,7 @@ public:
     AceEnvJni() = delete;
     ~AceEnvJni() = delete;
 
-    static bool Register(const std::shared_ptr<JNIEnv>& env);
     static bool SetThreadInfo(int32_t threadId);
-
-private:
-    static void SetupFirstFrameHandler(JNIEnv* env, jclass clazz, jint platform);
 };
 
 }
