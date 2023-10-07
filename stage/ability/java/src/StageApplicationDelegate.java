@@ -87,6 +87,16 @@ public class StageApplicationDelegate {
 
     private static final String WANT_PARAMS = "params";
 
+    private static final String ARKUIX_LIBS = "/arkui-x/libs/";
+
+    private static final String ARKUIX_LIB_NAME = "/libarkui_android.so";
+
+    private static final String ARCH_ARM64 = "arm64-v8a";
+
+    private static final String ARCH_ARM = "armeabi-v7a";
+    
+    private static final String ARCH_X86 = "x86_64";
+
     private static final int ERR_INVALID_PARAMETERS = -1;
 
     private static final int ERR_OK = 0;
@@ -105,6 +115,30 @@ public class StageApplicationDelegate {
     }
 
     /**
+     * Dynamic load sandbox lib
+     */
+    public void loadLibraryFromAppData() {
+        try {
+            String str = stageApplication.getApplicationContext().getApplicationInfo().nativeLibraryDir;
+            String architecture = str.substring(str.lastIndexOf('/') + 1);
+            if (architecture.equals("arm64")) {
+                architecture = ARCH_ARM64;
+            } else if (architecture.equals("arm")) {
+                architecture = ARCH_ARM;
+            } else {
+                architecture = ARCH_X86;
+            }
+            Log.i(LOG_TAG, "Current system CPU architecture : " + architecture);
+            String path = stageApplication.getApplicationContext().getFilesDir().getPath() + ARKUIX_LIBS
+                            + architecture + ARKUIX_LIB_NAME;
+            Log.i(LOG_TAG, "Dynamically loading path : " + path);
+            System.load(path);
+        } catch (UnsatisfiedLinkError error) {
+            ALog.e(LOG_TAG, "System.load failed " + error.getMessage());
+        }
+    }
+
+    /**
      * Initialize stage application.
      *
      * @param application the stage application.
@@ -114,7 +148,9 @@ public class StageApplicationDelegate {
         stageApplication = application;
 
         ALog.setLogger(new LoggerAosp());
-        AceEnv.getInstance();
+        if (!AceEnv.getInstance().isLibraryLoaded()) {
+            loadLibraryFromAppData();
+        }
         Trace.beginSection("initApplication");
         AppModeConfig.setAppMode("stage");
 
@@ -139,7 +175,8 @@ public class StageApplicationDelegate {
         } catch (Exception e) {
             Log.e(LOG_TAG, "get Assets path failed, error: " + e.getMessage());
         }
-        setResourcesFilePrefixPath(stageApplication.getExternalFilesDir((String) null).getAbsolutePath());
+        setResourcesFilePrefixPath(stageApplication.getApplicationContext().getFilesDir().getPath() +
+                                    "/"+ ASSETS_SUB_PATH);
         setLocaleInfo();
         Trace.endSection();
 
@@ -295,7 +332,7 @@ public class StageApplicationDelegate {
 
     private void createStagePath() {
         String filesDir = stageApplication.getApplicationContext().getFilesDir().getPath();
-        String[] fileDirNames = {TEMP_DIR, FILES_DIR, PREFERENCE_DIR, DATABASE_DIR};
+        String[] fileDirNames = {TEMP_DIR, FILES_DIR, PREFERENCE_DIR, DATABASE_DIR, "/" + ASSETS_SUB_PATH};
         for (int i = 0; i < fileDirNames.length; i++) {
             makeNewDir(filesDir + fileDirNames[i]);
         }
@@ -346,7 +383,8 @@ public class StageApplicationDelegate {
         }
         for (String resourcesName : moduleResources) {
             copyFilesFromAssets(ASSETS_SUB_PATH + "/" + resourcesName,
-                    stageApplication.getExternalFilesDir(null).getAbsolutePath() + "/" + resourcesName);
+                    stageApplication.getApplicationContext().getFilesDir().getPath() +
+                    "/" + ASSETS_SUB_PATH+ "/" + resourcesName);
         }
 
         SharedPreferences.Editor edit = sharedPreferences.edit();

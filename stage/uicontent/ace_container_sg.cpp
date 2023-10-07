@@ -15,6 +15,8 @@
 
 #include "adapter/android/stage/uicontent/ace_container_sg.h"
 
+#include <numeric>
+
 #include "adapter/android/capability/java/jni/editing/text_input_jni.h"
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/ace_platform_plugin_jni.h"
@@ -941,10 +943,11 @@ bool AceContainerSG::RunPage(int32_t instanceId, int32_t pageId, const std::stri
 }
 
 void AceContainerSG::SetResPaths(
-    const std::string& hapResPath, const std::string& sysResPath, const ColorMode& colorMode)
+    const std::vector<std::string>& hapResPath, const std::string& sysResPath, const ColorMode& colorMode)
 {
     LOGI("SetResPaths, Use hap path to load resource");
-    resourceInfo_.SetHapPath(hapResPath);
+    resourceInfo_.SetHapPath(std::accumulate(hapResPath.begin(), hapResPath.end(), std::string(),
+        [](const std::string& acc, const std::string& element) { return acc + (acc.empty() ? "" : ":") + element; }));
     // use package path to load system resource.
     auto sysFisrtPos = sysResPath.find_last_of('/');
     auto sysResourcePath = sysResPath.substr(0, sysFisrtPos);
