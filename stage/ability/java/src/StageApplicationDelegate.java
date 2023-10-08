@@ -152,7 +152,7 @@ public class StageApplicationDelegate {
             loadLibraryFromAppData();
         }
         Trace.beginSection("initApplication");
-        AppModeConfig.setAppMode("stage");
+        AppModeConfig.InitAppMode();
 
         attachStageApplication();
 

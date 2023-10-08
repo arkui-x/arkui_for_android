@@ -19,7 +19,7 @@
 #include <unordered_map>
 
 #include "adapter/android/capability/java/jni/bridge/bridge_manager.h"
-#include "adapter/android/entrance/java/jni/ace_container.h"
+#include "core/common/container.h"
 #include "frameworks/core/common/ace_engine.h"
 
 namespace OHOS::Ace::Platform {

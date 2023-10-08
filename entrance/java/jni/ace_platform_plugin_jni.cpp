@@ -16,7 +16,6 @@
 #include "adapter/android/entrance/java/jni/ace_platform_plugin_jni.h"
 
 #include "flutter/fml/platform/android/jni_weak_ref.h"
-#include "adapter/android/entrance/java/jni/flutter_ace_view.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "adapter/android/entrance/java/jni/native_window_surface.h"
 #include "base/log/event_report.h"
@@ -33,7 +32,7 @@ bool AcePlatformPluginJni::Register(const std::shared_ptr<JNIEnv>& env)
     static const JNINativeMethod methods[] = {
         {
             .name = "nativeInitResRegister",
-            .signature = "(JLohos/ace/adapter/AceResourceRegister;I)J",
+            .signature = "(Lohos/ace/adapter/AceResourceRegister;I)J",
             .fnPtr = reinterpret_cast<void*>(&AcePlatformPluginJni::InitResRegister),
         },
         {
@@ -62,8 +61,7 @@ bool AcePlatformPluginJni::Register(const std::shared_ptr<JNIEnv>& env)
     return env->RegisterNatives(myClass, methods, ArraySize(methods)) == 0;
 }
 
-jlong AcePlatformPluginJni::InitResRegister(JNIEnv* env, jobject myObject,
-    jlong view, jobject resRegister, jint instanceId)
+jlong AcePlatformPluginJni::InitResRegister(JNIEnv* env, jobject myObject, jobject resRegister, jint instanceId)
 {
     if (env == nullptr) {
         LOGE("env is null");
@@ -74,13 +72,8 @@ jlong AcePlatformPluginJni::InitResRegister(JNIEnv* env, jobject myObject,
         LOGE("Failed to initialize the AcerResourceRegister");
         return 0;
     }
-    auto viewPtr = JavaLongToPointer<FlutterAceView>(view);
-    if (viewPtr == nullptr) {
-        LOGE("viewPtr is null");
-        g_resRegisters.emplace(static_cast<int32_t>(instanceId), aceResRegister);
-        return PointerToJavaLong(AceType::RawPtr(aceResRegister));
-    }
-    viewPtr->SetPlatformResRegister(aceResRegister);
+    
+    g_resRegisters.emplace(static_cast<int32_t>(instanceId), aceResRegister);
     return PointerToJavaLong(AceType::RawPtr(aceResRegister));
 }
 

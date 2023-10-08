@@ -403,7 +403,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      */
     private void initPlatformPlugin(Context context, int instanceId, WindowView windowView) {
         Trace.beginSection("StageActivity::initPlatformPlugin");
-        platformPlugin = new AcePlatformPlugin(context, instanceId, windowView, 0L);
+        platformPlugin = new AcePlatformPlugin(context, instanceId, windowView);
         if (platformPlugin != null) {
             windowView.setInputConnectionClient(platformPlugin);
             platformPlugin.initTexturePlugin(instanceId);
