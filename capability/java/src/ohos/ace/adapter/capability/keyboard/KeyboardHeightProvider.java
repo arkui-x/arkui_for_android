@@ -45,7 +45,6 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
     private int navigationBarHeight = 0;
     private float navigationBarMaxHeightRate = 0.1f;
     private Map<Integer, Integer> bottomMaxMap = null;
-    private Map<Integer, Integer> topMinMap = null;
     private Map<Integer, Integer> screenSizeYMap = null;
 
     /**
@@ -57,7 +56,6 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
         this.activity = activity;
         this.popupView = new View(activity);
         this.bottomMaxMap = new HashMap<Integer, Integer>();
-        this.topMinMap = new HashMap<Integer, Integer>();
         this.screenSizeYMap = new HashMap<Integer, Integer>();
 
         setContentView(popupView);
@@ -115,25 +113,19 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
             bottomMax = bm.intValue();
         }
 
-        int topMin = -1;
-        Integer tm = this.topMinMap.get(orientation);
-        if (tm != null) {
-            topMin = tm.intValue();
-        }
-
         Rect rect = new Rect();
         popupView.getWindowVisibleDisplayFrame(rect);
-
-        if (topMin == -1 || rect.top < topMin) {
-            topMin = rect.top;
-            this.topMinMap.put(orientation, topMin);
-            return;
-        }
-
 
         if (bottomMax < rect.bottom) {
             bottomMax = rect.bottom;
             this.bottomMaxMap.put(orientation, bottomMax);
+        }
+
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            if (bottomMax < screenSizeY) {
+                bottomMax = screenSizeY;
+                this.bottomMaxMap.put(orientation, bottomMax);
+            }
         }
 
         if (navigationBarHeight > 0 && ((bottomMax - rect.bottom) == navigationBarHeight)) {
@@ -164,9 +156,6 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
             lastPortraitVisibleHeight = visibleHeight;
             if (lastPortraitVisibleHeight == 0) {
                 lastPortraitVisibleHeight = popupView.getHeight();
-            }
-            if (keyboardHeight != 0 && popupView.getHeight() != visibleHeight && popupView.getHeight() != screenSizeY) {
-                return;
             }
         }
 
