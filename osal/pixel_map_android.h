@@ -37,6 +37,7 @@ public:
     std::string GetId() override;
     std::string GetModifyId() override;
     std::shared_ptr<Media::PixelMap> GetPixelMapSharedPtr() override;
+    void* GetWritablePixels() const override;
 private:
     std::shared_ptr<Media::PixelMap> pixmap_;
 };
