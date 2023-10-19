@@ -50,6 +50,7 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     private boolean delayNotifySurfaceDestroyed = false;
 
     private InputConnectionClient inputClient = null;
+    private boolean isFocused = true;
 
     /**
      * Constructor of WindowView
@@ -133,7 +134,9 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         setFocusable(true);
-        requestFocus();
+        if (isFocused) {
+            requestFocus();
+        }
         Surface surface = holder.getSurface();
         holder.setFormat(PixelFormat.TRANSLUCENT);
         if (nativeWindowPtr == 0L) {
@@ -161,6 +164,7 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        isFocused = hasFocus();
         if (nativeWindowPtr == 0L) {
             ALog.w(LOG_TAG, "surfaceDestroyed nativeWindow not ready, delay notify");
             delayNotifySurfaceDestroyed = true;
