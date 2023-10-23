@@ -107,6 +107,10 @@ public class StageApplicationDelegate {
 
     private volatile Activity topActivity = null;
 
+    private static boolean initialization = false;
+
+    private static final Object INIT_LOCK = new Object();
+
     /**
      * Constructor.
      */
@@ -145,6 +149,12 @@ public class StageApplicationDelegate {
      */
     public void initApplication(Application application) {
         Log.i(LOG_TAG, "init application.");
+        synchronized (INIT_LOCK) {
+            if (initialization) {
+                return;
+            }
+            initialization = true;
+        }
         stageApplication = application;
 
         ALog.setLogger(new LoggerAosp());
