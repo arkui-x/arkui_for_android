@@ -107,6 +107,8 @@ public class StageApplicationDelegate {
 
     private volatile Activity topActivity = null;
 
+    private static boolean isInitialized = false;
+
     /**
      * Constructor.
      */
@@ -145,6 +147,11 @@ public class StageApplicationDelegate {
      */
     public void initApplication(Application application) {
         Log.i(LOG_TAG, "init application.");
+        if (isInitialized) {
+            Log.i(LOG_TAG, "The application is initialized.");
+            return;
+        }
+        isInitialized = true;
         stageApplication = application;
 
         ALog.setLogger(new LoggerAosp());
