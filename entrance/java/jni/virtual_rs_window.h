@@ -263,6 +263,11 @@ public:
 
     void SetUpThreadInfo();
 
+    const std::shared_ptr<OHOS::AbilityRuntime::Platform::Context>GetContext() const
+    {
+        return context_;
+    }
+
 private:
     void SetWindowView(JNIEnv* env, jobject windowView);
     void SetSubWindowView(JNIEnv* env, jobject windowView);
