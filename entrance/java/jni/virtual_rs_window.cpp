@@ -306,9 +306,8 @@ std::shared_ptr<Window> Window::GetTopWindow(const std::shared_ptr<OHOS::Ability
     while (iter != windowMap_.end()) {
         std::pair<uint32_t, std::shared_ptr<Window>> pair = iter->second;
         std::shared_ptr<Window> window = pair.second;
-
-        if (window->isForground()) {
-            LOGI("Window::GetTopWindow is forground: %s", window->GetWindowName().c_str());
+        if (context.get() == window->GetContext().get() &&
+            window->GetType() != OHOS::Rosen::WindowType::WINDOW_TYPE_APP_SUB_WINDOW) {
             return window;
         }
 
