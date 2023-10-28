@@ -340,6 +340,17 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
             pipeline->SetMinPlatformVersion(appInfo->minCompatibleVersionCode);
         }
     }
+
+    if (runtime_) {
+        auto nativeEngine = reinterpret_cast<NativeEngine*>(runtime_);
+        if (!storage) {
+            container->SetLocalStorage(nullptr, context->GetBindingObject()->Get<NativeReference>());
+        } else {
+            LOGI("SetLocalStorage %{public}d", storage->TypeOf());
+            container->SetLocalStorage(
+                nativeEngine->CreateReference(storage, 1), context->GetBindingObject()->Get<NativeReference>());
+        }
+    }
 }
 
 void UIContentImpl::InitOnceAceInfo()
