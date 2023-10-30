@@ -33,6 +33,9 @@
 #include "core/common/js_message_dispatcher.h"
 #include "core/common/platform_bridge.h"
 
+#include "native_engine/native_reference.h"
+#include "native_engine/native_value.h"
+
 namespace OHOS::Ace::Platform {
 using UIEnvCallback = std::function<void(const OHOS::Ace::RefPtr<OHOS::Ace::PipelineContext>& context)>;
 // AceContainerSG is the instance which has its own pipeline and thread models, it can contain multiple pages.
@@ -187,6 +190,8 @@ public:
     void NotifyAppStorage(const std::string& key, const std::string& value) override;
 
     void SetActionCallback(jobject callback);
+
+    void SetLocalStorage(NativeReference* storage, NativeReference* context);
 
     void OnFinish()
     {

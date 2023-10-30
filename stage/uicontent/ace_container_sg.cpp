@@ -957,4 +957,29 @@ void AceContainerSG::SetResPaths(
     resourceInfo_.SetThemeId(themeId);
     colorScheme_ = colorMode == ColorMode::LIGHT ? ColorScheme::SCHEME_LIGHT : ColorScheme::SCHEME_DARK;
 }
+
+void AceContainerSG::SetLocalStorage(NativeReference* storage, NativeReference* context)
+{
+    ContainerScope scope(instanceId_);
+    taskExecutor_->PostTask(
+        [frontend = WeakPtr<Frontend>(frontend_), storage, context, id = instanceId_] {
+            auto sp = frontend.Upgrade();
+            CHECK_NULL_VOID(sp);
+#ifdef NG_BUILD
+            auto declarativeFrontend = AceType::DynamicCast<DeclarativeFrontendNG>(sp);
+#else
+            auto declarativeFrontend = AceType::DynamicCast<DeclarativeFrontend>(sp);
+#endif
+            CHECK_NULL_VOID(declarativeFrontend);
+            auto jsEngine = declarativeFrontend->GetJsEngine();
+            CHECK_NULL_VOID(jsEngine);
+            if (context) {
+                jsEngine->SetContext(id, context);
+            }
+            if (storage) {
+                jsEngine->SetLocalStorage(id, storage);
+            }
+        },
+        TaskExecutor::TaskType::JS);
+}
 } // namespace OHOS::Ace::Platform
