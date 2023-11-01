@@ -88,6 +88,11 @@ public class AceWeb extends AceWebBase {
 
     private static final String NTC_ZOOM_ACCESS = "zoomAccess";
     private static final String NTC_JAVASCRIPT_ACCESS = "javascriptAccess";
+    private static final String NTC_MIN_FONT_SIZE = "minFontSize";
+    private static final String NTC_HORIZONTAL_SCROLLBAR_ACCESS = "horizontalScrollBarAccess";
+    private static final String NTC_VERTICAL_SCROLLBAR_ACCESS = "verticalScrollBarAccess";
+    private static final String NTC_BACKGROUND_COLOR = "backgroundColor";
+    private static final String NTC_MEDIA_PLAY_GESTURE_ACCESS = "mediaPlayGestureAccess";
 
     private static String currentPageUrl;
 
@@ -759,6 +764,91 @@ public class AceWeb extends AceWebBase {
             return FAIL_TAG;
         }
         webView.getSettings().setJavaScriptEnabled(access);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String minFontSize(Map<String, String> params) {
+        if (!params.containsKey(NTC_MIN_FONT_SIZE) || webView == null) {
+            return FAIL_TAG;
+        }
+        int fontSize = 0;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_MIN_FONT_SIZE));
+            fontSize = accessNum;
+        } catch (NumberFormatException ignored) {
+            ALog.w(LOG_TAG, "minFontSize NumberFormatException");
+            return FAIL_TAG;
+        }
+        webView.getSettings().setMinimumFontSize(fontSize);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String horizontalScrollBarAccess(Map<String, String> params) {
+        if (!params.containsKey(NTC_HORIZONTAL_SCROLLBAR_ACCESS) || webView == null) {
+            return FAIL_TAG;
+        }
+        boolean access = true;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_HORIZONTAL_SCROLLBAR_ACCESS));
+            access = accessNum == 1 ? true : false;
+        } catch (NumberFormatException ignored) {
+            ALog.w(LOG_TAG, "horizontalScrollBarAccess NumberFormatException");
+            return FAIL_TAG;
+        }
+        webView.setHorizontalScrollBarEnabled(access);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String verticalScrollBarAccess(Map<String, String> params) {
+        if (!params.containsKey(NTC_VERTICAL_SCROLLBAR_ACCESS) || webView == null) {
+            return FAIL_TAG;
+        }
+        boolean access = true;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_VERTICAL_SCROLLBAR_ACCESS));
+            access = accessNum == 1 ? true : false;
+        } catch (NumberFormatException ignored) {
+            ALog.w(LOG_TAG, "verticalScrollBarAccess NumberFormatException");
+            return FAIL_TAG;
+        }
+        webView.setVerticalScrollBarEnabled(access);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String backgroundColor(Map<String, String> params) {
+        if (!params.containsKey(NTC_BACKGROUND_COLOR) || webView == null) {
+            return FAIL_TAG;
+        }
+        int backgroundColor = 0;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_BACKGROUND_COLOR));
+            backgroundColor = accessNum;
+        } catch (NumberFormatException ignored) {
+            ALog.w(LOG_TAG, "backgroundColor NumberFormatException");
+            return FAIL_TAG;
+        }
+        webView.setBackgroundColor(backgroundColor);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String mediaPlayGestureAccess(Map<String, String> params) {
+        if (!params.containsKey(NTC_MEDIA_PLAY_GESTURE_ACCESS) || webView == null) {
+            return FAIL_TAG;
+        }
+        boolean access = true;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_MEDIA_PLAY_GESTURE_ACCESS));
+            access = accessNum == 1 ? true : false;
+        } catch (NumberFormatException ignored) {
+            ALog.w(LOG_TAG, "mediaPlayGestureAccess NumberFormatException");
+            return FAIL_TAG;
+        }
+        webView.getSettings().setMediaPlaybackRequiresUserGesture(access);
         return SUCCESS_TAG;
     }
 }

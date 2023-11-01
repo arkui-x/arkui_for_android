@@ -83,6 +83,36 @@ public abstract class AceWebBase {
             "javascriptAccess" +
             PARAM_BEGIN,
             javascriptAccess);
+        IAceOnCallResourceMethod minFontSize = (param) -> minFontSize(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD +
+            PARAM_EQUALS +
+            "minFontSize" +
+            PARAM_BEGIN,
+            minFontSize);
+        IAceOnCallResourceMethod horizontalScrollBarAccess = (param) -> horizontalScrollBarAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD +
+            PARAM_EQUALS +
+            "horizontalScrollBarAccess" +
+            PARAM_BEGIN,
+            horizontalScrollBarAccess);
+        IAceOnCallResourceMethod verticalScrollBarAccess = (param) -> verticalScrollBarAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD +
+            PARAM_EQUALS +
+            "verticalScrollBarAccess" +
+            PARAM_BEGIN,
+            verticalScrollBarAccess);
+        IAceOnCallResourceMethod backgroundColor = (param) -> backgroundColor(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD +
+            PARAM_EQUALS +
+            "backgroundColor" +
+            PARAM_BEGIN,
+            backgroundColor);
+        IAceOnCallResourceMethod mediaPlayGestureAccess = (param) -> mediaPlayGestureAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD +
+            PARAM_EQUALS +
+            "mediaPlayGestureAccess" +
+            PARAM_BEGIN,
+            mediaPlayGestureAccess);
     }
 
     private void callMethodMapPutXWardMethod() {
@@ -681,6 +711,16 @@ public abstract class AceWebBase {
     public abstract String zoomAccess(Map<String, String> params);
 
     public abstract String javascriptAccess(Map<String, String> params);
+
+    public abstract String minFontSize(Map<String, String> params);
+
+    public abstract String horizontalScrollBarAccess(Map<String, String> params);
+
+    public abstract String verticalScrollBarAccess(Map<String, String> params);
+
+    public abstract String backgroundColor(Map<String, String> params);
+
+    public abstract String mediaPlayGestureAccess(Map<String, String> params);
 
     public abstract void loadUrl(String url, Map<String, String> header);
 
