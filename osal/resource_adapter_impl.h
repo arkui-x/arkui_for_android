@@ -81,11 +81,15 @@ private:
         return resourceManager_;
     }
 
+    void AddResourceManagerByModuleName(const std::string moduleName);
+
     std::shared_ptr<Global::Resource::ResourceManager> resourceManager_;
     std::map<std::string, std::shared_ptr<Global::Resource::ResourceManager>> resourceManagers_;
     std::map<std::string, std::string> rawFilePaths_;
     std::string packagePathStr_;
+    std::string resourcePathStr_;
     mutable std::shared_mutex resourceMutex_;
+    std::shared_ptr<Global::Resource::ResConfig> resConfig_;
     ACE_DISALLOW_COPY_AND_MOVE(ResourceAdapterImpl);
 };
 } // namespace OHOS::Ace
