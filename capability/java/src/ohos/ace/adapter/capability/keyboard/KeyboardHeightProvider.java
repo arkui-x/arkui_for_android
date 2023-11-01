@@ -125,6 +125,9 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
         }
 
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            if (rect.bottom > rect.right) {
+                return;
+            }
             if (bottomMax < screenSizeY) {
                 bottomMax = screenSizeY;
                 this.bottomMaxMap.put(orientation, bottomMax);
@@ -137,6 +140,10 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
         }
 
         int keyboardHeight = bottomMax - rect.bottom;
+        if (keyboardHeight > screenSizeY) {
+            return;
+        }
+
         if (keyboardHeight < navigationBarMaxHeight) {
             bottomMax = bottomMax - keyboardHeight;
             this.bottomMaxMap.put(orientation, bottomMax);
