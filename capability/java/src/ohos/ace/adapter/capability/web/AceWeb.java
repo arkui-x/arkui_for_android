@@ -28,10 +28,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
+import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -42,6 +45,10 @@ import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.IAceOnCallResourceMethod;
 import ohos.ace.adapter.IAceOnResourceEvent;
 import ohos.ace.adapter.capability.web.AceWebErrorReceiveObject;
+import ohos.ace.adapter.capability.web.AceWebHttpErrorReceiveObject;
+import ohos.ace.adapter.capability.web.AceWebScrollObject;
+import ohos.ace.adapter.capability.web.AceWebConsoleMessageObject;
+import ohos.ace.adapter.capability.web.AceWebOverrideUrlObject;
 
 import java.util.Map;
 
@@ -105,17 +112,32 @@ public class AceWeb extends AceWebBase {
 
     private final Context context;
 
-    private final WebView webView;
+    private final AceWebView webView;
 
     private boolean isWebOnPage = true;
 
     private MotionEvent motionEvent;
 
+    public class AceWebView extends WebView {
+        private static final String LOG_TAG = "AceWebView";
+
+        public AceWebView(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+            super.onScrollChanged(l, t, oldl, oldt);
+            AceWebScrollObject object = new AceWebScrollObject(l, t);
+            AceWeb.this.fireScrollChanged(object);
+        }
+    }
+
     public AceWeb(long id, Context context, IAceOnResourceEvent callback) {
         super(id, callback);
         this.callback = callback;
         this.context = context;
-        webView = new WebView(context);
+        webView = new AceWebView(context);
     }
 
     @Override
@@ -245,27 +267,6 @@ public class AceWeb extends AceWebBase {
         }
         webView.setWebViewClient(new WebViewClient() {
             @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                String url = request.getUrl().toString();
-                if (url == null) {
-                    return false;
-                }
-                if (url.startsWith("http://") || url.startsWith("https://")
-                        || url.startsWith("file://")) {
-                    view.loadUrl(url);
-                    return false; // false means to continue to load the url as normal.
-                } else {
-                    try {
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                        view.getContext().startActivity(intent);
-                    } catch (ActivityNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                }
-                return true; // true, it will stop loading the url.
-            }
-
-            @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 AceWebErrorReceiveObject object = new AceWebErrorReceiveObject(error, request);
                 AceWeb.this.fireErrorReceive(object);
@@ -279,6 +280,46 @@ public class AceWeb extends AceWebBase {
             @Override
             public void onPageFinished(WebView view, String url) {
                 AceWeb.this.onPageLoaded(url);
+            }
+
+            @Override
+            public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse response) {
+                AceWebHttpErrorReceiveObject object = new AceWebHttpErrorReceiveObject(request, response);
+                AceWeb.this.fireHttpErrorReceive(object);
+            }
+
+            @Override
+            public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
+                AceWeb.this.fireRefreshHistory(url);
+            }
+
+            @Override
+            public void onScaleChanged(WebView view, float oldScale, float newScale) {
+                AceWebScaleObject object = new AceWebScaleObject(oldScale, newScale);
+                AceWeb.this.fireScaleChanged(object);
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                AceWebOverrideUrlObject object = new AceWebOverrideUrlObject(request);
+                return AceWeb.this.fireUrlLoadIntercept(object);
+            }
+        });
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+                AceWeb.this.firePageChanged(newProgress);
+            }
+
+            @Override
+            public void onReceivedTitle(WebView view, String title) {
+                AceWeb.this.firePageRecvTitle(title);
+            }
+
+            @Override
+            public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                AceWebConsoleMessageObject object = new AceWebConsoleMessageObject(consoleMessage);
+                return AceWeb.this.firePageOnConsoleMessage(object);
             }
         });
     }

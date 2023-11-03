@@ -113,6 +113,28 @@ long GetLongFromJNI(const jobject& obj, std::string funcName)
     return (long)returnValue;
 }
 
+float GetFloatFromJNI(const jobject& obj, std::string funcName)
+{
+    LOGI("jni call %{public}s", funcName.c_str());
+    auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (!env) {
+        LOGE("jni env not ready, env is null");
+        return 0;
+    }
+    const jclass clazz = env->GetObjectClass(obj);
+    if (clazz == nullptr) {
+        LOGE("clazz is nullptr");
+        return 0;
+    }
+    jmethodID method = env->GetMethodID(clazz, funcName.c_str(), "()F");
+    if (method == nullptr) {
+        LOGE("fail to get method id: %{public}s", funcName.c_str());
+        return 0;
+    }
+    int retValue = env->CallFloatMethod(obj, method);
+    return retValue;
+}
+
 bool GetBoolFromJNI(const jobject& obj, std::string funcName)
 {
     LOGI("jni call %{public}s", funcName.c_str());
@@ -253,12 +275,120 @@ int JniWebResourceErrorObject::GetErrorCode(void *object)
     return GetIntFromJNI(*(jobject *)object, "getErrorCode");
 }
 
+class JniWebResourceResponseObject final : public WebResourceResponseObject {
+public:
+    std::map<std::string, std::string> GetResponseHeader(void* object);
+    std::string GetResponseData(void* object);
+    std::string GetEncoding(void* object);
+    std::string GetMimeType(void* object);
+    std::string GetReason(void* object);
+    int GetStatusCode(void* object);
+};
+
+std::map<std::string, std::string> JniWebResourceResponseObject::GetResponseHeader(void *object)
+{
+    return GetStringMapFromJNI(*(jobject *)object, "getResponseHeader");
+}
+
+std::string JniWebResourceResponseObject::GetResponseData(void *object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getResponseData");
+}
+
+std::string JniWebResourceResponseObject::GetEncoding(void *object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getResponseEncoding");
+}
+
+std::string JniWebResourceResponseObject::GetMimeType(void *object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getResponseMimeType");
+}
+
+std::string JniWebResourceResponseObject::GetReason(void *object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getReason");
+}
+
+int JniWebResourceResponseObject::GetStatusCode(void *object)
+{
+    return GetIntFromJNI(*(jobject *)object, "getResponseCode");
+}
+
+class JniWebScrollObjectWrapper final : public WebScrollObject {
+public:
+    float GetX(void* object);
+    float GetY(void* object);
+};
+
+float JniWebScrollObjectWrapper::GetX(void* object)
+{
+    return GetIntFromJNI(*(jobject *)object, "getX");
+}
+
+float JniWebScrollObjectWrapper::GetY(void* object)
+{
+    return GetIntFromJNI(*(jobject *)object, "getY");
+}
+
+class JniWebScaleChangeObjectWrapper final : public WebScaleChangeObject {
+public:
+    float GetNewScale(void* object);
+    float GetOldScale(void* object);
+};
+
+float JniWebScaleChangeObjectWrapper::GetNewScale(void* object)
+{
+    return GetFloatFromJNI(*(jobject *)object, "getNewScale");
+}
+
+float JniWebScaleChangeObjectWrapper::GetOldScale(void* object)
+{
+    return GetFloatFromJNI(*(jobject *)object, "getOldScale");
+}
+
+class JniWebConsoleMessageObject final : public WebConsoleMessageObject {
+public:
+    std::string GetMessage(void *object);
+    int GetMessageLevel(void *object);
+    std::string GetSourceId(void *object);
+    int GetLineNumber(void *object);
+};
+
+std::string JniWebConsoleMessageObject::GetMessage(void *object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getMessage");
+}
+
+int JniWebConsoleMessageObject::GetMessageLevel(void *object)
+{
+    return GetIntFromJNI(*(jobject *)object, "getMessageLevel");
+}
+
+std::string JniWebConsoleMessageObject::GetSourceId(void *object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getSourceId");
+}
+
+int JniWebConsoleMessageObject::GetLineNumber(void *object)
+{
+    return GetIntFromJNI(*(jobject *)object, "getLineNumber");
+}
+
 bool WebAdapterJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
     auto JWebResourceRequestObject = Referenced::MakeRefPtr<JniWebResourceRequestObject>();
     WebObjectEventManager::GetInstance().SetResourceRequestObject(JWebResourceRequestObject);
     auto JWebResourceErrorObject = Referenced::MakeRefPtr<JniWebResourceErrorObject>();
     WebObjectEventManager::GetInstance().SetResourceErrorObject(JWebResourceErrorObject);
+    auto JWebOnScrollObject = OHOS::Ace::Referenced::MakeRefPtr<JniWebScrollObjectWrapper>();
+    OHOS::Ace::WebObjectEventManager::GetInstance().SetScrollObject(JWebOnScrollObject);
+    auto JWebResourceResponseObject = OHOS::Ace::Referenced::MakeRefPtr<JniWebResourceResponseObject>();
+    OHOS::Ace::WebObjectEventManager::GetInstance().SetResourceResponseObject(JWebResourceResponseObject);
+    auto JWebConsoleMessageObject = OHOS::Ace::Referenced::MakeRefPtr<JniWebConsoleMessageObject>();
+    OHOS::Ace::WebObjectEventManager::GetInstance().SetConsoleMessageObject(JWebConsoleMessageObject);
+    auto JWebScaleChangeObject = OHOS::Ace::Referenced::MakeRefPtr<JniWebScaleChangeObjectWrapper>();
+    OHOS::Ace::WebObjectEventManager::GetInstance().SetScaleChangeObject(JWebScaleChangeObject);
 
     static const JNINativeMethod methods[] = {
         {
@@ -266,6 +396,12 @@ bool WebAdapterJni::Register(const std::shared_ptr<JNIEnv>& env)
             .signature =
                 "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)V",
             .fnPtr = reinterpret_cast<void*>(&NativeOnObjectEvent),
+        },
+        {
+            .name = "nativeOnObjectEventWithBoolReturn",
+            .signature =
+                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)Z",
+            .fnPtr = reinterpret_cast<void*>(&NativeOnObjectEventWithBoolReturn),
         },
     };
 
@@ -304,5 +440,26 @@ void WebAdapterJni::NativeOnObjectEvent(JNIEnv* env, jobject clazz, jstring id, 
         env->ReleaseStringUTFChars(param, paramStr);
     }
     WebObjectEventManager::GetInstance().OnObjectEvent(eventId, eventParam, (void *)&object);
+}
+
+bool WebAdapterJni::NativeOnObjectEventWithBoolReturn(JNIEnv* env, jobject clazz, jstring id, jstring param, jobject object)
+{
+    if (!env) {
+        LOGW("env is null");
+        return false;
+    }
+    std::string eventId;
+    std::string eventParam;
+    auto idStr = env->GetStringUTFChars(id, nullptr);
+    if (idStr != nullptr) {
+        eventId = idStr;
+        env->ReleaseStringUTFChars(id, idStr);
+    }
+    auto paramStr = env->GetStringUTFChars(param, nullptr);
+    if (paramStr != nullptr) {
+        eventParam = paramStr;
+        env->ReleaseStringUTFChars(param, paramStr);
+    }
+    return WebObjectEventManager::GetInstance().OnObjectEventWithBoolReturn(eventId, eventParam, (void *)&object);
 }
 } // namespace OHOS::Ace
