@@ -744,6 +744,10 @@ public abstract class AceWebBase {
 
     public abstract void loadUrl(String url, Map<String, String> header);
 
+    public abstract String getUrl();
+
+    public abstract void evaluateJavascript(String script);
+
     private native void nativeOnObjectEvent(String id, String param, Object object);
 
     private native boolean nativeOnObjectEventWithBoolReturn(String id, String param, Object object);

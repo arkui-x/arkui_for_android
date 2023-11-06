@@ -37,6 +37,8 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
 
     protected native void nativeInit();
 
+    protected native static void onReceiveValue(String value);
+
     private static boolean hasInit = false;
 
     public AceWebPluginBase() {
@@ -148,6 +150,69 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    public void loadData(long id, HashMap<String, String> params) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.loadData(params);
+        }
+    }
+
+    public String getUrl(long id) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.getUrl();
+        }
+        return "";
+    }
+
+    public String accessForward(long id) {
+        if (objectMap.containsKey(id)) {
+            Map<String, String> defaultParam = new HashMap<String, String>();
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.accessForward(defaultParam);
+        }
+        return "";
+    }
+
+    public void forward(long id) {
+        if (objectMap.containsKey(id)) {
+            Map<String, String> defaultParam = new HashMap<String, String>();
+            AceWebBase webBase = objectMap.get(id);
+            webBase.forward(defaultParam);
+        }
+    }
+
+    public String accessBackward(long id) {
+        if (objectMap.containsKey(id)) {
+            Map<String, String> defaultParam = new HashMap<String, String>();
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.accessBackward(defaultParam);
+        }
+        return "";
+    }
+
+    public void backward(long id) {
+        if (objectMap.containsKey(id)) {
+            Map<String, String> defaultParam = new HashMap<String, String>();
+            AceWebBase webBase = objectMap.get(id);
+            webBase.backward(defaultParam);
+        }
+    }
+
+    public void refresh(long id) {
+        if (objectMap.containsKey(id)) {
+            Map<String, String> defaultParam = new HashMap<String, String>();
+            AceWebBase webBase = objectMap.get(id);
+            webBase.reload(defaultParam);
+        }
+    }
+
+    public void evaluateJavascript(long id, String script) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.evaluateJavascript(script);
+        }
+    }
     /**
      * notify activity lifecycle changed to plugin.
      *

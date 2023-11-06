@@ -31,6 +31,7 @@ import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -164,6 +165,13 @@ public class AceWeb extends AceWebBase {
      */
     public void setPageUrl(String pageUrl) {
         currentPageUrl = pageUrl;
+    }
+
+    public String getUrl() {
+        if (this.webView == null) {
+            return "";
+        }
+        return this.webView.getUrl();
     }
 
     @Override
@@ -891,5 +899,20 @@ public class AceWeb extends AceWebBase {
         }
         webView.getSettings().setMediaPlaybackRequiresUserGesture(access);
         return SUCCESS_TAG;
+    }
+
+    @Override
+    public void evaluateJavascript(String script) {
+        if (this.webView == null) {
+            return;
+        }
+        this.webView.evaluateJavascript(script, new ValueCallback<String>() {
+            @Override
+            public void onReceiveValue(String value) {
+                ALog.w(LOG_TAG, "evaluateJavascript onReceiveValue:" + value);
+                // native c++
+                AceWebPluginBase.onReceiveValue(value);
+            }
+        });
     }
 }
