@@ -400,8 +400,8 @@ public abstract class AceWebBase {
      *
      * @param obj the jni object.
      */
-    public void fireRefreshHistory(Object obj) {
-        this.nativeOnObjectEvent(makeEventHash("onRefreshAccessedHistory"), "onRefreshAccessedHistory", obj);
+    public void fireRefreshHistory(String url) {
+        callback.onEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS + "onRefreshAccessedHistory" + PARAM_BEGIN, url);
     }
 
     /**
@@ -409,8 +409,8 @@ public abstract class AceWebBase {
      *
      * @param obj the jni object.
      */
-    public void fireUrlLoadIntercept(Object obj) {
-        this.nativeOnObjectEvent(makeEventHash("onUrlLoadIntercept"), "onUrlLoadIntercept", obj);
+    public boolean fireUrlLoadIntercept(Object obj) {
+        return this.nativeOnObjectEventWithBoolReturn(makeEventHash("onLoadIntercept"), "onLoadIntercept", obj);
     }
 
     /**
@@ -452,6 +452,26 @@ public abstract class AceWebBase {
     public void firePageChanged(int newProgress) {
         String param = String.valueOf(newProgress);
         callback.onEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS + "onProgressChanged" + PARAM_BEGIN, param);
+    }
+
+    /**
+     * This is called to fire on page scroll event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public void fireScrollChanged(Object obj) {
+        this.nativeOnObjectEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onScroll" + PARAM_BEGIN, "onScroll", obj);
+    }
+
+    /**
+     * This is called to fire on page scale event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public void fireScaleChanged(Object obj) {
+        this.nativeOnObjectEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onScaleChange" + PARAM_BEGIN, "onScaleChange", obj);
     }
 
     /**
@@ -498,8 +518,8 @@ public abstract class AceWebBase {
      *
      * @param obj the jni object of this event.
      */
-    public void firePageOnConsoleMessage(Object obj) {
-        this.nativeOnObjectEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+    public boolean firePageOnConsoleMessage(Object obj) {
+        return this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
             "onConsoleMessage" + PARAM_BEGIN, "onConsoleMessage", obj);
     }
 
@@ -725,4 +745,6 @@ public abstract class AceWebBase {
     public abstract void loadUrl(String url, Map<String, String> header);
 
     private native void nativeOnObjectEvent(String id, String param, Object object);
+
+    private native boolean nativeOnObjectEventWithBoolReturn(String id, String param, Object object);
 }
