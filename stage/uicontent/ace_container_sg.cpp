@@ -37,6 +37,7 @@
 #include "core/common/flutter/flutter_task_executor.h"
 #include "core/common/font_manager.h"
 #include "core/common/platform_window.h"
+#include "core/common/resource/resource_manager.h"
 #include "core/common/thread_checker.h"
 #include "core/common/watch_dog.h"
 #include "core/common/window.h"
@@ -73,8 +74,7 @@ constexpr int THEME_ID_DARK = 117440516;
 constexpr int INDEX_LANGUAGE = 0;
 constexpr int INDEX_REGION = 1;
 constexpr int INDEX_SCRIPT = 2;
-void ParseLocaleTag(
-    const std::string& localeTag, std::string& language, std::string& script, std::string& region)
+void ParseLocaleTag(const std::string& localeTag, std::string& language, std::string& script, std::string& region)
 {
     if (localeTag.empty()) {
         return;
@@ -581,11 +581,11 @@ void AceContainerSG::AttachView(
     frontend_->AttachPipelineContext(pipelineContext_);
 }
 
-void AceContainerSG::UpdateConfiguration(const std::string& colorMode,
-    const std::string& direction, const std::string& densityDpi, const std::string& languageTag)
+void AceContainerSG::UpdateConfiguration(const std::string& colorMode, const std::string& direction,
+    const std::string& densityDpi, const std::string& languageTag)
 {
     LOGI("AceContainerSG::UpdateConfiguration, colorMode:%{public}s, direction:%{public}s, densityDpi:%{public}s,"
-        "language:%{public}s",
+         "language:%{public}s",
         colorMode.c_str(), direction.c_str(), densityDpi.c_str(), languageTag.c_str());
     if (colorMode.empty() && direction.empty() && densityDpi.empty() && languageTag.empty()) {
         LOGW("AceContainerSG::UpdateResourceConfiguration param is empty");
@@ -630,8 +630,8 @@ void AceContainerSG::UpdateConfiguration(const std::string& colorMode,
         std::string script;
         std::string region;
         ParseLocaleTag(languageTag, language, script, region);
-        LOGI("language:%{public}s, script:%{public}s, region:%{public}s",
-            language.c_str(), script.c_str(), region.c_str());
+        LOGI("language:%{public}s, script:%{public}s, region:%{public}s", language.c_str(), script.c_str(),
+            region.c_str());
         if (!language.empty() || !script.empty() || !region.empty()) {
             configurationChange.languageUpdate = true;
             AceApplicationInfo::GetInstance().SetLocale(language, region, script, "");
@@ -639,6 +639,9 @@ void AceContainerSG::UpdateConfiguration(const std::string& colorMode,
     }
     SetResourceConfiguration(resConfig);
     themeManager->UpdateConfig(resConfig);
+    if (SystemProperties::GetResourceDecoupling()) {
+        ResourceManager::GetInstance().UpdateResourceConfig(resConfig);
+    }
     themeManager->LoadResourceThemes();
     themeManager->ParseSystemTheme();
     themeManager->SetColorScheme(colorScheme_);
@@ -653,21 +656,61 @@ void AceContainerSG::UpdateConfiguration(const std::string& colorMode,
     pipelineContext_->FlushReloadTransition();
 }
 
+void InitResourceAndThemeManager(const RefPtr<PipelineBase>& pipelineContext, const RefPtr<AssetManager>& assetManager,
+    const ColorScheme& colorScheme, const ResourceInfo& resourceInfo, AceView* aceView,
+    const std::shared_ptr<OHOS::AbilityRuntime::Platform::Context>& context,
+    const std::shared_ptr<OHOS::AppExecFwk::AbilityInfo>& abilityInfo)
+{
+    auto resourceAdapter = ResourceAdapter::CreateV2();
+    resourceAdapter->Init(resourceInfo);
+
+    ThemeConstants::InitDeviceType();
+    auto themeManager = AceType::MakeRefPtr<ThemeManagerImpl>(resourceAdapter);
+    pipelineContext->SetThemeManager(themeManager);
+    themeManager->SetColorScheme(colorScheme);
+    themeManager->LoadCustomTheme(assetManager);
+    themeManager->LoadResourceThemes();
+    aceView->SetBackgroundColor(themeManager->GetBackgroundColor());
+
+    auto defaultBundleName = "";
+    auto defaultModuleName = "";
+    ResourceManager::GetInstance().AddResourceAdapter(defaultBundleName, defaultModuleName, resourceAdapter);
+    if (context) {
+        auto bundleName = context->GetBundleName();
+        auto moduleName = context->GetHapModuleInfo()->name;
+        if (!bundleName.empty() && !moduleName.empty()) {
+            ResourceManager::GetInstance().AddResourceAdapter(bundleName, moduleName, resourceAdapter);
+        }
+    } else if (abilityInfo) {
+        auto bundleName = abilityInfo->bundleName;
+        auto moduleName = abilityInfo->moduleName;
+        if (!bundleName.empty() && !moduleName.empty()) {
+            ResourceManager::GetInstance().AddResourceAdapter(bundleName, moduleName, resourceAdapter);
+        }
+    }
+}
+
 void AceContainerSG::InitThemeManager()
 {
     LOGI("Init theme manager");
     auto initThemeManagerTask = [pipelineContext = pipelineContext_, assetManager = assetManager_,
-                                    colorScheme = colorScheme_, resourceInfo = resourceInfo_, aceView = aceView_]() {
+                                    colorScheme = colorScheme_, resourceInfo = resourceInfo_, aceView = aceView_,
+                                    context = runtimeContext_.lock(), abilityInfo = abilityInfo_.lock()]() {
         ACE_SCOPED_TRACE("OHOS::LoadThemes()");
         LOGI("UIContent load theme");
-        ThemeConstants::InitDeviceType();
-        auto themeManager = AceType::MakeRefPtr<ThemeManagerImpl>();
-        pipelineContext->SetThemeManager(themeManager);
-        themeManager->InitResource(resourceInfo);
-        themeManager->LoadSystemTheme(resourceInfo.GetThemeId());
-        themeManager->SetColorScheme(colorScheme);
-        themeManager->LoadResourceThemes();
-        aceView->SetBackgroundColor(themeManager->GetBackgroundColor());
+        if (SystemProperties::GetResourceDecoupling()) {
+            InitResourceAndThemeManager(
+                pipelineContext, assetManager, colorScheme, resourceInfo, aceView, context, abilityInfo);
+        } else {
+            ThemeConstants::InitDeviceType();
+            auto themeManager = AceType::MakeRefPtr<ThemeManagerImpl>();
+            pipelineContext->SetThemeManager(themeManager);
+            themeManager->InitResource(resourceInfo);
+            themeManager->LoadSystemTheme(resourceInfo.GetThemeId());
+            themeManager->SetColorScheme(colorScheme);
+            themeManager->LoadResourceThemes();
+            aceView->SetBackgroundColor(themeManager->GetBackgroundColor());
+        }
         if (colorScheme == ColorScheme::SCHEME_DARK) {
             pipelineContext->SetAppBgColor(Color::BLACK);
         } else {
