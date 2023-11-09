@@ -104,29 +104,7 @@
       JNI_OnLoad;
 
       napi_*;
-      uv_queue_work;
-      uv_chdir;
-      uv_os_getpid;
-      uv_kill;
-      uv_cwd;
-      uv_os_getenv;
-      uv_strerror;
-      uv_close;
-      uv_stop;
-      uv_timer_stop;
-      uv_async_send;
-      uv_timer_again;
-      uv_default_loop;
-      uv_timer_init;
-      uv_timer_start;
-      uv_async_init;
-      uv_run;
-      uv_loop_close;
-      uv_is_closing;
-      uv_thread_self;
-      uv_is_active;
-      uv_update_time;
-      uv_thread_create;
+      uv_*;
 
 
       "PrintLog(LogLevel, char const*, ...)";
