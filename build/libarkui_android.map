@@ -364,13 +364,13 @@
       "icu_69::RegexPattern::~RegexPattern()";
       "icu_69::UnicodeString::tempSubString(int, int) const";
       "icu_69::RegexPattern::matcher(icu_69::UnicodeString const&, UErrorCode&) const";
-      "icu_69::RegexMatcher::lookingAt(long, UErrorCode&)";
-      "icu_69::RegexMatcher::find(long, UErrorCode&)";
+      "icu_69::RegexMatcher::lookingAt*";
+      "icu_69::RegexMatcher::find*";
       "icu_69::RegexMatcher::groupCount() const";
       "icu_69::RegexMatcher::group(int, UErrorCode&) const";
       "icu_69::RegexMatcher::end(UErrorCode&) const";
       "icu_69::RegexMatcher::~RegexMatcher()";
-      "icu_69::RegexMatcher::matches(long, UErrorCode&)";
+      "icu_69::RegexMatcher::matches*";
       "icu_69::RegexMatcher::find()";
       "icu_69::RegexMatcher::appendReplacement(icu_69::UnicodeString&, icu_69::UnicodeString const&, UErrorCode&)";
       "icu_69::RegexMatcher::appendTail(icu_69::UnicodeString&)";
