@@ -189,7 +189,6 @@
       snprintf_s;
       sscanf_s;
 
-      icudt69_dat;
       u_isdigit_69;
       u_isJavaSpaceChar_69;
       u_isWhitespace_69;
@@ -359,6 +358,23 @@
       "icu_69::number::Precision::fixedFraction(int)";
       "icu_69::number::NumberFormatterSettings<icu_69::number::LocalizedNumberFormatter>::scale(icu_69::number::Scale const&) &&";
       "icu_69::number::NumberFormatterSettings<icu_69::number::LocalizedNumberFormatter>::precision(icu_69::number::Precision const&) &&";
+      "icu_69::Locale::createFromName(char const*)";
+      "u_charDigitValue_69";
+      "icu_69::RegexPattern::compile(icu_69::UnicodeString const&, unsigned int, UParseError&, UErrorCode&)";
+      "icu_69::RegexPattern::~RegexPattern()";
+      "icu_69::UnicodeString::tempSubString(int, int) const";
+      "icu_69::RegexPattern::matcher(icu_69::UnicodeString const&, UErrorCode&) const";
+      "icu_69::RegexMatcher::lookingAt(long, UErrorCode&)";
+      "icu_69::RegexMatcher::find(long, UErrorCode&)";
+      "icu_69::RegexMatcher::groupCount() const";
+      "icu_69::RegexMatcher::group(int, UErrorCode&) const";
+      "icu_69::RegexMatcher::end(UErrorCode&) const";
+      "icu_69::RegexMatcher::~RegexMatcher()";
+      "icu_69::RegexMatcher::matches(long, UErrorCode&)";
+      "icu_69::RegexMatcher::find()";
+      "icu_69::RegexMatcher::appendReplacement(icu_69::UnicodeString&, icu_69::UnicodeString const&, UErrorCode&)";
+      "icu_69::RegexMatcher::appendTail(icu_69::UnicodeString&)";
+      "udata_setCommonData_69";
 
       vtable?for?icu_69::UnicodeString;
       vtable?for?icu_69::FieldPosition;
