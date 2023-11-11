@@ -21,6 +21,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import ohos.ace.adapter.ALog;
 
+/**
+ * Binary Codec for Bridge.
+ *
+ * @since 10
+ */
 public class BridgeBinaryCodec implements BridgeBaseCodec<Object> {
     private static final Object INSTANCE_LOCK = new Object();
 
@@ -46,13 +51,13 @@ public class BridgeBinaryCodec implements BridgeBaseCodec<Object> {
         }
     }
 
-    @Override
     /**
      * Encode data.
      *
      * @param data Data to be encoded.
      * @return Return encode data.
      */
+    @Override
     public ByteBuffer encodeData(Object data) {
         ByteArrayOutputStreamExposed stream = new ByteArrayOutputStreamExposed();
         BridgeSerializer.writeData(stream, data);
@@ -61,13 +66,13 @@ public class BridgeBinaryCodec implements BridgeBaseCodec<Object> {
         return buffer;
     }
 
-    @Override
     /**
      * Decode data.
      *
      * @param data Data to be decoded.
      * @return Return decode data.
      */
+    @Override
     public Object decodeData(ByteBuffer byteBuffer) {
         if (byteBuffer == null) {
             return null;
@@ -80,9 +85,10 @@ public class BridgeBinaryCodec implements BridgeBaseCodec<Object> {
         }
         return data;
     }
-private static class ByteArrayOutputStreamExposed extends ByteArrayOutputStream {
-    public byte[] buffer() {
-        return buf;
+
+    private static class ByteArrayOutputStreamExposed extends ByteArrayOutputStream {
+        public byte[] buffer() {
+            return buf;
+        }
     }
-}
 }

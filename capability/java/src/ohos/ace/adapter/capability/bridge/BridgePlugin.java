@@ -33,8 +33,6 @@ public abstract class BridgePlugin {
 
     private final String bridgeName_;
 
-    private final int instanceId_;
-
     private final Object object_ = null;
 
     private final Context context_;
@@ -58,13 +56,18 @@ public abstract class BridgePlugin {
      * @param bridgeName name of bridge.
      * @param instanceId the id of instance.
      * @return BridgePlugin object.
+     * @since 10
+     * @deprecated since 11
      */
     public BridgePlugin(Context context, String bridgeName, int instanceId) {
         this.bridgeName_ = bridgeName;
-        this.instanceId_ = instanceId;
         this.context_ = context;
-        this.bridgeManager_ = BridgeManager.getInstance();
-        this.isAvailable = this.bridgeManager_.registerBridgePlugin(bridgeName, this);
+        this.bridgeManager_ = BridgeManager.findBridgeManager(instanceId);
+        if (this.bridgeManager_ != null) {
+            this.isAvailable = this.bridgeManager_.registerBridgePlugin(bridgeName, this);
+        } else {
+            this.isAvailable = false;
+        }
         this.methodsMap_ = new HashMap<String, Method>();
     }
 
@@ -76,14 +79,55 @@ public abstract class BridgePlugin {
      * @param instanceId the id of instance.
      * @param bridgeType the bridge of type.
      * @return BridgePlugin object.
+     * @since 10
+     * @deprecated since 11
      */
     public BridgePlugin(Context context, String bridgeName, int instanceId, BridgeType bridgeType) {
         this.bridgeName_ = bridgeName;
-        this.instanceId_ = instanceId;
         this.context_ = context;
         this.bridgeType_ = bridgeType;
-        this.bridgeManager_ = BridgeManager.getInstance();
-        this.isAvailable = this.bridgeManager_.registerBridgePlugin(bridgeName, this);
+        this.bridgeManager_ = BridgeManager.findBridgeManager(instanceId);
+        if (this.bridgeManager_ != null) {
+            this.isAvailable = this.bridgeManager_.registerBridgePlugin(bridgeName, this);
+        } else {
+            this.isAvailable = false;
+        }
+        this.methodsMap_ = new HashMap<String, Method>();
+    }
+
+    /**
+     * Bridge dependent plugin.
+     *
+     * @param context context of the application.
+     * @param bridgeName name of bridge.
+     * @param bridgeManager Object of BridgeManager.
+     * @return BridgePlugin object.
+     * @since 11
+     */
+    public BridgePlugin(Context context, String bridgeName, BridgeManager bridgeManager) {
+        this.isAvailable = bridgeManager.registerBridgePlugin(bridgeName, this);
+        this.bridgeManager_ = bridgeManager;
+        this.bridgeName_ = bridgeName;
+        this.context_ = context;
+        this.methodsMap_ = new HashMap<String, Method>();
+    }
+
+    /**
+     * Bridge dependent plugin by BINARY_TYPE.
+     *
+     * @param context context of the application.
+     * @param bridgeName name of bridge.
+     * @param bridgeManager Object of BridgeManager.
+     * @param bridgeType the bridge of type.
+     * @return BridgePlugin object.
+     * @since 11
+     */
+    public BridgePlugin(Context context, String bridgeName, BridgeManager bridgeManager, BridgeType bridgeType) {
+        this.isAvailable = bridgeManager.registerBridgePlugin(bridgeName, this);
+        this.bridgeManager_ = bridgeManager;
+        this.bridgeName_ = bridgeName;
+        this.context_ = context;
+        this.bridgeType_ = bridgeType;
         this.methodsMap_ = new HashMap<String, Method>();
     }
 
@@ -125,15 +169,6 @@ public abstract class BridgePlugin {
      */
     protected String getBridgeName() {
         return this.bridgeName_;
-    }
-
-    /**
-     * Get the Id of platform.
-     *
-     * @return The InstanceId.
-     */
-    protected int getInstanceId() {
-        return this.instanceId_;
     }
 
     /**
@@ -219,6 +254,7 @@ public abstract class BridgePlugin {
      * @return Return the call result.
      */
     protected Object jsCallMethod(Object object, MethodData methodData) {
+        BridgeErrorCode bridgeErrorCode = BridgeErrorCode.BRIDGE_METHOD_UNIMPL;
         Object[] parametersObject = methodData.getMethodParameter();
         Class clazz = object.getClass();
         Object resValues = null;
@@ -237,7 +273,7 @@ public abstract class BridgePlugin {
             }
         } catch (NoSuchMethodException e) {
             ALog.e(LOG_TAG, "jsCallMethod failed, NoSuchMethodException.");
-            return BridgeErrorCode.BRIDGE_METHOD_NAME_ERROR;
+            return bridgeErrorCode;
         }
         try {
             if (callMethod != null && parametersObject != null && parametersObject.length != 0) {
@@ -250,10 +286,11 @@ public abstract class BridgePlugin {
             ALog.e(LOG_TAG, "jsCallMethod failed, IllegalAccessException.");
         } catch (IllegalArgumentException e) {
             ALog.e(LOG_TAG, "jsCallMethod failed, IllegalArgumentException.");
+            bridgeErrorCode = BridgeErrorCode.BRIDGE_METHOD_PARAM_ERROR;
         } catch (InvocationTargetException e) {
             ALog.e(LOG_TAG, "jsCallMethod failed, InvocationTargetException.");
         }
-        return BridgeErrorCode.BRIDGE_METHOD_UNIMPL;
+        return bridgeErrorCode;
     }
 
     /**

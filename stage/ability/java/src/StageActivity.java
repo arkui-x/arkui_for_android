@@ -74,6 +74,8 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     private AcePlatformPlugin platformPlugin = null;
 
+    private BridgeManager bridgeManager = null;
+
     private static final int ERR_INVALID_PARAMETERS = -1;
 
     private static final int ERR_OK = 0;
@@ -110,6 +112,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         windowView = new WindowView(this);
         Trace.endSection();
         initPlatformPlugin(this, instanceId, windowView);
+        initBridgeManager();
 
         Trace.beginSection("setContentView");
         setContentView(windowView);
@@ -178,9 +181,9 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         super.onDestroy();
         activityDelegate.dispatchOnDestroy(getInstanceName());
         windowView.destroy();
-        BridgeManager.deleteBridgeByInstanceId(this.instanceId);
 
         keyboardHeightProvider.close();
+        BridgeManager.unRegisterBridgeManager(instanceId);
     }
 
     @Override
@@ -231,11 +234,34 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     }
 
     /**
+     * Get the BridgeManager of StageActivity.
+     *
+     * @return The BridgeManager.
+     */
+    public BridgeManager getBridgeManager() {
+        if (this.bridgeManager == null) {
+            this.bridgeManager = new BridgeManager(instanceId);
+        }
+        return this.bridgeManager;
+    }
+
+    private void initBridgeManager() {
+        if (bridgeManager == null) {
+            getBridgeManager();
+        }
+        if (BridgeManager.findBridgeManager(instanceId) == null) {
+            bridgeManager.nativeInit(instanceId);
+            BridgeManager.registerBridgeManager(instanceId, bridgeManager);
+        }
+    }
+
+    /**
      * Get the Id of StageActivity.
      *
      * @return The InstanceId.
      */
     public int getInstanceId() {
+        initBridgeManager();
         return this.instanceId;
     }
 
