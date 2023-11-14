@@ -62,6 +62,7 @@
       "OHOS::Ace::ToRSColor(OHOS::Ace::LinearColor const&)";
       OHOS::Ace::MemoryMonitor::*;
       "OHOS::Ace::SystemProperties::GetDebugEnabled()";
+      "OHOS::Ace::SystemProperties::GetResourceDecoupling()";
       OHOS::Ace::V2::PATTERN_LOCK_ETS_TAG;
       OHOS::Ace::V2::QRCODE_ETS_TAG;
       OHOS::Ace::V2::RELATIVE_CONTAINER_ETS_TAG;
@@ -72,6 +73,7 @@
       OHOS::Rosen::Drawing::Pen::*;
       OHOS::Rosen::Drawing::ShaderEffect::*;
       OHOS::Rosen::Drawing::Brush::*;
+      OHOS::Ace::ResourceManager::*;
 
       virtual?thunk?to?OHOS::Ace::Animator::~Animator??;
 

@@ -45,6 +45,16 @@ RefPtr<ImageSource> ImageSource::Create(const uint8_t* data, uint32_t size)
     return MakeRefPtr<ImageSourceAndroid>(std::move(src));
 }
 
+bool ImageSource::IsAstc(const uint8_t* data, size_t size)
+{
+    return false;
+}
+
+ImageSource::Size ImageSource::GetASTCInfo(const uint8_t* data, size_t size)
+{
+    return { 0, 0 };
+}
+
 std::string ImageSourceAndroid::GetProperty(const std::string& key)
 {
     std::string value;
