@@ -372,6 +372,10 @@
       OHOS::Ace::NG::FocusHub::*;
       OHOS::Ace::NG::InputEventHub::*;
       OHOS::Ace::NG::InputEventActuator::*;
+      
+      OHOS::AppExecFwk::EventHandler::*;
+      OHOS::AppExecFwk::EventRunner::*;
+      OHOS::AppExecFwk::InnerEvent::*;
     };
   local:
     *;
