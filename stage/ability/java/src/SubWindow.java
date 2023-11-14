@@ -145,7 +145,7 @@ public class SubWindow {
         subWindowView.setWidth(windowParam.width);
         subWindowView.setHeight(windowParam.height);
         subWindowView.setOutsideTouchable(false);
-        subWindowView.setFocusable(false);
+        subWindowView.setFocusable(true);
         subWindowView.setElevation(0);
         subWindowView.setTouchable(true);
         contentView.setBackgroundColor(Color.GRAY);

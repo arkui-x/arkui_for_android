@@ -122,5 +122,26 @@ public class DisplayInfo {
         return defaultDisplay.getRefreshRate();
     }
 
+    public float getDensityPixels() {
+        Log.d(TAG, "getDensityPixels called.");
+        DisplayMetrics metrics = new DisplayMetrics();
+        mWindowManager.getDefaultDisplay().getMetrics(metrics);
+        return metrics.density;
+    }
+
+    public int getDensityDpi() {
+        Log.d(TAG, "getDensityDpi called.");
+        DisplayMetrics metrics = new DisplayMetrics();
+        mWindowManager.getDefaultDisplay().getMetrics(metrics);
+        return metrics.densityDpi;
+    }
+
+    public float getScaledDensity() {
+        Log.d(TAG, "getScaledDensity called.");
+        DisplayMetrics metrics = new DisplayMetrics();
+        mWindowManager.getDefaultDisplay().getMetrics(metrics);
+        return metrics.scaledDensity;
+    }
+
     private native void nativeSetupDisplayInfo();
 }
