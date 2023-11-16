@@ -42,6 +42,125 @@ void DummyWindowRelease(Window* window)
     window->DecStrongRef(window);
     LOGI("Rosenwindow rsWindow_Window: dummy release");
 }
+
+Ace::KeyCode KeyCodeToAceKeyCode(int keyCode) {
+    Ace::KeyCode aceKeyCode = Ace::KeyCode::KEY_UNKNOWN;
+    const static std::map<int32_t, Ace::KeyCode> TO_OHOS_KEYCODE_MAP = {
+        {4      /* KEYCODE_BACK */,               Ace::KeyCode::KEY_ESCAPE          },
+        {7      /* KEYCODE_0 */,                  Ace::KeyCode::KEY_0               },
+        {8      /* KEYCODE_1 */,                  Ace::KeyCode::KEY_1               },
+        {9      /* KEYCODE_2 */,                  Ace::KeyCode::KEY_2               },
+        {10     /* KEYCODE_3 */,                  Ace::KeyCode::KEY_3               },
+        {11     /* KEYCODE_4 */,                  Ace::KeyCode::KEY_4               },
+        {12     /* KEYCODE_5 */,                  Ace::KeyCode::KEY_5               },
+        {13     /* KEYCODE_6 */,                  Ace::KeyCode::KEY_6               },
+        {14     /* KEYCODE_7 */,                  Ace::KeyCode::KEY_7               },
+        {15     /* KEYCODE_8 */,                  Ace::KeyCode::KEY_8               },
+        {16     /* KEYCODE_9 */,                  Ace::KeyCode::KEY_9               },
+        {19     /* KEYCODE_DPAD_UP */,            Ace::KeyCode::KEY_DPAD_UP         },
+        {20     /* KEYCODE_DPAD_DOWN */,          Ace::KeyCode::KEY_DPAD_DOWN       },
+        {21     /* KEYCODE_DPAD_LEFT */,          Ace::KeyCode::KEY_DPAD_LEFT       },
+        {22     /* KEYCODE_DPAD_RIGHT */,         Ace::KeyCode::KEY_DPAD_RIGHT      },
+        {23     /* KEYCODE_DPAD_CENTER */,        Ace::KeyCode::KEY_DPAD_CENTER     },
+        {29     /* KEYCODE_A */,                  Ace::KeyCode::KEY_A               },
+        {30     /* KEYCODE_B */,                  Ace::KeyCode::KEY_B               },
+        {31     /* KEYCODE_C */,                  Ace::KeyCode::KEY_C               },
+        {32     /* KEYCODE_D */,                  Ace::KeyCode::KEY_D               },
+        {33     /* KEYCODE_E */,                  Ace::KeyCode::KEY_E               },
+        {34     /* KEYCODE_F */,                  Ace::KeyCode::KEY_F               },
+        {35     /* KEYCODE_G */,                  Ace::KeyCode::KEY_G               },
+        {36     /* KEYCODE_H */,                  Ace::KeyCode::KEY_H               },
+        {37     /* KEYCODE_I */,                  Ace::KeyCode::KEY_I               },
+        {38     /* KEYCODE_J */,                  Ace::KeyCode::KEY_J               },
+        {39     /* KEYCODE_K */,                  Ace::KeyCode::KEY_K               },
+        {40     /* KEYCODE_L */,                  Ace::KeyCode::KEY_L               },
+        {41     /* KEYCODE_M */,                  Ace::KeyCode::KEY_M               },
+        {42     /* KEYCODE_N */,                  Ace::KeyCode::KEY_N               },
+        {43     /* KEYCODE_O */,                  Ace::KeyCode::KEY_O               },
+        {44     /* KEYCODE_P */,                  Ace::KeyCode::KEY_P               },
+        {45     /* KEYCODE_Q */,                  Ace::KeyCode::KEY_Q               },
+        {46     /* KEYCODE_R */,                  Ace::KeyCode::KEY_R               },
+        {47     /* KEYCODE_S */,                  Ace::KeyCode::KEY_S               },
+        {48     /* KEYCODE_T */,                  Ace::KeyCode::KEY_T               },
+        {49     /* KEYCODE_U */,                  Ace::KeyCode::KEY_U               },
+        {50     /* KEYCODE_V */,                  Ace::KeyCode::KEY_V               },
+        {51     /* KEYCODE_W */,                  Ace::KeyCode::KEY_W               },
+        {52     /* KEYCODE_X */,                  Ace::KeyCode::KEY_X               },
+        {53     /* KEYCODE_Y */,                  Ace::KeyCode::KEY_Y               },
+        {54     /* KEYCODE_Z */,                  Ace::KeyCode::KEY_Z               },
+        {55     /* KEYCODE_COMMA */,              Ace::KeyCode::KEY_COMMA           },
+        {56     /* KEYCODE_PERIOD */,             Ace::KeyCode::KEY_PERIOD          },
+        {57     /* KEYCODE_ALT_LEFT */,           Ace::KeyCode::KEY_ALT_LEFT        },
+        {58     /* KEYCODE_ALT_RIGHT */,          Ace::KeyCode::KEY_ALT_RIGHT       },
+        {59     /* KEYCODE_SHIFT_LEFT */,         Ace::KeyCode::KEY_SHIFT_LEFT      },
+        {60     /* KEYCODE_SHIFT_RIGHT */,        Ace::KeyCode::KEY_SHIFT_RIGHT     },
+        {61     /* KEYCODE_TAB */,                Ace::KeyCode::KEY_TAB             },
+        {62     /* KEYCODE_SPACE */,              Ace::KeyCode::KEY_SPACE           },
+        {66     /* KEYCODE_ENTER */,              Ace::KeyCode::KEY_ENTER           },
+        {67     /* KEYCODE_DEL */,                Ace::KeyCode::KEY_DEL             },
+        {68     /* KEYCODE_GRAVE */,              Ace::KeyCode::KEY_GRAVE           },
+        {69     /* KEYCODE_MINUS */,              Ace::KeyCode::KEY_MINUS           },
+        {70     /* KEYCODE_EQUALS */,             Ace::KeyCode::KEY_EQUALS          },
+        {71     /* KEYCODE_LEFT_BRACKET */,       Ace::KeyCode::KEY_LEFT_BRACKET    },
+        {72     /* KEYCODE_RIGHT_BRACKET */,      Ace::KeyCode::KEY_RIGHT_BRACKET   },
+        {73     /* KEYCODE_BACKSLASH */,          Ace::KeyCode::KEY_BACKSLASH       },
+        {74     /* KEYCODE_SEMICOLON */,          Ace::KeyCode::KEY_SEMICOLON       },
+        {75     /* KEYCODE_APOSTROPHE */,         Ace::KeyCode::KEY_APOSTROPHE      },
+        {76     /* KEYCODE_SLASH */,              Ace::KeyCode::KEY_SLASH           },
+        {82     /* KEYCODE_MENU */,               (Ace::KeyCode)2466                },
+        {84     /* KEYCODE_SEARCH */,             Ace::KeyCode::KEY_SEARCH          },
+        {92     /* KEYCODE_PAGE_UP */,            Ace::KeyCode::KEY_PAGE_UP         },
+        {93     /* KEYCODE_PAGE_DOWN */,          Ace::KeyCode::KEY_PAGE_DOWN       },
+        {111    /* KEYCODE_ESCAPE */,             Ace::KeyCode::KEY_ESCAPE          },
+        {112    /* KEYCODE_FORWARD_DEL */,        Ace::KeyCode::KEY_FORWARD_DEL     },
+        {113    /* KEYCODE_CTRL_LEFT */,          Ace::KeyCode::KEY_CTRL_LEFT       },
+        {114    /* KEYCODE_CTRL_RIGHT */,         Ace::KeyCode::KEY_CTRL_RIGHT      },
+        {115    /* KEYCODE_CAPS_LOCK */,          Ace::KeyCode::KEY_CAPS_LOCK       },
+        {116    /* KEYCODE_SCROLL_LOCK */,        Ace::KeyCode::KEY_SCROLL_LOCK     },
+        {117    /* KEYCODE_META_LEFT */,          Ace::KeyCode::KEY_META_LEFT       }, 
+        {118    /* KEYCODE_META_RIGHT */,         Ace::KeyCode::KEY_META_RIGHT      },
+        {120    /* KEYCODE_SYSRQ */,              Ace::KeyCode::KEY_SYSRQ           },
+        {121    /* KEYCODE_BREAK */,              Ace::KeyCode::KEY_BREAK           },
+        {122    /* KEYCODE_MOVE_HOME */,          Ace::KeyCode::KEY_MOVE_HOME       },
+        {123    /* KEYCODE_MOVE_END */,           Ace::KeyCode::KEY_MOVE_END        },
+        {124    /* KEYCODE_INSERT */,             Ace::KeyCode::KEY_INSERT          },
+        {131    /* KEYCODE_F1 */,                 Ace::KeyCode::KEY_F1              },
+        {132    /* KEYCODE_F2 */,                 Ace::KeyCode::KEY_F2              },
+        {133    /* KEYCODE_F3 */,                 Ace::KeyCode::KEY_F3              },
+        {134    /* KEYCODE_F4 */,                 Ace::KeyCode::KEY_F4              },
+        {135    /* KEYCODE_F5 */,                 Ace::KeyCode::KEY_F5              },
+        {136    /* KEYCODE_F6 */,                 Ace::KeyCode::KEY_F6              },
+        {137    /* KEYCODE_F7 */,                 Ace::KeyCode::KEY_F7              },
+        {138    /* KEYCODE_F8 */,                 Ace::KeyCode::KEY_F8              },
+        {139    /* KEYCODE_F9 */,                 Ace::KeyCode::KEY_F9              },
+        {140    /* KEYCODE_F10 */,                Ace::KeyCode::KEY_F10             },
+        {141    /* KEYCODE_F11 */,                Ace::KeyCode::KEY_F11             },
+        {142    /* KEYCODE_F12 */,                Ace::KeyCode::KEY_F12             },
+        {143    /* KEYCODE_NUM_LOCK */,           Ace::KeyCode::KEY_NUM_LOCK        },
+        {144    /* KEYCODE_NUMPAD_0 */,           Ace::KeyCode::KEY_NUMPAD_0        },
+        {145    /* KEYCODE_NUMPAD_1 */,           Ace::KeyCode::KEY_NUMPAD_1        },
+        {146    /* KEYCODE_NUMPAD_2 */,           Ace::KeyCode::KEY_NUMPAD_2        },
+        {147    /* KEYCODE_NUMPAD_3 */,           Ace::KeyCode::KEY_NUMPAD_3        },
+        {148    /* KEYCODE_NUMPAD_4 */,           Ace::KeyCode::KEY_NUMPAD_4        },
+        {149    /* KEYCODE_NUMPAD_5 */,           Ace::KeyCode::KEY_NUMPAD_5        },
+        {150    /* KEYCODE_NUMPAD_6 */,           Ace::KeyCode::KEY_NUMPAD_6        },
+        {151    /* KEYCODE_NUMPAD_7 */,           Ace::KeyCode::KEY_NUMPAD_7        },
+        {152    /* KEYCODE_NUMPAD_8 */,           Ace::KeyCode::KEY_NUMPAD_8        },
+        {153    /* KEYCODE_NUMPAD_9 */,           Ace::KeyCode::KEY_NUMPAD_9        },
+        {154    /* KEYCODE_NUMPAD_DIVIDE */,      Ace::KeyCode::KEY_NUMPAD_DIVIDE   },
+        {155    /* KEYCODE_NUMPAD_MULTIPLY */,    Ace::KeyCode::KEY_NUMPAD_MULTIPLY },
+        {156    /* KEYCODE_NUMPAD_SUBTRACT */,    Ace::KeyCode::KEY_NUMPAD_SUBTRACT },
+        {157    /* KEYCODE_NUMPAD_ADD */,         Ace::KeyCode::KEY_NUMPAD_ADD      },
+        {158    /* KEYCODE_NUMPAD_DOT */,         Ace::KeyCode::KEY_NUMPAD_DOT      },
+        {160    /* KEYCODE_NUMPAD_ENTER */,       Ace::KeyCode::KEY_NUMPAD_ENTER    },
+    };
+    auto checkIter = TO_OHOS_KEYCODE_MAP.find(keyCode);
+    if (checkIter != TO_OHOS_KEYCODE_MAP.end()) {
+        aceKeyCode = checkIter->second;
+    }
+    return aceKeyCode;
+}
+
 std::map<uint32_t, std::vector<std::shared_ptr<Window>>> Window::subWindowMap_;
 std::map<std::string, std::pair<uint32_t, std::shared_ptr<Window>>> Window::windowMap_;
 std::map<uint32_t, std::vector<sptr<IOccupiedAreaChangeListener>>> Window::occupiedAreaChangeListeners_;
@@ -727,13 +846,18 @@ bool Window::ProcessPointerEvent(const std::vector<uint8_t>& data)
 }
 
 bool Window::ProcessKeyEvent(
-    int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp, int64_t timeStampStart)
+    int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp, int64_t timeStampStart, int32_t source, int32_t deviceId)
 {
     if (!uiContent_) {
         LOGW("Window::ProcessKeyEvent uiContent_ is nullptr");
         return false;
     }
-    return uiContent_->ProcessKeyEvent(keyCode, keyAction, repeatTime, timeStamp, timeStampStart);
+    Ace::KeyCode aceKeyCode = KeyCodeToAceKeyCode(keyCode);
+    int32_t metaKey = 0;
+    if (aceKeyCode == Ace::KeyCode::KEY_META_LEFT || aceKeyCode == Ace::KeyCode::KEY_META_RIGHT) {
+        metaKey = 1;
+    }
+    return uiContent_->ProcessKeyEvent(static_cast<int32_t>(aceKeyCode), keyAction, repeatTime, timeStamp, timeStampStart, metaKey, source, deviceId);
 }
 
 void Window::DelayNotifyUIContentIfNeeded()

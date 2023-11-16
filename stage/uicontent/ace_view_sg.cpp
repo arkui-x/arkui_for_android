@@ -204,6 +204,9 @@ bool AceViewSG::DispatchKeyEvent(const KeyEventInfo& eventInfo)
 
     auto keyEvents = keyEventRecognizer_.GetKeyEvents(eventInfo.keyCode, eventInfo.keyAction, eventInfo.repeatTime,
         eventInfo.timeStamp, eventInfo.timeStampStart, eventInfo.metaKey, eventInfo.sourceDevice, eventInfo.deviceId);
+    if (keyEvents.size() == 0) {
+        return false;
+    }
     // distribute special event firstly
     // because platform receives a raw event, the special event processing is ignored
     if (keyEvents.size() > 1) {

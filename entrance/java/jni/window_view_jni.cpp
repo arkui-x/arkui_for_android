@@ -196,7 +196,7 @@ jboolean WindowViewJni::DispatchPointerDataPacket(
 }
 
 jboolean WindowViewJni::DispatchKeyEvent(JNIEnv* env, jobject myObject, jlong window, jint keyCode, jint action,
-    jint repeatTime, jlong timeStamp, jlong timeStampStart)
+    jint repeatTime, jlong timeStamp, jlong timeStampStart, jint source, jint deviceId)
 {
     auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
     if (windowPtr == nullptr) {
@@ -204,7 +204,7 @@ jboolean WindowViewJni::DispatchKeyEvent(JNIEnv* env, jobject myObject, jlong wi
         return false;
     }
 
-    return windowPtr->ProcessKeyEvent(keyCode, action, repeatTime, timeStamp, timeStampStart);
+    return windowPtr->ProcessKeyEvent(keyCode, action, repeatTime, timeStamp, timeStampStart, source, deviceId);
 }
 
 bool WindowViewJni::RegisterCommonNatives(JNIEnv* env, const jclass myClass)

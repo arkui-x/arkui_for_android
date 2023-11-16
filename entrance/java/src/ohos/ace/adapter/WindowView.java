@@ -22,6 +22,7 @@ import android.view.inputmethod.InputConnection;
 import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginBase;
 import ohos.ace.adapter.capability.web.AceWebBase;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -51,6 +52,16 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
 
     private InputConnectionClient inputClient = null;
     private boolean isFocused = true;
+
+    private boolean enterPressed = false;
+    private boolean numpadEnterPressed = false;
+    private interface KeySourceType {
+        int NONE = 0;
+        int MOUSE = 1;
+        int TOUCH = 2;
+        int TOUCH_PAD = 3;
+        int KEYBOARD = 4;
+    };
 
     /**
      * Constructor of WindowView
@@ -263,14 +274,76 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    private int eventSourceTransKeySource(int eventSource) {
+        int keySource = KeySourceType.NONE;
+        switch(eventSource) {
+            case InputDevice.SOURCE_ANY: // 0xffffff00
+                keySource = KeySourceType.NONE;
+                break;
+            case InputDevice.SOURCE_CLASS_NONE: // 0x00000000 
+                keySource = KeySourceType.NONE;
+                break;
+            case InputDevice.SOURCE_KEYBOARD: // 0x00000101
+                keySource = KeySourceType.KEYBOARD;
+                break;
+            case InputDevice.SOURCE_MOUSE: // 0x00002002
+                keySource = KeySourceType.MOUSE;
+                break;
+            case InputDevice.SOURCE_TOUCHPAD: // 0x00100008
+                keySource = KeySourceType.TOUCH_PAD;
+                break;
+            default: 
+                break; 
+        }
+        return keySource;
+    }
+
+    private void markdownNumpadKeyStatus(int keyCode, int action) {
+        if (keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER) {
+            if (action == KeyEvent.ACTION_DOWN) {
+                numpadEnterPressed = true;
+            } else {
+                numpadEnterPressed = false;
+            }
+        } else if (keyCode == KeyEvent.KEYCODE_ENTER) {
+            if (action == KeyEvent.ACTION_DOWN) {
+                enterPressed = true;
+            } else {
+                enterPressed = false;
+            }
+        }
+    }
+
+    private boolean filterNumpadKeyCode(int keyCode, int action) {
+        if (keyCode == KeyEvent.KEYCODE_ENTER) {
+            if (action == KeyEvent.ACTION_DOWN) {
+                if (numpadEnterPressed) {
+                    return true;
+                }
+            } else {
+                if (!enterPressed) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (nativeWindowPtr == 0L) {
             return super.onKeyDown(keyCode, event);
         }
 
+        if (filterNumpadKeyCode(keyCode, event.getAction())) {
+            return super.onKeyDown(keyCode, event);
+        }
+        int deviceId = event.getDeviceId();
+        int eventSouce = event.getSource();
+        int source = eventSourceTransKeySource(eventSouce);
+        markdownNumpadKeyStatus(keyCode, event.getAction());
         if (nativeDispatchKeyEvent(nativeWindowPtr, event.getKeyCode(), event.getAction(), event.getRepeatCount(),
-                event.getEventTime(), event.getDownTime())) {
+                event.getEventTime(), event.getDownTime(), source, deviceId)) {
             return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -281,9 +354,15 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         if (nativeWindowPtr == 0L) {
             return super.onKeyUp(keyCode, event);
         }
-
+        if (filterNumpadKeyCode(keyCode, event.getAction())) {
+            return super.onKeyUp(keyCode, event); 
+        }
+        int deviceId = event.getDeviceId();
+        int eventSouce = event.getSource();
+        int source = eventSourceTransKeySource(eventSouce);
+        markdownNumpadKeyStatus(keyCode, event.getAction());
         if (nativeDispatchKeyEvent(nativeWindowPtr, event.getKeyCode(), event.getAction(), event.getRepeatCount(),
-                event.getEventTime(), event.getDownTime())) {
+                event.getEventTime(), event.getDownTime(), source, deviceId)) {          
             return true;
         }
         return super.onKeyUp(keyCode, event);
@@ -310,5 +389,5 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     private native boolean nativeDispatchPointerDataPacket(long windowPtr, ByteBuffer buffer, int position);
 
     private native boolean nativeDispatchKeyEvent(long windowPtr, int keyCode, int action, int repeatTime,
-            long timeStamp, long timeStampStart);
+            long timeStamp, long timeStampStart, int source, int deviceId);
 }
