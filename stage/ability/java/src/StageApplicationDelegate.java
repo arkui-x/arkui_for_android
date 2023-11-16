@@ -83,7 +83,7 @@ public class StageApplicationDelegate {
 
     private static final String ASSETS_PATH_KEY = "assets_path_key";
 
-    private static final String COPY_RESOURCE_DIRECTORY_KEY = "copy_resource_directory_key";
+    private static final String APP_VERSION_CODE = "versionCode";
 
     private static final String WANT_PARAMS = "params";
 
@@ -108,6 +108,8 @@ public class StageApplicationDelegate {
     private volatile Activity topActivity = null;
 
     private static boolean isInitialized = false;
+
+    private static final int DEFAULT_VERSION_CODE = -1;
 
     /**
      * Constructor.
@@ -177,19 +179,21 @@ public class StageApplicationDelegate {
         try {
             if (stageApplication.getAssets().list(ASSETS_SUB_PATH).length != 0) {
                 setAssetsFileRelativePath(getAssetsPath());
-                copyAllModuleResources();
             }
         } catch (Exception e) {
             Log.e(LOG_TAG, "get Assets path failed, error: " + e.getMessage());
         }
-        setResourcesFilePrefixPath(stageApplication.getApplicationContext().getFilesDir().getPath() +
-                                    "/"+ ASSETS_SUB_PATH);
         setLocaleInfo();
         Trace.endSection();
 
         launchApplication();
         initConfiguration();
         setPackageName();
+
+        copyAllModuleResources();
+        setResourcesFilePrefixPath(stageApplication.getApplicationContext().getFilesDir().getPath() +
+                                    "/"+ ASSETS_SUB_PATH);
+
         createCacertFile(stageApplication.getExternalFilesDir((String) null).getAbsolutePath());
 
         initActivity();
@@ -356,7 +360,7 @@ public class StageApplicationDelegate {
             Log.e(LOG_TAG, "stageApplication is null");
             return;
         }
-
+        int versionCode = GetAppVersionCode();
         SharedPreferences sharedPreferences =
                 stageApplication.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
         if (sharedPreferences == null) {
@@ -364,11 +368,14 @@ public class StageApplicationDelegate {
             return;
         }
 
-        if (sharedPreferences.getBoolean(COPY_RESOURCE_DIRECTORY_KEY, false)) {
-            Log.i(LOG_TAG, "copy resources directory complete");
+        int oldVersionCode = sharedPreferences.getInt(APP_VERSION_CODE, DEFAULT_VERSION_CODE);
+        Log.i(LOG_TAG, "Old version code is: " + oldVersionCode + ", current version code is: " + versionCode);
+        if (oldVersionCode >= versionCode) {
+            Log.i(LOG_TAG, "The resource has been copied.");
             return;
         }
-        Log.i(LOG_TAG, "first copy resources directory");
+
+        Log.i(LOG_TAG, "Start copying resources.");
         AssetManager assets = stageApplication.getAssets();
         String moduleResourcesDirectory = "";
         String moduleResourcesIndex = "";
@@ -399,7 +406,7 @@ public class StageApplicationDelegate {
             Log.e(LOG_TAG, "edit is null");
             return;
         }
-        edit.putBoolean(COPY_RESOURCE_DIRECTORY_KEY, true);
+        edit.putInt(APP_VERSION_CODE, versionCode);
         edit.commit();
     }
 
@@ -777,6 +784,10 @@ public class StageApplicationDelegate {
         }
     }
 
+    private int GetAppVersionCode() {
+        return nativeGetAppVersionCode();
+    }
+
     private native void nativeSetAssetManager(Object assetManager);
 
     private native void nativeSetHapPath(String hapPath);
@@ -804,4 +815,6 @@ public class StageApplicationDelegate {
     private native void nativeSetLocale(String language, String country, String script);
 
     private native void nativeAttachStageApplicationDelegate(StageApplicationDelegate object);
+
+    private native int nativeGetAppVersionCode();
 }

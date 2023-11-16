@@ -102,6 +102,11 @@ bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
             .name = "nativeSetLocale",
             .signature = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&SetLocale),
+        },
+        {
+            .name = "nativeGetAppVersionCode",
+            .signature = "()I",
+            .fnPtr = reinterpret_cast<void*>(&GetAppVersionCode),
         } };
 
     if (!env) {
@@ -300,6 +305,16 @@ void StageApplicationDelegateJni::AttachStageApplicationDelegate(JNIEnv* env, jc
         return;
     }
     ApplicationContextAdapter::GetInstance()->SetStageApplicationDelegate(object);
+}
+
+jint StageApplicationDelegateJni::GetAppVersionCode(JNIEnv* env, jclass myclass)
+{
+    LOGI("Called.");
+    if (env == nullptr) {
+        LOGE("JNI JniStageApplicationDelegate: null java env");
+        return 0;
+    }
+    return static_cast<jint>(AppMain::GetInstance()->GetAppVersionCode());
 }
 } // namespace Platform
 } // namespace AbilityRuntime
