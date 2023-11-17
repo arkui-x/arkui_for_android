@@ -168,6 +168,9 @@
       sprintf_s;
       snprintf_s;
       sscanf_s;
+      strcpy_s;
+      vsprintf_s;
+      memmove_s;
 
       u_isdigit_69;
       u_isJavaSpaceChar_69;
