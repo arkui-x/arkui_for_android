@@ -119,17 +119,21 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
             return;
         }
 
-        if (bottomMax < rect.bottom) {
-            bottomMax = rect.bottom;
-            this.bottomMaxMap.put(orientation, bottomMax);
-        }
-
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             if (rect.bottom > rect.right) {
                 return;
             }
+            if (bottomMax < rect.bottom) {
+                bottomMax = rect.bottom;
+                this.bottomMaxMap.put(orientation, bottomMax);
+            }
             if (bottomMax < screenSizeY) {
                 bottomMax = screenSizeY;
+                this.bottomMaxMap.put(orientation, bottomMax);
+            }
+        } else {
+            if (bottomMax < rect.bottom) {
+                bottomMax = rect.bottom;
                 this.bottomMaxMap.put(orientation, bottomMax);
             }
         }
