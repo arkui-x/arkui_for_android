@@ -109,13 +109,11 @@ void AceApplicationInfoImpl::ChangeLocale(const std::string& language, const std
     jstring jLanguage = env->NewStringUTF(language.c_str());
     jstring jCountryOrRegion = env->NewStringUTF(countryOrRegion.c_str());
 
-    if (jLanguage != nullptr && jCountryOrRegion != nullptr) {
+    if (jLanguage != nullptr && jCountryOrRegion != nullptr && object_ != nullptr && changeLocale_ != nullptr) {
         env->CallVoidMethod(object_.get(), changeLocale_, jLanguage, jCountryOrRegion);
         if (env->ExceptionCheck()) {
             LOGE("Exception occured, call changeLocale failed");
             EventReport::SendInternalException(InternalExcepType::CHANGE_LOCALE_ERR);
-            env->ExceptionDescribe();
-            env->ExceptionClear();
         }
     }
 
