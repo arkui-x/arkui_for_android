@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
@@ -179,21 +180,19 @@ public class StageApplicationDelegate {
         try {
             if (stageApplication.getAssets().list(ASSETS_SUB_PATH).length != 0) {
                 setAssetsFileRelativePath(getAssetsPath());
+                copyAllModuleResources();
             }
         } catch (Exception e) {
             Log.e(LOG_TAG, "get Assets path failed, error: " + e.getMessage());
         }
+        setResourcesFilePrefixPath(stageApplication.getApplicationContext().getFilesDir().getPath() +
+                                    "/"+ ASSETS_SUB_PATH);
         setLocaleInfo();
         Trace.endSection();
 
         launchApplication();
         initConfiguration();
         setPackageName();
-
-        copyAllModuleResources();
-        setResourcesFilePrefixPath(stageApplication.getApplicationContext().getFilesDir().getPath() +
-                                    "/"+ ASSETS_SUB_PATH);
-
         createCacertFile(stageApplication.getExternalFilesDir((String) null).getAbsolutePath());
 
         initActivity();
@@ -361,6 +360,10 @@ public class StageApplicationDelegate {
             return;
         }
         int versionCode = GetAppVersionCode();
+        if (versionCode == DEFAULT_VERSION_CODE) {
+            Log.e(LOG_TAG, "Getting app version code failed.");
+            return;
+        }
         SharedPreferences sharedPreferences =
                 stageApplication.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
         if (sharedPreferences == null) {
@@ -785,7 +788,16 @@ public class StageApplicationDelegate {
     }
 
     private int GetAppVersionCode() {
-        return nativeGetAppVersionCode();
+        int appVersionCode = DEFAULT_VERSION_CODE;
+        try {
+            PackageInfo packageInfo = stageApplication.getApplicationContext()
+                    .getPackageManager()
+                    .getPackageInfo(stageApplication.getPackageName(), 0);
+            appVersionCode = packageInfo.versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(LOG_TAG, "Getting package info err: " + e.getMessage());
+        }
+        return appVersionCode;
     }
 
     private native void nativeSetAssetManager(Object assetManager);
@@ -815,6 +827,4 @@ public class StageApplicationDelegate {
     private native void nativeSetLocale(String language, String country, String script);
 
     private native void nativeAttachStageApplicationDelegate(StageApplicationDelegate object);
-
-    private native int nativeGetAppVersionCode();
 }

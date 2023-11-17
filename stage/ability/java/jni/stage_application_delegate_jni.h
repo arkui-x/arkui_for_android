@@ -43,7 +43,6 @@ public:
     static void SetLocale(JNIEnv* env, jclass myclass, jstring jlanguage, jstring jcountry, jstring jscript);
     static void AttachStageApplicationDelegate(JNIEnv* env, jclass myclass, jobject object);
     static void SetPackageName(JNIEnv* env, jclass myclass, jstring object);
-    static jint GetAppVersionCode(JNIEnv* env, jclass myclass);
 };
 } // namespace Platform
 } // namespace AbilityRuntime
