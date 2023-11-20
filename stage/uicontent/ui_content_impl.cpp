@@ -336,8 +336,8 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     if (isModelJson) {
         auto pipeline = container->GetPipelineContext();
         if (pipeline && appInfo) {
-            LOGI("SetMinPlatformVersion code is %{public}d", appInfo->minCompatibleVersionCode);
-            pipeline->SetMinPlatformVersion(appInfo->minCompatibleVersionCode);
+            LOGI("SetMinPlatformVersion code is %{public}d", appInfo->apiCompatibleVersion);
+            pipeline->SetMinPlatformVersion(appInfo->apiCompatibleVersion);
         }
     }
 
