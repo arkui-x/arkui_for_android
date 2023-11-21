@@ -82,7 +82,7 @@ static const JNINativeMethod COMMON_METHODS[] = {
     },
     {
         .name = "nativeDispatchKeyEvent",
-        .signature = "(JIIIJJ)Z",
+        .signature = "(JIIIJJII)Z",
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::DispatchKeyEvent),
     },
 };
