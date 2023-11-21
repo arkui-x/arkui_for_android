@@ -58,6 +58,7 @@ public:
     bool ProcessBackPressed() override;
     bool ProcessBasicEvent(const std::vector<TouchEvent>& touchEvents) override;
     bool ProcessPointerEvent(const std::vector<uint8_t>& data) override;
+    bool ProcessMouseEvent(const std::vector<uint8_t>& data) override;
     bool ProcessKeyEvent(int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp = 0,
         int64_t timeStampStart = 0, int32_t metaKey = 0, int32_t sourceDevice = 0, int32_t deviceId = 0) override;
 

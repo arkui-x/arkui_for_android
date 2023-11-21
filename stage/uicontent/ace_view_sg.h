@@ -96,6 +96,7 @@ public:
     bool DispatchBasicEvent(const std::vector<TouchEvent>& touchEvents);
     bool DispatchTouchEvent(const std::vector<uint8_t>& data);
     bool DispatchKeyEvent(const KeyEventInfo& eventInfo);
+    bool DispatchMouseEvent(const std::vector<uint8_t>& data);
 
     void NotifySurfaceDestroyed() const;
     void NotifySurfaceChanged(int32_t width, int32_t height, WindowSizeChangeReason type);
