@@ -543,6 +543,17 @@ bool UIContentImpl::ProcessPointerEvent(const std::vector<uint8_t>& data)
     return aceView->DispatchTouchEvent(data);
 }
 
+bool UIContentImpl::ProcessMouseEvent(const std::vector<uint8_t>& data)
+{
+    LOGI("UIContentImpl::ProcessMouseEvent called");
+    auto container = AceEngine::Get().GetContainer(instanceId_);
+    CHECK_NULL_RETURN(container, false);
+
+    auto aceView = static_cast<Platform::AceViewSG*>(container->GetView());
+    CHECK_NULL_RETURN(aceView, false);
+    return aceView->DispatchMouseEvent(data);
+}
+
 bool UIContentImpl::ProcessKeyEvent(int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp,
     int64_t timeStampStart, int32_t metaKey, int32_t sourceDevice, int32_t deviceId)
 {

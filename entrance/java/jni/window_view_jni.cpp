@@ -81,6 +81,11 @@ static const JNINativeMethod COMMON_METHODS[] = {
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::DispatchPointerDataPacket),
     },
     {
+        .name = "nativeDispatchMouseDataPacket",
+        .signature = "(JLjava/nio/ByteBuffer;I)Z",
+        .fnPtr = reinterpret_cast<void*>(&WindowViewJni::DispatchMouseDataPacket),
+    },
+    {
         .name = "nativeDispatchKeyEvent",
         .signature = "(JIIIJJII)Z",
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::DispatchKeyEvent),
@@ -193,6 +198,24 @@ jboolean WindowViewJni::DispatchPointerDataPacket(
     }
 
     return windowPtr->ProcessPointerEvent(packet);
+}
+
+jboolean WindowViewJni::DispatchMouseDataPacket(
+    JNIEnv* env, jobject myObject, jlong window, jobject buffer, jint position)
+{
+    if (env == nullptr) {
+        LOGW("env is null");
+        return false;
+    }
+
+    uint8_t* data = static_cast<uint8_t*>(env->GetDirectBufferAddress(buffer));
+    std::vector<uint8_t> packet(data, data + position);
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
+    if (windowPtr == nullptr) {
+        LOGE("DispatchMouseDataPacket window is nullptr");
+        return false;
+    }
+    return windowPtr->ProcessMouseEvent(packet);
 }
 
 jboolean WindowViewJni::DispatchKeyEvent(JNIEnv* env, jobject myObject, jlong window, jint keyCode, jint action,

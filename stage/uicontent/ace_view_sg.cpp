@@ -188,6 +188,18 @@ bool AceViewSG::DispatchTouchEvent(const std::vector<uint8_t>& data)
     return forbiddenToPlatform || (!IsLastPage());
 }
 
+
+bool AceViewSG::DispatchMouseEvent(const std::vector<uint8_t>& data)
+{
+    MouseEvent mouseEvent;
+    ConvertMouseEvent(data, mouseEvent);
+    if (mouseEventCallback_) {
+        mouseEventCallback_(mouseEvent, nullptr);
+    }
+    // if it is last page, let os know to quit app
+    return (!IsLastPage());
+}
+
 bool AceViewSG::IsLastPage() const
 {
     auto container = AceEngine::Get().GetContainer(instanceId_);

@@ -845,6 +845,15 @@ bool Window::ProcessPointerEvent(const std::vector<uint8_t>& data)
     return uiContent_->ProcessPointerEvent(data);
 }
 
+bool Window::ProcessMouseEvent(const std::vector<uint8_t>& data)
+{
+    if (!uiContent_) {
+        LOGW("Window::ProcessMouseEvent uiContent_ is nullptr");
+        return false;
+    }
+    return uiContent_->ProcessMouseEvent(data);
+}
+
 bool Window::ProcessKeyEvent(
     int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp, int64_t timeStampStart, int32_t source, int32_t deviceId)
 {
