@@ -382,6 +382,21 @@
       OHOS::AppExecFwk::EventHandler::*;
       OHOS::AppExecFwk::EventRunner::*;
       OHOS::AppExecFwk::InnerEvent::*;
+      fill_fopen_filefunc;
+      unzOpen2;
+      zipOpen2;
+      zipOpenNewFileInZip4;
+      unzClose;
+      unzGetGlobalInfo;
+      unzGetFilePos;
+      unzGoToNextFile;
+      unzGetCurrentFileInfo;
+      unzOpenCurrentFile;
+      unzReadCurrentFile;
+      unzCloseCurrentFile;
+      zipClose;
+      zipWriteInFileInZip;
+      zipCloseFileInZip;
     };
   local:
     *;
