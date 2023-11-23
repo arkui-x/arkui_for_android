@@ -372,8 +372,11 @@ public class StageApplicationDelegate {
         }
 
         int oldVersionCode = sharedPreferences.getInt(APP_VERSION_CODE, DEFAULT_VERSION_CODE);
-        Log.i(LOG_TAG, "Old version code is: " + oldVersionCode + ", current version code is: " + versionCode);
-        if (oldVersionCode >= versionCode) {
+        boolean isDebug = isApkInDebug(stageApplication);
+        Log.i(LOG_TAG, "Old version code is: " + oldVersionCode +
+                       ", current version code is: " + versionCode +
+                       ", apk is debug: " + isDebug);
+        if (!isDebug && oldVersionCode >= versionCode) {
             Log.i(LOG_TAG, "The resource has been copied.");
             return;
         }
@@ -798,6 +801,16 @@ public class StageApplicationDelegate {
             Log.e(LOG_TAG, "Getting package info err: " + e.getMessage());
         }
         return appVersionCode;
+    }
+
+    private boolean isApkInDebug(Context context) {
+        try {
+            ApplicationInfo info = context.getApplicationInfo();
+            return (info.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Getting is apk in debug err: " + e.getMessage());
+            return false;
+        }
     }
 
     private native void nativeSetAssetManager(Object assetManager);
