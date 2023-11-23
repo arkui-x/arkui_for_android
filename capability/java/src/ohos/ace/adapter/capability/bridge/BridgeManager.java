@@ -339,10 +339,15 @@ public class BridgeManager {
         }
         try {
             JSONObject resultValue = new JSONObject(result);
-            Object resultObject = resultValue.get(CALL_METHOD_JSON_KEY);
             int errorCode = resultValue.getInt(JSON_ERROR_CODE);
-            String errorMessage = resultValue.getString(JSON_ERROR_MESSAGE);
-            bridgePlugin.jsSendMethodResult(resultObject, methodName, errorCode, errorMessage);
+            Object resultObject = resultValue.get(CALL_METHOD_JSON_KEY);
+            String errorMessage = BridgeErrorCode.BRIDGE_ERROR_NO.getErrorMessage();
+            if (errorCode == 0) {
+                bridgePlugin.jsSendMethodResult(resultObject, methodName, errorCode, errorMessage);
+            } else {
+                errorMessage = resultValue.getString(JSON_ERROR_MESSAGE);
+                bridgePlugin.jsSendMethodResult(resultObject, methodName, errorCode, errorMessage);
+            }
         } catch (JSONException e) {
             BridgeErrorCode bridgeErrorCode = BridgeErrorCode.BRIDGE_DATA_ERROR;
             bridgePlugin.jsSendMethodResult(null, methodName,
@@ -579,7 +584,7 @@ public class BridgeManager {
         String splitName = splitMethodName(methodName);
         Object resultObject = null;
         MethodData methodData = null;
-        ByteBuffer resultBuffer = null;
+        ByteBuffer resultBuffer = bridgeBinaryCodec.encodeData(null);
         if (paramObj == null) {
             bridgeErrorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
         } else {
@@ -666,12 +671,6 @@ public class BridgeManager {
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
         if (bridgePlugin == null) {
             ALog.e(LOG_TAG, "jsSendMethodResultBinary bridgeName is not found.");
-            return;
-        }
-        if (bridgePlugin == null) {
-            ALog.e(LOG_TAG, "jsSendMessageBinary bridgeName is not found.");
-            bridgePlugin.jsSendMethodResult(null, methodName,
-                BridgeErrorCode.BRIDGE_CODEC_INVALID.getId(), BridgeErrorCode.BRIDGE_CODEC_INVALID.getErrorMessage());
             return;
         }
         if (bridgePlugin.getBridgeType() != BridgeType.BINARY_TYPE) {

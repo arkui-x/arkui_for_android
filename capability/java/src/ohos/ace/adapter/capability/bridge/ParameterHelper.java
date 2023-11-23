@@ -71,9 +71,9 @@ public class ParameterHelper {
     }
 
     /**
-     * 
+     * binaryData transform Object.
      *
-     * @param 
+     * @param paramBinaryObj Parameter in the form of binaryData.
      * @return Parameter in the form of Object.
      */
     public static Object[] binaryTransformObject(Object paramBinaryObj) {
@@ -85,9 +85,9 @@ public class ParameterHelper {
     }
 
     /**
-     * JSONObject transform Object.
+     * jsonData transform Object.
      *
-     * @param paramJsonObj Parameter in the form of JSONObject.
+     * @param paramJsonObj Parameter in the form of jsonData.
      * @return Parameter in the form of Object.
      */
     public static Object[] jsonTransformObject(JSONObject paramJsonObj) {
