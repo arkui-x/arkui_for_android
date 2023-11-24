@@ -103,7 +103,6 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
                 params = "";
             }
         }
-        Log.i(LOG_TAG, "params: " + params);
 
         activityDelegate = new StageActivityDelegate();
         activityDelegate.attachStageActivity(getInstanceName(), this);
