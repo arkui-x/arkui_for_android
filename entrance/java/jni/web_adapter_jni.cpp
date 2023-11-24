@@ -16,7 +16,9 @@
 #include "web_adapter_jni.h"
 
 #include <unistd.h>
+#include <unordered_map>
 #include <sstream>
+#include <mutex>
 #include "base/log/event_report.h"
 #include "base/log/log.h"
 #include "base/utils/utils.h"
@@ -119,19 +121,19 @@ float GetFloatFromJNI(const jobject& obj, std::string funcName)
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     if (!env) {
         LOGE("jni env not ready, env is null");
-        return 0;
+        return 0.0f;
     }
     const jclass clazz = env->GetObjectClass(obj);
     if (clazz == nullptr) {
         LOGE("clazz is nullptr");
-        return 0;
+        return 0.0f;
     }
     jmethodID method = env->GetMethodID(clazz, funcName.c_str(), "()F");
     if (method == nullptr) {
         LOGE("fail to get method id: %{public}s", funcName.c_str());
-        return 0;
+        return 0.0f;
     }
-    int retValue = env->CallFloatMethod(obj, method);
+    float retValue = env->CallFloatMethod(obj, method);
     return retValue;
 }
 
@@ -216,6 +218,59 @@ std::map<std::string, std::string> GetStringMapFromJNI(const jobject& obj, std::
         env->ReleaseStringUTFChars(jsHeaderValue, cHeaderValue);
     }
     return returnMap;
+}
+
+std::vector<std::string> GetStringVectorFromJNI(const jobject& obj, std::string funcName)
+{
+    LOGI("jni call %{public}s", funcName.c_str());
+    auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (!env) {
+        LOGE("jni env not ready, env is null");
+        return std::vector<std::string>();
+    }
+    const jclass clazz = env->GetObjectClass(obj);
+    if (clazz == nullptr) {
+        LOGE("clazz is nullptr");
+        return std::vector<std::string>();
+    }
+
+    jmethodID method = env->GetMethodID(clazz, funcName.c_str(), "()[Ljava/lang/String;");
+    if (method == nullptr) {
+        LOGE("fail to get method id: %{public}s", funcName.c_str());
+        return std::vector<std::string>();
+    }
+    std::vector<std::string> strVector;
+    jstring jstr = nullptr;
+    const char *str = nullptr;
+    jobjectArray jsReturnObjectArray = (jobjectArray)env->CallObjectMethod(obj, method);
+    jsize arrayLength = env->GetArrayLength(jsReturnObjectArray);
+    for (int index = 0; index < arrayLength; index++) {
+        jstr = static_cast<jstring>(env->GetObjectArrayElement(jsReturnObjectArray, index));
+        str = env->GetStringUTFChars(jstr, JNI_FALSE);
+        strVector.push_back(str);
+    }
+    return strVector;
+}
+
+void CallVoidMethodFromJNI(const jobject& obj, std::string funcName)
+{
+    LOGI("jni call %{public}s", funcName.c_str());
+    auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (!env) {
+        LOGE("jni env not ready, env is null");
+        return;
+    }
+    const jclass clazz = env->GetObjectClass(obj);
+    if (clazz == nullptr) {
+        LOGE("clazz is nullptr");
+        return;
+    }
+    jmethodID method = env->GetMethodID(clazz, funcName.c_str(), "()V");
+    if (method == nullptr) {
+        LOGE("fail to get method id: %{public}s", funcName.c_str());
+        return;
+    }
+    env->CallVoidMethod(obj, method);
 }
 }
 
@@ -375,6 +430,523 @@ int JniWebConsoleMessageObject::GetLineNumber(void *object)
     return GetIntFromJNI(*(jobject *)object, "getLineNumber");
 }
 
+class JniWebFileChooserObject final : public WebFileChooserObject {
+public:
+    JniWebFileChooserObject() = default;
+    ~JniWebFileChooserObject() = default;
+
+    std::string GetTitle(void* object);
+    int GetMode(void* object);
+    std::vector<std::string> GetAcceptType(void* object);
+    bool IsCapture(void* object);
+    int AddObject(void* object);
+    void DelObject(int index);
+    Platform::JniEnvironment::JavaGlobalRef& GetGeolocationJobject(int index);
+    void HandleFileList(void* object, std::vector<std::string>& result, int index);
+
+private:
+    int index_;
+    std::unordered_map<int, WebObject*> objectMap_;
+    std::mutex mutex_;
+};
+
+std::string JniWebFileChooserObject::GetTitle(void* object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getTitle");
+}
+
+int JniWebFileChooserObject::GetMode(void* object)
+{
+    return GetIntFromJNI(*(jobject *)object, "getMode");
+}
+
+std::vector<std::string> JniWebFileChooserObject::GetAcceptType(void* object)
+{
+    return GetStringVectorFromJNI(*(jobject *)object, "getAcceptType");
+}
+
+bool JniWebFileChooserObject::IsCapture(void* object)
+{
+    return GetBoolFromJNI(*(jobject *)object, "isCapture");
+}
+
+int JniWebFileChooserObject::AddObject(void* object)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    objectMap_[++index_] = new WebObject(object);
+    return index_;
+}
+
+void JniWebFileChooserObject::DelObject(int index)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto iter = objectMap_.find(index);
+    if (iter != objectMap_.end()) {
+        auto obj = iter->second;
+        delete obj;
+        objectMap_.erase(index);
+    }
+}
+
+Platform::JniEnvironment::JavaGlobalRef& JniWebFileChooserObject::GetGeolocationJobject(int index)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto iter = objectMap_.find(index);
+    auto obj = iter->second;
+    return obj->Get();
+}
+
+void JniWebFileChooserObject::HandleFileList(void* object, std::vector<std::string>& result, int index)
+{
+    auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (!env) {
+        LOGE("jni env not ready, env is null");
+        return;
+    }
+    auto obj = GetGeolocationJobject(index).get();
+    if (!obj) {
+        LOGE("obj is nullptr");
+        return;
+    }
+    const jclass clazz = env->GetObjectClass(obj);
+    if (clazz == nullptr) {
+        LOGE("clazz is nullptr");
+        return;
+    }
+    if (result.empty()) {
+        LOGE("result is nullptr");
+        return;
+    }
+    jclass jStringCls = env->FindClass("java/lang/String");
+    if (!jStringCls) {
+        LOGE("jStringCls is nullptr");
+        return;
+    }
+    jobjectArray objectArray = env->NewObjectArray(result.size(), jStringCls, nullptr);
+    for (size_t index = 0; index < result.size(); ++index) {
+        jstring jstr = env->NewStringUTF(result[index].c_str());
+        env->SetObjectArrayElement(objectArray, index, jstr);
+    }
+    jmethodID method = env->GetMethodID(clazz, "handleFileList", "([Ljava/lang/String;)V");
+    if (method == nullptr) {
+        LOGE("method is nullptr");
+        return;
+    }
+    env->CallVoidMethod(obj, method, objectArray);
+}
+
+class JniWebGeolocationObject final : public WebGeolocationObject {
+public:
+    JniWebGeolocationObject() = default;
+    ~JniWebGeolocationObject() = default;
+
+    std::string GetOrigin(void* object);
+    int AddObject(void* object);
+    void DelObject(int index);
+    Platform::JniEnvironment::JavaGlobalRef& GetGeolocationJobject(int index);
+    void Invoke(int index, const std::string& origin, const bool& allow, const bool& retain);
+
+private:
+    int index_;
+    std::unordered_map<int, WebObject*> objectMap_;
+    std::mutex mutex_;
+};
+
+std::string JniWebGeolocationObject::GetOrigin(void* object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getOrigin");
+}
+
+int JniWebGeolocationObject::AddObject(void* object)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    objectMap_[++index_] = new WebObject(object);
+    return index_;
+}
+
+void JniWebGeolocationObject::DelObject(int index)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto iter = objectMap_.find(index);
+    if (iter != objectMap_.end()) {
+        auto obj = iter->second;
+        delete obj;
+        objectMap_.erase(index);
+    }
+}
+
+Platform::JniEnvironment::JavaGlobalRef& JniWebGeolocationObject::GetGeolocationJobject(int index)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto iter = objectMap_.find(index);
+    auto obj = iter->second;
+    return obj->Get();
+}
+
+void JniWebGeolocationObject::Invoke(int index, const std::string& origin, const bool& allow, const bool& retain)
+{
+    auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (!env) {
+        LOGE("jni env not ready, env is null");
+        return;
+    }
+    auto obj = GetGeolocationJobject(index).get();
+    if (!obj) {
+        LOGE("obj is nullptr");
+        return;
+    }
+    const jclass clazz = env->GetObjectClass(obj);
+    if (clazz == nullptr) {
+        LOGE("clazz is nullptr");
+        return;
+    }
+    jmethodID method = env->GetMethodID(clazz, "invoke", "(Ljava/lang/String;ZZ)V");
+    if (method == nullptr) {
+        LOGE("method is nullptr");
+        return;
+    }
+    jstring jorigin = env->NewStringUTF(origin.c_str());
+    jboolean jallow = allow ? JNI_TRUE : JNI_FALSE;
+    jboolean jretain = retain ? JNI_TRUE : JNI_FALSE;
+    env->CallVoidMethod(obj, method, jorigin, jallow, jretain);
+}
+
+class JniWebDownloadResponseObject final : public WebDownloadResponseObject {
+public:
+    std::string GetUrl(void* object);
+    std::string GetMimetype(void* object);
+    long GetContentLength(void* object);
+    std::string GetContentDisposition(void *object);
+    std::string GetUserAgent(void *object);
+};
+
+std::string JniWebDownloadResponseObject::GetUrl(void* object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getUrl");
+}
+
+std::string JniWebDownloadResponseObject::GetMimetype(void* object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getMimetype");
+}
+
+long JniWebDownloadResponseObject::GetContentLength(void* object)
+{
+    return GetLongFromJNI(*(jobject *)object, "getContentLength");
+}
+
+std::string JniWebDownloadResponseObject::GetContentDisposition(void* object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getContentDisposition");
+}
+
+std::string JniWebDownloadResponseObject::GetUserAgent(void* object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getUserAgent");
+}
+
+class JniWebHttpAuthRequestObject final : public WebHttpAuthRequestObject {
+public:
+    JniWebHttpAuthRequestObject() = default;
+    ~JniWebHttpAuthRequestObject() = default;
+
+    std::string GetHost(void* object);
+    std::string GetRealm(void* object);
+    int AddObject(void* object);
+    void DelObject(int index);
+    Platform::JniEnvironment::JavaGlobalRef& GetGeolocationJobject(int index);
+    bool Confirm(void* object, std::string& userName, std::string& pwd, int index);
+    bool IsHttpAuthInfoSaved(void* object, int index);
+    void Cancel(void* object, int index);
+
+private:
+    int index_;
+    std::unordered_map<int, WebObject*> objectMap_;
+    std::mutex mutex_;
+};
+
+std::string JniWebHttpAuthRequestObject::GetHost(void* object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getHost");
+}
+
+std::string JniWebHttpAuthRequestObject::GetRealm(void* object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getRealm");
+}
+
+int JniWebHttpAuthRequestObject::AddObject(void* object)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    objectMap_[++index_] = new WebObject(object);
+    return index_;
+}
+
+void JniWebHttpAuthRequestObject::DelObject(int index)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto iter = objectMap_.find(index);
+    if (iter != objectMap_.end()) {
+        auto obj = iter->second;
+        delete obj;
+        objectMap_.erase(index);
+    }
+}
+
+Platform::JniEnvironment::JavaGlobalRef& JniWebHttpAuthRequestObject::GetGeolocationJobject(int index)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto iter = objectMap_.find(index);
+    auto obj = iter->second;
+    return obj->Get();
+}
+
+bool JniWebHttpAuthRequestObject::Confirm(void* object, std::string& userName, std::string& pwd, int index)
+{
+    auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (!env) {
+        LOGE("jni env not ready, env is null");
+        return false;
+    }
+    auto obj = GetGeolocationJobject(index).get();
+    if (!obj) {
+        LOGE("obj is nullptr");
+        return false;
+    }
+    const jclass clazz = env->GetObjectClass(obj);
+    if (clazz == nullptr) {
+        LOGE("clazz is nullptr");
+        return false;
+    }
+    jmethodID method = env->GetMethodID(clazz, "proceed", "(Ljava/lang/String;Ljava/lang/String;)Z");
+    if (method == nullptr) {
+        LOGE("method is nullptr");
+        return false;
+    }
+    jstring juserName = env->NewStringUTF(userName.c_str());
+    jstring jpwd = env->NewStringUTF(pwd.c_str());
+    bool returnValue = env->CallBooleanMethod(obj, method, juserName, jpwd);
+    return returnValue;
+}
+
+bool JniWebHttpAuthRequestObject::IsHttpAuthInfoSaved(void* object, int index)
+{
+    auto obj = GetGeolocationJobject(index).get();
+    if (!obj) {
+        LOGE("obj is nullptr");
+        return false;
+    }
+    return GetBoolFromJNI(obj, "useHttpAuthUsernamePassword");
+}
+
+void JniWebHttpAuthRequestObject::Cancel(void* object, int index)
+{
+    auto obj = GetGeolocationJobject(index).get();
+    if (!obj) {
+        LOGE("obj is nullptr");
+        return;
+    }
+    CallVoidMethodFromJNI(obj, "cancel");
+}
+
+class JniWebPermissionRequestObject final : public WebPermissionRequestObject {
+public:
+    JniWebPermissionRequestObject() = default;
+    ~JniWebPermissionRequestObject() = default;
+
+    int AddObject(void* object);
+    void DelObject(int index);
+    Platform::JniEnvironment::JavaGlobalRef& GetGeolocationJobject(int index);
+    std::string GetOrigin(void* object);
+    int GetResourcesId(void* object);
+    void Grant(void* object, const int resourcesId, int index);
+    void Deny(void* object, int index);
+
+private:
+    int index_;
+    std::unordered_map<int, WebObject*> objectMap_;
+    std::mutex mutex_;
+};
+
+int JniWebPermissionRequestObject::AddObject(void* object)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    objectMap_[++index_] = new WebObject(object);
+    return index_;
+}
+
+void JniWebPermissionRequestObject::DelObject(int index)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto iter = objectMap_.find(index);
+    if (iter != objectMap_.end()) {
+        auto obj = iter->second;
+        delete obj;
+        objectMap_.erase(index);
+    }
+}
+
+Platform::JniEnvironment::JavaGlobalRef& JniWebPermissionRequestObject::GetGeolocationJobject(int index)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto iter = objectMap_.find(index);
+    auto obj = iter->second;
+    return obj->Get();
+}
+
+std::string JniWebPermissionRequestObject::GetOrigin(void* object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getOrigin");
+}
+
+int JniWebPermissionRequestObject::GetResourcesId(void* object)
+{
+    return GetIntFromJNI(*(jobject *)object, "getResources");
+}
+
+void JniWebPermissionRequestObject::Grant(void* object, const int resourcesId, int index)
+{
+    auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (!env) {
+        LOGE("jni env not ready, env is null");
+        return;
+    }
+    auto obj = GetGeolocationJobject(index).get();
+    if (!obj) {
+        LOGE("obj is nullptr");
+        return;
+    }
+    const jclass clazz = env->GetObjectClass(obj);
+    if (clazz == nullptr) {
+        LOGE("clazz is nullptr");
+        return;
+    }
+    jmethodID method = env->GetMethodID(clazz, "grant", "(I)V");
+    if (method == nullptr) {
+        LOGE("method is nullptr");
+        return;
+    }
+    env->CallVoidMethod(obj, method, resourcesId);
+}
+
+void JniWebPermissionRequestObject::Deny(void* object, int index)
+{
+    auto obj = GetGeolocationJobject(index).get();
+    if (!obj) {
+        LOGE("obj is nullptr");
+        return;
+    }
+    CallVoidMethodFromJNI(obj, "deny");
+}
+
+class JniWebCommonDialogObject final : public WebCommonDialogObject {
+public:
+    JniWebCommonDialogObject() = default;
+    ~JniWebCommonDialogObject() = default;
+
+    std::string GetUrl(void* object);
+    std::string GetMessage(void* object);
+    std::string GetValue(void* object);
+    int AddObject(void* object);
+    void DelObject(int index);
+    Platform::JniEnvironment::JavaGlobalRef& GetGeolocationJobject(int index);
+    void Confirm(void* object, const std::string& promptResult, int index);
+    void Confirm(void* object, int index);
+    void Cancel(void* object, int index);
+
+private:
+    int index_;
+    std::unordered_map<int, WebObject*> objectMap_;
+    std::mutex mutex_;
+};
+
+std::string JniWebCommonDialogObject::GetUrl(void* object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getUrl");
+}
+
+std::string JniWebCommonDialogObject::GetMessage(void* object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getMessage");
+}
+
+std::string JniWebCommonDialogObject::GetValue(void* object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getDefaultValue");
+}
+
+int JniWebCommonDialogObject::AddObject(void* object)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    objectMap_[++index_] = new WebObject(object);
+    return index_;
+}
+
+void JniWebCommonDialogObject::DelObject(int index)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto iter = objectMap_.find(index);
+    if (iter != objectMap_.end()) {
+        auto obj = iter->second;
+        delete obj;
+        objectMap_.erase(index);
+    }
+}
+
+Platform::JniEnvironment::JavaGlobalRef& JniWebCommonDialogObject::GetGeolocationJobject(int index)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto iter = objectMap_.find(index);
+    auto obj = iter->second;
+    return obj->Get();
+}
+
+void JniWebCommonDialogObject::Confirm(void* object, const std::string& promptResult, int index)
+{
+    auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (!env) {
+        LOGE("jni env not ready, env is null");
+        return;
+    }
+    auto obj = GetGeolocationJobject(index).get();
+    if (!obj) {
+        LOGE("obj is nullptr");
+        return;
+    }
+    const jclass clazz = env->GetObjectClass(obj);
+    if (clazz == nullptr) {
+        LOGE("clazz is nullptr");
+        return;
+    }
+    jmethodID method = env->GetMethodID(clazz, "confirm", "(Ljava/lang/String;)V");
+    if (method == nullptr) {
+        LOGE("method is nullptr");
+        return;
+    }
+    jstring jpromptResult = env->NewStringUTF(promptResult.c_str());
+    env->CallVoidMethod(obj, method, jpromptResult);
+}
+
+void JniWebCommonDialogObject::Confirm(void* object, int index)
+{
+    auto obj = GetGeolocationJobject(index).get();
+    if (!obj) {
+        LOGE("obj is nullptr");
+        return;
+    }
+    CallVoidMethodFromJNI(obj, "confirm");
+}
+
+void JniWebCommonDialogObject::Cancel(void* object, int index)
+{
+    auto obj = GetGeolocationJobject(index).get();
+    if (!obj) {
+        LOGE("obj is nullptr");
+        return;
+    }
+    CallVoidMethodFromJNI(obj, "cancel");
+}
+
 bool WebAdapterJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
     auto JWebResourceRequestObject = Referenced::MakeRefPtr<JniWebResourceRequestObject>();
@@ -389,6 +961,18 @@ bool WebAdapterJni::Register(const std::shared_ptr<JNIEnv>& env)
     OHOS::Ace::WebObjectEventManager::GetInstance().SetConsoleMessageObject(JWebConsoleMessageObject);
     auto JWebScaleChangeObject = OHOS::Ace::Referenced::MakeRefPtr<JniWebScaleChangeObjectWrapper>();
     OHOS::Ace::WebObjectEventManager::GetInstance().SetScaleChangeObject(JWebScaleChangeObject);
+    auto JWebFileChooserObject = OHOS::Ace::Referenced::MakeRefPtr<JniWebFileChooserObject>();
+    OHOS::Ace::WebObjectEventManager::GetInstance().SetFileChooserObject(JWebFileChooserObject);
+    auto JWebGeolocationObject = OHOS::Ace::Referenced::MakeRefPtr<JniWebGeolocationObject>();
+    OHOS::Ace::WebObjectEventManager::GetInstance().SetGeolocationObject(JWebGeolocationObject);
+    auto JWebDownloadResponseObject = OHOS::Ace::Referenced::MakeRefPtr<JniWebDownloadResponseObject>();
+    OHOS::Ace::WebObjectEventManager::GetInstance().SetDownloadResponseObject(JWebDownloadResponseObject);
+    auto JWebHttpAuthRequestObject = OHOS::Ace::Referenced::MakeRefPtr<JniWebHttpAuthRequestObject>();
+    OHOS::Ace::WebObjectEventManager::GetInstance().SetHttpAuthRequestObject(JWebHttpAuthRequestObject);
+    auto JWebPermissionRequestObject = OHOS::Ace::Referenced::MakeRefPtr<JniWebPermissionRequestObject>();
+    OHOS::Ace::WebObjectEventManager::GetInstance().SetPermissionRequestObject(JWebPermissionRequestObject);
+    auto JWebCommonDialogObject = OHOS::Ace::Referenced::MakeRefPtr<JniWebCommonDialogObject>();
+    OHOS::Ace::WebObjectEventManager::GetInstance().SetCommonDialogObject(JWebCommonDialogObject);
 
     static const JNINativeMethod methods[] = {
         {

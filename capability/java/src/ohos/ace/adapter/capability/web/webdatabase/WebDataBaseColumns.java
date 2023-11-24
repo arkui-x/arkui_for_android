@@ -15,21 +15,18 @@
 
 package ohos.ace.adapter.capability.web;
 
-import android.webkit.WebResourceRequest;
+import android.provider.BaseColumns;
 
-public class AceWebOverrideUrlObject {
-    private static final String LOG_TAG = "AceWebOverrideUrlObject";
+public class WebDataBaseColumns {
+    private WebDataBaseColumns() {}
 
-    private WebResourceRequest request;
-
-    public AceWebOverrideUrlObject(WebResourceRequest request) {
-        this.request = request;
-    }
-
-    public String getRequestUrl() {
-        if (this.request.getUrl() != null) {
-            return this.request.getUrl().toString();
-        }
-        return "";
+    public static class EntryColumns implements BaseColumns {
+        public static final String TABLE_NAME_CREDENTIAL = "credential";
+        public static final String COLUMN_NAME_USERNAME = "username";
+        public static final String COLUMN_NAME_USERPASS = "password";
+        public static final String COLUMN_NAME_HTTP_AUTH_ID = "http_auth_id";
+        public static final String TABLE_NAME_HTTPAUTH = "http_auth";
+        public static final String COLUMN_NAME_HOST = "host";
+        public static final String COLUMN_NAME_REALM = "realm";
     }
 }

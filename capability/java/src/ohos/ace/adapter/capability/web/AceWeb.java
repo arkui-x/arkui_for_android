@@ -31,6 +31,11 @@ import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
+import android.webkit.GeolocationPermissions;
+import android.webkit.HttpAuthHandler;
+import android.webkit.JsResult;
+import android.webkit.JsPromptResult;
+import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
@@ -317,6 +322,17 @@ public class AceWeb extends AceWebBase {
                 AceWebOverrideUrlObject object = new AceWebOverrideUrlObject(request);
                 return AceWeb.this.fireUrlLoadIntercept(object);
             }
+
+            @Override
+            public void onPageCommitVisible(WebView view, String url) {
+                AceWeb.this.firePageVisible(url);
+            }
+
+            @Override
+            public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
+                AceWebHttpAuthRequestObject object = new AceWebHttpAuthRequestObject(handler, host, realm, context);
+                AceWeb.this.fireHttpAuthRequestReceive(object);
+            }
         });
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -333,6 +349,71 @@ public class AceWeb extends AceWebBase {
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
                 AceWebConsoleMessageObject object = new AceWebConsoleMessageObject(consoleMessage);
                 return AceWeb.this.firePageOnConsoleMessage(object);
+            }
+
+            @Override
+            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback,
+                    WebChromeClient.FileChooserParams fileChooserParams) {
+                AceWebFileChooserObject object = new AceWebFileChooserObject(filePathCallback, fileChooserParams);
+                return AceWeb.this.firePageOnShowFileChooser(object);
+            }
+
+            @Override
+            public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
+                AceWebGeolocationPermissionsShowObject object = new AceWebGeolocationPermissionsShowObject(origin,
+                        callback);
+                AceWeb.this.firePageGeoPermission(object);
+            }
+
+            @Override
+            public void onGeolocationPermissionsHidePrompt() {
+                AceWeb.this.firePageGeoHidePermission();
+            }
+
+            @Override
+            public void onPermissionRequest(PermissionRequest request) {
+                AceWebPermissionRequestObject object = new AceWebPermissionRequestObject(request);
+                AceWeb.this.firePermissionRequest(object);
+            }
+
+            @Override
+            public boolean onJsPrompt(WebView view, String url, String message, String defaultValue,
+                    JsPromptResult result) {
+                AceWebJsPromptObject object = new AceWebJsPromptObject(url, message, defaultValue, result);
+                boolean jsResult = AceWeb.this.fireJsPrompt(object);
+                if (!jsResult) {
+                    object.cancel();
+                }
+                return true;
+            }
+
+            @Override
+            public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+                AceWebJsDialogObject object = new AceWebJsDialogObject(url, message, result);
+                boolean jsResult = AceWeb.this.fireJsAlert(object);
+                if (!jsResult) {
+                    object.cancel();
+                }
+                return true;
+            }
+
+            @Override
+            public boolean onJsConfirm(WebView view, String url, String message, JsResult result) {
+                AceWebJsDialogObject object = new AceWebJsDialogObject(url, message, result);
+                boolean jsResult = AceWeb.this.fireJsConfirm(object);
+                if (!jsResult) {
+                    object.cancel();
+                }
+                return true;
+            }
+        });
+        webView.setDownloadListener(new DownloadListener() {
+            @Override
+            public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype,
+                    long contentLength) {
+                AceWebDownloadStartObject object = new AceWebDownloadStartObject(url, userAgent, contentDisposition,
+                        mimetype, contentLength);
+                AceWeb.this.fireDownloadStart(object);
             }
         });
     }

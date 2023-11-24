@@ -436,6 +436,15 @@ public abstract class AceWebBase {
     }
 
     /**
+     * This is called to fire on page visible event.
+     *
+     * @param url The URL corresponding to the page navigation that triggered this callback.
+     */
+    public void firePageVisible(String url) {
+        callback.onEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS + "onPageVisible" + PARAM_BEGIN, url);
+    }
+
+    /**
      * This is called to fire on page finished event.
      *
      * @param url the current url of this page.
@@ -497,9 +506,9 @@ public abstract class AceWebBase {
      * @param origin the origin of this event.
      * @param obj the jni object of this event.
      */
-    public void firePageGeoPermission(String origin, Object obj) {
+    public void firePageGeoPermission(Object obj) {
         this.nativeOnObjectEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS +
-            "onGeoPermission" + PARAM_BEGIN, origin, obj);
+            "onGeoPermission" + PARAM_BEGIN, "onGeoPermission", obj);
     }
 
     /**
@@ -528,8 +537,8 @@ public abstract class AceWebBase {
      *
      * @param obj the jni object of this event.
      */
-    public void firePageOnShowFileChooser(Object obj) {
-        this.nativeOnObjectEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+    public boolean firePageOnShowFileChooser(Object obj) {
+        return this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
             "onShowFileChooser" + PARAM_BEGIN, "onShowFileChooser", obj);
     }
 
@@ -552,6 +561,56 @@ public abstract class AceWebBase {
     public void fireHttpErrorReceive(Object obj) {
         this.nativeOnObjectEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS +
             "onHttpErrorReceive" + PARAM_BEGIN, "onHttpErrorReceive", obj);
+    }
+
+    /**
+     * This is called to http auth request receive event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public void fireHttpAuthRequestReceive(Object obj) {
+        this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onHttpAuthRequest" + PARAM_BEGIN, "onHttpAuthRequest", obj);
+    }
+
+    /**
+     * This is called to permission request receive event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public void firePermissionRequest(Object obj) {
+        this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onPermissionRequest" + PARAM_BEGIN, "onPermissionRequest", obj);
+    }
+
+    /**
+     * This is called to fire prompt event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public boolean fireJsPrompt(Object obj) {
+        return this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onPrompt" + PARAM_BEGIN, "onPrompt", obj);
+    }
+
+    /**
+     * This is called to fire alert event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public boolean fireJsAlert(Object obj) {
+        return this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onAlert" + PARAM_BEGIN, "onAlert", obj);
+    }
+
+    /**
+     * This is called to fire confirm event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public boolean fireJsConfirm(Object obj) {
+        return this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onConfirm" + PARAM_BEGIN, "onConfirm", obj);
     }
 
     /**

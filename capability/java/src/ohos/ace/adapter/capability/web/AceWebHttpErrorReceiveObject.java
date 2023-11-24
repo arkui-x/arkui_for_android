@@ -30,15 +30,24 @@ public class AceWebHttpErrorReceiveObject {
     }
 
     public String getRequestUrl() {
-        return this.request.getUrl().toString();
+        if (this.request.getUrl() != null) {
+            return this.request.getUrl().toString();
+        }
+        return "";
     }
 
     public String getResponseMimeType() {
-        return this.response.getMimeType().toString();
+        if (this.response.getMimeType() != null) {
+            return this.response.getMimeType().toString();
+        }
+        return "";
     }
 
     public String getResponseEncoding() {
-        return this.response.getEncoding().toString();
+        if (this.response.getEncoding() != null) {
+            return this.response.getEncoding().toString();
+        }
+        return "";
     }
 
     public int getResponseCode() {
