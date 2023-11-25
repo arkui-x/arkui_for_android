@@ -172,7 +172,7 @@ bool SystemProperties::GetImageFrameworkEnabled()
 
 bool SystemProperties::GetResourceDecoupling()
 {
-    return true;
+    return false;
 }
 
 } // namespace OHOS::Ace
