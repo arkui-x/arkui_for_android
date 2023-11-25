@@ -249,6 +249,7 @@ void Window::DeleteFromSubWindowMap(std::shared_ptr<Window> window)
             ((*iter2)->Destroy());
             break;
         }
+        iter2++;
     }
 }
 
@@ -786,6 +787,16 @@ void Window::WindowFocusChanged(bool hasWindowFocus)
         uiContent_->Focus();
         NotifyAfterActive();
         isForground_ = true;
+
+        if (IsSubWindow() || subWindowMap_.count(GetWindowId()) == 0) {
+            return;
+        }
+        auto windows = subWindowMap_.at(GetWindowId());
+        for (auto const& window : windows) {
+            if (!window->IsWindowShow()) {
+                window->NotifyAfterInactive();
+            }
+        }
     } else {
         LOGI("Window: notify uiContent UnFocus");
         uiContent_->UnFocus();

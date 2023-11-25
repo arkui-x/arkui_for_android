@@ -388,12 +388,12 @@ private:
 
     inline void NotifyAfterActive()
     {
-        CALL_LIFECYCLE_LISTENER(AfterActive);
+        CALL_LIFECYCLE_LISTENER(AfterFocused);
     }
 
     inline void NotifyAfterInactive()
     {
-        CALL_LIFECYCLE_LISTENER(AfterInactive);
+        CALL_LIFECYCLE_LISTENER(AfterUnfocused);
     }
 
     inline void NotifyBeforeDestroy(std::string windowName)
