@@ -183,6 +183,10 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
         keyboardHeightProvider.close();
         BridgeManager.unRegisterBridgeManager(instanceId);
+        if (platformPlugin != null) {
+            platformPlugin.releseResRegister(instanceId);
+            Log.i(LOG_TAG, "StageActivity onDestroy releseResRegister called");
+        }
     }
 
     @Override

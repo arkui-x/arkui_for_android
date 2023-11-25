@@ -83,6 +83,7 @@ public:
 
     RefPtr<Frontend> GetFrontend() const override
     {
+        std::lock_guard<std::mutex> lock(frontendMutex_);
         return frontend_;
     }
 
@@ -118,6 +119,7 @@ public:
 
     RefPtr<PipelineBase> GetPipelineContext() const override
     {
+        std::lock_guard<std::mutex> lock(pipelineMutex_);
         return pipelineContext_;
     }
 
@@ -302,6 +304,9 @@ private:
     bool useCurrentEventRunner_ { false };
     int32_t pageId_ { 0 };
     bool useStageModel_ = false;
+
+    mutable std::mutex frontendMutex_;
+    mutable std::mutex pipelineMutex_;
 
     ACE_DISALLOW_COPY_AND_MOVE(AceContainerSG);
 };

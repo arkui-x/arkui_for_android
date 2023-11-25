@@ -90,6 +90,12 @@ public class AcePlatformPlugin implements InputConnectionClient {
         resRegister.setRegisterPtr(resRegisterPtr);
     }
 
+    public void releseResRegister(int instanceId) {
+        if (resRegister != null) {
+            resRegister.release();
+        }
+    }
+
     @Override
     public InputConnection onCreateInputConnection(View view, EditorInfo outAttrs) {
         if (textInputPlugin != null) {
