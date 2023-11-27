@@ -142,27 +142,40 @@ void AceContainerSG::Initialize()
 void AceContainerSG::Destroy()
 {
     LOGI("AceContainerSG::Destroy start");
-    CHECK_NULL_VOID(pipelineContext_);
-    CHECK_NULL_VOID(taskExecutor_);
-
     ContainerScope scope(instanceId_);
     if (pipelineContext_ && taskExecutor_) {
         // 1. Destroy Pipeline on UI thread.
-        RefPtr<PipelineBase>& context = pipelineContext_;
+        RefPtr<PipelineBase> context;
+        {
+            std::lock_guard<std::mutex> lock(pipelineMutex_);
+            context.Swap(pipelineContext_);
+            LOGI("AceContainerSG::Destroy pipelineContext_ start");
+        }
+        auto uiTask = [context]() { context->Destroy(); };
         if (GetSettings().usePlatformAsUIThread) {
-            context->Destroy();
+            uiTask();
+            LOGI("AceContainerSG::Destroy pipelineContext_ end");
         } else {
-            taskExecutor_->PostTask([context]() { context->Destroy(); }, TaskExecutor::TaskType::UI);
+            taskExecutor_->PostTask(uiTask, TaskExecutor::TaskType::UI);
         }
 
         // 2. Destroy Frontend on JS thread.
-        RefPtr<Frontend>& frontend = frontend_;
-        if (GetSettings().usePlatformAsUIThread && GetSettings().useUIAsJSThread) {
-            frontend->UpdateState(Frontend::State::ON_DESTROY);
+        RefPtr<Frontend> frontend;
+        {
+            std::lock_guard<std::mutex> lock(frontendMutex_);
+            frontend.Swap(frontend_);
+        }
+        auto jsTask = [frontend]() {
+            auto lock = frontend->GetLock();
+            LOGI("AceContainerSG::Destroy frontend start");
             frontend->Destroy();
+        };
+        frontend->UpdateState(Frontend::State::ON_DESTROY);
+        if (GetSettings().usePlatformAsUIThread && GetSettings().useUIAsJSThread) {
+            jsTask();
+            LOGI("AceContainerSG::Destroy frontend end");
         } else {
-            frontend->UpdateState(Frontend::State::ON_DESTROY);
-            taskExecutor_->PostTask([frontend]() { frontend->Destroy(); }, TaskExecutor::TaskType::JS);
+            taskExecutor_->PostTask(jsTask, TaskExecutor::TaskType::JS);
         }
     }
     // Clear the data of this container
