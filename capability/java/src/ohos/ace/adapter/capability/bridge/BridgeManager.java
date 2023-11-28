@@ -201,15 +201,15 @@ public class BridgeManager {
             JSONObject resultJsonObj = new JSONObject();
             resultJsonObj.put(JSON_ERROR_CODE, bridgeErrorCode.getId());
             resultJsonObj.put(JSON_ERROR_MESSAGE, bridgeErrorCode.getErrorMessage());
-            if (result == null) {
-                resultJsonObj.put(CALL_METHOD_JSON_KEY, result);
-            } else if (result.getClass().isArray()) {
+            if (result != null && result.getClass().isArray()) {
                 JSONArray array = ParameterHelper.objectTransformJsonArray(result);
                 if (array != null) {
                     resultJsonObj.put(CALL_METHOD_JSON_KEY, array);
+                } else {
+                    resultJsonObj = null;
                 }
             } else {
-                resultJsonObj.put(CALL_METHOD_JSON_KEY, result.toString());
+                resultJsonObj.put(CALL_METHOD_JSON_KEY, result);
             }
             return resultJsonObj;
         } catch (JSONException e) {
@@ -259,7 +259,7 @@ public class BridgeManager {
             if (object != null && !ParameterHelper.isExceedJsSafeInteger(object)) {
                 bridgeErrorCode = BridgeErrorCode.BRIDGE_EXCEEDS_SAFE_INTEGER;
             }
-            if (object != null && object.getClass() == BridgeErrorCode.class ) {
+            if (object != null && object.getClass() == BridgeErrorCode.class) {
                 bridgeErrorCode = (BridgeErrorCode) object;
             }
             resultJsonObj = createJsonMethodResult(bridgeErrorCode, object);

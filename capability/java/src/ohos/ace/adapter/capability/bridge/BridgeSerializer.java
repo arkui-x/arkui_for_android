@@ -148,7 +148,6 @@ public class BridgeSerializer {
     }
 
     private static void writeString(ByteArrayOutputStream stream, Object data) {
-        stream.write(T_STRING);
         try {
             writeBytes(stream, data.toString().getBytes(UTF8));
         } catch (UnsupportedEncodingException e) {
@@ -238,7 +237,7 @@ public class BridgeSerializer {
         List<String> list = Arrays.asList((String[])data);
         writeSize(stream, list.size());
         for (String iter : list) {
-            writeData(stream, iter);
+            writeString(stream, iter);
         }
     }
 
@@ -293,6 +292,7 @@ public class BridgeSerializer {
             writeAlignment(stream, 8);
             writeDouble(stream, (double) data);
         } else if (data instanceof String) {
+            stream.write(T_STRING);
             writeString(stream, data);
         } else if (data instanceof ByteBuffer) {
             writeByteBuffer(stream, (ByteBuffer) data);
