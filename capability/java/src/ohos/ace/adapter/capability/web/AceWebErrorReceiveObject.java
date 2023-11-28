@@ -31,11 +31,17 @@ public class AceWebErrorReceiveObject implements IAceWebErrorReceiveObject {
     }
 
     public String getRequestUrl() {
-        return this.request.getUrl().toString();
+        if (this.request.getUrl() != null) {
+            return this.request.getUrl().toString();
+        }
+        return "";
     }
 
     public String getErrorInfo() {
-        return this.error.getDescription().toString();
+        if (this.error.getDescription() != null) {
+            return this.error.getDescription().toString();
+        }
+        return "";
     }
 
     public int getErrorCode() {

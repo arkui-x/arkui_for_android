@@ -57,8 +57,11 @@ public class AceWebPluginAosp extends AceWebPluginBase {
 
     private AceWeb aceWeb;
 
+    private WebDataBaseManager dataBase;
+
     private AceWebPluginAosp(Context context) {
         this.context = context;
+        dataBase = WebDataBaseManager.getInstance(context);
     }
 
     /**
@@ -130,6 +133,22 @@ public class AceWebPluginAosp extends AceWebPluginBase {
     private int toPhysicalPixels(double logicalPixels) {
         float density = 1.0f;
         return (int) Math.round(logicalPixels * density);
+    }
+
+    public boolean existHttpAuthCredentials() {
+        return dataBase.existHttpAuthCredentials();
+    }
+
+    public void deleteHttpAuthCredentials() {
+        dataBase.deleteAllAuthCredentials();
+    }
+
+    public void saveHttpAuthCredentials(String host, String realm, String username, String password) {
+        dataBase.saveHttpAuthCredential(host, realm, username, password);
+    }
+
+    public Object getHttpAuthCredentials(String host, String realm) {
+        return dataBase.getHttpAuthCredential(host, realm);
     }
 
 }

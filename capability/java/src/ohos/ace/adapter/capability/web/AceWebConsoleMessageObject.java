@@ -33,7 +33,10 @@ public class AceWebConsoleMessageObject {
     }
 
     public String getMessage() {
-        return this.consoleMessage.message().toString();
+        if (this.consoleMessage.message() != null) {
+            return this.consoleMessage.message().toString();
+        }
+        return "";
     }
 
     public int getMessageLevel() {
@@ -41,6 +44,9 @@ public class AceWebConsoleMessageObject {
     }
 
     public String getSourceId() {
-        return this.consoleMessage.sourceId().toString();
+        if (this.consoleMessage.sourceId() != null) {
+            return this.consoleMessage.sourceId().toString();
+        }
+        return "";
     }
 }
