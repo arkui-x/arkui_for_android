@@ -299,7 +299,7 @@ void BridgeJni::PlatformCallMethod(JNIEnv *env, jobject jobj,
         env->ReleaseStringUTFChars(jParam, paramStr);
     }
     if (!BridgeManager::JSBridgeExists(instanceId, callBridgeName)) {
-        std::string resultValue = "{\"errorcode\":1, \"errormessage\":\"Bridge name error!\", \"result\":0}";
+        std::string resultValue = "{\"errorCode\":1, \"errorMessage\":\"Bridge name error!\", \"result\":0}";
         JSSendMethodResultJni(instanceId, callBridgeName, callMethodName, resultValue);
         return;
     }
