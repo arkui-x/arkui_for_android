@@ -58,6 +58,7 @@ bool SystemProperties::windowAnimationEnabled_ = false;
 bool SystemProperties::debugBoundaryEnabled_ = false;
 bool SystemProperties::extSurfaceEnabled_ = true;
 uint32_t SystemProperties::dumpFrameCount_ = 0;
+bool SystemProperties::flutterDecouplingEnabled_ = true;
 
 void SystemProperties::InitDeviceType(DeviceType type)
 {
