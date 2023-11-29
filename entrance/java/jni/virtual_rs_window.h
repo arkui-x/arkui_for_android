@@ -162,6 +162,10 @@ public:
         return backgroundColor_;
     }
     WMError SetBrightness(float brightness);
+
+    WMError SetColorSpace(ColorSpace colorSpace);
+    ColorSpace GetColorSpace() const;
+
     float GetBrightness() const
     {
         return brightness_;
@@ -299,6 +303,8 @@ private:
     static void DeleteFromWindowMap(Window* window);
     static void AddToSubWindowMap(std::shared_ptr<Window> window);
     static void DeleteFromSubWindowMap(std::shared_ptr<Window> window);
+    GraphicColorGamut GetSurfaceGamutFromColorSpace(ColorSpace colorSpace) const;
+    ColorSpace GetColorSpaceFromSurfaceGamut(GraphicColorGamut colorGamut) const;
 
     int32_t surfaceWidth_ = 0;
     int32_t surfaceHeight_ = 0;
