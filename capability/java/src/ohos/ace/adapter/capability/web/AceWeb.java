@@ -98,6 +98,11 @@ public class AceWeb extends AceWebBase {
     private static final String NTC_PARAM_LOADDATA_HISTORY = "load_data_history_url";
     private static final String NTC_PARAM_REGISTER_JS_NAME = "jsInterfaceName";
     private static final String NTC_PARAM_REGISTER_JS_METHODLIST = "jsInterfaceMethodList";
+    private static final String NTC_PARAM_SCROLLTO_X = "scroll_to_x";
+    private static final String NTC_PARAM_SCROLLTO_Y = "scroll_to_y";
+    private static final String NTC_PARAM_SCROLLBY_DELTAX = "scroll_by_deltax";
+    private static final String NTC_PARAM_SCROLLBY_DELTAY = "scroll_by_deltay";
+    private static final String NTC_ZOOM_FACTOR = "zoom_factor";
 
     private static final String NTC_ZOOM_ACCESS = "zoomAccess";
     private static final String NTC_JAVASCRIPT_ACCESS = "javascriptAccess";
@@ -768,17 +773,6 @@ public class AceWeb extends AceWebBase {
     }
 
     @Override
-    public String zoom(Map<String, String> params) {
-        return FAIL_TAG;
-    }
-
-    @Override
-    public String clearHistory(Map<String, String> params) {
-        this.webView.clearHistory();
-        return SUCCESS_TAG;
-    }
-
-    @Override
     public String getHitTest(Map<String, String> params) {
         int hitTestType = webView.getHitTestResult().getType();
         return String.valueOf(hitTestType);
@@ -995,5 +989,77 @@ public class AceWeb extends AceWebBase {
                 AceWebPluginBase.onReceiveValue(value);
             }
         });
+    }
+
+    @Override
+    public String scrollTo(Map<String, String> params) {
+        if (!params.containsKey(NTC_PARAM_SCROLLTO_X) || !params.containsKey(NTC_PARAM_SCROLLTO_Y) || webView == null) {
+            return FAIL_TAG;
+        }
+        int scrollX = 0, scrollY = 0;
+        try {
+            scrollX = Integer.parseInt(params.get(NTC_PARAM_SCROLLTO_X));
+            scrollY = Integer.parseInt(params.get(NTC_PARAM_SCROLLTO_Y));
+        } catch (NumberFormatException ignored) {
+            ALog.w(LOG_TAG, "scrollTo NumberFormatException");
+            return FAIL_TAG;
+        }
+        webView.scrollTo(scrollX, scrollY);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String scrollBy(Map<String, String> params) {
+        if (!params.containsKey(NTC_PARAM_SCROLLBY_DELTAX) || !params.containsKey(NTC_PARAM_SCROLLBY_DELTAY)
+            || webView == null) {
+            return FAIL_TAG;
+        }
+        int deltaX = 0, deltaY = 0;
+        try {
+            deltaX = Integer.parseInt(params.get(NTC_PARAM_SCROLLBY_DELTAX));
+            deltaY = Integer.parseInt(params.get(NTC_PARAM_SCROLLBY_DELTAY));
+        } catch (NumberFormatException ignored) {
+            ALog.w(LOG_TAG, "scrollBy NumberFormatException");
+            return FAIL_TAG;
+        }
+        webView.scrollBy(deltaX, deltaY);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String zoom(Map<String, String> params) {
+        if (params == null || webView == null) {
+            return FAIL_TAG;
+        }
+        if (!params.containsKey(NTC_ZOOM_FACTOR)) {
+            return FAIL_TAG;
+        }
+        String zoomFactor = params.get(NTC_ZOOM_FACTOR);
+        if (webView != null) {
+            this.webView.zoomBy(Float.parseFloat(zoomFactor));
+            return SUCCESS_TAG;
+        }
+        return FAIL_TAG;
+    }
+
+    @Override
+    public String clearHistory(Map<String, String> params) {
+        if (webView != null) {
+            this.webView.clearHistory();
+            return SUCCESS_TAG;
+        }
+        return FAIL_TAG;
+    }
+
+    @Override
+    public void setUserAgentString(String userAgent) {
+        final WebSettings webSettings = webView.getSettings();
+        webSettings.setUserAgentString(userAgent);
+    }
+
+    @Override
+    public String getUserAgentString() {
+        final WebSettings webSettings = webView.getSettings();
+        return webSettings.getUserAgentString();
     }
 }

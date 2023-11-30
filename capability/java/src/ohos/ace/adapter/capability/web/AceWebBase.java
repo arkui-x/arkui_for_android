@@ -807,6 +807,14 @@ public abstract class AceWebBase {
 
     public abstract void evaluateJavascript(String script);
 
+    public abstract String scrollTo(Map<String, String> params);
+
+    public abstract String scrollBy(Map<String, String> params);
+
+    public abstract void setUserAgentString(String userAgent);
+
+    public abstract String getUserAgentString();
+
     private native void nativeOnObjectEvent(String id, String param, Object object);
 
     private native boolean nativeOnObjectEventWithBoolReturn(String id, String param, Object object);
