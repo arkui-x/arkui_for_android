@@ -29,8 +29,8 @@ FileAssetProvider::~FileAssetProvider() {}
 bool FileAssetProvider::Initialize(const std::string& packagePath, const std::vector<std::string>& assetBasePaths)
 {
     ACE_SCOPED_TRACE("Initialize");
-    if (packagePath.empty() || assetBasePaths.empty()) {
-        LOGE("the packagePath or assetBasePath is empty");
+    if (assetBasePaths.empty()) {
+        LOGE("the assetBasePath is empty");
         return false;
     }
     assetBasePaths_ = assetBasePaths;
@@ -43,7 +43,7 @@ bool FileAssetProvider::IsValid() const
     return true;
 }
 
-class FileAssetMapping : public fml::Mapping {
+class FileAssetMapping : public AssetMapping {
 public:
     FileAssetMapping(std::unique_ptr<uint8_t[]> data, size_t size) : data_(std::move(data)), size_(size) {}
 
@@ -54,17 +54,17 @@ public:
         return size_;
     }
 
-    const uint8_t* GetMapping() const override
+    const uint8_t* GetAsset() const override
     {
         return data_.get();
     }
 
 private:
-    std::unique_ptr<uint8_t[]> data_ = nullptr;
+    std::unique_ptr<uint8_t[]> data_;
     size_t size_ = 0;
 };
 
-std::unique_ptr<fml::Mapping> FileAssetProvider::GetAsMapping(const std::string& assetName) const
+std::unique_ptr<AssetMapping> FileAssetProvider::GetAsMapping(const std::string& assetName) const
 {
     ACE_SCOPED_TRACE("GetAsMapping");
     LOGD("assert name is: %{public}s", assetName.c_str());
