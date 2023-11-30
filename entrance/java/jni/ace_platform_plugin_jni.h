@@ -40,6 +40,10 @@ public:
     static void UnregisterSurface(JNIEnv* env, jobject myObject, jint instanceId, jlong texture_id);
     static void* GetNativeWindow(int32_t instanceId, int64_t textureId);
     static void ReleaseInstance(int32_t instanceId);
+    
+    static void RegisterTexture(JNIEnv* env, jobject myObject,
+        jint instanceId, jlong textureId, jobject surfaceTexture);
+    static void UnregisterTexture(JNIEnv* env, jobject myObject, jint instanceId, jlong textureId);
 
 private:
     ACE_DISALLOW_COPY_AND_MOVE(AcePlatformPluginJni);

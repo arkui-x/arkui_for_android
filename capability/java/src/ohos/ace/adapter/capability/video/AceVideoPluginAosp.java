@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -56,19 +56,9 @@ public class AceVideoPluginAosp extends AceVideoPluginBase {
 
     @Override
     public long create(Map<String, String> param) {
-        if (!param.containsKey(KEY_TEXTURE)) {
-            return -1L;
-        }
         try {
-            long textureId = Long.parseLong(param.get(KEY_TEXTURE));
-            Object obj = resRegister.getObject(KEY_TEXTURE, textureId);
-            if (obj == null || !(obj instanceof AceTexture)) {
-                ALog.i(LOG_TAG, "not find texture, texture id = " + textureId + ", should set surface later");
-            }
             long id = getAtomicId();
-            AceTexture texture = (AceTexture) obj;
-            AceVideoAosp video = new AceVideoAosp(id, instanceName, texture == null ? null : texture.getSurface(),
-                    context, getEventCallback());
+            AceVideoAosp video = new AceVideoAosp(id, instanceName, context, getEventCallback());
             addResource(id, video);
             return id;
         } catch (NumberFormatException ignored) {
