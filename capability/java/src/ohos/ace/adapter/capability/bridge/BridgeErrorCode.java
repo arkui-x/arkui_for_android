@@ -39,7 +39,7 @@ public enum BridgeErrorCode {
     private String errorMessage;
 
     /**
-     * constructor of BridgeErrorCode
+     * Constructor of BridgeErrorCode.
      *
      * @param id BridgeErrorCodeId.
      * @param errorMessage BridgeErrorMessage.
