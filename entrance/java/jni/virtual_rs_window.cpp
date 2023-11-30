@@ -19,11 +19,9 @@
 #include <memory>
 
 #include "ability_context.h"
-#include "flutter/shell/platform/android/vsync_waiter_android.h"
 #include "foundation/appframework/arkui/uicontent/ui_content.h"
 #include "hilog.h"
 #include "render_service_client/core/pipeline/rs_render_thread.h"
-#include "shell/common/vsync_waiter.h"
 #include "subwindow_manager_jni.h"
 #include "transaction/rs_interfaces.h"
 #include "window_view_adapter.h"
@@ -169,11 +167,6 @@ std::recursive_mutex Window::globalMutex_;
 
 Window::Window(std::shared_ptr<AbilityRuntime::Platform::Context> context, uint32_t windowId)
     : context_(context), windowId_(windowId), brightness_(SubWindowManagerJni::GetAppScreenBrightness())
-{}
-
-Window::Window(const flutter::TaskRunners& taskRunners)
-    : vsyncWaiter_(std::make_shared<flutter::VsyncWaiterAndroid>(taskRunners)),
-      brightness_(SubWindowManagerJni::GetAppScreenBrightness())
 {}
 
 Window::Window(std::shared_ptr<AbilityRuntime::Platform::Context> context)
@@ -674,13 +667,6 @@ void Window::RequestVsync(const std::shared_ptr<VsyncCallback>& vsyncCallback)
         };
         receiver_->RequestNextVSync(fcb);
         return;
-    }
-
-    // fa model
-    if (vsyncWaiter_) {
-        vsyncWaiter_->AsyncWaitForVsync([vsyncCallback](fml::TimePoint frameStart, fml::TimePoint frameTarget) {
-            vsyncCallback->onCallback(frameStart.ToEpochDelta().ToNanoseconds());
-        });
     }
 }
 

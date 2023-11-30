@@ -34,10 +34,10 @@
 #include "core/common/container.h"
 #include "core/common/container_scope.h"
 #include "core/common/flutter/flutter_asset_manager.h"
-#include "core/common/flutter/flutter_task_executor.h"
 #include "core/common/font_manager.h"
 #include "core/common/platform_window.h"
 #include "core/common/resource/resource_manager.h"
+#include "core/common/task_executor_impl.h"
 #include "core/common/thread_checker.h"
 #include "core/common/watch_dog.h"
 #include "core/common/window.h"
@@ -116,16 +116,16 @@ AceContainerSG::AceContainerSG(int32_t instanceId, FrontendType type,
 
     useStageModel_ = true;
 
-    auto flutterTaskExecutor = Referenced::MakeRefPtr<FlutterTaskExecutor>();
-    flutterTaskExecutor->InitPlatformThread(useCurrentEventRunner_, useStageModel_);
+    auto taskExecutorImpl = Referenced::MakeRefPtr<TaskExecutorImpl>();
+    taskExecutorImpl->InitPlatformThread(useCurrentEventRunner_, useStageModel_);
 
     if (type_ == FrontendType::DECLARATIVE_JS) {
         GetSettings().useUIAsJSThread = true;
     } else {
-        flutterTaskExecutor->InitJsThread();
+        taskExecutorImpl->InitJsThread();
     }
 
-    taskExecutor_ = flutterTaskExecutor;
+    taskExecutor_ = taskExecutorImpl;
 
     platformEventCallback_ = std::move(callback);
 }
@@ -550,14 +550,14 @@ void AceContainerSG::AttachView(
 #ifdef ENABLE_ROSEN_BACKEND
     auto* aceView = static_cast<Platform::AceViewSG*>(aceView_);
     CHECK_NULL_VOID(aceView);
-    auto flutterTaskExecutor = AceType::DynamicCast<FlutterTaskExecutor>(taskExecutor_);
-    CHECK_NULL_VOID(flutterTaskExecutor);
-    flutterTaskExecutor->InitOtherThreads(aceView->GetThreadModel());
+    auto taskExecutorImpl = AceType::DynamicCast<TaskExecutorImpl>(taskExecutor_);
+    CHECK_NULL_VOID(taskExecutorImpl);
+    taskExecutorImpl->InitOtherThreads(aceView->GetThreadModel());
 #endif
     ContainerScope scope(instanceId);
     if (type_ == FrontendType::DECLARATIVE_JS) {
         // for declarative js frontend display ui in js thread
-        flutterTaskExecutor->InitJsThread(false);
+        taskExecutorImpl->InitJsThread(false);
         InitializeFrontend();
         auto front = GetFrontend();
         if (front) {

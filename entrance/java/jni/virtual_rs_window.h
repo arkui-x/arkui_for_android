@@ -19,7 +19,6 @@
 #include <map>
 #include <memory>
 
-#include "flutter/shell/common/vsync_waiter.h"
 #include "foundation/appframework/window_manager/interfaces/innerkits/wm/window_interface.h"
 #include "foundation/appframework/window_manager/interfaces/innerkits/wm/window_option.h"
 #include "refbase.h"
@@ -107,7 +106,6 @@ public:
     static std::shared_ptr<Window> CreateSubWindow(std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context,
         std::shared_ptr<OHOS::Rosen::WindowOption> option);
 
-    explicit Window(const flutter::TaskRunners& taskRunners);
     explicit Window(std::shared_ptr<AbilityRuntime::Platform::Context> context);
     explicit Window(std::shared_ptr<AbilityRuntime::Platform::Context> context, uint32_t windowId);
     ~Window() override;
@@ -304,7 +302,6 @@ private:
     int32_t surfaceHeight_ = 0;
     float density_ = 3.0f;
     std::shared_ptr<RSSurfaceNode> surfaceNode_;
-    std::shared_ptr<flutter::VsyncWaiter> vsyncWaiter_;
 
     jobject windowView_ = nullptr;
     std::shared_ptr<AbilityRuntime::Platform::Context> context_;
