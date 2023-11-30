@@ -37,6 +37,8 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
 
     protected native void nativeInit();
 
+    protected native void nativeInitWebDataBase();
+
     protected native static void onReceiveValue(String value);
 
     private static boolean hasInit = false;
@@ -67,6 +69,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         registerCallMethod(web.getCallMethod());
         if (!hasInit) {
             nativeInit();
+            nativeInitWebDataBase();
             hasInit = true;
         }
     }
