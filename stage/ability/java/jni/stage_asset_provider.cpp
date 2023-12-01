@@ -341,10 +341,13 @@ void StageAssetProvider::SetFileDir(const std::string& filesRootDir)
     if (lastSlashPos != std::string::npos) {
         if (appLibDir_.substr(lastSlashPos) == "/arm64") {
             appDataLibDir_ = filesRootDir + ARKUI_X_ASSETS_DIR + EXTERN_LIBS_DIR + ARCH_ARM64;
+            architecture_ = ARCH_ARM64;
         } else if (appLibDir_.substr(lastSlashPos) == "/arm") {
             appDataLibDir_ = filesRootDir + ARKUI_X_ASSETS_DIR + EXTERN_LIBS_DIR + ARCH_ARM;
+            architecture_ = ARCH_ARM;
         } else {
             appDataLibDir_ = filesRootDir + ARKUI_X_ASSETS_DIR + EXTERN_LIBS_DIR + ARCH_X86;
+            architecture_ = ARCH_X86;
         }
     }
 }
@@ -631,7 +634,7 @@ void StageAssetProvider::CopyNativeLibToAppDataModuleDir(const std::string& bund
 {
     std::vector<std::string> libPaths;
     for (auto& path : allFilePath_) {
-        if (path.find(ARCH_ARM64) != std::string::npos && path.find(SO_SUFFIX) != std::string::npos) {
+        if (path.find(architecture_) != std::string::npos && path.find(SO_SUFFIX) != std::string::npos) {
             libPaths.emplace_back(path);
         }
     }
@@ -660,7 +663,7 @@ void StageAssetProvider::CopyNativeLibToAppDataModuleDir(const std::string& bund
         auto endPos = endPath.find_first_of(SEPARATOR);
         auto moduleName = endPath.substr(0, endPos);
 
-        auto newLibDir = GetAppDataModuleDir() + SEPARATOR + moduleName + EXTERN_LIBS_DIR + ARCH_ARM64;
+        auto newLibDir = GetAppDataModuleDir() + SEPARATOR + moduleName + EXTERN_LIBS_DIR + architecture_;
         if (!MakeMultipleDir(newLibDir)) {
             LOGE("make multilevel dir failed");
             continue;
@@ -686,7 +689,7 @@ void StageAssetProvider::SetNativeLibPaths(
         std::vector<std::string> fileFullPaths;
         GetAppDataModuleAssetList(path, fileFullPaths, false);
         for (auto& path : fileFullPaths) {
-            if (path.find(ARCH_ARM64) != std::string::npos && path.find(SO_SUFFIX) != std::string::npos) {
+            if (path.find(architecture_) != std::string::npos && path.find(SO_SUFFIX) != std::string::npos) {
                 auto lastPos = path.find_last_of(SEPARATOR);
                 std::string filePath = path.substr(0, lastPos);
                 auto key = bundleName + SEPARATOR + moduleName;
