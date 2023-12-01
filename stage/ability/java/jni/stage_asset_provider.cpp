@@ -54,7 +54,7 @@ const std::string EXTERN_LIBS_DIR = "/libs";
 } // namespace
 std::shared_ptr<StageAssetProvider> StageAssetProvider::instance_ = nullptr;
 std::mutex StageAssetProvider::mutex_;
-StageAssetProvider::StageAssetProvider() : assetManager_(nullptr, nullptr) {}
+StageAssetProvider::StageAssetProvider() : assetManager_(nullptr, nullptr), architecture_(ARCH_ARM64) {}
 
 StageAssetProvider::~StageAssetProvider() {}
 

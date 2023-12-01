@@ -145,7 +145,7 @@ private:
     std::string arkuiXAssetsDir_;
     std::string preferenceDir_;
     std::string resourcesFilePrefixPath_;
-    std::string architecture_ = "/arm64-v8a";
+    std::string architecture_;
     static std::shared_ptr<StageAssetProvider> instance_;
     static std::mutex mutex_;
 };
