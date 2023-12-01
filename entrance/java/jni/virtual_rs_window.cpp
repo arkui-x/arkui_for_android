@@ -852,17 +852,13 @@ bool Window::ProcessMouseEvent(const std::vector<uint8_t>& data)
 }
 
 bool Window::ProcessKeyEvent(
-    int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp, int64_t timeStampStart, int32_t source, int32_t deviceId)
+    int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp, int64_t timeStampStart, int32_t source, int32_t deviceId, int32_t metaKey)
 {
     if (!uiContent_) {
         LOGW("Window::ProcessKeyEvent uiContent_ is nullptr");
         return false;
     }
     Ace::KeyCode aceKeyCode = KeyCodeToAceKeyCode(keyCode);
-    int32_t metaKey = 0;
-    if (aceKeyCode == Ace::KeyCode::KEY_META_LEFT || aceKeyCode == Ace::KeyCode::KEY_META_RIGHT) {
-        metaKey = 1;
-    }
     return uiContent_->ProcessKeyEvent(static_cast<int32_t>(aceKeyCode), keyAction, repeatTime, timeStamp, timeStampStart, metaKey, source, deviceId);
 }
 

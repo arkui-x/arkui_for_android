@@ -71,6 +71,13 @@ public class AceEventProcessorAosp {
         int KEYBOARD = 4;
     };
 
+    private interface CtrlKeysBit {
+        int CTRL = 1;
+        int SHIFT = 2;
+        int ALT = 4;
+        int META = 8;
+    };
+
     private AceEventProcessorAosp() {
     }
 
@@ -278,6 +285,27 @@ public class AceEventProcessorAosp {
                 break; 
         }
         return keySource;
+    }
+
+    public static int getModifierKeys(KeyEvent event) {
+        boolean isCtrl = event.isCtrlPressed();
+        boolean isShift = event.isShiftPressed();
+        boolean isAlt = event.isAltPressed();
+        boolean isMeta = event.isMetaPressed();
+        int ctrlKeysBit = 0;
+        if (isCtrl) {
+            ctrlKeysBit |= CtrlKeysBit.CTRL;
+        }
+        if (isShift) {
+            ctrlKeysBit |= CtrlKeysBit.SHIFT;
+        }
+        if (isAlt) {
+            ctrlKeysBit |= CtrlKeysBit.ALT;
+        }
+        if (isMeta) {
+            ctrlKeysBit |= CtrlKeysBit.META;
+        }     
+        return ctrlKeysBit;
     }
 
     private static int actionMaskedToMouseActionType(int actionMasked) {

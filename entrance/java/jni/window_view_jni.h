@@ -43,7 +43,7 @@ public:
     static jboolean DispatchMouseDataPacket(
         JNIEnv* env, jobject myObject, jlong window, jobject buffer, jint position);
     static jboolean DispatchKeyEvent(JNIEnv* env, jobject myObject, jlong window, jint keyCode, jint action,
-        jint repeatTime, jlong timeStamp, jlong timeStampStart, jint source, jint deviceId);
+        jint repeatTime, jlong timeStamp, jlong timeStampStart, jint source, jint deviceId, jint metaKey);
 
 private:
     static bool RegisterCommonNatives(JNIEnv* env, const jclass myClass);
