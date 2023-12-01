@@ -87,7 +87,7 @@ static const JNINativeMethod COMMON_METHODS[] = {
     },
     {
         .name = "nativeDispatchKeyEvent",
-        .signature = "(JIIIJJII)Z",
+        .signature = "(JIIIJJIII)Z",
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::DispatchKeyEvent),
     },
 };
@@ -219,7 +219,7 @@ jboolean WindowViewJni::DispatchMouseDataPacket(
 }
 
 jboolean WindowViewJni::DispatchKeyEvent(JNIEnv* env, jobject myObject, jlong window, jint keyCode, jint action,
-    jint repeatTime, jlong timeStamp, jlong timeStampStart, jint source, jint deviceId)
+    jint repeatTime, jlong timeStamp, jlong timeStampStart, jint source, jint deviceId, jint metaKey)
 {
     auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
     if (windowPtr == nullptr) {
@@ -227,7 +227,7 @@ jboolean WindowViewJni::DispatchKeyEvent(JNIEnv* env, jobject myObject, jlong wi
         return false;
     }
 
-    return windowPtr->ProcessKeyEvent(keyCode, action, repeatTime, timeStamp, timeStampStart, source, deviceId);
+    return windowPtr->ProcessKeyEvent(keyCode, action, repeatTime, timeStamp, timeStampStart, source, deviceId, metaKey);
 }
 
 bool WindowViewJni::RegisterCommonNatives(JNIEnv* env, const jclass myClass)

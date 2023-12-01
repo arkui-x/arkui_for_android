@@ -377,10 +377,12 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
                 return true;
             }
         }
+
+        int modifierKeys = AceEventProcessorAosp.getModifierKeys(event);
         int source = AceEventProcessorAosp.eventSourceTransKeySource(eventSouce);
         markdownNumpadKeyStatus(keyCode, event.getAction());
         if (nativeDispatchKeyEvent(nativeWindowPtr, event.getKeyCode(), event.getAction(), event.getRepeatCount(),
-                event.getEventTime(), event.getDownTime(), source, deviceId)) {
+                event.getEventTime(), event.getDownTime(), source, deviceId, modifierKeys)) {
             return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -403,10 +405,12 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
                 return true;
             }
         }
+
+        int modifierKeys = AceEventProcessorAosp.getModifierKeys(event);
         int source = AceEventProcessorAosp.eventSourceTransKeySource(eventSouce);
         markdownNumpadKeyStatus(keyCode, event.getAction());
         if (nativeDispatchKeyEvent(nativeWindowPtr, event.getKeyCode(), event.getAction(), event.getRepeatCount(),
-                event.getEventTime(), event.getDownTime(), source, deviceId)) {          
+                event.getEventTime(), event.getDownTime(), source, deviceId, modifierKeys)) {          
             return true;
         }
         return super.onKeyUp(keyCode, event);
@@ -435,5 +439,5 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     private native boolean nativeDispatchMouseDataPacket(long windowPtr, ByteBuffer buffer, int position);
 
     private native boolean nativeDispatchKeyEvent(long windowPtr, int keyCode, int action, int repeatTime,
-            long timeStamp, long timeStampStart, int source, int deviceId);
+            long timeStamp, long timeStampStart, int source, int deviceId, int metaKey);
 }
