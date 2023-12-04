@@ -216,6 +216,77 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
             webBase.evaluateJavascript(script);
         }
     }
+
+    public String accessStep(long id, int step) {
+        if (objectMap.containsKey(id)) {
+            Map<String, String> defaultParam = new HashMap<String, String>();
+            defaultParam.put("accessStep", Integer.toString(step));
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.accessStep(defaultParam);
+        }
+        return "";
+    }
+
+    public void scrollTo(long id, int x, int y) {
+        if (objectMap.containsKey(id)) {
+            Map<String, String> defaultParam = new HashMap<String, String>();
+            defaultParam.put("scroll_to_x", Integer.toString(x));
+            defaultParam.put("scroll_to_y", Integer.toString(y));
+            AceWebBase webBase = objectMap.get(id);
+            webBase.scrollTo(defaultParam);
+        }
+    }
+
+    public void scrollBy(long id, int x, int y) {
+        if (objectMap.containsKey(id)) {
+            Map<String, String> defaultParam = new HashMap<String, String>();
+            defaultParam.put("scroll_by_deltax", Integer.toString(x));
+            defaultParam.put("scroll_by_deltay", Integer.toString(y));
+            AceWebBase webBase = objectMap.get(id);
+            webBase.scrollBy(defaultParam);
+        }
+    }
+
+    public void zoom(long id, float step) {
+        if (objectMap.containsKey(id)) {
+            Map<String, String> defaultParam = new HashMap<String, String>();
+            defaultParam.put("zoom_factor", Float.toString(step));
+            AceWebBase webBase = objectMap.get(id);
+            webBase.zoom(defaultParam);
+        }
+    }
+
+    public void stop(long id) {
+        if (objectMap.containsKey(id)) {
+            Map<String, String> defaultParam = new HashMap<String, String>();
+            AceWebBase webBase = objectMap.get(id);
+            webBase.stopLoading(defaultParam);
+        }
+    }
+
+    public void clearHistory(long id) {
+        if (objectMap.containsKey(id)) {
+            Map<String, String> defaultParam = new HashMap<String, String>();
+            AceWebBase webBase = objectMap.get(id);
+            webBase.clearHistory(defaultParam);
+        }
+    }
+
+    public void setCustomUserAgent(long id, String userAgent) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.setUserAgentString(userAgent);
+        }
+    }
+
+    public String getCustomUserAgent(long id) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.getUserAgentString();
+        }
+        return "";
+    }
+
     /**
      * notify activity lifecycle changed to plugin.
      *
