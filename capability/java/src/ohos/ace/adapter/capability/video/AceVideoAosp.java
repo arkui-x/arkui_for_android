@@ -259,6 +259,11 @@ public class AceVideoAosp extends AceVideoBase
         ALog.i(LOG_TAG, "onPrepared");
         mediaPlayerLock.lock();
         try {
+            if (isStoped && state == PlayState.STOPPED) {
+                mediaPlayer.stop();
+                ALog.e(LOG_TAG, "media player is STOPPED.");
+                return;
+            }
             if (mp == null || mediaPlayer == null) {
                 ALog.e(LOG_TAG, "onPrepared failed, MediaPlayer is null");
                 return;
@@ -485,7 +490,7 @@ public class AceVideoAosp extends AceVideoBase
         ALog.i(LOG_TAG, "pause param:" + params);
         mediaPlayerLock.lock();
         try {
-            if (state == PlayState.STOPPED || state == PlayState.PREPARED){
+            if (state == PlayState.STOPPED || state == PlayState.PREPARED) {
                 ALog.w(LOG_TAG, "media player is not STARTED.");
                 return SUCCESS;
             }
@@ -520,16 +525,39 @@ public class AceVideoAosp extends AceVideoBase
             }
             try {
                 mediaPlayer.stop();
-                isStoped = true;
+                mediaPlayer.reset();
+                mediaPlayer.release();
+                mediaPlayer = new MediaPlayer();
+                Surface surface = getSurface();
+                if (surface != null) {
+                    ALog.i(LOG_TAG, "MediaPlayer SetSurface");
+                    mediaPlayer.setSurface(surface);
+                    isSetSurfaced = true;
+                }
+                mediaPlayer.setAudioAttributes(ATTR_VIDEO);
+                if (!source.isEmpty() && !setDataSource(source)) {
+                    ALog.e(LOG_TAG, "setDataSource failed.");
+                    return FAIL;
+                }
+                mediaPlayer.setOnPreparedListener(this);
+                mediaPlayer.setOnErrorListener(this);
+                mediaPlayer.setOnSeekCompleteListener(this);
+                mediaPlayer.setOnCompletionListener(this);
+                mediaPlayer.setOnBufferingUpdateListener(this);
+                mediaPlayer.prepare();
+            } catch (IOException ignored) {
+                ALog.e(LOG_TAG, "start failed, IOException");
+                return FAIL;
             } catch (IllegalStateException ignored) {
                 ALog.e(LOG_TAG, "stop failed, IllegalStateException.");
                 return FAIL;
             }
         } finally {
             mediaPlayerLock.unlock();
+            state = PlayState.STOPPED;
+            isStoped = true;
+            setKeepScreenOn(false);
         }
-        state = PlayState.STOPPED;
-        setKeepScreenOn(false);
         return SUCCESS;
     }
 
