@@ -20,25 +20,24 @@
 #include <map>
 #include <mutex>
 #include <string>
-
 #include "jni.h"
 #include "jni_environment.h"
-#include "third_party/flutter/engine/flutter/shell/platform/android/apk_asset_provider.h"
 
 #include "base/utils/macros.h"
-#include "core/common/flutter/flutter_asset_manager.h"
+#include "core/common/asset_manager_impl.h"
+#include "pack_asset_provider.h"
 
 namespace OHOS {
 namespace AbilityRuntime {
 namespace Platform {
-class ACE_EXPORT AssetProvider : public Ace::FlutterAssetProvider {
-    DECLARE_ACE_TYPE(AssetProvider, Ace::FlutterAssetProvider);
+class ACE_EXPORT AssetProvider : public Ace::AssetProviderImpl {
+    DECLARE_ACE_TYPE(AssetProvider, Ace::AssetProviderImpl);
 
 public:
-    explicit AssetProvider(std::unique_ptr<flutter::APKAssetProvider> provider) : assetProvider_(std::move(provider)) {}
+    explicit AssetProvider(std::unique_ptr<Ace::PackAssetProvider> provider) : assetProvider_(std::move(provider)) {}
     ~AssetProvider() override = default;
 
-    std::unique_ptr<fml::Mapping> GetAsMapping(const std::string& assetName) const override
+    std::unique_ptr<Ace::AssetMapping> GetAsMapping(const std::string& assetName) const override
     {
         if (!assetProvider_) {
             return nullptr;
@@ -62,11 +61,11 @@ public:
     void GetAssetList(const std::string& path, std::vector<std::string>& assetList) override {}
 
 private:
-    std::unique_ptr<flutter::AssetResolver> assetProvider_;
+    std::unique_ptr<Ace::PackAssetProvider> assetProvider_;
 };
 
 constexpr int64_t FOO_MAX_LEN = 20 * 1024 * 1024;
-class FileAssetMapping : public fml::Mapping {
+class FileAssetMapping : public Ace::AssetMapping {
 public:
     FileAssetMapping(std::unique_ptr<uint8_t[]> data, size_t size) : data_(std::move(data)), size_(size) {}
     ~FileAssetMapping() override {}
@@ -76,13 +75,13 @@ public:
         return size_;
     }
 
-    const uint8_t* GetMapping() const override
+    const uint8_t* GetAsset() const override
     {
         return data_.get();
     }
 
 private:
-    std::unique_ptr<uint8_t[]> data_ = nullptr;
+    std::unique_ptr<uint8_t[]> data_;
     size_t size_ = 0;
 };
 class StageAssetProvider {
@@ -145,6 +144,7 @@ private:
     std::string arkuiXAssetsDir_;
     std::string preferenceDir_;
     std::string resourcesFilePrefixPath_;
+    std::string architecture_;
     static std::shared_ptr<StageAssetProvider> instance_;
     static std::mutex mutex_;
 };

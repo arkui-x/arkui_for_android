@@ -42,7 +42,7 @@ pixel_map_support = true
 use_curl_download = false
 use_components_lib = true
 web_components_support = true
-video_texture_support = false
+video_texture_support = true
 
 cflags_cc = [
   "-std=c++17",
