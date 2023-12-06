@@ -122,7 +122,7 @@ std::list<std::vector<uint8_t>> StageAssetProvider::GetModuleJsonBufferList()
             LOGE("mapping is nullptr");
             continue;
         }
-        auto moduleMap = mapping->GetMapping();
+        auto moduleMap = mapping->GetAsset();
         if (moduleMap == nullptr) {
             LOGE("moduleMap is nullptr");
             continue;
@@ -199,7 +199,7 @@ std::vector<uint8_t> StageAssetProvider::GetModuleBuffer(
                     LOGE("mapping is nullptr");
                     continue;
                 }
-                auto moduleMap = mapping->GetMapping();
+                auto moduleMap = mapping->GetAsset();
                 if (moduleMap == nullptr) {
                     LOGE("moduleMap is nullptr");
                     continue;
@@ -264,7 +264,7 @@ std::vector<uint8_t> StageAssetProvider::GetModuleAbilityBuffer(
                     LOGE("mapping is nullptr");
                     continue;
                 }
-                auto moduleMap = mapping->GetMapping();
+                auto moduleMap = mapping->GetAsset();
                 if (moduleMap == nullptr) {
                     LOGE("moduleMap is nullptr");
                     continue;
@@ -299,7 +299,7 @@ std::vector<uint8_t> StageAssetProvider::GetAbcPathBuffer(const std::string& abc
         LOGE("mapping is nullptr");
         return buffer;
     }
-    auto moduleMap = mapping->GetMapping();
+    auto moduleMap = mapping->GetAsset();
     if (moduleMap == nullptr) {
         LOGE("moduleMap is nullptr");
         return buffer;
@@ -317,7 +317,7 @@ Ace::RefPtr<AssetProvider> StageAssetProvider::CreateAndFindAssetProvider(const 
         return finder->second;
     }
 
-    auto assetProvider = Ace::AceType::MakeRefPtr<AssetProvider>(std::make_unique<flutter::APKAssetProvider>(
+    auto assetProvider = Ace::AceType::MakeRefPtr<AssetProvider>(std::make_unique<Ace::PackAssetProvider>(
         Ace::Platform::JniEnvironment::GetInstance().GetJniEnv().get(), assetManager_.get(), path));
     assetProviders_.emplace(path, assetProvider);
     return assetProvider;
@@ -487,7 +487,7 @@ std::vector<uint8_t> StageAssetProvider::GetBufferByAppDataPath(const std::strin
         LOGE("mapping is nullptr");
         return buffer;
     }
-    auto moduleMap = mapping->GetMapping();
+    auto moduleMap = mapping->GetAsset();
     if (moduleMap == nullptr) {
         LOGE("moduleMap is nullptr");
         return buffer;
@@ -650,7 +650,7 @@ void StageAssetProvider::CopyNativeLibToAppDataModuleDir(const std::string& bund
             LOGE("mapping is nullptr");
             continue;
         }
-        auto moduleMap = mapping->GetMapping();
+        auto moduleMap = mapping->GetAsset();
         if (moduleMap == nullptr) {
             LOGE("moduleMap is nullptr");
             continue;

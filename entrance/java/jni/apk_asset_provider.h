@@ -19,19 +19,17 @@
 #include <memory>
 #include <string>
 
-#include "flutter/shell/platform/android/apk_asset_provider.h"
-
+#include "adapter/android/entrance/java/jni/pack_asset_provider.h"
 #include "base/resource/asset_manager.h"
 #include "base/utils/macros.h"
-#include "core/common/flutter/flutter_asset_manager.h"
+#include "core/common/asset_manager_impl.h"
 
 namespace OHOS::Ace {
-
-class ACE_EXPORT ApkAssetProvider : public FlutterAssetProvider {
-    DECLARE_ACE_TYPE(ApkAssetProvider, FlutterAssetProvider);
+class ACE_EXPORT ApkAssetProvider : public AssetProviderImpl {
+    DECLARE_ACE_TYPE(ApkAssetProvider, AssetProviderImpl);
 
 public:
-    explicit ApkAssetProvider(std::unique_ptr<flutter::APKAssetProvider> provider, const std::string basePath = "")
+    explicit ApkAssetProvider(std::unique_ptr<PackAssetProvider> provider, const std::string basePath = "")
         : basePath_(basePath), assetProvider_(std::move(provider))
     {
         LOGD("Create apkassetprovider base path: %{public}s", basePath.c_str());
@@ -44,7 +42,7 @@ public:
         assetManager_ = assetManager;
     }
 
-    std::unique_ptr<fml::Mapping> GetAsMapping(const std::string& assetName) const override
+    std::unique_ptr<AssetMapping> GetAsMapping(const std::string& assetName) const override
     {
         if (!assetProvider_) {
             return nullptr;
@@ -143,7 +141,7 @@ public:
 
 private:
     std::string basePath_;
-    std::unique_ptr<flutter::AssetResolver> assetProvider_;
+    std::unique_ptr<PackAssetProvider> assetProvider_;
     std::string appPath_;
     AAssetManager *assetManager_ = nullptr;
 };

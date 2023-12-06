@@ -33,7 +33,6 @@
 #include "core/common/connect_server_manager.h"
 #include "core/common/container.h"
 #include "core/common/container_scope.h"
-#include "core/common/flutter/flutter_asset_manager.h"
 #include "core/common/font_manager.h"
 #include "core/common/platform_window.h"
 #include "core/common/resource/resource_manager.h"

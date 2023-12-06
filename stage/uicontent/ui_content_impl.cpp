@@ -27,6 +27,7 @@
 
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
+#include "adapter/android/entrance/java/jni/pack_asset_provider.h"
 #include "adapter/android/osal/accessibility_manager_impl.h"
 #include "adapter/android/osal/file_asset_provider.h"
 #include "adapter/android/osal/page_url_checker_android.h"
@@ -38,9 +39,9 @@
 #include "base/log/log.h"
 #include "core/common/ace_engine.h"
 #include "core/common/ace_view.h"
+#include "core/common/asset_manager_impl.h"
 #include "core/common/container.h"
 #include "core/common/container_scope.h"
-#include "core/common/flutter/flutter_asset_manager.h"
 #include "core/event/touch_event.h"
 #include "core/image/image_file_cache.h"
 #include "frameworks/bridge/declarative_frontend/ng/declarative_frontend_ng.h"
@@ -187,7 +188,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
         AceApplicationInfo::GetInstance().SetAbilityName(info->name);
     }
 
-    RefPtr<FlutterAssetManager> flutterAssetManager = Referenced::MakeRefPtr<FlutterAssetManager>();
+    RefPtr<AssetManagerImpl> assetManagerImpl = Referenced::MakeRefPtr<AssetManagerImpl>();
     bool isModelJson = info != nullptr ? info->isModuleJson : false;
     std::string moduleName = info != nullptr ? info->moduleName : "";
     auto appInfo = context->GetApplicationInfo();
@@ -203,7 +204,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
         }
         LOGI("hapPath:%{public}s", hapPath.c_str());
         // first use hap provider
-        if (flutterAssetManager && !hapPath.empty()) {
+        if (assetManagerImpl && !hapPath.empty()) {
             auto assetProvider = AbilityRuntime::Platform::StageAssetProvider::GetInstance();
             CHECK_NULL_VOID(assetProvider);
             auto dynamicLoadFlag = true;
@@ -223,17 +224,17 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
                 if (fileAssetProvider->Initialize(
                         assetProvider->GetAppDataModuleDir() + "/" + moduleName, hapAssetPaths)) {
                     LOGD("Push AssetProvider to queue.");
-                    flutterAssetManager->PushBack(std::move(fileAssetProvider));
+                    assetManagerImpl->PushBack(std::move(fileAssetProvider));
                 }
             } else {
                 for (const auto& path : hapAssetPaths) {
                     auto apkAssetProvider =
-                        AceType::MakeRefPtr<ApkAssetProvider>(std::make_unique<flutter::APKAssetProvider>(env.get(),
+                        AceType::MakeRefPtr<ApkAssetProvider>(std::make_unique<PackAssetProvider>(env.get(),
                                                                   assetProvider->GetAssetManager(), hapPath + path),
                             hapPath + path);
                     apkAssetProvider->SetAssetManager(
                         AAssetManager_fromJava(env.get(), assetProvider->GetAssetManager()));
-                    flutterAssetManager->PushBack(std::move(apkAssetProvider));
+                    assetManagerImpl->PushBack(std::move(apkAssetProvider));
                 }
             }
         }
@@ -306,7 +307,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     aceResCfg.SetColorMode(SystemProperties::GetColorMode());
     aceResCfg.SetDeviceAccess(SystemProperties::GetDeviceAccess());
     container->SetResourceConfiguration(aceResCfg);
-    container->SetAssetManagerIfNull(flutterAssetManager);
+    container->SetAssetManagerIfNull(assetManagerImpl);
     container->SetBundlePath(context->GetBundleCodeDir());
     container->SetFilesDataPath(context->GetFilesDir());
     container->SetModuleName(moduleName);
