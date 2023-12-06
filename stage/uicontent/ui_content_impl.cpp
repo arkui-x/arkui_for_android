@@ -140,6 +140,11 @@ void UIContentImpl::DestroyCallback() const
 
 void UIContentImpl::Initialize(OHOS::Rosen::Window* window, const std::string& url, NativeValue* storage)
 {
+    Initialize(window, url, reinterpret_cast<napi_value>(storage));
+}
+
+void UIContentImpl::Initialize(OHOS::Rosen::Window* window, const std::string& url, napi_value storage)
+{
     if (window) {
         CommonInitialize(window, url, storage);
     }
@@ -152,6 +157,11 @@ void UIContentImpl::Initialize(OHOS::Rosen::Window* window, const std::string& u
 
 NativeValue* UIContentImpl::GetUIContext()
 {
+    return reinterpret_cast<NativeValue*>(GetUINapiContext());
+}
+
+napi_value UIContentImpl::GetUINapiContext()
+{
     auto container = Platform::AceContainerSG::GetContainer(instanceId_);
     ContainerScope scope(instanceId_);
     auto frontend = container->GetFrontend();
@@ -159,13 +169,13 @@ NativeValue* UIContentImpl::GetUIContext()
     if (frontend->GetType() == FrontendType::DECLARATIVE_JS) {
         auto declarativeFrontend = AceType::DynamicCast<DeclarativeFrontendNG>(frontend);
         CHECK_NULL_RETURN(declarativeFrontend, nullptr);
-        return reinterpret_cast<NativeValue*>(declarativeFrontend->GetContextValue());
+        return declarativeFrontend->GetContextValue();
     }
 
     return nullptr;
 }
 
-void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::string& url, NativeValue* storage)
+void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::string& url, napi_value storage)
 {
     ACE_FUNCTION_TRACE();
     window_ = window;
@@ -346,9 +356,11 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
         if (!storage) {
             container->SetLocalStorage(nullptr, context->GetBindingObject()->Get<NativeReference>());
         } else {
-            LOGI("SetLocalStorage %{public}d", storage->TypeOf());
+            auto env = reinterpret_cast<napi_env>(nativeEngine);
+            napi_ref ref = nullptr;
+            napi_create_reference(env, storage, 1, &ref);
             container->SetLocalStorage(
-                nativeEngine->CreateReference(storage, 1), context->GetBindingObject()->Get<NativeReference>());
+                reinterpret_cast<NativeReference*>(ref), context->GetBindingObject()->Get<NativeReference>());
         }
     }
 }
