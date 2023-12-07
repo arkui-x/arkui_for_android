@@ -43,6 +43,8 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
 
     private static boolean hasInit = false;
 
+    protected static boolean richTextInit = false;
+
     public AceWebPluginBase() {
         // plugin name is web, version is 1.0.
         super("web", 1.0f);
@@ -67,11 +69,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
     public void addResource(long id, AceWebBase web) {
         objectMap.put(id, web);
         registerCallMethod(web.getCallMethod());
-        if (!hasInit) {
+        if (!hasInit && !richTextInit) {
             nativeInit();
             nativeInitWebDataBase();
             hasInit = true;
         }
+        richTextInit = false;
     }
 
     /**
