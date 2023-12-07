@@ -21,6 +21,7 @@
 #include "ability_context.h"
 #include "foundation/appframework/arkui/uicontent/ui_content.h"
 #include "hilog.h"
+#include "napi/native_api.h"
 #include "render_service_client/core/pipeline/rs_render_thread.h"
 #include "subwindow_manager_jni.h"
 #include "transaction/rs_interfaces.h"
@@ -115,7 +116,7 @@ Ace::KeyCode KeyCodeToAceKeyCode(int keyCode) {
         {114    /* KEYCODE_CTRL_RIGHT */,         Ace::KeyCode::KEY_CTRL_RIGHT      },
         {115    /* KEYCODE_CAPS_LOCK */,          Ace::KeyCode::KEY_CAPS_LOCK       },
         {116    /* KEYCODE_SCROLL_LOCK */,        Ace::KeyCode::KEY_SCROLL_LOCK     },
-        {117    /* KEYCODE_META_LEFT */,          Ace::KeyCode::KEY_META_LEFT       }, 
+        {117    /* KEYCODE_META_LEFT */,          Ace::KeyCode::KEY_META_LEFT       },
         {118    /* KEYCODE_META_RIGHT */,         Ace::KeyCode::KEY_META_RIGHT      },
         {120    /* KEYCODE_SYSRQ */,              Ace::KeyCode::KEY_SYSRQ           },
         {121    /* KEYCODE_BREAK */,              Ace::KeyCode::KEY_BREAK           },
@@ -893,7 +894,7 @@ void Window::DelayNotifyUIContentIfNeeded()
     }
 }
 
-WMError Window::SetUIContent(const std::string& contentInfo, NativeEngine* engine, NativeValue* storage,
+WMError Window::SetUIContent(const std::string& contentInfo, NativeEngine* engine, napi_value storage,
     bool isdistributed, AbilityRuntime::Platform::Ability* ability)
 {
     using namespace OHOS::Ace::Platform;
@@ -909,6 +910,12 @@ WMError Window::SetUIContent(const std::string& contentInfo, NativeEngine* engin
     uiContent_->Foreground();
     DelayNotifyUIContentIfNeeded();
     return WMError::WM_OK;
+}
+
+WMError Window::SetUIContent(const std::string& contentInfo, NativeEngine* engine, NativeValue* storage,
+    bool isdistributed, AbilityRuntime::Platform::Ability* ability)
+{
+    return SetUIContent(contentInfo, engine, reinterpret_cast<napi_value>(storage), isdistributed, ability);
 }
 
 UIContent* Window::GetUIContent()
