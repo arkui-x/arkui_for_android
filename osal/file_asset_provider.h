@@ -17,22 +17,21 @@
 #define FOUNDATION_ACE_ADAPTER_ANDROID_OSAL_FILE_ASSET_PROVIDER_H
 
 #include <map>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "contrib/minizip/unzip.h"
-#include "flutter/assets/asset_resolver.h"
-#include "flutter/fml/mapping.h"
-
 #include "base/resource/asset_manager.h"
 #include "base/utils/macros.h"
-#include "core/common/flutter/flutter_asset_manager.h"
+#include "core/common/asset_mapping.h"
+#include "core/common/asset_manager_impl.h"
 
 namespace OHOS::Ace {
 
-class ACE_EXPORT FileAssetProvider : public FlutterAssetProvider {
-    DECLARE_ACE_TYPE(FileAssetProvider, FlutterAssetProvider);
+class ACE_EXPORT FileAssetProvider : public AssetProviderImpl {
+    DECLARE_ACE_TYPE(FileAssetProvider, AssetProviderImpl);
 
 public:
     FileAssetProvider() = default;
@@ -40,7 +39,7 @@ public:
 
     bool Initialize(const std::string& packagePath, const std::vector<std::string>& assetBasePaths);
 
-    std::unique_ptr<fml::Mapping> GetAsMapping(const std::string& assetName) const override;
+    std::unique_ptr<AssetMapping> GetAsMapping(const std::string& assetName) const override;
 
     bool IsValid() const override;
 

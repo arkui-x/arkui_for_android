@@ -16,6 +16,7 @@
 package ohos.ace.adapter.capability.web;
 
 import android.view.MotionEvent;
+import android.webkit.WebBackForwardList;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.IAceOnCallResourceMethod;
 import ohos.ace.adapter.IAceOnResourceEvent;
@@ -805,7 +806,17 @@ public abstract class AceWebBase {
 
     public abstract String getUrl();
 
-    public abstract void evaluateJavascript(String script);
+    public abstract void evaluateJavascript(String script, long asyncCallbackInfoId);
+
+    public abstract WebBackForwardList getBackForwardEntries();
+
+    public abstract void clearCache(boolean includeDiskFiles);
+
+    public abstract void goBackOrForward(int steps);
+
+    public abstract String getTitle();
+
+    public abstract int getContentHeight();
 
     public abstract String scrollTo(Map<String, String> params);
 
@@ -818,4 +829,14 @@ public abstract class AceWebBase {
     private native void nativeOnObjectEvent(String id, String param, Object object);
 
     private native boolean nativeOnObjectEventWithBoolReturn(String id, String param, Object object);
+
+    public abstract String[] createWebMessagePorts();
+
+    public abstract void postWebMessage(String message, String[] ports, String Uri);
+
+    public abstract void closeWebMessagePort(String portHandle);
+
+    public abstract int postMessageEvent(String portHandle, String webMessageData);
+
+    public abstract int onWebMessagePortEvent(long id, String portHandle);
 }

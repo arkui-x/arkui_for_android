@@ -37,6 +37,7 @@ import android.webkit.JsResult;
 import android.webkit.JsPromptResult;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
+import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -46,6 +47,11 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.view.MotionEvent;
+import android.webkit.WebMessage;
+import android.webkit.WebMessagePort;
+
+import java.util.List;
+import java.util.ArrayList;
 
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.IAceOnCallResourceMethod;
@@ -111,6 +117,14 @@ public class AceWeb extends AceWebBase {
     private static final String NTC_VERTICAL_SCROLLBAR_ACCESS = "verticalScrollBarAccess";
     private static final String NTC_BACKGROUND_COLOR = "backgroundColor";
     private static final String NTC_MEDIA_PLAY_GESTURE_ACCESS = "mediaPlayGestureAccess";
+    private static final String WEB_MESSAGE_PORT_ONE = "port1";
+    private static final String WEB_MESSAGE_PORT_TWO = "port2";
+
+    private static final int NO_ERROR = 0;
+
+    private static final int CAN_NOT_POST_MESSAGE = 17100010;
+
+    private static final int CAN_NOT_REGISTER_MESSAGE_EVENT = 17100006;
 
     private static String currentPageUrl;
 
@@ -133,6 +147,8 @@ public class AceWeb extends AceWebBase {
     private boolean isWebOnPage = true;
 
     private MotionEvent motionEvent;
+
+    private List<WebMessagePort> webMessagePorts = new ArrayList<WebMessagePort>();
 
     public class AceWebView extends WebView {
         private static final String LOG_TAG = "AceWebView";
@@ -977,7 +993,7 @@ public class AceWeb extends AceWebBase {
     }
 
     @Override
-    public void evaluateJavascript(String script) {
+    public void evaluateJavascript(String script, long asyncCallbackInfoId) {
         if (this.webView == null) {
             return;
         }
@@ -986,12 +1002,153 @@ public class AceWeb extends AceWebBase {
             public void onReceiveValue(String value) {
                 ALog.w(LOG_TAG, "evaluateJavascript onReceiveValue:" + value);
                 // native c++
-                AceWebPluginBase.onReceiveValue(value);
+                AceWebPluginBase.onReceiveValue(value, asyncCallbackInfoId);
             }
         });
     }
 
     @Override
+    public WebBackForwardList getBackForwardEntries() {
+        if (this.webView == null) {
+            return null;
+        }
+        return webView.copyBackForwardList();
+    }
+
+    @Override
+    public void clearCache(boolean includeDiskFiles) {
+        if (this.webView == null) {
+            return;
+        }
+        webView.clearCache(includeDiskFiles);
+    }
+
+    @Override
+    public void goBackOrForward(int steps) {
+        if (this.webView == null) {
+            return;
+        }
+        webView.goBackOrForward(steps);
+    }
+
+    @Override
+    public String getTitle() {
+        if (this.webView == null) {
+            return "";
+        }
+        return webView.getTitle();
+    }
+
+    @Override
+    public int getContentHeight() {
+        if (this.webView == null) {
+            return -1;
+        }
+        return webView.getContentHeight();
+    }
+
+    @Override
+    public String[] createWebMessagePorts() {
+        WebMessagePort messagePorts[] = webView.createWebMessageChannel();
+        webMessagePorts.clear();
+        for (WebMessagePort port : messagePorts) {
+            webMessagePorts.add(port);
+        }
+        String[] ports = { WEB_MESSAGE_PORT_ONE, WEB_MESSAGE_PORT_TWO };
+        return ports;
+    }
+
+    public WebMessagePort getWebMessagePort(String port) {
+        if (webMessagePorts.isEmpty()) {
+            return null;
+        }
+        if (port.equals(WEB_MESSAGE_PORT_ONE)) {
+            return webMessagePorts.get(0);
+        }
+        if (port.equals(WEB_MESSAGE_PORT_TWO)) {
+            return webMessagePorts.get(1);
+        }
+        return null;
+    }
+
+    @Override
+    public void postWebMessage(String message, String[] ports, String targetUri) {
+        if (!webMessagePorts.isEmpty()) {
+            int length = ports.length;
+            WebMessagePort messagePorts[] = new WebMessagePort[length];
+            for (int i = 0; i < length; i++) {
+                messagePorts[i] = getWebMessagePort(ports[i]);
+            }
+            WebMessage webMessage = new WebMessage(message, messagePorts);
+            try {
+                webView.postWebMessage(webMessage, Uri.parse(targetUri));
+            } catch (IllegalStateException e) {
+                ALog.e(LOG_TAG, "Port is already transferred");
+            }
+        }
+    }
+
+    @Override
+    public void closeWebMessagePort(String portHandle) {
+        if (webMessagePorts.isEmpty() || portHandle == null) {
+            return;
+        }
+        WebMessagePort port = getWebMessagePort(portHandle);
+        if (port != null) {
+            try {
+                port.close();
+            } catch (IllegalStateException e) {
+                ALog.e(LOG_TAG, "Port is already transferred");
+            }
+        }
+    }
+
+    @Override
+    public int postMessageEvent(String portHandle, String webMessageData) {
+        if (webMessagePorts.isEmpty() || portHandle == null) {
+            return CAN_NOT_POST_MESSAGE;
+        }
+        WebMessagePort port = getWebMessagePort(portHandle);
+        if (port == null) {
+            return CAN_NOT_POST_MESSAGE;
+        }
+        WebMessage webMessage = new WebMessage(webMessageData);
+        try {
+            port.postMessage(webMessage);
+        } catch (IllegalStateException e) {
+            ALog.e(LOG_TAG, "postMessageEvent has already disenabled");
+            return CAN_NOT_POST_MESSAGE;
+        }
+        return NO_ERROR;
+    }
+
+    @Override
+    public int onWebMessagePortEvent(long id, String portHandle) {
+        if (webMessagePorts.isEmpty() || portHandle == null) {
+            return CAN_NOT_REGISTER_MESSAGE_EVENT;
+        }
+        WebMessagePort port = getWebMessagePort(portHandle);
+        if (port == null) {
+            return CAN_NOT_REGISTER_MESSAGE_EVENT;
+        }
+        try {
+            port.setWebMessageCallback(new WebMessagePort.WebMessageCallback() {
+                @Override
+                public void onMessage(WebMessagePort port, WebMessage message) {
+                    if (message == null) {
+                        return;
+                    }
+                    // native c++
+                    AceWebPluginBase.onMessage(id, portHandle, message.getData());
+                }
+            });
+        } catch (IllegalStateException e) {
+            ALog.e(LOG_TAG, "onWebMessagePortEvent has already disenabled");
+            return CAN_NOT_REGISTER_MESSAGE_EVENT;
+        }
+        return NO_ERROR;
+    }
+
     public String scrollTo(Map<String, String> params) {
         if (!params.containsKey(NTC_PARAM_SCROLLTO_X) || !params.containsKey(NTC_PARAM_SCROLLTO_Y) || webView == null) {
             return FAIL_TAG;
