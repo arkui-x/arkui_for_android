@@ -15,6 +15,7 @@
 
 package ohos.ace.adapter.capability.web;
 
+import android.webkit.WebBackForwardList;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.AceResourcePlugin;
 
@@ -39,9 +40,15 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
 
     protected native void nativeInitWebDataBase();
 
-    protected native static void onReceiveValue(String value);
+    protected native static void onReceiveValue(String value, long asyncCallbackInfoId);
+
+    protected native static void onMessage(long webId, String portHandle, String result);
 
     private static boolean hasInit = false;
+
+    private static final int CAN_NOT_POST_MESSAGE = 17100010;
+
+    private static final int CAN_NOT_REGISTER_MESSAGE_EVENT = 17100006;
 
     public AceWebPluginBase() {
         // plugin name is web, version is 1.0.
@@ -210,11 +217,49 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
-    public void evaluateJavascript(long id, String script) {
+    public void evaluateJavascript(long id, String script, long asyncCallbackInfoId) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
-            webBase.evaluateJavascript(script);
+            webBase.evaluateJavascript(script, asyncCallbackInfoId);
         }
+    }
+
+    public WebBackForwardList getBackForwardEntries(long id) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.getBackForwardEntries();
+        }
+        return null;
+    }
+
+    public void removeCache(long id, boolean includeDiskFiles) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.clearCache(includeDiskFiles);
+        }
+    }
+
+    public void backOrForward(long id, int steps) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.goBackOrForward(steps);
+        }
+    }
+
+    public String getTitle(long id) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.getTitle();
+        }
+        return "";
+    }
+
+    public int getPageHeight(long id) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.getContentHeight();
+        }
+        return -1;
     }
 
     public String accessStep(long id, int step) {
@@ -299,5 +344,44 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         } else {
             onActivityResume();
         }
+    }
+
+    public String[] createWebMessagePorts(long id) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.createWebMessagePorts();
+        }
+        String[] ports ={ "", "" };
+        return ports;
+    }
+
+    public void postWebMessage(long id, String message, String[] ports, String uri) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.postWebMessage(message, ports, uri);
+        }
+    }
+
+    public void closeWebMessagePort(long id, String portHandle) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.closeWebMessagePort(portHandle);
+        }
+    }
+
+    public int postMessageEvent(long id, String portHandle, String webMessage) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.postMessageEvent(portHandle, webMessage);
+        }
+        return CAN_NOT_POST_MESSAGE;
+    }
+
+    public int onWebMessagePortEvent(long id, String portHandle) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.onWebMessagePortEvent(id, portHandle);
+        }
+        return CAN_NOT_REGISTER_MESSAGE_EVENT;
     }
 }
