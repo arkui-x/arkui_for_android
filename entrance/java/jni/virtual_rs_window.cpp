@@ -160,6 +160,11 @@ Ace::KeyCode KeyCodeToAceKeyCode(int keyCode) {
     return aceKeyCode;
 }
 
+const std::map<ColorSpace, GraphicColorGamut> COLOR_SPACE_JS_TO_GAMUT_MAP {
+    { ColorSpace::COLOR_SPACE_DEFAULT, GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB },
+    { ColorSpace::COLOR_SPACE_WIDE_GAMUT, GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DCI_P3 },
+};
+
 std::map<uint32_t, std::vector<std::shared_ptr<Window>>> Window::subWindowMap_;
 std::map<std::string, std::pair<uint32_t, std::shared_ptr<Window>>> Window::windowMap_;
 std::map<uint32_t, std::vector<sptr<IOccupiedAreaChangeListener>>> Window::occupiedAreaChangeListeners_;
@@ -543,6 +548,49 @@ WMError Window::SetKeepScreenOn(bool keepScreenOn)
         LOGI("Window::SetKeepScreenOn: failed");
         return WMError::WM_ERROR_INVALID_WINDOW;
     }
+}
+
+ColorSpace Window::GetColorSpaceFromSurfaceGamut(GraphicColorGamut colorGamut) const
+{
+    for (auto& item : COLOR_SPACE_JS_TO_GAMUT_MAP) {
+        if (item.second == colorGamut) {
+            return item.first;
+        }
+    }
+    return ColorSpace::COLOR_SPACE_DEFAULT;
+}
+
+GraphicColorGamut Window::GetSurfaceGamutFromColorSpace(ColorSpace colorSpace) const
+{
+    for (auto& item : COLOR_SPACE_JS_TO_GAMUT_MAP) {
+        if (item.first == colorSpace) {
+            return item.second;
+        }
+    }
+    return GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
+}
+
+WMError Window::SetColorSpace(ColorSpace colorSpace)
+{
+    if (!surfaceNode_) {
+        LOGE("Window::SetColorSpace called. surfaceNode_ is null");
+        return WMError::WM_ERROR_NULLPTR;
+    }
+    auto surfaceGamut = GetSurfaceGamutFromColorSpace(colorSpace);
+    LOGI("Window::SetColorSpace called. colorSpace=%{public}d, surfaceGamut=%{public}d", colorSpace, surfaceGamut);
+    surfaceNode_->SetColorSpace(surfaceGamut);
+    return WMError::WM_OK;
+}
+
+ColorSpace Window::GetColorSpace() const
+{
+    if (!surfaceNode_) {
+        LOGE("Window::GetColorSpace called. surfaceNode_ is null");
+        return ColorSpace::COLOR_SPACE_DEFAULT;
+    }
+    GraphicColorGamut gamut = surfaceNode_->GetColorSpace();
+    ColorSpace colorSpace = GetColorSpaceFromSurfaceGamut(gamut);
+    return colorSpace;
 }
 
 bool Window::IsKeepScreenOn()
