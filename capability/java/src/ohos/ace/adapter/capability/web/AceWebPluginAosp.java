@@ -49,6 +49,8 @@ public class AceWebPluginAosp extends AceWebPluginBase {
 
     private static final String WEBVIEW_PAGE_URL = "pageUrl";
 
+    private static final String RICH_TEXT_INIT = "richTextInit";
+
     private static final long INVALID_CREATE_ID = -1;
 
     private final AtomicLong nextMapid = new AtomicLong(0L);
@@ -97,6 +99,7 @@ public class AceWebPluginAosp extends AceWebPluginBase {
 
             // Create AceWeb
             aceWeb = new AceWeb(id, context, getEventCallback());
+            richTextInit = Integer.parseInt(param.get(RICH_TEXT_INIT)) == 1 ? true : false;
             addResource(id, aceWeb);
             aceWeb.initWeb();
             aceWeb.setPageUrl(pageUrl);

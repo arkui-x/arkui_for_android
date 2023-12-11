@@ -46,6 +46,8 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
 
     private static boolean hasInit = false;
 
+    protected static boolean richTextInit = false;
+    
     private static final int CAN_NOT_POST_MESSAGE = 17100010;
 
     private static final int CAN_NOT_REGISTER_MESSAGE_EVENT = 17100006;
@@ -74,11 +76,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
     public void addResource(long id, AceWebBase web) {
         objectMap.put(id, web);
         registerCallMethod(web.getCallMethod());
-        if (!hasInit) {
+        if (!hasInit && !richTextInit) {
             nativeInit();
             nativeInitWebDataBase();
             hasInit = true;
         }
+        richTextInit = false;
     }
 
     /**
