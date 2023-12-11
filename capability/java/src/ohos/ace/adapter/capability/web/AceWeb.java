@@ -1179,7 +1179,14 @@ public class AceWeb extends AceWebBase {
             ALog.w(LOG_TAG, "scrollBy NumberFormatException");
             return FAIL_TAG;
         }
-        webView.scrollBy(deltaX, deltaY);
+
+        int curentScrollX = webView.getScrollX();
+        int curentScrollY = webView.getScrollY();
+
+        int offsetX = curentScrollX + deltaX;
+        int offsetY = curentScrollX + deltaY;
+
+        webView.scrollBy(offsetX < 0 ? -curentScrollX : deltaX, offsetY < 0 ? -curentScrollY : deltaY);
         return SUCCESS_TAG;
     }
 
