@@ -32,7 +32,7 @@ public:
     static void SetNativeAssetManager(JNIEnv* env, jclass myclass, jobject assetManager);
     static void SetHapPath(JNIEnv* env, jclass myclass, jstring str);
     static void SetAssetsFileRelativePath(JNIEnv* env, jclass myclass, jstring str);
-    static void LaunchApplication(JNIEnv* env, jclass clazz);
+    static void LaunchApplication(JNIEnv* env, jclass clazz, jboolean isCopyNativeLibs);
     static void SetCacheDir(JNIEnv* env, jclass myclass, jstring str);
     static void SetFileDir(JNIEnv* env, jclass myclass, jstring str);
     static void SetAppLibDir(JNIEnv* env, jclass myclass, jstring str);
