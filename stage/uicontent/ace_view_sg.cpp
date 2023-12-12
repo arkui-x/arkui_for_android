@@ -179,7 +179,6 @@ bool AceViewSG::DispatchTouchEvent(const std::vector<uint8_t>& data)
             LOGW("Unknown event");
             continue;
         }
-        point.sourceType = SourceType::TOUCH;
         if (touchEventCallback_) {
             touchEventCallback_(point, nullptr);
         }

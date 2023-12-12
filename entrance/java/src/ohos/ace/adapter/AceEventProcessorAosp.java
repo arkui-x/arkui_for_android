@@ -134,7 +134,7 @@ public class AceEventProcessorAosp {
         packet.putDouble(event.getPressure(actionIndex));
         packet.putDouble(0.0);
         packet.putDouble(event.getSize(actionIndex));
-        packet.putLong(event.getSource());
+        packet.putLong(eventSourceTransKeySource(event.getSource()));
         packet.putLong(event.getDeviceId());
     }
 
@@ -274,6 +274,9 @@ public class AceEventProcessorAosp {
                 break;
             case InputDevice.SOURCE_KEYBOARD: // 0x00000101
                 keySource = KeySourceType.KEYBOARD;
+                break;
+            case InputDevice.SOURCE_TOUCHSCREEN: // 0x00001002
+                keySource = KeySourceType.TOUCH;
                 break;
             case InputDevice.SOURCE_MOUSE: // 0x00002002
                 keySource = KeySourceType.MOUSE;
