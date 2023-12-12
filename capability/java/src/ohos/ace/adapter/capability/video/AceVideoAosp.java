@@ -1062,7 +1062,9 @@ public class AceVideoAosp extends AceVideoBase
         Surface surface = null;
         if (isTexture) {
             SurfaceTexture surfaceTexture = AceTextureHolder.getSurfaceTexture(surfaceId);
-            surface = new Surface(surfaceTexture);
+            if (surfaceTexture != null) {
+                surface = new Surface(surfaceTexture);
+            }
         } else {
             surface = AceSurfaceHolder.getSurface(surfaceId);
         }
