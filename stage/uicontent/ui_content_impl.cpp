@@ -139,11 +139,6 @@ void UIContentImpl::DestroyCallback() const
     LOGI("DestroyCallback called.");
 }
 
-void UIContentImpl::Initialize(OHOS::Rosen::Window* window, const std::string& url, NativeValue* storage)
-{
-    Initialize(window, url, reinterpret_cast<napi_value>(storage));
-}
-
 void UIContentImpl::Initialize(OHOS::Rosen::Window* window, const std::string& url, napi_value storage)
 {
     if (window) {
@@ -154,11 +149,6 @@ void UIContentImpl::Initialize(OHOS::Rosen::Window* window, const std::string& u
     Platform::AceContainerSG::RunPage(
         instanceId_, Platform::AceContainerSG::GetContainer(instanceId_)->GeneratePageId(), startUrl_, "");
     LOGI("RunPage UIContentImpl done.");
-}
-
-NativeValue* UIContentImpl::GetUIContext()
-{
-    return reinterpret_cast<NativeValue*>(GetUINapiContext());
 }
 
 napi_value UIContentImpl::GetUINapiContext()
