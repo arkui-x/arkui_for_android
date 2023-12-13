@@ -824,7 +824,7 @@ public class StageApplicationDelegate {
 
     private native void nativeSetPackageName(String hapPath);
 
-    private native void nativeLaunchApplication(boolean isCopyResource);
+    private native void nativeLaunchApplication(boolean isCopyNativeLibs);
 
     private native void nativeSetAssetsFileRelativePath(String path);
 
