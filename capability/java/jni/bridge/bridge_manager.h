@@ -19,6 +19,7 @@
 #include <map>
 #include <mutex>
 #include <string>
+#include <vector>
 
 #include "adapter/android/capability/java/jni/bridge/bridge_jni.h"
 #include "base/utils/macros.h"
@@ -47,6 +48,18 @@ public:
     static void PlatformSendMessageResponse(const std::string& bridgeName, const std::string& data);
     static bool JSBridgeExists(const std::string& bridgeName);
     static void JSCancelMethod(const std::string& bridgeName, const std::string& methodName);
+
+    // for binary codec
+    static void JSSendMessageBinary(const std::string& bridgeName, const std::vector<uint8_t>& data);
+    static void JSCallMethodBinary(const std::string& bridgeName,
+        const std::string& methodName, const std::vector<uint8_t>& data);
+    static void JSSendMethodResultBinary(const std::string& bridgeName, const std::string& methodName,
+        int errorCode, const std::string& errorMessage, std::unique_ptr<std::vector<uint8_t>> result);
+    static void PlatformSendMethodResultBinary(const std::string& bridgeName, const std::string& methodName,
+        int errorCode, const std::string& errorMessage, std::unique_ptr<BufferMapping> result);
+    static void PlatformCallMethodBinary(const std::string& bridgeName,
+        const std::string& methodName, std::unique_ptr<BufferMapping> parameter);
+    static void PlatformSendMessageBinary(const std::string& bridgeName, std::unique_ptr<BufferMapping> data);
 
 private:
     static std::map<std::string, std::shared_ptr<BridgeReceiver>> bridgeList_;

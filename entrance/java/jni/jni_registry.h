@@ -22,7 +22,7 @@ namespace OHOS::Ace::Platform {
 
 class ACE_EXPORT JniRegistry {
 public:
-    static bool Register(bool isStageMode = false);
+    static bool Register();
 };
 
 } // namespace OHOS::Ace::Platform

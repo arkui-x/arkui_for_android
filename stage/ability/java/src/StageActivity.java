@@ -30,6 +30,7 @@ import android.os.Trace;
 import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.AcePlatformPlugin;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
+import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.WindowView;
 
 import ohos.ace.adapter.capability.bridge.BridgeManager;
@@ -100,7 +101,6 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
                 params = "";
             }
         }
-        Log.i(LOG_TAG, "params: " + params);
 
         activityDelegate = new StageActivityDelegate();
         activityDelegate.attachStageActivity(getInstanceName(), this);
@@ -180,6 +180,10 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         BridgeManager.deleteBridgeByInstanceId(this.instanceId);
 
         keyboardHeightProvider.close();
+        if (platformPlugin != null) {
+            platformPlugin.releseResRegister(instanceId);
+            Log.i(LOG_TAG, "StageActivity onDestroy releseResRegister called");
+        }
     }
 
     @Override
@@ -402,11 +406,12 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      */
     private void initPlatformPlugin(Context context, int instanceId, WindowView windowView) {
         Trace.beginSection("StageActivity::initPlatformPlugin");
-        platformPlugin = new AcePlatformPlugin(context, instanceId, windowView, 0L);
+        platformPlugin = new AcePlatformPlugin(context, instanceId, windowView);
         if (platformPlugin != null) {
             windowView.setInputConnectionClient(platformPlugin);
             platformPlugin.initTexturePlugin(instanceId);
             platformPlugin.addResourcePlugin(AceVideoPluginAosp.createRegister(context, moduleName));
+            platformPlugin.addResourcePlugin(AceWebPluginAosp.createRegister(context));
             platformPlugin.addResourcePlugin(AceSurfacePluginAosp.createRegister(context));
         }
         Trace.endSection();

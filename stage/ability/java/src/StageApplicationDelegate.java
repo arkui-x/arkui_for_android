@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
@@ -34,7 +35,12 @@ import android.os.Process;
 import android.os.Trace;
 import android.util.Log;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
@@ -76,17 +82,33 @@ public class StageApplicationDelegate {
 
     private static final String ASSETS_PATH_KEY = "assets_path_key";
 
-    private static final String COPY_RESOURCE_DIRECTORY_KEY = "copy_resource_directory_key";
+    private static final String APP_VERSION_CODE = "versionCode";
 
     private static final String WANT_PARAMS = "params";
+
+    private static final String ARKUIX_LIBS = "/arkui-x/libs/";
+
+    private static final String ARKUIX_LIB_NAME = "/libarkui_android.so";
+
+    private static final String ARCH_ARM64 = "arm64-v8a";
+
+    private static final String ARCH_ARM = "armeabi-v7a";
+    
+    private static final String ARCH_X86 = "x86_64";
 
     private static final int ERR_INVALID_PARAMETERS = -1;
 
     private static final int ERR_OK = 0;
 
+    private static final String CACERT_FILE = "/cacert.ca";
+
     private Application stageApplication = null;
 
     private volatile Activity topActivity = null;
+
+    private static boolean isInitialized = false;
+
+    private static final int DEFAULT_VERSION_CODE = -1;
 
     /**
      * Constructor.
@@ -96,18 +118,49 @@ public class StageApplicationDelegate {
     }
 
     /**
+     * Dynamic load sandbox lib
+     */
+    public void loadLibraryFromAppData() {
+        try {
+            String str = stageApplication.getApplicationContext().getApplicationInfo().nativeLibraryDir;
+            String architecture = str.substring(str.lastIndexOf('/') + 1);
+            if (architecture.equals("arm64")) {
+                architecture = ARCH_ARM64;
+            } else if (architecture.equals("arm")) {
+                architecture = ARCH_ARM;
+            } else {
+                architecture = ARCH_X86;
+            }
+            Log.i(LOG_TAG, "Current system CPU architecture : " + architecture);
+            String path = stageApplication.getApplicationContext().getFilesDir().getPath() + ARKUIX_LIBS
+                            + architecture + ARKUIX_LIB_NAME;
+            Log.i(LOG_TAG, "Dynamically loading path : " + path);
+            System.load(path);
+        } catch (UnsatisfiedLinkError error) {
+            ALog.e(LOG_TAG, "System.load failed " + error.getMessage());
+        }
+    }
+
+    /**
      * Initialize stage application.
      *
      * @param application the stage application.
      */
     public void initApplication(Application application) {
         Log.i(LOG_TAG, "init application.");
+        if (isInitialized) {
+            Log.i(LOG_TAG, "The application is initialized.");
+            return;
+        }
+        isInitialized = true;
         stageApplication = application;
 
         ALog.setLogger(new LoggerAosp());
-        AceEnv.getInstance();
+        if (!AceEnv.getInstance().isLibraryLoaded()) {
+            loadLibraryFromAppData();
+        }
         Trace.beginSection("initApplication");
-        AppModeConfig.setAppMode("stage");
+        AppModeConfig.InitAppMode();
 
         attachStageApplication();
 
@@ -119,18 +172,26 @@ public class StageApplicationDelegate {
         setHapPath(apkPath);
         setNativeAssetManager(stageApplication.getAssets());
 
-        setAssetsFileRelativePath(getAssetsPath());
         nativeSetAppLibDir(context.getApplicationInfo().nativeLibraryDir);
         createStagePath();
 
-        copyAllModuleResources();
-        setResourcesFilePrefixPath(stageApplication.getExternalFilesDir((String) null).getAbsolutePath());
+        try {
+            if (stageApplication.getAssets().list(ASSETS_SUB_PATH).length != 0) {
+                setAssetsFileRelativePath(getAssetsPath());
+                copyAllModuleResources();
+            }
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "get Assets path failed, error: " + e.getMessage());
+        }
+        setResourcesFilePrefixPath(stageApplication.getApplicationContext().getFilesDir().getPath() +
+                                    "/"+ ASSETS_SUB_PATH);
         setLocaleInfo();
         Trace.endSection();
 
         launchApplication();
         initConfiguration();
         setPackageName();
+        createCacertFile(stageApplication.getExternalFilesDir((String) null).getAbsolutePath());
 
         initActivity();
         Trace.endSection();
@@ -279,7 +340,7 @@ public class StageApplicationDelegate {
 
     private void createStagePath() {
         String filesDir = stageApplication.getApplicationContext().getFilesDir().getPath();
-        String[] fileDirNames = {TEMP_DIR, FILES_DIR, PREFERENCE_DIR, DATABASE_DIR};
+        String[] fileDirNames = {TEMP_DIR, FILES_DIR, PREFERENCE_DIR, DATABASE_DIR, "/" + ASSETS_SUB_PATH};
         for (int i = 0; i < fileDirNames.length; i++) {
             makeNewDir(filesDir + fileDirNames[i]);
         }
@@ -296,7 +357,11 @@ public class StageApplicationDelegate {
             Log.e(LOG_TAG, "stageApplication is null");
             return;
         }
-
+        int versionCode = GetAppVersionCode();
+        if (versionCode == DEFAULT_VERSION_CODE) {
+            Log.e(LOG_TAG, "Getting app version code failed.");
+            return;
+        }
         SharedPreferences sharedPreferences =
                 stageApplication.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
         if (sharedPreferences == null) {
@@ -304,11 +369,17 @@ public class StageApplicationDelegate {
             return;
         }
 
-        if (sharedPreferences.getBoolean(COPY_RESOURCE_DIRECTORY_KEY, false)) {
-            Log.i(LOG_TAG, "copy resources directory complete");
+        int oldVersionCode = sharedPreferences.getInt(APP_VERSION_CODE, DEFAULT_VERSION_CODE);
+        boolean isDebug = isApkInDebug(stageApplication);
+        Log.i(LOG_TAG, "Old version code is: " + oldVersionCode +
+                       ", current version code is: " + versionCode +
+                       ", apk is debug: " + isDebug);
+        if (!isDebug && oldVersionCode >= versionCode) {
+            Log.i(LOG_TAG, "The resource has been copied.");
             return;
         }
-        Log.i(LOG_TAG, "first copy resources directory");
+
+        Log.i(LOG_TAG, "Start copying resources.");
         AssetManager assets = stageApplication.getAssets();
         String moduleResourcesDirectory = "";
         String moduleResourcesIndex = "";
@@ -330,7 +401,8 @@ public class StageApplicationDelegate {
         }
         for (String resourcesName : moduleResources) {
             copyFilesFromAssets(ASSETS_SUB_PATH + "/" + resourcesName,
-                    stageApplication.getExternalFilesDir(null).getAbsolutePath() + "/" + resourcesName);
+                    stageApplication.getApplicationContext().getFilesDir().getPath() +
+                    "/" + ASSETS_SUB_PATH+ "/" + resourcesName);
         }
 
         SharedPreferences.Editor edit = sharedPreferences.edit();
@@ -338,7 +410,7 @@ public class StageApplicationDelegate {
             Log.e(LOG_TAG, "edit is null");
             return;
         }
-        edit.putBoolean(COPY_RESOURCE_DIRECTORY_KEY, true);
+        edit.putInt(APP_VERSION_CODE, versionCode);
         edit.commit();
     }
 
@@ -637,6 +709,85 @@ public class StageApplicationDelegate {
             }
         }
         setLocale(language, Locale.getDefault().getCountry(), script);
+    }
+
+    private void readFile(BufferedWriter writer, File file) {
+        if (!file.isFile() || !file.canRead()) {
+            return;
+        }
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(file.getPath()));
+            try {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    writer.write(line);
+                    writer.newLine();
+                }
+            } finally {
+                reader.close();
+            }
+        } catch (FileNotFoundException e) {
+            Log.e(LOG_TAG, "read cacert err: " + e.getMessage());
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "read cacert err: " + e.getMessage());
+        }
+    }
+
+    private void createCacertFile(String path) {
+        try {
+            File file = new File(path + CACERT_FILE);
+            if (file.exists()) {
+                file.deleteOnExit();
+            }
+            if (!file.createNewFile()) {
+                return;
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "write cacert err: " + e.getMessage());
+        }
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(path + CACERT_FILE));
+            try {
+                File dir = new File("/system/etc/security/cacerts/");
+                File[] files = dir.listFiles();
+                if (files == null) {
+                    return;
+                }
+                for (File file: files) {
+                    readFile(writer, file);
+                }
+            } finally {
+                writer.close();
+            }
+        } catch (FileNotFoundException e) {
+            Log.e(LOG_TAG, "read cacert err: " + e.getMessage());
+         } catch (IOException e) {
+            Log.e(LOG_TAG, "read cacert err: " + e.getMessage());
+        }
+    }
+
+    private int GetAppVersionCode() {
+        int appVersionCode = DEFAULT_VERSION_CODE;
+        try {
+            PackageInfo packageInfo = stageApplication.getApplicationContext()
+                    .getPackageManager()
+                    .getPackageInfo(stageApplication.getPackageName(), 0);
+            appVersionCode = packageInfo.versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(LOG_TAG, "Getting package info err: " + e.getMessage());
+        }
+        return appVersionCode;
+    }
+
+    private boolean isApkInDebug(Context context) {
+        try {
+            ApplicationInfo info = context.getApplicationInfo();
+            return (info.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Getting is apk in debug err: " + e.getMessage());
+            return false;
+        }
     }
 
     private native void nativeSetAssetManager(Object assetManager);

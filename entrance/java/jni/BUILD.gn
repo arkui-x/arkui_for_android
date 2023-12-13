@@ -25,17 +25,19 @@ template("ace_android_jni_source_set") {
 
     sources = [
       "$ace_root/adapter/android/entrance/java/jni/ace_platform_plugin_jni.cpp",
-      "$ace_root/adapter/android/entrance/java/jni/flutter_ace_view.cpp",
-      "$ace_root/adapter/android/entrance/java/jni/flutter_ace_view_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/window_view_jni.cpp",
     ]
 
     deps = [ "$ace_root/frameworks/core/components/theme:build_theme_code" ]
 
-    deps += [
-      "$ace_flutter_engine_root:third_party_flutter_engine_$platform",
-      "$ace_flutter_engine_root/skia:ace_skia_$platform",
-    ]
+    if (ace_use_new_skia) {
+      deps += [ "$ace_flutter_engine_root:flutter_for_ng" ]
+    } else {
+      deps += [
+        "$ace_flutter_engine_root:third_party_flutter_engine_$platform",
+        "$ace_flutter_engine_root/skia:ace_skia_$platform",
+      ]
+    }
 
     if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
       deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client_static" ]
@@ -60,11 +62,10 @@ template("ace_common_jni_source_set") {
 
     sources = [
       "$ace_root/adapter/android/entrance/java/jni/ace_application_info_impl.cpp",
-      "$ace_root/adapter/android/entrance/java/jni/ace_application_info_jni.cpp",
-      "$ace_root/adapter/android/entrance/java/jni/ace_container.cpp",
-      "$ace_root/adapter/android/entrance/java/jni/ace_container_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/ace_env_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/ace_resource_register.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/display_info.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/display_info_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/download_manager.cpp",
       "$ace_root/adapter/android/entrance/java/jni/download_manager_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/dump_helper_jni.cpp",
@@ -73,9 +74,8 @@ template("ace_common_jni_source_set") {
       "$ace_root/adapter/android/entrance/java/jni/jni_environment.cpp",
       "$ace_root/adapter/android/entrance/java/jni/jni_load.cpp",
       "$ace_root/adapter/android/entrance/java/jni/jni_registry.cpp",
-      "$ace_root/adapter/android/entrance/java/jni/display_info.cpp",
-      "$ace_root/adapter/android/entrance/java/jni/display_info_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/subwindow_manager_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/web_adapter_jni.cpp",
     ]
 
     include_dirs = [
@@ -85,7 +85,6 @@ template("ace_common_jni_source_set") {
       "//foundation/appframework/window_manager/dm/include",
       "//foundation/appframework/window_manager/utils/include",
     ]
-
 
     if (defined(config.use_curl_download) && config.use_curl_download) {
       sources -=
@@ -100,14 +99,19 @@ template("ace_common_jni_source_set") {
 
     deps = [ ":ace_android_jni_$platform" ]
 
-    deps += [
-      "$ace_flutter_engine_root:third_party_flutter_engine_$platform",
-      "$ace_flutter_engine_root/skia:ace_skia_$platform",
-    ]
+    if (ace_use_new_skia) {
+      deps += [ "$ace_flutter_engine_root:flutter_for_ng" ]
+    } else {
+      deps += [
+        "$ace_flutter_engine_root:third_party_flutter_engine_$platform",
+        "$ace_flutter_engine_root/skia:ace_skia_$platform",
+      ]
+    }
 
     if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
       deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client_static" ]
-      include_dirs += [ "//foundation/graphic/graphic_2d/rosen/modules/2d_graphics/src" ]
+      include_dirs +=
+          [ "//foundation/graphic/graphic_2d/rosen/modules/2d_graphics/src" ]
       sources += [
         "$ace_root/adapter/android/entrance/java/jni/virtual_rs_window.cpp",
       ]
@@ -119,7 +123,9 @@ foreach(item, ace_platforms) {
   platform = item.name
   if (platform == "android") {
     ace_android_jni_source_set("ace_android_jni_" + item.name) {
-      platform = item.name
+      if (!ace_use_new_skia) {
+        platform = item.name
+      }
       defines = []
       config = {
       }

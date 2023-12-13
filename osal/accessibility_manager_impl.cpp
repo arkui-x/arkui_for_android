@@ -338,8 +338,56 @@ void AccessibilityManagerImpl::DumpTree(int32_t depth, NodeId nodeID)
     DumpTreeNG(rootNode, depth, nodeID, pageId);
 }
 
+static void GetChildFromNode(const RefPtr<NG::UINode>& uiNode, std::vector<int32_t>& children, int32_t pageId,
+     OHOS::Ace::Platform::ComponentInfo& parentComponent)
+{
+    if (AceType::InstanceOf<NG::FrameNode>(uiNode)) {
+        if (uiNode->GetTag() == "stage") {
+        } else if (uiNode->GetTag() == "page") {
+            if (uiNode->GetPageId() != pageId) {
+                return;
+            }
+        } else {
+            auto frameNode = AceType::DynamicCast<NG::FrameNode>(uiNode);
+            if (!frameNode->IsInternal()) {
+                children.emplace_back(uiNode->GetAccessibilityId());
+                parentComponent.children.emplace_back();
+                return;
+            }
+        }
+    }
+
+    for (const auto& frameChild : uiNode->GetChildren()) {
+        GetChildFromNode(frameChild, children, pageId, parentComponent);
+    }
+}
+
+static OHOS::Ace::Platform::ComponentInfo SetComponentInfo(const RefPtr<NG::FrameNode>& node)
+{
+    OHOS::Ace::Platform::ComponentInfo componentInfo;
+    NG::RectF rect = node->GetTransformRectRelativeToWindow();
+    componentInfo.compid = node->GetInspectorId().value_or("");
+    componentInfo.text = node->GetAccessibilityProperty<NG::AccessibilityProperty>()->GetText();
+    componentInfo.top = rect.Top();
+    componentInfo.width = rect.Width();
+    componentInfo.left = rect.Left();
+    componentInfo.height = rect.Height();
+    auto gestureEventHub = node->GetEventHub<NG::EventHub>()->GetGestureEventHub();
+    componentInfo.clickable = gestureEventHub ? gestureEventHub->IsAccessibilityClickable() : false;
+    auto accessibilityProperty = node->GetAccessibilityProperty<NG::AccessibilityProperty>();
+    componentInfo.checked = accessibilityProperty->IsChecked();
+    componentInfo.selected = accessibilityProperty->IsSelected();
+    componentInfo.checkable = accessibilityProperty->IsCheckable();
+    componentInfo.scrollable = accessibilityProperty->IsScrollable();
+    componentInfo.enabled = node->GetFocusHub() ? node->GetFocusHub()->IsEnabled() : true;
+    componentInfo.focused = node->GetFocusHub() ? node->GetFocusHub()->IsCurrentFocus() : false;
+    componentInfo.longClickable = gestureEventHub ? gestureEventHub->IsAccessibilityLongClickable() : false;
+    componentInfo.type = node->GetTag();
+    return componentInfo;
+}
+
 void GetComponents(OHOS::Ace::Platform::ComponentInfo& parentComponent, const RefPtr<NG::FrameNode>& parent,
-    NodeId nodeID, int32_t pageId)
+     NodeId nodeID, int32_t pageId)
 {
     auto node = GetInspectorById(parent, nodeID);
     if (!node) {
@@ -348,32 +396,11 @@ void GetComponents(OHOS::Ace::Platform::ComponentInfo& parentComponent, const Re
     if (!node->IsActive()) {
         return;
     }
-
-    OHOS::Ace::Platform::ComponentInfo info;
-    NG::RectF rect = node->GetTransformRectRelativeToWindow();
-    info.compid = node->GetInspectorId().value_or("");
-    info.text = node->GetAccessibilityProperty<NG::AccessibilityProperty>()->GetText();
-    info.top = rect.Top();
-    info.width = rect.Width();
-    info.left = rect.Left();
-    info.height = rect.Height();
-    auto gestureEventHub = node->GetEventHub<NG::EventHub>()->GetGestureEventHub();
-    info.clickable = gestureEventHub ? gestureEventHub->IsAccessibilityClickable() : false;
-    auto accessibilityProperty = node->GetAccessibilityProperty<NG::AccessibilityProperty>();
-    info.checked = accessibilityProperty->IsChecked();
-    info.selected = accessibilityProperty->IsSelected();
-    info.checkable = accessibilityProperty->IsCheckable();
-    info.scrollable = accessibilityProperty->IsScrollable();
-    info.enabled = node->GetFocusHub() ? node->GetFocusHub()->IsEnabled() : true;
-    info.focused = node->GetFocusHub() ? node->GetFocusHub()->IsCurrentFocus() : false;
-    info.longClickable = gestureEventHub ? gestureEventHub->IsAccessibilityLongClickable() : false;
-    info.type = node->GetTag();
-    parentComponent = info;
+    parentComponent = SetComponentInfo(node);
 
     std::vector<int32_t> children;
     for (const auto& item : node->GetChildren()) {
-        GetFrameNodeChildren(item, children, pageId);
-        parentComponent.children.emplace_back();
+        GetChildFromNode(item, children, pageId, parentComponent);
     }
     for (int index = 0; index < children.size(); index++) {
         GetComponents(parentComponent.children[index], node, children[index], pageId);

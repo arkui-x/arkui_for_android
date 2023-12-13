@@ -8,6 +8,7 @@
       construction?vtable?for?OHOS::Ace::AceType-in-OHOS::Ace::ThemeConstants;
       construction?vtable?for?OHOS::Ace::Container-in-OHOS::Ace::Platform::AceContainer;
       construction?vtable?for?OHOS::Ace::ScheduleTask-in-OHOS::Ace::Scheduler;
+      construction?vtable?for?OHOS::Ace::ScheduleTask-in-OHOS::Ace::Scheduler;
 
       guard?variable?for?OHOS::Ace::Animator::TypeId??::myTypeId;
       guard?variable?for?OHOS::Ace::Container::TypeId??::myTypeId;
@@ -134,6 +135,7 @@
       OHOS::Ace::Platform::PluginManagerJni::*;
       OHOS::Ace::Platform::GrantResultManager::*;
       OHOS::Ace::Platform::BridgeManager::*;
+      OHOS::Ace::Platform::BufferMapping::*;
 
       "OHOS::AppExecFwk::AbilityDelegatorRegistry::GetAbilityDelegator()";
       "OHOS::AppExecFwk::AbilityDelegator::GetCurrentTopAbility()";
@@ -367,6 +369,30 @@
       ARKUI_X_Plugin_*;
       OHOS::Plugin::PluginUtilsInner::*;
       OHOS::Plugin::PluginUtilsNApi::*;
+
+      "OHOS::Ace::ToRSColor(OHOS::Ace::Color const&)";
+      OHOS::Rosen::Drawing::Filter::*;
+      OHOS::Rosen::Drawing::MaskFilter::*;
+      OHOS::Rosen::Drawing::Path::*;
+      OHOS::Ace::AnimationUtils::*;
+      OHOS::Ace::NG::FocusHub::*;
+      OHOS::Ace::NG::InputEventHub::*;
+      OHOS::Ace::NG::InputEventActuator::*;
+      fill_fopen_filefunc;
+      unzOpen2;
+      zipOpen2;
+      zipOpenNewFileInZip4;
+      unzClose;
+      unzGetGlobalInfo;
+      unzGetFilePos;
+      unzGoToNextFile;
+      unzGetCurrentFileInfo;
+      unzOpenCurrentFile;
+      unzReadCurrentFile;
+      unzCloseCurrentFile;
+      zipClose;
+      zipWriteInFileInZip;
+      zipCloseFileInZip;
     };
   local:
     *;

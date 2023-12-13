@@ -263,6 +263,11 @@ public:
 
     void SetUpThreadInfo();
 
+    const std::shared_ptr<OHOS::AbilityRuntime::Platform::Context>GetContext() const
+    {
+        return context_;
+    }
+
 private:
     void SetWindowView(JNIEnv* env, jobject windowView);
     void SetSubWindowView(JNIEnv* env, jobject windowView);
@@ -279,7 +284,7 @@ private:
     Rect rect_ = { 0, 0, 0, 0 };
     bool isForground_ = false;
 
-    uint32_t backgroundColor_;
+    uint32_t backgroundColor_ = 0xffffffff;
     float brightness_;
     std::unordered_map<WindowType, SystemBarProperty> sysBarPropMap_ {
         { WindowType::WINDOW_TYPE_STATUS_BAR, SystemBarProperty() },

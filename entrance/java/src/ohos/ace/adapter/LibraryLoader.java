@@ -39,7 +39,7 @@ public final class LibraryLoader {
         return jniLoaded;
     }
 
-    private static void loadAndroidJniLibrary() {
+    private static boolean loadAndroidJniLibrary() {
         try {
             Trace.beginSection("loadJniLibrary");
             ALog.i(LOG_TAG, "Load android ace lib");
@@ -48,7 +48,10 @@ public final class LibraryLoader {
             jniLoaded = true;
         } catch (UnsatisfiedLinkError error) {
             ALog.e(LOG_TAG, "Could not load android ace lib. Exception:" + error.getMessage());
+            Trace.endSection();
+            return false;
         }
+        return true;
     }
 
     static boolean loadJniLibrary() {
@@ -65,17 +68,9 @@ public final class LibraryLoader {
                 ALog.i(LOG_TAG, "Has loaded ace lib");
                 return true;
             }
-
-            try {
-                ALog.i(LOG_TAG, "Load ace lib");
-                loadAndroidJniLibrary();
-                jniLoaded = true;
-            } catch (UnsatisfiedLinkError error) {
-                ALog.e(LOG_TAG, "Could not load ace lib. Exception:" + error.getMessage());
-            }
+            ALog.i(LOG_TAG, "Load ace lib");
+            jniLoaded = loadAndroidJniLibrary();
         }
-
-        ALog.i(LOG_TAG, "Load ace lib ok");
         return jniLoaded;
     }
 }

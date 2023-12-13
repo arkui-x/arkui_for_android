@@ -49,11 +49,6 @@ template("ace_uicontent_android_source_set") {
       "//third_party/icu/icu4c:static_icuuc",
     ]
 
-    deps += [
-      "$ace_flutter_engine_root:third_party_flutter_engine_$platform",
-      "$ace_flutter_engine_root/skia:ace_skia_$platform",
-    ]
-
     if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
       deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client_static" ]
     }
@@ -65,6 +60,15 @@ template("ace_uicontent_android_source_set") {
       "$ability_runtime_cross_platform_path/interfaces/inner_api/hilog:ability_cross_platform_hilog_config",
       "$ability_runtime_cross_platform_path/interfaces/inner_api/jsruntime:jsruntime_config",
     ]
+
+    if (ace_use_new_skia) {
+      deps += [ "$ace_flutter_engine_root:flutter_for_ng" ]
+    } else {
+      deps += [
+        "$ace_flutter_engine_root:third_party_flutter_engine_$platform",
+        "$ace_flutter_engine_root/skia:ace_skia_$platform",
+      ]
+    }
 
     defines += [ "ANDROID_PLATFORM" ]
   }

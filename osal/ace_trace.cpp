@@ -21,6 +21,10 @@
 
 namespace OHOS::Ace {
 
+void AceCountTrace(const char *key, int32_t count)
+{
+}
+
 bool AceTraceEnabled()
 {
     return ATrace_isEnabled();

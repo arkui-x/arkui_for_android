@@ -62,4 +62,23 @@ void TextInputClientHandler::PerformAction(const int32_t clientId, const TextInp
     }
 }
 
+void TextInputClientHandler::UpdateInputFilterErrorText(const int32_t clientId, const std::string& errorText)
+{
+    if (currentConnection_ && currentConnection_->GetClientId() == clientId) {
+        auto weak = AceType::WeakClaim(AceType::RawPtr(currentConnection_));
+        currentConnection_->GetTaskExecutor()->PostTask(
+            [weak, errorText] {
+                auto currentConnection = weak.Upgrade();
+                if (currentConnection == nullptr) {
+                    LOGE("currentConnection is nullptr");
+                    return;
+                }
+                auto client = currentConnection->GetClient();
+                if (client) {
+                    client->UpdateInputFilterErrorText(errorText);
+                }
+            },
+            TaskExecutor::TaskType::UI);
+    }
+}
 } // namespace OHOS::Ace::Platform

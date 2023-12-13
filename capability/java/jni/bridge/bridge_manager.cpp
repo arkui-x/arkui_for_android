@@ -65,15 +65,36 @@ void BridgeManager::JSCallMethod(const std::string& bridgeName,
     BridgeJni::JSCallMethodJni(bridgeName, methodName, parameter);
 }
 
+void BridgeManager::JSCallMethodBinary(const std::string& bridgeName,
+    const std::string& methodName, const std::vector<uint8_t>& data)
+{
+    BridgeJni::JSCallMethodBinaryJni(bridgeName, methodName, data);
+}
+
 void BridgeManager::JSSendMethodResult(const std::string& bridgeName,
     const std::string& methodName, const std::string& resultValue)
 {
     BridgeJni::JSSendMethodResultJni(bridgeName, methodName, resultValue);
 }
 
+void BridgeManager::JSSendMethodResultBinary(const std::string& bridgeName, const std::string& methodName,
+    int errorCode, const std::string& errorMessage, std::unique_ptr<std::vector<uint8_t>> result)
+{
+    if (result == nullptr) {
+        BridgeJni::JSSendMethodResultBinaryJni(bridgeName, methodName, errorCode, errorMessage, nullptr);
+    } else {
+        BridgeJni::JSSendMethodResultBinaryJni(bridgeName, methodName, errorCode, errorMessage, std::move(result));
+    }
+}
+
 void BridgeManager::JSSendMessage(const std::string& bridgeName, const std::string& data)
 {
     BridgeJni::JSSendMessageJni(bridgeName, data);
+}
+
+void BridgeManager::JSSendMessageBinary(const std::string& bridgeName, const std::vector<uint8_t>& data)
+{
+    BridgeJni::JSSendMessageBinaryJni(bridgeName, data);
 }
 
 void BridgeManager::JSSendMessageResponse(const std::string& bridgeName, const std::string& data)
@@ -90,6 +111,15 @@ void BridgeManager::PlatformCallMethod(const std::string& bridgeName,
     }
 }
 
+void BridgeManager::PlatformCallMethodBinary(const std::string& bridgeName,
+    const std::string& methodName, std::unique_ptr<BufferMapping> parameter)
+{
+    auto receiver = FindReceiver(bridgeName);
+    if (receiver && receiver->callMethodBinaryCallback_) {
+        receiver->callMethodBinaryCallback_(methodName, std::move(parameter));
+    }
+}
+
 void BridgeManager::PlatformSendMethodResult(const std::string& bridgeName,
     const std::string& methodName, const std::string& result)
 {
@@ -99,11 +129,29 @@ void BridgeManager::PlatformSendMethodResult(const std::string& bridgeName,
     }
 }
 
+void BridgeManager::PlatformSendMethodResultBinary(
+    const std::string& bridgeName, const std::string& methodName, int errorCode,
+    const std::string& errorMessage, std::unique_ptr<BufferMapping> result)
+{
+    auto receiver = FindReceiver(bridgeName);
+    if (receiver && receiver->methodResultBinaryCallback_) {
+        receiver->methodResultBinaryCallback_(methodName, errorCode, errorMessage, std::move(result));
+    }
+}
+
 void BridgeManager::PlatformSendMessage(const std::string& bridgeName, const std::string& data)
 {
     auto receiver = FindReceiver(bridgeName);
     if (receiver && receiver->sendMessageCallback_) {
         receiver->sendMessageCallback_(data);
+    }
+}
+
+void BridgeManager::PlatformSendMessageBinary(const std::string& bridgeName, std::unique_ptr<BufferMapping> data)
+{
+    auto receiver = FindReceiver(bridgeName);
+    if (receiver && receiver->sendMessageBinaryCallback_) {
+        receiver->sendMessageBinaryCallback_(std::move(data));
     }
 }
 

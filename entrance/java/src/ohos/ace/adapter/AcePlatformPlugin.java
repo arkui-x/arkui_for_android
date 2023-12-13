@@ -54,10 +54,10 @@ public class AcePlatformPlugin implements InputConnectionClient {
      * @param instanceId The id of instance
      * @param view       The view which request input
      */
-    public AcePlatformPlugin(Context context, int instanceId, View view, long nativeViewPtr) {
+    public AcePlatformPlugin(Context context, int instanceId, View view) {
         ALog.i(LOG_TAG, "AcePlatformPlugin created");
 
-        initResRegister(nativeViewPtr, instanceId);
+        initResRegister(instanceId);
 
         clipboardPlugin = new ClipboardPluginAosp(context);
         textInputPlugin = new TextInputPluginAosp(view, instanceId);
@@ -84,16 +84,19 @@ public class AcePlatformPlugin implements InputConnectionClient {
      * Initialize resource register
      *
      */
-    private void initResRegister(long nativeViewPtr, int instanceId) {
+    private void initResRegister(int instanceId) {
         resRegister = new AceResourceRegister();
-        if (nativeViewPtr == 0L) {
-            ALog.w(LOG_TAG, "initResRegister nativeViewPtr is null");
-        }
-        long resRegisterPtr = nativeInitResRegister(nativeViewPtr, resRegister, instanceId);
+        long resRegisterPtr = nativeInitResRegister(resRegister, instanceId);
         if (resRegisterPtr == 0L) {
             return;
         }
         resRegister.setRegisterPtr(resRegisterPtr);
+    }
+
+    public void releseResRegister(int instanceId) {
+        if (resRegister != null) {
+            resRegister.release();
+        }
     }
 
     @Override
@@ -150,7 +153,7 @@ public class AcePlatformPlugin implements InputConnectionClient {
         resRegister.notifyLifecycleChanged(isBackground);
     }
 
-    private native long nativeInitResRegister(long viewPtr, AceResourceRegister resRegister, int instanceId);
+    private native long nativeInitResRegister(AceResourceRegister resRegister, int instanceId);
     private native void nativeRegisterSurface(int instanceId, long textureId, Object surface);
     private native void nativeUnregisterSurface(int instanceId, long textureId);
 }

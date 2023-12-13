@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,26 +13,12 @@
  * limitations under the License.
  */
 
-package ohos.ace.adapter;
+package ohos.ace.adapter.capability.web;
 
-import android.app.Application;
+public interface IAceWebErrorReceiveObject {
+    String getRequestUrl();
 
-/**
- * This class extends from Android Application, the entry of app
- *
- * @since 1
- */
-public class AceApplication extends Application {
-    private static final String LOG_TAG = "AceApplication";
+    String getErrorInfo();
 
-    /**
-     * Call when Application is created.
-     *
-     */
-    @Override
-    public void onCreate() {
-        ALog.setLogger(new LoggerAosp());
-        ALog.i(LOG_TAG, "AceApplication onCreate called");
-        super.onCreate();
-    }
+    int getErrorCode();
 }

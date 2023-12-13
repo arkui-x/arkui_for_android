@@ -32,12 +32,17 @@ common_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/plugin/PluginManager.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoBase.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoPluginBase.java",
+
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebPluginBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/IAceWebErrorReceiveObject.java",
 ]
 
 # android capability java files
 android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/clipboard/ClipboardPluginAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/InputConnectionWrapper.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputErrorTextHandler.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputFilter.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputPluginAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/environment/EnvironmentAosp.java",
@@ -51,10 +56,17 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoPluginAosp.java",
 
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWeb.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebPluginAosp.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebErrorReceiveObject.java",
+
   # bridge files
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeBaseCodec.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeBinaryCodec.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeErrorCode.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeManager.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgePlugin.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeSerializer.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/IMessageListener.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/IMethodResult.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/MethodData.java",

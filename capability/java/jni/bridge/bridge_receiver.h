@@ -20,6 +20,7 @@
 #include <string>
 
 #include "base/utils/macros.h"
+#include "buffer_mapping.h"
 
 namespace OHOS::Ace::Platform {
 using AceCallMethodCallback = std::function<void(const std::string& methodName, const std::string& parameter)>;
@@ -28,12 +29,29 @@ using AceSendMessageCallback = std::function<void(const std::string& data)>;
 using AceSendMessageResponseCallback = std::function<void(const std::string& data)>;
 using AceSendWillTerminateResponseCallback = std::function<void(bool success)>;
 
+using AceMethodResultBinaryCallback = std::function<void(
+                                            const std::string& methodName,
+                                            int errorCode,
+                                            const std::string& errorMessage,
+                                            std::unique_ptr<BufferMapping> resultValue)>;
+
+using AceCallMethodBinaryCallback = std::function<void(
+                                            const std::string& methodName,
+                                            std::unique_ptr<BufferMapping> resultValue)>;
+
+using AceSendMessageBinaryCallback = std::function<void(std::unique_ptr<BufferMapping> resultValue)>;                               
+
 struct ACE_EXPORT BridgeReceiver {
     AceCallMethodCallback callMethodCallback_ = nullptr;
     AceMethodResultCallback methodResultCallback_ = nullptr;
     AceSendMessageCallback sendMessageCallback_ = nullptr;
     AceSendMessageResponseCallback sendMessageResponseCallback_ = nullptr;
     AceSendWillTerminateResponseCallback sendWillTerminateResponseCallback_ = nullptr;
+
+    // for binary codec call back
+    AceMethodResultBinaryCallback methodResultBinaryCallback_ = nullptr;
+    AceCallMethodBinaryCallback callMethodBinaryCallback_ = nullptr;
+    AceSendMessageBinaryCallback sendMessageBinaryCallback_ = nullptr;
 };
 } // namespace OHOS::Ace::Platform
 #endif // FOUNDATION_ACE_ADAPTER_CAPABILITY_JAVA_JNI_BRIDGE_RECEIVER_H

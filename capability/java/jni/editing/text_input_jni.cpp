@@ -33,6 +33,7 @@ static const JNINativeMethod METHODS[] = {
     { "nativeInit", "(I)V", reinterpret_cast<void*>(TextInputJni::NativeInit) },
     { "updateEditingState", "(ILjava/lang/String;)V", reinterpret_cast<void*>(TextInputJni::UpdateEditingState) },
     { "performAction", "(II)V", reinterpret_cast<void*>(TextInputJni::PerformAction) },
+    { "updateInputFilterErrorText", "(ILjava/lang/String;)V", reinterpret_cast<void*>(TextInputJni::UpdateInputFilterErrorText) },
 };
 
 static const char* const METHOD_SET_CLIENT = "setTextInputClient";
@@ -189,6 +190,26 @@ void TextInputJni::PerformAction(JNIEnv* env, jclass clazz, jint clientId, jint 
 
     TextInputAction action = CastToTextInputAction(actionValue);
     TextInputClientHandler::GetInstance().PerformAction(clientId, action);
+}
+
+void TextInputJni::UpdateInputFilterErrorText(JNIEnv* env, jclass clazz, jint clientId, jstring errorText)
+{
+    if (env == nullptr) {
+        LOGW("env is null");
+        return;
+    }
+
+    if (!errorText) {
+        LOGW("TextInput JNI: Error Text is null");
+        return;
+    }
+    const char* content = env->GetStringUTFChars(errorText, nullptr);
+    if (content == nullptr) {
+        // May have OutOfMemoryError.
+        LOGW("TextInput JNI: Failed get string from jstring.");
+        return;
+    }
+    TextInputClientHandler::GetInstance().UpdateInputFilterErrorText(clientId, content);
 }
 
 bool TextInputJni::ShowTextInput(bool isFocusViewChanged, int32_t instanceId)

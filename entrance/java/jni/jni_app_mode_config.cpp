@@ -15,7 +15,6 @@
 
 #include "adapter/android/entrance/java/jni/jni_app_mode_config.h"
 
-#include "adapter/android/entrance/java/jni/ace_container_jni.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "adapter/android/entrance/java/jni/jni_registry.h"
 #include "adapter/android/stage/ability/java/jni/stage_jni_registry.h"
@@ -23,18 +22,14 @@
 #include "base/utils/utils.h"
 
 namespace OHOS::Ace::Platform {
-namespace {
-const std::string FA_MODE = "fa";
-const std::string STAGE_MODE = "stage";
-}
 bool JniAppModeConfig::Register()
 {
     LOGI("JniAppModeConfig register start.");
     static const JNINativeMethod methods[] = {
         {
-            .name = "nativeSetAppMode",
-            .signature = "(Ljava/lang/String;)V",
-            .fnPtr = reinterpret_cast<void*>(&SetAppMode),
+            .name = "nativeInitAppMode",
+            .signature = "()V",
+            .fnPtr = reinterpret_cast<void*>(&InitAppMode),
         },
     };
 
@@ -54,7 +49,7 @@ bool JniAppModeConfig::Register()
     return ret;
 }
 
-void JniAppModeConfig::SetAppMode(JNIEnv* env, jclass myclass, jstring str)
+void JniAppModeConfig::InitAppMode(JNIEnv* env, jclass myclass)
 {
     LOGI("JniAppModeConfig: SetAppMode");
     if (env == nullptr) {
@@ -62,29 +57,14 @@ void JniAppModeConfig::SetAppMode(JNIEnv* env, jclass myclass, jstring str)
         return;
     }
 
-    auto appMode = env->GetStringUTFChars(str, nullptr);
-    if (appMode == FA_MODE) {
-        LOGI("Register fa mode jni.");
-        if (!OHOS::Ace::Platform::AceContainerJni::Register()) {
-            LOGE("JNI Onload: failed to register AceContainer");
-            return;
-        }
-        if (!OHOS::Ace::Platform::JniRegistry::Register()) {
-            LOGE("JNI Onload: failed to call JniRegistry");
-            return;
-        }
-    } else if (appMode == STAGE_MODE) {
-        LOGI("Register stage mode jni.");
-        if (!OHOS::AbilityRuntime::Platform::StageJniRegistry::Register()) {
-            LOGE("JNI Onload: failed to register StageJniRegistry");
-            return;
-        }
-        if (!OHOS::Ace::Platform::JniRegistry::Register(true)) {
-            LOGE("JNI Onload: failed to call JniRegistry");
-            return;
-        }
-    } else {
-        LOGE("%{public}s platform not found, initialization of jni failed", appMode);
+    LOGI("Register stage mode jni.");
+    if (!OHOS::AbilityRuntime::Platform::StageJniRegistry::Register()) {
+        LOGE("JNI Onload: failed to register StageJniRegistry");
+        return;
+    }
+    if (!OHOS::Ace::Platform::JniRegistry::Register()) {
+        LOGE("JNI Onload: failed to call JniRegistry");
+        return;
     }
 }
 } // namespace OHOS::Ace::Platform

@@ -118,6 +118,10 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
         this.callMethodMap.put("surface@" + id + METHOD + PARAM_EQUALS + "setIsFullScreen" + PARAM_BEGIN,
                 callSetIsFullScreen);
+        
+        FrameLayout.LayoutParams layoutParams = buildLayoutParams(0, 0, 0, 0);
+        Activity activity = (Activity) context;
+        activity.addContentView(this, layoutParams);
     }
 
     /**
@@ -148,12 +152,10 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                     + surfaceHeight + ")");
             FrameLayout.LayoutParams layoutParams = buildLayoutParams(surfaceLeft, surfaceTop, surfaceWidth,
                     surfaceHeight);
+            this.setLayoutParams(layoutParams);
             if (viewAdded) {
-                this.setLayoutParams(layoutParams);
                 this.invalidate();
             } else {
-                Activity activity = (Activity) context;
-                activity.addContentView(this, layoutParams);
                 viewAdded = true;
                 ALog.i(LOG_TAG, "AceSurfaceView added");
             }

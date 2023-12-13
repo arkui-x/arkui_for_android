@@ -65,6 +65,26 @@ private:
     std::unique_ptr<flutter::AssetResolver> assetProvider_;
 };
 
+constexpr int64_t FOO_MAX_LEN = 20 * 1024 * 1024;
+class FileAssetMapping : public fml::Mapping {
+public:
+    FileAssetMapping(std::unique_ptr<uint8_t[]> data, size_t size) : data_(std::move(data)), size_(size) {}
+    ~FileAssetMapping() override {}
+
+    size_t GetSize() const override
+    {
+        return size_;
+    }
+
+    const uint8_t* GetMapping() const override
+    {
+        return data_.get();
+    }
+
+private:
+    std::unique_ptr<uint8_t[]> data_ = nullptr;
+    size_t size_ = 0;
+};
 class StageAssetProvider {
 public:
     StageAssetProvider();
@@ -94,7 +114,22 @@ public:
     void GetResIndexPath(const std::string& moduleName, std::string& appResIndexPath, std::string& sysResIndexPath);
     void SetResourcesFilePrefixPath(const std::string& resourcesFilePrefixPath);
 
+    std::string GetAppDataModuleDir() const;
+    std::string GetAppDataLibDir() const;
+    bool GetAppDataModuleAssetList(const std::string& path, std::vector<std::string>& fileFullPaths, bool onlyChild);
+    std::vector<std::string> GetAllFilePath();
+    std::vector<uint8_t> GetBufferByAppDataPath(const std::string& fileFullPath);
+    bool CopyFile(std::string sourceFile, std::string newFile);
+    bool ExistDir(std::string target);
+    bool MakeDir(std::string target);
+    bool CopyDir(std::string source, const std::string& target);
+    void CopyHspResourcePath(const std::string& moduleName);
+    void CopyNativeLibToAppDataModuleDir(const std::string& bundleName);
+    void SetNativeLibPaths(const std::string& bundleName, const std::vector<std::string>& moduleNames);
+
 private:
+    bool MakeMultipleDir(const std::string& path);
+    bool CopyBufferToFile(std::vector<uint8_t>& buffer, const std::string& newFile);
     std::string appPath_;
     std::vector<std::string> allFilePath_;
     std::mutex allFilePathMutex_;
@@ -106,8 +141,11 @@ private:
     std::string filesDir_;
     std::string databaseDir_;
     std::string appLibDir_;
+    std::string appDataLibDir_;
+    std::string arkuiXAssetsDir_;
     std::string preferenceDir_;
     std::string resourcesFilePrefixPath_;
+    std::string architecture_;
     static std::shared_ptr<StageAssetProvider> instance_;
     static std::mutex mutex_;
 };

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,20 +13,16 @@
  * limitations under the License.
  */
 
-package ohos.ace.adapter;
+#include "base/image/file_uri_helper.h"
 
-/**
- * The common interface of AceViewCreator, for creating the AceView
- *
- * @since 1
- */
-public interface IAceViewCreator {
-    /**
-     * This is called to create a specified AceView.
-     *
-     * @param instanceId the instance id of current view.
-     * @param density the device pixel ratio of default display.
-     * @return the created AceView instace.
-     */
-    IAceView createView(int instanceId, float density);
+namespace OHOS::Ace {
+std::string FileUriHelper::GetRealPath(std::string fileUriStr)
+{
+    const std::string fileHead = "file://";
+    size_t pos = fileUriStr.find(fileHead);
+    if (pos != std::string::npos) {
+        return fileUriStr.substr(pos + fileHead.length());
+    }
+    return {};
 }
+} // namespace OHOS::Ace

@@ -80,7 +80,6 @@ int32_t ApplicationContextAdapter::StartAbility(const AAFwk::Want& want)
     std::string activityName = bundleName + "." + moduleName + abilityName + ACTIVITY_NAME;
 
     LOGI("AbilityDelegator:activityName : %{public}s", activityName.c_str());
-    LOGI("AbilityDelegator:params : %{public}s", want.ToJson().c_str());
     jstring jBundleName = env->NewStringUTF(bundleName.c_str());
     jstring jActivityName = env->NewStringUTF(activityName.c_str());
     jstring jParams = env->NewStringUTF(want.ToJson().c_str());
@@ -94,7 +93,7 @@ int32_t ApplicationContextAdapter::StartAbility(const AAFwk::Want& want)
     env->DeleteLocalRef(jActivityName);
     
     if (result != ERR_OK) {
-        return AAFwk::INVALID_PARAMETERS_ERR;
+        return AAFwk::RESOLVE_ABILITY_ERR;
     }
     return ERR_OK;
 }

@@ -15,6 +15,8 @@
 
 #include "adapter/android/stage/uicontent/ui_content_impl.h"
 
+#include <algorithm>
+
 #include "ability.h"
 #include "ability_context.h"
 #include "ability_info.h"
@@ -25,10 +27,12 @@
 
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
+#include "adapter/android/osal/accessibility_manager_impl.h"
+#include "adapter/android/osal/file_asset_provider.h"
+#include "adapter/android/osal/page_url_checker_android.h"
 #include "adapter/android/stage/uicontent/ace_container_sg.h"
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
 #include "adapter/android/stage/uicontent/platform_event_callback.h"
-#include "adapter/android/osal/accessibility_manager_impl.h"
 #include "base/log/ace_trace.h"
 #include "base/log/event_report.h"
 #include "base/log/log.h"
@@ -201,16 +205,35 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
         if (flutterAssetManager && !hapPath.empty()) {
             auto assetProvider = AbilityRuntime::Platform::StageAssetProvider::GetInstance();
             CHECK_NULL_VOID(assetProvider);
-            auto env = JniEnvironment::GetInstance().GetJniEnv();
+            auto dynamicLoadFlag = true;
+            std::string moduleNameMark = "/" + moduleName + "/";
+            auto allFilePath = assetProvider->GetAllFilePath();
+            for (auto& path : allFilePath) {
+                if (path.find(moduleNameMark) != std::string::npos) {
+                    dynamicLoadFlag = false;
+                    break;
+                }
+            }
 
+            auto env = JniEnvironment::GetInstance().GetJniEnv();
             std::vector<std::string> hapAssetPaths { "", "/ets", "/ets/share", "/resources/base/profile" };
-            for (const auto& path : hapAssetPaths) {
-                auto apkAssetProvider =
-                    AceType::MakeRefPtr<ApkAssetProvider>(std::make_unique<flutter::APKAssetProvider>(env.get(),
-                                                              assetProvider->GetAssetManager(), hapPath + path),
-                        hapPath + path);
-                apkAssetProvider->SetAssetManager(AAssetManager_fromJava(env.get(), assetProvider->GetAssetManager()));
-                flutterAssetManager->PushBack(std::move(apkAssetProvider));
+            if (dynamicLoadFlag) {
+                auto fileAssetProvider = AceType::MakeRefPtr<FileAssetProvider>();
+                if (fileAssetProvider->Initialize(
+                        assetProvider->GetAppDataModuleDir() + "/" + moduleName, hapAssetPaths)) {
+                    LOGD("Push AssetProvider to queue.");
+                    flutterAssetManager->PushBack(std::move(fileAssetProvider));
+                }
+            } else {
+                for (const auto& path : hapAssetPaths) {
+                    auto apkAssetProvider =
+                        AceType::MakeRefPtr<ApkAssetProvider>(std::make_unique<flutter::APKAssetProvider>(env.get(),
+                                                                  assetProvider->GetAssetManager(), hapPath + path),
+                            hapPath + path);
+                    apkAssetProvider->SetAssetManager(
+                        AAssetManager_fromJava(env.get(), assetProvider->GetAssetManager()));
+                    flutterAssetManager->PushBack(std::move(apkAssetProvider));
+                }
             }
         }
         auto hapInfo = context->GetHapModuleInfo();
@@ -287,11 +310,12 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     container->SetFilesDataPath(context->GetFilesDir());
     container->SetModuleName(moduleName);
     container->SetIsModule(info->compileMode == AppExecFwk::CompileMode::ES_MODULE);
+    container->SetPageUrlChecker(AceType::MakeRefPtr<PageUrlCheckerAndroid>());
 
-    std::string hapResPath { "" };
+    std::vector<std::string> resourcePaths;
     std::string sysResPath { "" };
-    abilityContext->GetResourcePaths(hapResPath, sysResPath);
-    container->SetResPaths(hapResPath, sysResPath, SystemProperties::GetColorMode());
+    abilityContext->GetResourcePaths(resourcePaths, sysResPath);
+    container->SetResPaths(resourcePaths, sysResPath, SystemProperties::GetColorMode());
     AceTraceEnd();
 
     AceTraceBegin("CreateAndSetView");
@@ -311,8 +335,19 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     if (isModelJson) {
         auto pipeline = container->GetPipelineContext();
         if (pipeline && appInfo) {
-            LOGI("SetMinPlatformVersion code is %{public}d", appInfo->minCompatibleVersionCode);
-            pipeline->SetMinPlatformVersion(appInfo->minCompatibleVersionCode);
+            LOGI("SetMinPlatformVersion code is %{public}d", appInfo->apiCompatibleVersion);
+            pipeline->SetMinPlatformVersion(appInfo->apiCompatibleVersion);
+        }
+    }
+
+    if (runtime_) {
+        auto nativeEngine = reinterpret_cast<NativeEngine*>(runtime_);
+        if (!storage) {
+            container->SetLocalStorage(nullptr, context->GetBindingObject()->Get<NativeReference>());
+        } else {
+            LOGI("SetLocalStorage %{public}d", storage->TypeOf());
+            container->SetLocalStorage(
+                nativeEngine->CreateReference(storage, 1), context->GetBindingObject()->Get<NativeReference>());
         }
     }
 }
@@ -582,7 +617,7 @@ bool UIContentImpl::GetAllComponents(NodeId nodeID, OHOS::Ace::Platform::Compone
                 AceType::DynamicCast<OHOS::Ace::Framework::AccessibilityNodeManager>(accessibilityManager);
             auto accessibilityManagerImpl =
                 AceType::DynamicCast<OHOS::Ace::Framework::AccessibilityManagerImpl>(accessibilityNodeManager);
-            auto ret =  accessibilityManagerImpl->GetAllComponents(nodeID, components);
+            auto ret = accessibilityManagerImpl->GetAllComponents(nodeID, components);
             LOGI("UIContentImpl::GetAllComponents ret = %d", ret);
             return ret;
         }

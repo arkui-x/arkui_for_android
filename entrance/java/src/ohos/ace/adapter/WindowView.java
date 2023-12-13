@@ -19,6 +19,9 @@ import android.content.Context;
 import android.graphics.PixelFormat;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import ohos.ace.adapter.capability.web.AceWebPluginAosp;
+import ohos.ace.adapter.capability.web.AceWebPluginBase;
+import ohos.ace.adapter.capability.web.AceWebBase;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -26,6 +29,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.nio.ByteBuffer;
+
+import java.util.Map;
 
 /**
  * This class is AceView implement and handles the lifecycle of surface.
@@ -45,6 +50,7 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     private boolean delayNotifySurfaceDestroyed = false;
 
     private InputConnectionClient inputClient = null;
+    private boolean isFocused = true;
 
     /**
      * Constructor of WindowView
@@ -128,7 +134,9 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         setFocusable(true);
-        requestFocus();
+        if (isFocused) {
+            requestFocus();
+        }
         Surface surface = holder.getSurface();
         holder.setFormat(PixelFormat.TRANSLUCENT);
         if (nativeWindowPtr == 0L) {
@@ -156,6 +164,7 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        isFocused = hasFocus();
         if (nativeWindowPtr == 0L) {
             ALog.w(LOG_TAG, "surfaceDestroyed nativeWindow not ready, delay notify");
             delayNotifySurfaceDestroyed = true;
@@ -235,10 +244,15 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+
         if (nativeWindowPtr == 0L) {
             return super.onTouchEvent(event);
         }
 
+        Map<Long, AceWebBase> webObjectMap = AceWebPluginBase.getObjectMap();
+        for (Map.Entry<Long, AceWebBase> entry : webObjectMap.entrySet()) {
+            entry.getValue().setTouchEvent(event);
+        }
         try {
             ByteBuffer packet = AceEventProcessorAosp.processTouchEvent(event);
             nativeDispatchPointerDataPacket(nativeWindowPtr, packet, packet.position());
