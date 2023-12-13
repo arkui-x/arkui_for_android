@@ -122,10 +122,10 @@ UIContentImpl::UIContentImpl(OHOS::AbilityRuntime::Platform::Context* context, N
     CHECK_NULL_VOID(context);
     const auto& obj = context->GetBindingObject();
     auto ref = obj->Get<NativeReference>();
-    auto object = AbilityRuntime::ConvertNativeValueTo<NativeObject>(ref->Get());
-    auto weak = static_cast<std::weak_ptr<AbilityRuntime::Platform::Context>*>(object->GetNativePointer());
+    void* result = nullptr;
+    napi_unwrap(reinterpret_cast<napi_env>(runtime), ref->GetNapiValue(), &result);
+    auto weak = static_cast<std::weak_ptr<AbilityRuntime::Platform::Context>*>(result);
     context_ = *weak;
-
     LOGI("Create UIContentImpl successfully.");
 }
 
