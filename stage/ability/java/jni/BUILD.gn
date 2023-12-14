@@ -1,0 +1,74 @@
+# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("//foundation/arkui/ace_engine/ace_config.gni")
+
+# build platform sources
+template("stage_android_jni_source_set") {
+  forward_variables_from(invoker, "*")
+
+  ohos_source_set(target_name) {
+    defines += invoker.defines
+    configs = [
+      "$ace_root:ace_config",
+      "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/kits/native/appkit:appkit_native_config",
+    ]
+
+    include_dirs = [
+      "//third_party/flutter/engine",
+      "//foundation/arkui/ace_engine/adapter/android/entrance/java/jni",
+      "//foundation/arkui/napi/module_manager",
+    ]
+
+    sources = [
+      "$ace_root/adapter/android/stage/ability/java/jni/ability_context_adapter.cpp",
+      "$ace_root/adapter/android/stage/ability/java/jni/application_context_adapter.cpp",
+      "$ace_root/adapter/android/stage/ability/java/jni/stage_activity_delegate_jni.cpp",
+      "$ace_root/adapter/android/stage/ability/java/jni/stage_application_delegate_jni.cpp",
+      "$ace_root/adapter/android/stage/ability/java/jni/stage_application_info_adapter.cpp",
+      "$ace_root/adapter/android/stage/ability/java/jni/stage_asset_provider.cpp",
+      "$ace_root/adapter/android/stage/ability/java/jni/stage_jni_registry.cpp",
+      "$ace_root/adapter/android/stage/ability/java/jni/window_view_adapter.cpp",
+    ]
+
+    if (target_cpu == "arm64") {
+      defines += [ "_ARM64_" ]
+    }
+
+    deps = [
+      "$ace_root/adapter/android/entrance/java/jni:ace_common_jni_$platform",
+      "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/kits/native/appkit:cross_platform_appkit_native",
+      "//foundation/arkui/napi:ace_napi",
+    ]
+  }
+}
+
+foreach(item, ace_platforms) {
+  platform = item.name
+  if (platform == "android") {
+    stage_android_jni_source_set("stage_android_jni_" + item.name) {
+      platform = item.name
+      defines = []
+      config = {
+      }
+
+      if (defined(item.config)) {
+        config = item.config
+      }
+      if (defined(config.defines)) {
+        defines = config.defines
+      }
+    }
+  }
+}

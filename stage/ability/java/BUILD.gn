@@ -1,0 +1,37 @@
+# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("//foundation/arkui/ace_engine/ace_config.gni")
+
+# build android jar
+java_library("stage_platform_android_java") {
+  java_files = [
+    "$ace_root/adapter/android/stage/ability/java/src/InstanceIdGenerator.java",
+    "$ace_root/adapter/android/stage/ability/java/src/RunningProcessInfo.java",
+    "$ace_root/adapter/android/stage/ability/java/src/StageActivity.java",
+    "$ace_root/adapter/android/stage/ability/java/src/StageActivityDelegate.java",
+    "$ace_root/adapter/android/stage/ability/java/src/StageApplication.java",
+    "$ace_root/adapter/android/stage/ability/java/src/StageApplicationDelegate.java",
+    "$ace_root/adapter/android/stage/ability/java/src/StageConfiguration.java",
+    "$ace_root/adapter/android/stage/ability/java/src/SubWindow.java",
+    "$ace_root/adapter/android/stage/ability/java/src/SubWindowManager.java",
+  ]
+
+  deps = [
+    "$ace_root/adapter/android/entrance/java:ace_platform_android_java",
+    "$ace_root/adapter/android/entrance/java:ace_platform_common_java",
+  ]
+  subsystem_name = "arkui"
+  part_name = "ace_engine_cross"
+}
