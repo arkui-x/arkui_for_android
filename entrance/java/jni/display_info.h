@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <parcel.h>
 
+#include "base/utils/macros.h"
 #include "dm_common.h"
 #include "wm_common.h"
 #include "wm_single_instance.h"
@@ -31,7 +32,7 @@ constexpr int ROTATION_90 = 1;
 constexpr int ROTATION_180 = 2;
 constexpr int ROTATION_270 = 3;
 
-class DisplayInfo : public virtual RefBase {
+class ACE_EXPORT DisplayInfo : public virtual RefBase {
 public:
     DisplayInfo();
     ~DisplayInfo();

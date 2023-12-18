@@ -399,6 +399,10 @@
       zipCloseFileInZip;
       "OHOS::IncludeTrailingPathDelimiter(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       OHOS::Rosen::RSRenderServiceClient::*;
+      OHOS::Rosen::DisplayInfo::*;
+      "OHOS::AbilityRuntime::GetNativePointerFromCallbackInfo(napi_env__*, napi_callback_info__*, char const*)";
+      "OHOS::AbilityRuntime::CreateJsError(napi_env__*, int, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "OHOS::AbilityRuntime::BindNativeFunction(napi_env__*, napi_value__*, char const*, char const*, napi_value__* (*)(napi_env__*, napi_callback_info__*))";
     };
   local:
     *;
