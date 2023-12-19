@@ -172,6 +172,7 @@
       strcpy_s;
       vsprintf_s;
       memmove_s;
+      vsnprintf_s;
 
       u_isdigit_69;
       u_isJavaSpaceChar_69;
