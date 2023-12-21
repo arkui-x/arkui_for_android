@@ -60,6 +60,9 @@ template("ace_osal_android_source_set") {
     deps = [
       "$ace_root/frameworks/core/components/theme:build_theme_code",
       "//foundation/appframework/resource_management:global_resmgr",
+      "//foundation/appframework/resource_management/interfaces/js/innerkits/core:resmgr_napi_core",
+      "//foundation/appframework/resource_management/interfaces/js/kits:resourcemanager",
+      "//foundation/appframework/resource_management/interfaces/native/resource:rawfile",
     ]
 
     configs = [
