@@ -357,6 +357,7 @@
       "icu_69::RegexMatcher::appendReplacement(icu_69::UnicodeString&, icu_69::UnicodeString const&, UErrorCode&)";
       "icu_69::RegexMatcher::appendTail(icu_69::UnicodeString&)";
       udata_setCommonData*;
+      OH_ResourceManager_*;
 
       vtable?for?icu_69::UnicodeString;
       vtable?for?icu_69::FieldPosition;
