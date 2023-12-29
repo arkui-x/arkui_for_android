@@ -74,6 +74,7 @@
       OHOS::Rosen::Drawing::ShaderEffect::*;
       OHOS::Rosen::Drawing::Brush::*;
       OHOS::Ace::ResourceManager::*;
+      OHOS::Ace::SpringMotion::*;
 
       virtual?thunk?to?OHOS::Ace::Animator::~Animator??;
 

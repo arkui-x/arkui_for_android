@@ -78,6 +78,7 @@ template("ace_common_jni_source_set") {
       "$ace_root/adapter/android/entrance/java/jni/pack_asset_provider.cpp",
       "$ace_root/adapter/android/entrance/java/jni/subwindow_manager_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/web_adapter_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/foldable_window_android.cpp",
     ]
 
     include_dirs = [

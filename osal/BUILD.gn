@@ -29,6 +29,7 @@ template("ace_osal_android_source_set") {
       "ace_trace.cpp",
       "app_bar_helper_impl.cpp",
       "download_manager_android.cpp",
+      "download_manager_android_v2.cpp",
       "drag_window.cpp",
       "event_report.cpp",
       "file_asset_provider.cpp",
@@ -50,6 +51,10 @@ template("ace_osal_android_source_set") {
       "subwindow.cpp",
       "system_properties.cpp",
       "trace_id_impl.cpp",
+      "advance/data_detector_mgr.cpp",
+      "advance/image_analyzer_mgr.cpp",
+      "time_event_proxy_android.cpp",
+      "view_data_wrap_impl.cpp",
     ]
 
     include_dirs = [

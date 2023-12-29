@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,39 +13,21 @@
  * limitations under the License.
  */
 
-#include "base/log/ace_trace.h"
-
-#include <android/trace.h>
-
-#include "base/utils/macros.h"
+#include "base/view_data/view_data_wrap.h"
 
 namespace OHOS::Ace {
-
-void AceCountTrace(const char *key, int32_t count)
+RefPtr<PageNodeInfoWrap> PageNodeInfoWrap::CreatePageNodeInfoWrap()
 {
+    return nullptr;
 }
 
-bool AceTraceEnabled()
+RefPtr<ViewDataWrap> ViewDataWrap::CreateViewDataWrap()
 {
-    return ATrace_isEnabled();
+    return nullptr;
 }
 
-void AceTraceBegin(const char* name)
+RefPtr<ViewDataWrap> ViewDataWrap::CreateViewDataWrap(const AbilityBase::ViewData& viewData)
 {
-    if (name != nullptr) {
-        ATrace_beginSection(name);
-    } else {
-        ATrace_beginSection("");
-    }
+    return nullptr;
 }
-
-void AceTraceEnd()
-{
-    ATrace_endSection();
-}
-
-void AceAsyncTraceBegin(int32_t taskId, const char* name, bool isAnimationTrace) {}
-
-void AceAsyncTraceEnd(int32_t taskId, const char* name, bool isAnimationTrace) {}
-
 } // namespace OHOS::Ace

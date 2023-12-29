@@ -40,7 +40,7 @@ build_container_scope_lib = true
 video_components_support = true
 pixel_map_support = true
 use_curl_download = false
-use_components_lib = true
+use_components_lib = false
 web_components_support = true
 video_texture_support = true
 

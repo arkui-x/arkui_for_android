@@ -160,7 +160,7 @@ bool AceViewSG::DispatchBasicEvent(const std::vector<TouchEvent>& touchEvents)
             continue;
         }
         if (touchEventCallback_) {
-            touchEventCallback_(point, nullptr);
+            touchEventCallback_(point, nullptr, nullptr);
         }
     }
     // if it is last page, let os know to quit app
@@ -180,7 +180,7 @@ bool AceViewSG::DispatchTouchEvent(const std::vector<uint8_t>& data)
             continue;
         }
         if (touchEventCallback_) {
-            touchEventCallback_(point, nullptr);
+            touchEventCallback_(point, nullptr, nullptr);
         }
     }
     // if it is last page, let os know to quit app
@@ -193,7 +193,7 @@ bool AceViewSG::DispatchMouseEvent(const std::vector<uint8_t>& data)
     MouseEvent mouseEvent;
     ConvertMouseEvent(data, mouseEvent);
     if (mouseEventCallback_) {
-        mouseEventCallback_(mouseEvent, nullptr);
+        mouseEventCallback_(mouseEvent, nullptr, nullptr);
     }
     // if it is last page, let os know to quit app
     return (!IsLastPage());
