@@ -184,7 +184,7 @@ public class BridgeSerializer {
 
     private static void writeByteBuffer(ByteArrayOutputStream stream, ByteBuffer data) {
         stream.write(T_LIST_UINT8);
-        data.flip();
+        data.rewind();
         byte[] bytes = new byte[data.remaining()];
         data.get(bytes);
         writeBytes(stream, bytes);

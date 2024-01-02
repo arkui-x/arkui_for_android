@@ -14,43 +14,34 @@
  */
 
 package ohos.ace.adapter.capability.bridge;
-
 /**
- * Bridge method data.
+ * The TaskQueue interface of bridge.
  *
- * @since 10
+ * @since 11
  */
-public class MethodData {
-    private String methodName_;
-    private Object[] Parameters_;
+public interface BridgeTaskQueue {
 
     /**
-     * Constructor of MethodData.
+     * Get tag of BridgeTaskQueue.
      *
-     * @param methodName Name of method.
-     * @param parameter parameters of method.
-     * @return MethodData object.
+     * @return The tag of BridgeTaskQueue.
      */
-    public MethodData(String methodName, Object[] parameter) {
-        this.methodName_ = methodName;
-        this.Parameters_ = parameter;
-    }
+    TaskTag getTag();
 
     /**
-     * Get Saved MethodName.
+     * Dispatch BridgeTask.
      *
-     * @return Name of method.
+     * @param runnable Runnable BridgeTask.
      */
-    public String getMethodName() {
-        return this.methodName_;
-    }
+    void dispatch(Runnable runnable);
 
     /**
-     * Get Saved parameter.
+     * The tag of BridgeTaskQueue.
      *
-     * @return Parameter of method.
+     * @since 11
      */
-    public Object[] getMethodParameter() {
-        return this.Parameters_;
+    public enum TaskTag {
+        INPUT,
+        OUTPUT;
     }
 }

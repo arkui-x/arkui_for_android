@@ -87,10 +87,13 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeManager.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgePlugin.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeSerializer.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeTaskQueue.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeTaskQueueHandler.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/IMessageListener.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/IMethodResult.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/MethodData.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/ParameterHelper.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/TaskOption.java",
 ]
 
 # capability cpp files

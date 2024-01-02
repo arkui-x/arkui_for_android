@@ -16,7 +16,6 @@
 package ohos.ace.adapter.capability.bridge;
 
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import ohos.ace.adapter.ALog;
@@ -58,7 +57,7 @@ public class BridgeBinaryCodec implements BridgeBaseCodec<Object> {
      * @return Return encode data.
      */
     @Override
-    public ByteBuffer encodeData(Object data) {
+    public synchronized ByteBuffer encodeData(Object data) {
         ByteArrayOutputStreamExposed stream = new ByteArrayOutputStreamExposed();
         BridgeSerializer.writeData(stream, data);
         ByteBuffer buffer = ByteBuffer.allocateDirect(stream.size());
