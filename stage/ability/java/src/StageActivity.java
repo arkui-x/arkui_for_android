@@ -17,6 +17,8 @@ package ohos.stage.ability.adapter;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.util.HashSet;
+import java.util.Set;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -29,6 +31,9 @@ import android.os.Trace;
 
 import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.AcePlatformPlugin;
+import ohos.ace.adapter.ArkUIXPluginRegistry;
+import ohos.ace.adapter.IArkUIXPlugin;
+import ohos.ace.adapter.PluginContext;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.WindowView;
@@ -82,6 +87,12 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     private KeyboardHeightProvider keyboardHeightProvider;
 
+    private Set<String> pluginList = new HashSet<>();
+
+    private ArkUIXPluginRegistry arkUIXPluginRegistry = null;
+
+    private PluginContext pluginContext = null;
+
     @Override
     public void onKeyboardHeightChanged(int height) {
         if (windowView != null) {
@@ -113,6 +124,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         initPlatformPlugin(this, instanceId, windowView);
         initBridgeManager();
 
+        initArkUIXPluginRegistry();
         Trace.beginSection("setContentView");
         setContentView(windowView);
         Trace.endSection();
@@ -181,6 +193,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         activityDelegate.dispatchOnDestroy(getInstanceName());
         windowView.destroy();
 
+        arkUIXPluginRegistry.unRegistryAllPlugins();
         keyboardHeightProvider.close();
         BridgeManager.unRegisterBridgeManager(instanceId);
         if (platformPlugin != null) {
@@ -454,5 +467,32 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         Context context = getApplicationContext();
         GrantResult grantResultsClass = new GrantResult(context);
         grantResultsClass.onRequestPremissionCallback(permissions, grantResults);
+    }
+
+    /**
+     * add ArkUI-X plugin to list for registry.
+     * 
+     * @param pluginName The full class name includes the package name of the plugin.
+     * @since 11
+     */
+    public void addPlugin(String pluginName) {
+        if (pluginName == null) {
+            Log.e(LOG_TAG, "plugin name is null!");
+        }
+        else {
+            Log.d(LOG_TAG, "add plugin: " + pluginName);
+            pluginList.add(pluginName);
+        }
+    }
+
+    /**
+     * Initialize arkui-x plugins and arkui-x plugins registry.
+     */
+    private void initArkUIXPluginRegistry() {
+        Trace.beginSection("StageActivity::intitArkUIXPlugins");
+        this.pluginContext = new PluginContext(this, this.getBridgeManager());
+        arkUIXPluginRegistry = new ArkUIXPluginRegistry(this.pluginContext);
+        arkUIXPluginRegistry.registryPlugins(pluginList);
+        Trace.endSection();
     }
 }

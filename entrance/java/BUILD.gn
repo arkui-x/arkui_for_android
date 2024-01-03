@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Copyright (c) 2022-2023 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -53,6 +53,10 @@ java_library("ace_platform_android_java") {
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/LoggerAosp.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/WindowView.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/DisplayInfo.java",
+    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/ArkUIXPluginRegistry.java",
+    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IPluginRegistry.java",
+    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IArkUIXPlugin.java",
+    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/PluginContext.java",
   ]
 
   java_files += android_capability_java_files
