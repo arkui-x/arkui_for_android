@@ -33,7 +33,7 @@ public:
     ~ResourceAdapterImplV2() override = default;
 
     void Init(const ResourceInfo& resourceInfo) override;
-    void UpdateConfig(const ResourceConfiguration& config) override;
+    void UpdateConfig(const ResourceConfiguration& config, bool themeFlag = false) override;
 
     RefPtr<ThemeStyle> GetTheme(int32_t themeId) override;
 

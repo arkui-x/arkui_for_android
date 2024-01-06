@@ -251,7 +251,8 @@ void AceContainerSG::InitializeCallback()
     ACE_DCHECK(aceView_ && taskExecutor_ && pipelineContext_);
     auto weak = AceType::WeakClaim(AceType::RawPtr(pipelineContext_));
     auto instanceId = aceView_->GetInstanceId();
-    auto&& touchEventCallback = [weak, instanceId](const TouchEvent& event, const std::function<void()>& markProcess) {
+    auto&& touchEventCallback = [weak, instanceId](const TouchEvent& event, const std::function<void()>& markProcess,
+                                    const RefPtr<OHOS::Ace::NG::FrameNode>& node) {
         auto context = weak.Upgrade();
         CHECK_NULL_VOID(context);
 
@@ -285,7 +286,8 @@ void AceContainerSG::InitializeCallback()
     };
     aceView_->RegisterKeyEventCallback(keyEventCallback);
 
-    auto&& mouseEventCallback = [weak, instanceId](const MouseEvent& event, const std::function<void()>& markProcess) {
+    auto&& mouseEventCallback = [weak, instanceId](const MouseEvent& event, const std::function<void()>& markProcess,
+                                    const RefPtr<OHOS::Ace::NG::FrameNode>& node) {
         auto context = weak.Upgrade();
         CHECK_NULL_VOID(context);
 

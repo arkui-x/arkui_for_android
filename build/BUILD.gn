@@ -92,19 +92,19 @@ foreach(module, common_plugin_libs) {
   common_plugin_modules += [ ":$module_name" ]
 }
 
-component_plugin_modules = []
+# component_plugin_modules = []
 
-foreach(module, component_plugins) {
-  sub_name = string_replace(module, "_", "")
-  module_name = "arkui_$sub_name"
-  ohos_shared_library(module_name) {
-    deps = [ "$ace_root/frameworks/core/components_ng/pattern/${module}:components_plugins_${module}_source_android" ]
+# foreach(module, component_plugins) {
+#   sub_name = string_replace(module, "_", "")
+#   module_name = "arkui_$sub_name"
+#   ohos_shared_library(module_name) {
+#     deps = [ "$ace_root/frameworks/core/components_ng/pattern/${module}:components_plugins_${module}_source_android" ]
 
-    part_name = "arkui_components"
-    subsystem_name = "arkui"
-  }
-  component_plugin_modules += [ ":$module_name" ]
-}
+#     part_name = "arkui_components"
+#     subsystem_name = "arkui"
+#   }
+#   component_plugin_modules += [ ":$module_name" ]
+# }
 
 # Install packages
 group("ace_packages") {

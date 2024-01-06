@@ -33,6 +33,8 @@ bool SystemProperties::isRound_ = false;
 bool SystemProperties::isDeviceAccess_ = false;
 int32_t SystemProperties::deviceWidth_ = 0;
 int32_t SystemProperties::deviceHeight_ = 0;
+int32_t SystemProperties::devicePhysicalWidth_ = 0;
+int32_t SystemProperties::devicePhysicalHeight_ = 0;
 double SystemProperties::resolution_ = 1.0;
 DeviceType SystemProperties::deviceType_ { DeviceType::PHONE };
 DeviceOrientation SystemProperties::orientation_ { DeviceOrientation::PORTRAIT };
@@ -58,7 +60,7 @@ bool SystemProperties::windowAnimationEnabled_ = false;
 bool SystemProperties::debugBoundaryEnabled_ = false;
 bool SystemProperties::extSurfaceEnabled_ = true;
 uint32_t SystemProperties::dumpFrameCount_ = 0;
-bool SystemProperties::flutterDecouplingEnabled_ = true;
+bool SystemProperties::layoutTraceEnable_ = false;
 
 void SystemProperties::InitDeviceType(DeviceType type)
 {
@@ -176,4 +178,23 @@ bool SystemProperties::GetResourceDecoupling()
     return false;
 }
 
+int32_t SystemProperties::GetJankFrameThreshold()
+{
+    return 0;
+}
+
+bool SystemProperties::GetTitleStyleEnabled()
+{
+    return false;
+}
+
+std::string SystemProperties::GetCustomTitleFilePath()
+{
+    return UNDEFINED_PARAM;
+}
+
+bool SystemProperties::Is24HourClock()
+{
+    return false;
+}
 } // namespace OHOS::Ace

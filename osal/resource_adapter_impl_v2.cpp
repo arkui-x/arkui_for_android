@@ -138,7 +138,7 @@ void ResourceAdapterImplV2::Init(const ResourceInfo& resourceInfo)
     Platform::AceApplicationInfoImpl::GetInstance().SetResourceManager(resourceManager_);
 }
 
-void ResourceAdapterImplV2::UpdateConfig(const ResourceConfiguration& config)
+void ResourceAdapterImplV2::UpdateConfig(const ResourceConfiguration& config, bool themeFlag)
 {
     LOGI("UpdateConfig ori=%{public}d, dpi=%{public}d, device=%{public}d, "
          "colorMode=%{public}d,",
@@ -148,7 +148,7 @@ void ResourceAdapterImplV2::UpdateConfig(const ResourceConfiguration& config)
          "colorMode=%{public}d, inputDevice=%{public}d",
         resConfig->GetDirection(), resConfig->GetScreenDensity(), resConfig->GetDeviceType(), resConfig->GetColorMode(),
         resConfig->GetInputDevice());
-    resourceManager_->UpdateResConfig(*resConfig);
+    resourceManager_->UpdateResConfig(*resConfig, themeFlag);
 }
 
 RefPtr<ThemeStyle> ResourceAdapterImplV2::GetTheme(int32_t themeId)
