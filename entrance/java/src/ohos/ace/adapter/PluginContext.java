@@ -14,6 +14,8 @@
  */
 package ohos.ace.adapter;
 
+import java.io.File;
+
 import android.content.Context;
 
 import ohos.ace.adapter.capability.bridge.BridgeManager;
@@ -28,6 +30,7 @@ import ohos.ace.adapter.capability.bridge.BridgeManager;
 public class PluginContext {
     private Context context;
     private BridgeManager bridgeManager;
+    private String moduleName;
 
     /**
      * Constructor of PluginContext.
@@ -36,9 +39,10 @@ public class PluginContext {
      * @param bridgeManager bridgeManager of the stageActivity.
      * @since 11
      */
-    public PluginContext(Context context, BridgeManager bridgeManager) {
+    public PluginContext(Context context, BridgeManager bridgeManager, String moduleName) {
         this.context = context;
         this.bridgeManager = bridgeManager;
+        this.moduleName = moduleName;
     }
 
     /**
@@ -57,5 +61,34 @@ public class PluginContext {
      */
     public BridgeManager getBridgeManager() {
         return this.bridgeManager;
+    }
+
+    /**
+     * get absolute path of rawfile.
+     * 
+     * @param name name of module.
+     * @param filePath relative path of rawfile.
+     * @return absolute path of rawfile.
+     * @since 11
+     */
+    public String getRawFilePath(String name, String filePath) {
+        String path = this.context.getFilesDir().getAbsolutePath() + "/arkui-x/" + name + "/resources/rawfile/" 
+            + filePath;
+        File file = new File(path);
+        if (!file.exists()) {
+            return null;
+        }
+        return path;
+    }
+
+    /**
+     * get absolute path of rawfile.
+     * 
+     * @param filePath relative path of rawfile.
+     * @return absolute path of rawfile.
+     * @since 11
+     */
+    public String getRawFilePath(String filePath) {
+        return this.getRawFilePath(this.moduleName, filePath);
     }
 }
