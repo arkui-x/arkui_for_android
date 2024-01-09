@@ -337,10 +337,42 @@ public abstract class BridgePlugin {
      * @return Return the call result.
      */
     protected Object jsCallMethod(Object object, MethodData methodData) {
+        if (object != null && methodData != null) {
+            Method callMethod = initMethod(object.getClass(), methodData);
+            Object[] parametersObject = methodData.getMethodParameter();
+            return bridgeInvokeMethod(object, callMethod, parametersObject);
+        } else {
+            return BridgeErrorCode.BRIDGE_METHOD_UNIMPL;
+        }
+    }
+
+    private Object bridgeInvokeMethod(Object object, Method callMethod, Object[] parametersObject) {
         BridgeErrorCode bridgeErrorCode = BridgeErrorCode.BRIDGE_METHOD_UNIMPL;
-        Object[] parametersObject = methodData.getMethodParameter();
-        Class<?> clazz = object.getClass();
-        Object resValues = null;
+        if (object != null && callMethod != null && parametersObject != null) {
+            Object resValues = null;
+            try {
+                if (parametersObject != null && parametersObject.length != 0) {
+                    resValues = callMethod.invoke(object, parametersObject);
+                } else {
+                    resValues = callMethod.invoke(object);
+                }
+                return resValues;
+            } catch (IllegalAccessException e) {
+                ALog.e(LOG_TAG, "jsCallMethod failed, IllegalAccessException.");
+            } catch (IllegalArgumentException e) {
+                ALog.e(LOG_TAG, "jsCallMethod failed, IllegalArgumentException.");
+                bridgeErrorCode = BridgeErrorCode.BRIDGE_METHOD_PARAM_ERROR;
+            } catch (InvocationTargetException e) {
+                ALog.e(LOG_TAG, "jsCallMethod failed, InvocationTargetException.");
+            }
+        }
+        return bridgeErrorCode;
+    }
+
+    private Method initMethod(Class<?> clazz, MethodData methodData) {
+        if (clazz == null || methodData == null) {
+            return null;
+        }
         Method callMethod = findMethod(methodData.getMethodName());
         try {
             if (callMethod == null) {
@@ -356,24 +388,9 @@ public abstract class BridgePlugin {
             }
         } catch (NoSuchMethodException e) {
             ALog.e(LOG_TAG, "jsCallMethod failed, NoSuchMethodException.");
-            return bridgeErrorCode;
+            callMethod = null;
         }
-        try {
-            if (callMethod != null && parametersObject != null && parametersObject.length != 0) {
-                resValues = callMethod.invoke(object, parametersObject);
-            } else {
-                resValues = callMethod.invoke(object);
-            }
-            return resValues;
-        } catch (IllegalAccessException e) {
-            ALog.e(LOG_TAG, "jsCallMethod failed, IllegalAccessException.");
-        } catch (IllegalArgumentException e) {
-            ALog.e(LOG_TAG, "jsCallMethod failed, IllegalArgumentException.");
-            bridgeErrorCode = BridgeErrorCode.BRIDGE_METHOD_PARAM_ERROR;
-        } catch (InvocationTargetException e) {
-            ALog.e(LOG_TAG, "jsCallMethod failed, InvocationTargetException.");
-        }
-        return bridgeErrorCode;
+        return callMethod;
     }
 
     /**
