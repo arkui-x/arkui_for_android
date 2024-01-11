@@ -440,9 +440,6 @@ public class StageApplicationDelegate {
                     copyFilesFromAssets(assetsPath + "/" + fileName, savePath + "/" + fileName);
                 }
             } else {
-                if (file.exists()) {
-                    return;
-                }
                 is = stageApplication.getAssets().open(assetsPath);
                 fos = new FileOutputStream(file);
                 byte[] buffer = new byte[1024];
