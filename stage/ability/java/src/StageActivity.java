@@ -328,7 +328,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             String packageName = getApplicationContext().getPackageName();
             Log.i(LOG_TAG, "Current package name: " + packageName);
             ComponentName componentName = null;
-            if (packageName == bundleName) {
+            if (packageName.equals(bundleName)) {
                 componentName = new ComponentName(getBaseContext(), activityName);
             } else {
                 componentName = new ComponentName(bundleName, activityName);
@@ -361,7 +361,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             String packageName = getApplicationContext().getPackageName();
             Log.i(LOG_TAG, "Current package name: " + packageName);
             ComponentName componentName = null;
-            if (packageName == bundleName) {
+            if (packageName.equals(bundleName)) {
                 componentName = new ComponentName(getBaseContext(), activityName);
             } else {
                 componentName = new ComponentName(bundleName, activityName);
