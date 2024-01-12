@@ -123,7 +123,6 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         Trace.endSection();
         initPlatformPlugin(this, instanceId, windowView);
         initBridgeManager();
-
         initArkUIXPluginRegistry();
         Trace.beginSection("setContentView");
         setContentView(windowView);
@@ -192,7 +191,6 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         super.onDestroy();
         activityDelegate.dispatchOnDestroy(getInstanceName());
         windowView.destroy();
-
         arkUIXPluginRegistry.unRegistryAllPlugins();
         keyboardHeightProvider.close();
         BridgeManager.unRegisterBridgeManager(instanceId);
@@ -490,9 +488,20 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      */
     private void initArkUIXPluginRegistry() {
         Trace.beginSection("StageActivity::intitArkUIXPlugins");
-        this.pluginContext = new PluginContext(this, this.getBridgeManager());
-        arkUIXPluginRegistry = new ArkUIXPluginRegistry(this.pluginContext);
+        arkUIXPluginRegistry = new ArkUIXPluginRegistry(getPluginContext());
         arkUIXPluginRegistry.registryPlugins(pluginList);
         Trace.endSection();
+    }
+
+    /**
+     * Get the BridgeManager of StageActivity.
+     *
+     * @return The BridgeManager.
+     */
+    public PluginContext getPluginContext() {
+        if (this.pluginContext == null) {
+            this.pluginContext = new PluginContext(this, getBridgeManager(), this.moduleName);
+        }
+        return this.pluginContext;
     }
 }
