@@ -58,6 +58,7 @@ public:
         int32_t metaKey {};
         int32_t sourceDevice {};
         int32_t deviceId {};
+        std::string msg {};
     };
 
     int32_t GetInstanceId() const override
