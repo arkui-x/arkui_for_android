@@ -214,7 +214,8 @@ bool AceViewSG::DispatchKeyEvent(const KeyEventInfo& eventInfo)
     CHECK_NULL_RETURN(keyEventCallback_, false);
 
     auto keyEvents = keyEventRecognizer_.GetKeyEvents(eventInfo.keyCode, eventInfo.keyAction, eventInfo.repeatTime,
-        eventInfo.timeStamp, eventInfo.timeStampStart, eventInfo.metaKey, eventInfo.sourceDevice, eventInfo.deviceId);
+        eventInfo.timeStamp, eventInfo.timeStampStart, eventInfo.metaKey, eventInfo.sourceDevice, eventInfo.deviceId,
+        eventInfo.msg);
     if (keyEvents.size() == 0) {
         return false;
     }
