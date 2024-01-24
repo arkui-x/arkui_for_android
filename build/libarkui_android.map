@@ -366,6 +366,8 @@
       vtable?for?icu_69::FormattedRelativeDateTime;
       vtable?for?icu_69::LocaleBuilder;
 
+      "HiLogPrint";
+
       "LogPrint(LogLevel, char const*, ...)";
       ARKUI_X_Plugin_*;
       OHOS::Plugin::PluginUtilsInner::*;

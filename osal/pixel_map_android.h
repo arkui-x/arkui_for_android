@@ -38,6 +38,8 @@ public:
     std::string GetModifyId() override;
     std::shared_ptr<Media::PixelMap> GetPixelMapSharedPtr() override;
     void* GetWritablePixels() const override;
+    void Scale(float xAxis, float yAxis) override;
+    void Scale(float xAxis, float yAxis, const AceAntiAliasingOption &option) override;
 private:
     std::shared_ptr<Media::PixelMap> pixmap_;
 };
