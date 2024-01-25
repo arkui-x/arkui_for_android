@@ -76,8 +76,10 @@ template("ace_common_jni_source_set") {
       "$ace_root/adapter/android/entrance/java/jni/jni_environment.cpp",
       "$ace_root/adapter/android/entrance/java/jni/jni_load.cpp",
       "$ace_root/adapter/android/entrance/java/jni/jni_registry.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/msdp/interaction_impl.cpp",
       "$ace_root/adapter/android/entrance/java/jni/pack_asset_provider.cpp",
       "$ace_root/adapter/android/entrance/java/jni/subwindow_manager_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/udmf/udmf_impl.cpp",
       "$ace_root/adapter/android/entrance/java/jni/web_adapter_jni.cpp",
     ]
 
