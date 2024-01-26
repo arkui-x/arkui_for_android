@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -402,6 +402,44 @@ void AbilityContextAdapter::SetPlatformBundleName(const std::string& platformBun
 std::string AbilityContextAdapter::GetPlatformBundleName()
 {
     return platformBundleName_;
+}
+
+int32_t AbilityContextAdapter::ReportDrawnCompleted(const std::string& instanceName)
+{
+    LOGE("Called.");
+    auto finder = jobjects_.find(instanceName);
+    if (finder == jobjects_.end()) {
+        LOGE("Activity caller is not exist.");
+        return AAFwk::INNER_ERR;
+    }
+
+    jobject stageActivity = finder->second.get();
+    if (stageActivity == nullptr) {
+        LOGE("Stage activity is nullptr.");
+        return AAFwk::INNER_ERR;
+    }
+
+    auto env = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (env == nullptr) {
+        LOGE("Env is nullptr.");
+        return AAFwk::INNER_ERR;
+    }
+
+    const jclass objClass = env->GetObjectClass(stageActivity);
+    if (objClass == nullptr) {
+        LOGE("Get object class return null.");
+        return AAFwk::INNER_ERR;
+    }
+
+    auto reportDrawnCompletedMethod = env->GetMethodID(objClass, "reportDrawnCompleted", "()V");
+    if (reportDrawnCompletedMethod == nullptr) {
+        LOGE("Fail to get the method reportDrawnCompleted id.");
+        return AAFwk::INNER_ERR;
+    }
+
+    env->DeleteLocalRef(objClass);
+    env->CallVoidMethod(stageActivity, reportDrawnCompletedMethod);
+    return ERR_OK;
 }
 } // namespace Platform
 } // namespace AbilityRuntime
