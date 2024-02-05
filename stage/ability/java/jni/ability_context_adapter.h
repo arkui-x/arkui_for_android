@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -48,6 +48,8 @@ public:
         const std::string& instanceName, const AAFwk::Want& resultWant, int32_t resultCode);
     void SetPlatformBundleName(const std::string& platformBundleName);
     std::string GetPlatformBundleName();
+    int32_t ReportDrawnCompleted(const std::string& instanceName);
+
 private:
     void ParseWant(
         const AAFwk::Want& want, std::string& bundleName, std::string& activityName, std::string& wantParams);
