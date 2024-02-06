@@ -321,7 +321,7 @@ static void DumpAccessibilityPropertyNG(const RefPtr<NG::FrameNode>& frameNode)
     DumpLog::GetInstance().AddDesc("support action: ", actionForDump);
 }
 
-void AccessibilityManagerImpl::DumpTree(int32_t depth, NodeId nodeID)
+void AccessibilityManagerImpl::DumpTree(int32_t depth, int64_t nodeID)
 {
     DumpLog::GetInstance().Print("Dump Accessiability Tree:");
     auto pipeline = context_.Upgrade();

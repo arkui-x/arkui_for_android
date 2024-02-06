@@ -17,36 +17,48 @@
 
 #include <memory>
 #include <mutex>
+#include <optional>
 
 #include "adapter/android/entrance/java/jni/download_manager_jni.h"
 #include "base/log/log.h"
-#include "base/utils/singleton.h"
 #include "base/utils/utils.h"
 
 namespace OHOS::Ace {
-
-namespace {
-
-class DownloadManagerImpl final : public DownloadManager, public Singleton<DownloadManagerImpl> {
-    DECLARE_SINGLETON(DownloadManagerImpl);
-    ACE_DISALLOW_MOVE(DownloadManagerImpl);
+std::unique_ptr<DownloadManager> DownloadManager::instance_ = nullptr;
+std::mutex DownloadManager::mutex_;
+class DownloadManagerImpl final : public DownloadManager {
 
 public:
     bool Download(const std::string& url, std::vector<uint8_t>& dataOut) override
     {
         return Platform::DownloadManagerJni::Download(url, dataOut);
     }
+
+    bool DownloadAsync(DownloadCallback&& downloadCallback, const std::string& url, int32_t instanceId) override
+    {
+        return false;
+    }
+
+    bool DownloadSync(DownloadCallback&& downloadCallback, const std::string& url, int32_t instanceId) override
+    {
+        return false;
+    }
+
+    DownloadManagerImpl() = default;
+
+    ~DownloadManagerImpl() = default;
+
 };
 
-DownloadManagerImpl::DownloadManagerImpl() = default;
-
-DownloadManagerImpl::~DownloadManagerImpl() = default;
-
-}
-
-DownloadManager& DownloadManager::GetInstance()
+DownloadManager* DownloadManager::GetInstance()
 {
-    return Singleton<DownloadManagerImpl>::GetInstance();
+    if (!instance_) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (!instance_) {
+            instance_.reset(new DownloadManagerImpl());
+        }
+    }
+    return instance_.get();
 }
 
 } // namespace OHOS::Ace

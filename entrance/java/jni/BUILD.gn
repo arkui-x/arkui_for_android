@@ -58,7 +58,6 @@ template("ace_common_jni_source_set") {
       "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/inner_api/hilog:ability_cross_platform_hilog_config",
       "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/kits/native/appkit:appkit_native_config",
       "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/inner_api/jsruntime:jsruntime_config",
-      "//foundation/appframework/arkui/uicontent:uicontent_config",
     ]
 
     sources = [
@@ -102,7 +101,10 @@ template("ace_common_jni_source_set") {
       defines += [ "_ARM64_" ]
     }
 
-    deps = [ ":ace_android_jni_$platform" ]
+    deps = [
+      ":ace_android_jni_$platform",
+      "//foundation/appframework/arkui/uicontent:ace_uicontent_interface",
+    ]
 
     if (ace_use_new_skia) {
       deps += [ "$ace_flutter_engine_root:flutter_for_ng" ]

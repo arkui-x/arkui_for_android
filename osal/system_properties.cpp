@@ -58,12 +58,15 @@ bool SystemProperties::isHookModeEnabled_ = false;
 bool SystemProperties::accessibilityEnabled_ = false;
 bool SystemProperties::windowAnimationEnabled_ = false;
 bool SystemProperties::debugBoundaryEnabled_ = false;
+bool SystemProperties::debugAutoUIEnabled_ = false;
 bool SystemProperties::extSurfaceEnabled_ = true;
 uint32_t SystemProperties::dumpFrameCount_ = 0;
 bool SystemProperties::layoutTraceEnable_ = false;
 bool SystemProperties::buildTraceEnable_ = false;
 bool SystemProperties::enableScrollableItemPool_ = false;
 bool SystemProperties::navigationBlurEnabled_ = true;
+bool SystemProperties::gridCacheEnabled_ = false;
+bool SystemProperties::sideBarContainerBlurEnable_ = false;
 
 void SystemProperties::InitDeviceType(DeviceType type)
 {
@@ -176,6 +179,11 @@ bool SystemProperties::GetImageFrameworkEnabled()
     return false;
 }
 
+bool SystemProperties::GetDebugPixelMapSaveEnabled()
+{
+    return false;
+}
+
 bool SystemProperties::GetResourceDecoupling()
 {
     return false;
@@ -209,5 +217,20 @@ bool SystemProperties::GetDisplaySyncSkipEnabled()
 bool SystemProperties::GetNavigationBlurEnabled()
 {
     return navigationBlurEnabled_;
+}
+
+bool SystemProperties::GetGridCacheEnabled()
+{
+    return gridCacheEnabled_;
+}
+
+bool SystemProperties::GetSideBarContainerBlurEnable()
+{
+    return sideBarContainerBlurEnable_;
+}
+
+bool SystemProperties::GetLayoutTraceEnabled()
+{
+    return false;
 }
 } // namespace OHOS::Ace

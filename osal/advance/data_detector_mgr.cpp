@@ -31,27 +31,18 @@ bool DataDetectorMgr::IsDataDetectorSupported()
 
 void DataDetectorMgr::DataDetect(const TextDataDetectInfo& info, const TextDetectResultFunc& resultFunc) {}
 
-RefPtr<NG::FrameNode> DataDetectorMgr::CreateUIExtensionMenu(
-    const std::map<std::string, std::string>& paramaters, std::function<void(const std::string&)> onClickMenu)
-{
-    return nullptr;
-}
-
-bool DataDetectorMgr::ShowUIExtensionMenu(const std::map<std::string, std::string>& paramaters, NG::RectF aiRect,
-    std::function<void(const std::string&)> onClickMenu, const RefPtr<NG::FrameNode>& targetNode)
-{
-    return false;
-}
-
-void DataDetectorMgr::ResponseBestMatchItem(const std::map<std::string, std::string>& paramaters, const AISpan& aiSpan)
-{}
-
 void DataDetectorMgr::AdjustCursorPosition(
     int32_t& caretPos, const std::string& content, TimeStamp& lastAiPosTimeStamp, const TimeStamp& lastClickTimeStamp)
-{}
+{
+    caretPos = GetCursorPosition(content, caretPos);
+}
 
 void DataDetectorMgr::AdjustWordSelection(int32_t& caretPos, const std::string& content, int32_t& start, int32_t& end)
-{}
+{
+    auto ret = GetWordSelection(content, caretPos);
+    start = ret[0];
+    end = ret[1];
+}
 
 std::vector<int8_t> DataDetectorMgr::GetWordSelection(const std::string& text, int8_t offset)
 {

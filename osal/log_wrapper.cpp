@@ -32,6 +32,17 @@ const char* LOG_TAGS[] = {
     "JSApp",
 };
 
+#ifdef ACE_INSTANCE_LOG
+constexpr const char* INSTANCE_ID_GEN_REASONS[] = {
+    "scope",
+    "active",
+    "default",
+    "singleton",
+    "foreground",
+    "undefined",
+};
+#endif
+
 } // namespace
 
 // Initialize the static member object
@@ -51,13 +62,19 @@ void LogWrapper::PrintLog(LogDomain domain, LogLevel level, AceLogTag tag, const
         LOG_LEVEL[static_cast<int>(level)], LOG_TAGS[static_cast<uint32_t>(domain)], newFmt.c_str(), args);
 }
 
+#ifdef ACE_INSTANCE_LOG
 int32_t LogWrapper::GetId()
 {
-#ifdef ACE_INSTANCE_LOG
     return Container::CurrentId();
-#else
-    return 0;
-#endif
 }
+
+const std::string LogWrapper::GetIdWithReason()
+{
+    int32_t currentId = ContainerScope::CurrentId();
+    std::pair<int32_t, InstanceIdGenReason> idWithReason = ContainerScope::CurrentIdWithReason();
+    return std::to_string(currentId) + ":" + std::to_string(idWithReason.first) + ":" +
+           INSTANCE_ID_GEN_REASONS[static_cast<uint32_t>(idWithReason.second)];
+}
+#endif
 
 } // namespace OHOS::Ace
