@@ -359,6 +359,9 @@ void StageAssetProvider::SetAppLibDir(const std::string& libDir)
 
 std::string StageAssetProvider::GetAppLibDir() const
 {
+    if (IsDirectoryEmpty(appLibDir_)) {
+        return std::string("");
+    }
     return appLibDir_;
 }
 
@@ -704,6 +707,29 @@ void StageAssetProvider::SetNativeLibPaths(
     for (auto& nativeLibPath : nativeLibPaths) {
         NativeModuleManager::GetInstance()->SetAppLibPath(nativeLibPath.first, nativeLibPath.second);
     }
+}
+
+bool StageAssetProvider::IsDirectoryEmpty(const std::string& path) const
+{
+    if (path.empty()) {
+        LOGI("Path is Empty");
+        return true;
+    }
+    DIR *directory = opendir(path.c_str());
+    if (directory == nullptr) {
+        LOGE("Cannot open dir, path is %{public}s", path.c_str());
+        return true;
+    }
+    struct dirent *entry;
+    bool isEmpty = true;
+    while ((entry = readdir(directory)) != nullptr) {
+        if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+            isEmpty = false;
+            break;
+        }
+    }
+    closedir(directory);
+    return isEmpty;
 }
 } // namespace Platform
 } // namespace AbilityRuntime

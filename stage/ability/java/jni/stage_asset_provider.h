@@ -129,6 +129,7 @@ public:
 private:
     bool MakeMultipleDir(const std::string& path);
     bool CopyBufferToFile(std::vector<uint8_t>& buffer, const std::string& newFile);
+    bool IsDirectoryEmpty(const std::string& path) const;
     std::string appPath_;
     std::vector<std::string> allFilePath_;
     std::mutex allFilePathMutex_;
