@@ -609,7 +609,7 @@ void AceContainerSG::UpdateConfiguration(const std::string& colorMode, const std
     ContainerScope scope(instanceId_);
     auto themeManager = pipelineContext_->GetThemeManager();
     CHECK_NULL_VOID(themeManager);
-    OnConfigurationChange configurationChange;
+    ConfigurationChange configurationChange;
     auto resConfig = GetResourceConfiguration();
     if (!colorMode.empty()) {
         configurationChange.colorModeUpdate = true;
@@ -633,10 +633,12 @@ void AceContainerSG::UpdateConfiguration(const std::string& colorMode, const std
         } else if (direction == "horizontal") {
             resConfig.SetOrientation(DeviceOrientation::LANDSCAPE);
         }
+        configurationChange.directionUpdate = true;
     }
     if (!densityDpi.empty()) {
         double density = std::stoi(densityDpi) / DPI_BASE;
         LOGI("resconfig density : %{public}f", density);
+        configurationChange.dpiUpdate = true;
         resConfig.SetDensity(density);
     }
     if (!languageTag.empty()) {

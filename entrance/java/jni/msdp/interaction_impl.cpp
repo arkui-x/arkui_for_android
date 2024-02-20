@@ -95,4 +95,14 @@ int32_t InteractionImpl::AddPrivilege()
     return -1;
 }
 
+int32_t InteractionImpl::RegisterCoordinationListener(std::function<void()> dragOutCallback)
+{
+    return -1;
+}
+
+int32_t InteractionImpl::UnRegisterCoordinationListener()
+{
+    return -1;
+}
+
 } // namespace OHOS::Ace

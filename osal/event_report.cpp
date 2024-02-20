@@ -63,6 +63,8 @@ void EventReport::ReportEventJankFrame(DataBase& data) {}
 
 void EventReport::ReportJankFrameApp(JankInfo& info) {}
 
+void EventReport::ReportJankFrameFiltered(JankInfo& info) {}
+
 void EventReport::ReportDoubleClickTitle(int32_t stateChange) {}
 
 void EventReport::ReportClickTitleMaximizeMenu(int32_t maxMenuItem, int32_t stateChange) {}

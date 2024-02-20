@@ -16,6 +16,7 @@
 #include "base/log/log_wrapper.h"
 #include "base/utils/utils.h"
 #include "adapter/android/osal/pixel_map_android.h"
+#include "core/image/image_file_cache.h"
 
 namespace OHOS::Ace {
 
@@ -93,6 +94,12 @@ AlphaType PixelMapAndroid::GetAlphaType() const
 {
     CHECK_NULL_RETURN(pixmap_, AlphaType::IMAGE_ALPHA_TYPE_UNKNOWN);
     return AlphaTypeConverter(pixmap_->GetAlphaType());
+}
+
+int32_t PixelMapAndroid::GetRowStride() const
+{
+    CHECK_NULL_RETURN(pixmap_, 0);
+    return pixmap_->GetRowStride();
 }
 
 int32_t PixelMapAndroid::GetRowBytes() const
@@ -202,5 +209,9 @@ void PixelMapAndroid::Scale(float xAxis, float yAxis, const AceAntiAliasingOptio
             pixmap_->scale(xAxis, yAxis, Media::AntiAliasingOption::NONE);
             break;
     }
+}
+
+void PixelMapAndroid::SavePixelMapToFile(const std::string& dst) const
+{
 }
 } // namespace OHOS::Ace
