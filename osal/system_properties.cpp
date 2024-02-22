@@ -229,8 +229,4 @@ bool SystemProperties::GetSideBarContainerBlurEnable()
     return sideBarContainerBlurEnable_;
 }
 
-bool SystemProperties::GetLayoutTraceEnabled()
-{
-    return false;
-}
 } // namespace OHOS::Ace
