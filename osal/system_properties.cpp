@@ -228,6 +228,7 @@ bool SystemProperties::GetGridIrregularLayoutEnabled()
 {
     return false;
 }
+
 bool SystemProperties::GetSideBarContainerBlurEnable()
 {
     return sideBarContainerBlurEnable_;
