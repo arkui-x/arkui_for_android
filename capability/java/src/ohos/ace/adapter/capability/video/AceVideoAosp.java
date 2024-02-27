@@ -65,6 +65,14 @@ public class AceVideoAosp extends AceVideoBase
 
     private static final String KEY_ISTEXTURE = "isTexture";
 
+    private static final String INSTANCE_SEPARATOR = ":";
+
+    private static final int INSTANCE_ARRAY_NUM_MAX = 3;
+
+    private static final int INSTANCE_ARRAY_MODULE = 1;
+
+    private static final int INSTANCE_ARRAY_ID = 3;
+
     private static final int SECOND_TO_MSEC = 1000;
 
     private static final AudioAttributes ATTR_VIDEO = new AudioAttributes.Builder().setUsage(
@@ -77,6 +85,10 @@ public class AceVideoAosp extends AceVideoBase
     private final Context context;
 
     private final String instanceName;
+
+    private String moduleName = "";
+
+    private int instanceId = -1;
 
     private final Window window;
 
@@ -132,6 +144,11 @@ public class AceVideoAosp extends AceVideoBase
     public AceVideoAosp(long id, String name, Context context, IAceOnResourceEvent callback) {
         super(id, callback);
         this.instanceName = name;
+        String[] nameArray = instanceName.split(INSTANCE_SEPARATOR);
+        if (nameArray.length >= INSTANCE_ARRAY_NUM_MAX) {
+            this.moduleName = nameArray[INSTANCE_ARRAY_MODULE];
+            this.instanceId = Integer.parseInt(nameArray[INSTANCE_ARRAY_ID]);
+        }
         mediaPlayer = new MediaPlayer();
         this.context = context;
         window = getWindow();
@@ -1021,7 +1038,7 @@ public class AceVideoAosp extends AceVideoBase
         try {
             if (stageMode) {
                 try {
-                    String filePath = "arkui-x" + File.separator + instanceName + File.separator + "ets" + param;
+                    String filePath = "arkui-x" + File.separator + moduleName + File.separator + "ets" + param;
                     ALog.i(LOG_TAG, "setDataSourc hapPath:" + filePath);
                     assetFd = assetManage.openFd(filePath);
                 } catch (IOException ignored) {
@@ -1033,7 +1050,7 @@ public class AceVideoAosp extends AceVideoBase
             } else {
                 try {
                     assetFd = assetManage.openFd(
-                            "js" + File.separator + instanceName + File.separator
+                            "js" + File.separator + moduleName + File.separator
                                     + param.substring(HAP_SCHEME.length()));
                 } catch (IOException ignored) {
                     ALog.e(LOG_TAG, "not found asset in instance path, now begin to search asset in share path");
@@ -1066,7 +1083,7 @@ public class AceVideoAosp extends AceVideoBase
                 surface = new Surface(surfaceTexture);
             }
         } else {
-            surface = AceSurfaceHolder.getSurface(surfaceId);
+            surface = AceSurfaceHolder.getSurface(instanceId, surfaceId);
         }
         return surface;
     }

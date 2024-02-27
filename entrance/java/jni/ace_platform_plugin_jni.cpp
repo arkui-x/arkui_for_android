@@ -57,6 +57,11 @@ bool AcePlatformPluginJni::Register(const std::shared_ptr<JNIEnv>& env)
             .signature = "(IJ)V",
             .fnPtr = reinterpret_cast<void*>(&AcePlatformPluginJni::UnregisterTexture),
         },
+        {
+            .name = "nativeAttachSurface",
+            .signature = "(Ljava/lang/Object;)J",
+            .fnPtr = reinterpret_cast<void*>(&AcePlatformPluginJni::AttachNativeWindow),
+        },
     };
 
     if (!env) {
@@ -175,6 +180,21 @@ void AcePlatformPluginJni::UnregisterTexture(JNIEnv* env, jobject myObject, jint
     }
 
     iter->second.erase(static_cast<int64_t>(textureId));
+}
+
+jlong AcePlatformPluginJni::AttachNativeWindow(JNIEnv* env, jobject myObject, jobject surface)
+{
+    if (env == nullptr) {
+        LOGW("env is null");
+        return 0;
+    }
+
+    auto nativeWindow = reinterpret_cast<void*>(ANativeWindow_fromSurface(env, surface));
+    if (!nativeWindow) {
+        LOGW("GetNativeWindow get native window is nullptr.");
+        return 0;
+    }
+    return PointerToJavaLong(nativeWindow);
 }
 
 void AcePlatformPluginJni::ReleaseInstance(int32_t instanceId)

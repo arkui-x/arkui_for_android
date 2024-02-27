@@ -27,6 +27,7 @@ common_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/keyboard/KeyboardHeightProvider.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/environment/EnvironmentBase.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/storage/PersistentStorageBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/surface/IAceSurface.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/texture/IAceTexture.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/vibrator/VibratorPluginBase.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/plugin/PluginManager.java",
