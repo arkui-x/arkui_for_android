@@ -369,6 +369,8 @@
       "HiLogPrint";
 
       "LogPrint(LogLevel, char const*, ...)";
+      "LogPrint(LogLevel, char const*, std::__va_list)";
+      "LogPrint(LogLevel, char const*, __va_list_tag*)";
       ARKUI_X_Plugin_*;
       OHOS::Plugin::PluginUtilsInner::*;
       OHOS::Plugin::PluginUtilsNApi::*;
@@ -406,6 +408,8 @@
       "OHOS::AbilityRuntime::GetNativePointerFromCallbackInfo(napi_env__*, napi_callback_info__*, char const*)";
       "OHOS::AbilityRuntime::CreateJsError(napi_env__*, int, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::AbilityRuntime::BindNativeFunction(napi_env__*, napi_value__*, char const*, char const*, napi_value__* (*)(napi_env__*, napi_callback_info__*))";
+      HiLogIsLoggable;
+      OHOS::HiviewDFX::HiLog::*;
     };
   local:
     *;
