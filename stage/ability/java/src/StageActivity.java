@@ -509,7 +509,8 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      * Report to the system that your app is now fully drawn.
      */
     public void reportDrawnCompleted() {
-        Log.i(LOG_TAG, "Report fully drawn.");
+        Log.i(LOG_TAG, "Report fully drawn start." + System.nanoTime());
         reportFullyDrawn();
+        Log.i(LOG_TAG, "Report fully drawn end." + System.nanoTime());
     }
 }
