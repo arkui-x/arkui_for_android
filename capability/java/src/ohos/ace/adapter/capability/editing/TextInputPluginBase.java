@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -143,6 +143,11 @@ public abstract class TextInputPluginBase {
      * Hide keyboard.
      */
     protected abstract void hideTextInput();
+
+    /**
+     * release function.
+     */
+    public abstract void release();
 
     /**
      * Set the current input text editing state, for example, text/selection.

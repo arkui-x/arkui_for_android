@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,7 +19,6 @@ import android.os.Trace;
 import android.util.Log;
 
 import ohos.ace.adapter.WindowView;
-import ohos.ace.adapter.DisplayInfo;
 
 /**
  * This class is responsible for communicating with the stage activity delegate jni.
@@ -46,7 +45,6 @@ public class StageActivityDelegate {
         Trace.beginSection("attachStageActivity");
         nativeAttachStageActivity(instanceName, object);
         SubWindowManager.getInstance().setActivity(object);
-        DisplayInfo.getInstance().setContext(object);
         Trace.endSection();
     }
 
@@ -70,6 +68,7 @@ public class StageActivityDelegate {
     public void dispatchOnDestroy(String instanceName) {
         Log.i(LOG_TAG, "dispatchOnDestroy called");
         nativeDispatchOnDestroy(instanceName);
+        SubWindowManager.getInstance().ReleaseActivity();
     }
 
     /**

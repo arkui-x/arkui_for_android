@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,9 +16,11 @@
 package ohos.ace.adapter.capability.bridge;
 
 import java.nio.ByteBuffer;
-import java.util.HashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.HashMap;
+import java.util.Iterator;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -162,7 +164,9 @@ public class BridgeManager {
     public static boolean unRegisterBridgeManager(int instanceId) {
         managerMapLock_.lock();
         try {
-            if (managerMap_ != null && managerMap_.remove(instanceId) != null) {
+            if (managerMap_ != null && managerMap_.containsKey(instanceId)) {
+                managerMap_.get(instanceId).release();
+                managerMap_.remove(instanceId);
                 return true;
             } else {
                 ALog.e(LOG_TAG, "unRegisterBridgeManager failed");
@@ -171,6 +175,20 @@ public class BridgeManager {
         } finally {
             managerMapLock_.unlock();
         }
+    }
+
+     /**
+     * release BridgeManager object.
+     *
+     */
+    public void release() {
+        Iterator<HashMap.Entry<String, BridgePlugin>> iterator = this.bridgeMap_.entrySet().iterator();
+        while (iterator.hasNext()) {
+            HashMap.Entry<String, BridgePlugin> entry = iterator.next();
+            entry.getValue().release();
+            iterator.remove();
+        }
+        ALog.i(LOG_TAG, "BridgeManager release.");
     }
 
     /**
