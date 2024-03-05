@@ -280,6 +280,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
 
     CHECK_NULL_VOID(container);
     AceEngine::Get().AddContainer(instanceId_, container);
+    ContainerScope::Add(instanceId_);
     container->SetInstanceName(info->name);
     container->SetHostClassName(info->name);
     if (runtime_) {
@@ -417,6 +418,7 @@ void UIContentImpl::InitAceInfoFromResConfig()
 void UIContentImpl::Foreground()
 {
     LOGI("UIContentImpl: window foreground");
+    ContainerScope::UpdateRecentForeground(instanceId_);
     Platform::AceContainerSG::OnShow(instanceId_);
     // set the flag isForegroundCalled to be true
     auto container = Platform::AceContainerSG::GetContainer(instanceId_);
@@ -435,6 +437,7 @@ void UIContentImpl::Background()
 void UIContentImpl::Focus()
 {
     LOGI("UIContentImpl: window focus");
+    ContainerScope::UpdateRecentActive(instanceId_);
     Platform::AceContainerSG::OnActive(instanceId_);
 }
 
@@ -450,6 +453,7 @@ void UIContentImpl::Destroy()
     auto container = AceEngine::Get().GetContainer(instanceId_);
     CHECK_NULL_VOID(container);
     Platform::AceContainerSG::DestroyContainer(instanceId_);
+    ContainerScope::RemoveAndCheck(instanceId_);
 }
 
 void UIContentImpl::OnNewWant(const OHOS::AAFwk::Want& want)
