@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -171,7 +171,6 @@ void ResourceAdapterImpl::Init(const ResourceInfo& resourceInfo)
             rawFilePaths_[token.substr(token.rfind(DELIMITER) + 1)] = packagePathStr_;
         }
     }
-    Platform::AceApplicationInfoImpl::GetInstance().SetResourceManager(resourceManager_);
 }
 
 void ResourceAdapterImpl::UpdateConfig(const ResourceConfiguration& config, bool themeFlag)
