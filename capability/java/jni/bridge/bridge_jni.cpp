@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -100,19 +100,19 @@ struct {
     jmethodID JSSendMethodResultBinaryJni_;
 } g_pluginClass;
 
-std::unordered_map<jint, jobject> g_jobjects;
+std::unordered_map<jint, JniEnvironment::JavaGlobalRef> g_jobjects;
 std::mutex g_bridgeJniLock;
 }  // namespace
 
 jobject GetJObjectByInstanceId(const int32_t instanceId)
 {
     std::lock_guard<std::mutex> lock(g_bridgeJniLock);
-    auto jobject = g_jobjects.find(instanceId);
-    if (jobject == g_jobjects.end()) {
-        LOGE("The jobject not found.");
+    auto finder = g_jobjects.find(instanceId);
+    if (finder == g_jobjects.end()) {
+        LOGE("BridgeJobject is not exist.");
         return nullptr;
     }
-    return jobject->second;
+    return finder->second.get();
 }
 
 RefPtr<TaskExecutor> BridgeJni::GetPlatformTaskExecutor(int32_t instanceId)
@@ -184,11 +184,7 @@ void BridgeJni::NativeInit(JNIEnv *env, jobject jobj, jint instanceId)
 
     auto id = static_cast<int32_t>(instanceId);
     std::lock_guard<std::mutex> lock(g_bridgeJniLock);
-    auto result = g_jobjects.try_emplace(id, env->NewGlobalRef(jobj));
-    if (!result.second) {
-        LOGE("The native jobject already exist.");
-        return;
-    }
+    g_jobjects.emplace(id, JniEnvironment::MakeJavaGlobalRef(JniEnvironment::GetInstance().GetJniEnv(), jobj));
 
     jclass cls = env->GetObjectClass(jobj);
     if (cls == nullptr) {
@@ -663,5 +659,10 @@ void BridgeJni::PlatformCallMethodBinary(JNIEnv *env, jobject jobj,
         };
         taskExecutor->PostTask(task, TaskExecutor::TaskType::JS);
     }
+}
+
+void BridgeJni::ReleaseInstance(int32_t instanceId)
+{
+    g_jobjects.erase(instanceId);
 }
 }  // namespace OHOS::Ace::Platform

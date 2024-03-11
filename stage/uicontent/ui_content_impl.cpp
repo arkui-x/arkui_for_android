@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -280,6 +280,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
 
     CHECK_NULL_VOID(container);
     AceEngine::Get().AddContainer(instanceId_, container);
+    ContainerScope::Add(instanceId_);
     container->SetInstanceName(info->name);
     container->SetHostClassName(info->name);
     if (runtime_) {
@@ -385,7 +386,6 @@ void UIContentImpl::InitAceInfoFromResConfig()
     if (resourceManager != nullptr) {
         resourceManager->GetResConfig(*resConfig);
         auto localeInfo = resConfig->GetLocaleInfo();
-        Platform::AceApplicationInfoImpl::GetInstance().SetResourceManager(resourceManager);
         if (localeInfo != nullptr) {
             auto language = localeInfo->getLanguage();
             auto region = localeInfo->getCountry();
@@ -417,6 +417,7 @@ void UIContentImpl::InitAceInfoFromResConfig()
 void UIContentImpl::Foreground()
 {
     LOGI("UIContentImpl: window foreground");
+    ContainerScope::UpdateRecentForeground(instanceId_);
     Platform::AceContainerSG::OnShow(instanceId_);
     // set the flag isForegroundCalled to be true
     auto container = Platform::AceContainerSG::GetContainer(instanceId_);
@@ -435,6 +436,7 @@ void UIContentImpl::Background()
 void UIContentImpl::Focus()
 {
     LOGI("UIContentImpl: window focus");
+    ContainerScope::UpdateRecentActive(instanceId_);
     Platform::AceContainerSG::OnActive(instanceId_);
 }
 
@@ -450,6 +452,7 @@ void UIContentImpl::Destroy()
     auto container = AceEngine::Get().GetContainer(instanceId_);
     CHECK_NULL_VOID(container);
     Platform::AceContainerSG::DestroyContainer(instanceId_);
+    ContainerScope::RemoveAndCheck(instanceId_);
 }
 
 void UIContentImpl::OnNewWant(const OHOS::AAFwk::Want& want)

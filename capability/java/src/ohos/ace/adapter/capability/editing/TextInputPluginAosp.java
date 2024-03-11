@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -41,7 +41,7 @@ import ohos.ace.adapter.ALog;
 public class TextInputPluginAosp extends TextInputPluginBase implements TextInputErrorTextHandler{
     private static final String LOG_TAG = "Ace_IME";
 
-    private final View view;
+    private View view;
 
     private final InputMethodManager imm;
 
@@ -242,6 +242,11 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
             }
             isRestartInputPending = false;
         }
+    }
+
+    @Override
+    public void release(){
+        this.view = null;
     }
 
     // Update selection to Editable.

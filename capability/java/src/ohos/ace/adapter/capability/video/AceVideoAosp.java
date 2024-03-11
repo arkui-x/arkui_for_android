@@ -254,12 +254,8 @@ public class AceVideoAosp extends AceVideoBase
                 mediaPlayer.setOnSeekCompleteListener(this);
                 mediaPlayer.setOnCompletionListener(this);
                 mediaPlayer.setOnBufferingUpdateListener(this);
-                mediaPlayer.prepare();
+                mediaPlayer.prepareAsync();
                 state = PlayState.PREPARED;
-            } catch (IOException ignored) {
-                ALog.e(LOG_TAG, "initMediaPlayer failed, IOException");
-                reset();
-                return FAIL;
             } catch (IllegalStateException ignored) {
                 ALog.e(LOG_TAG, "initMediaPlayer failed, IllegalStateException.");
                 reset();
@@ -561,10 +557,7 @@ public class AceVideoAosp extends AceVideoBase
                 mediaPlayer.setOnSeekCompleteListener(this);
                 mediaPlayer.setOnCompletionListener(this);
                 mediaPlayer.setOnBufferingUpdateListener(this);
-                mediaPlayer.prepare();
-            } catch (IOException ignored) {
-                ALog.e(LOG_TAG, "start failed, IOException");
-                return FAIL;
+                mediaPlayer.prepareAsync();
             } catch (IllegalStateException ignored) {
                 ALog.e(LOG_TAG, "stop failed, IllegalStateException.");
                 return FAIL;
@@ -1012,11 +1005,8 @@ public class AceVideoAosp extends AceVideoBase
             mediaPlayer.setOnSeekCompleteListener(this);
             mediaPlayer.setOnCompletionListener(this);
             mediaPlayer.setOnBufferingUpdateListener(this);
-            mediaPlayer.prepare();
+            mediaPlayer.prepareAsync();
             state = PlayState.PREPARED;
-        } catch (IOException ignored) {
-            ALog.e(LOG_TAG, "resume failed, IOException");
-            return false;
         } catch (IllegalStateException ignored) {
             ALog.e(LOG_TAG, "resume failed, IllegalStateException.");
             return false;
