@@ -67,6 +67,9 @@ bool SystemProperties::enableScrollableItemPool_ = false;
 bool SystemProperties::navigationBlurEnabled_ = true;
 bool SystemProperties::gridCacheEnabled_ = false;
 bool SystemProperties::sideBarContainerBlurEnable_ = false;
+bool SystemProperties::acePerformanceMonitorEnable_ = false;
+bool SystemProperties::imageFileCacheConvertAstc_ = false;
+bool SystemProperties::traceInputEventEnable_ = false;
 
 void SystemProperties::InitDeviceType(DeviceType type)
 {
@@ -232,6 +235,16 @@ bool SystemProperties::GetGridIrregularLayoutEnabled()
 bool SystemProperties::GetSideBarContainerBlurEnable()
 {
     return sideBarContainerBlurEnable_;
+}
+
+bool SystemProperties::WaterFlowUseSegmentedLayout()
+{
+    return false;
+}
+
+float SystemProperties::GetDefaultResolution()
+{
+    return 1.0f;
 }
 
 } // namespace OHOS::Ace
