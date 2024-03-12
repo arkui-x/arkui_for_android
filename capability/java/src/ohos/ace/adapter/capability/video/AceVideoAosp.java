@@ -148,6 +148,8 @@ public class AceVideoAosp extends AceVideoBase
         if (nameArray.length >= INSTANCE_ARRAY_NUM_MAX) {
             this.moduleName = nameArray[INSTANCE_ARRAY_MODULE];
             this.instanceId = Integer.parseInt(nameArray[INSTANCE_ARRAY_ID]);
+        } else {
+            ALog.w(LOG_TAG, "nameArray is out of max length.");
         }
         mediaPlayer = new MediaPlayer();
         this.context = context;
