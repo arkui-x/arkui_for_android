@@ -190,7 +190,7 @@ public class AceVideoAosp extends AceVideoBase
 
     private boolean setDataSource(String param) {
         ALog.i(LOG_TAG, "setDataSource param:" + param);
-        if (param == null) {
+        if (param == null || param.isEmpty()) {
             ALog.e(LOG_TAG, "param is null");
             return false;
         }
@@ -531,7 +531,7 @@ public class AceVideoAosp extends AceVideoBase
                     isSetSurfaced = true;
                 }
                 mediaPlayer.setAudioAttributes(ATTR_VIDEO);
-                if (!source.isEmpty() && !setDataSource(source)) {
+                if (!setDataSource(source)) {
                     ALog.e(LOG_TAG, "setDataSource failed.");
                     return FAIL;
                 }
@@ -978,7 +978,7 @@ public class AceVideoAosp extends AceVideoBase
         }
         try {
             mediaPlayer.setAudioAttributes(ATTR_VIDEO);
-            if (!source.isEmpty() && !setDataSource(source)) {
+            if (!setDataSource(source)) {
                 ALog.e(LOG_TAG, "setDataSource failed.");
                 return false;
             }
