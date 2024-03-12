@@ -163,6 +163,30 @@
       WebPMuxDelete;
       SkData::*;
 
+      OH_NativeXComponent_GetXComponentId;
+      OH_NativeXComponent_GetXComponentSize;
+      OH_NativeXComponent_RegisterCallback;
+      OH_NativeXComponent_GetTouchEvent;
+      OH_NativeXComponent_GetXComponentOffset;
+      OH_NativeXComponent_GetMouseEvent;
+      OH_NativeXComponent_RegisterMouseEventCallback;
+      OH_NativeXComponent_GetTouchPointToolType;
+      OH_NativeXComponent_GetTouchPointTiltX;
+      OH_NativeXComponent_GetTouchPointTiltY;
+      OH_NativeXComponent_RegisterFocusEventCallback;
+      OH_NativeXComponent_RegisterKeyEventCallback;
+      OH_NativeXComponent_RegisterBlurEventCallback;
+      OH_NativeXComponent_GetKeyEvent;
+      OH_NativeXComponent_GetKeyEventAction;
+      OH_NativeXComponent_GetKeyEventCode;
+      OH_NativeXComponent_GetKeyEventSourceType;
+      OH_NativeXComponent_GetKeyEventDeviceId;
+      OH_NativeXComponent_GetKeyEventTimestamp;
+      OH_NativeXComponent_GetHistoricalPoints;
+      OH_NativeXComponent_SetExpectedFrameRateRange;
+      OH_NativeXComponent_RegisterOnFrameCallback;
+      OH_NativeXComponent_UnregisterOnFrameCallback;
+
       memset_s;
       memcpy_s;
       sprintf_s;

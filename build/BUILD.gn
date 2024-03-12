@@ -24,6 +24,7 @@ import("config.gni")
 ohos_shared_library("libarkui_android") {
   deps = [
     "$ace_root/build:libace_static_android",
+    "$ace_root/interfaces/native:ace_static_ndk",
     "//foundation/appframework:appframework_napis",
     "//foundation/appframework/icu_data:static_icudata",
     "//plugins/interfaces/native:ace_plugin_util_inner_android",
@@ -118,8 +119,6 @@ group("ace_packages") {
     "$ark_toolchain_path/inspector:ark_debugger",
     "$ark_toolchain_path/tooling:libark_ecma_debugger",
   ]
-
-  deps += [ "$ace_root/interfaces/native:ace_packages_ndk" ]
 
   deps += common_napi_modules
   deps += common_plugin_modules

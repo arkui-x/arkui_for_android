@@ -28,16 +28,20 @@ import android.view.Surface;
 public final class AceSurfaceHolder {
     private static final String LOG_TAG = "AceSurfaceHolder";
 
-    private static final Map<Long, Surface> surfaceMap = new HashMap<Long, Surface>();
+    private static final HashMap<Integer, Map<Long, Surface>> surfaceMap = new HashMap<Integer, Map<Long, Surface>>();
 
     /**
      * Get surface by id
      *
+     * @param instanceId id of instance
      * @param id id of surface
      * @return the surface
      */
-    public static Surface getSurface(long id) {
-        return surfaceMap.get(id);
+    public static Surface getSurface(int instanceId, long id) {
+        if (surfaceMap.containsKey(instanceId)) {
+            return surfaceMap.get(instanceId).get(id);
+        }
+        return null;
     }
 
     /**
@@ -46,16 +50,30 @@ public final class AceSurfaceHolder {
      * @param id      id of surface
      * @param surface the surface object
      */
-    public static void addSurface(long id, Surface surface) {
-        surfaceMap.put(id, surface);
+    public static void addSurface(int instanceId, long id, Surface surface) {
+        if (surfaceMap.containsKey(instanceId)) {
+            surfaceMap.get(instanceId).put(id, surface);
+            return;
+        }
+
+        Map<Long, Surface> innerMap = new HashMap<Long, Surface>();
+        innerMap.put(id, surface);
+        surfaceMap.put(instanceId, innerMap);
     }
 
     /**
-     * Remove surface by id
+     * Remove surface by id and instance id
      *
+     * @param instanceId id of instance
      * @param id id of surface
      */
-    public static void removeSurface(long id) {
-        surfaceMap.remove(id);
+    public static void removeSurface(int instanceId, long id) {
+        if (surfaceMap.containsKey(instanceId)) {
+            Map<Long, Surface> innerMap = surfaceMap.get(instanceId);
+            innerMap.remove(id);
+            if (innerMap.isEmpty()) {
+                surfaceMap.remove(instanceId);
+            }
+        }
     }
 }
