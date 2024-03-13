@@ -436,6 +436,7 @@
       "OHOS::AbilityRuntime::BindNativeFunction(napi_env__*, napi_value__*, char const*, char const*, napi_value__* (*)(napi_env__*, napi_callback_info__*))";
       HiLogIsLoggable;
       OHOS::HiviewDFX::HiLog::*;
+      OHOS::Media::ImageSource::*;
     };
   local:
     *;
