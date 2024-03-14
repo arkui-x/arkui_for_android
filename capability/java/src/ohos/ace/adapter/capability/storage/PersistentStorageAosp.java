@@ -44,7 +44,7 @@ public class PersistentStorageAosp extends PersistentStorageBase {
     public PersistentStorageAosp(Context context) {
         this.context = context;
         if (context == null) {
-            ALog.i(LOG_TAG, "PersistentStorageAosp context null");
+            ALog.w(LOG_TAG, "PersistentStorageAosp context null");
         }
         mSharePreferences = context.getSharedPreferences(SHARE_PREFERENCE_NAME, context.MODE_PRIVATE);
         ALog.i(LOG_TAG, "PersistentStorageAosp constructor");
@@ -58,12 +58,12 @@ public class PersistentStorageAosp extends PersistentStorageBase {
     @Override
     public void set(String key, String value) {
         if (mSharePreferences == null) {
-            ALog.i(LOG_TAG, "set sharePreference null");
+            ALog.w(LOG_TAG, "set method sharePreference instantiate is null");
             return;
         }
         SharedPreferences.Editor editor = mSharePreferences.edit();
         if (editor == null) {
-            ALog.i(LOG_TAG, "editor null");
+            ALog.w(LOG_TAG, "editor null");
             return;
         }
         editor.putString(key, value);
@@ -76,7 +76,7 @@ public class PersistentStorageAosp extends PersistentStorageBase {
     public String get(String key) {
         ALog.i(LOG_TAG, "PersistentStorageAosp get");
         if (mSharePreferences == null) {
-            ALog.i(LOG_TAG, "sharePreference null");
+            ALog.w(LOG_TAG, "sharePreference null");
             return "";
         }
         return mSharePreferences.getString(key, "");
@@ -85,12 +85,12 @@ public class PersistentStorageAosp extends PersistentStorageBase {
     @Override
     public void clear() {
         if (mSharePreferences == null) {
-            ALog.i(LOG_TAG, "clear sharePreference null");
+            ALog.w(LOG_TAG, "clear method sharePreference instantiate is null");
             return;
         }
         SharedPreferences.Editor editor = mSharePreferences.edit();
         if (editor == null) {
-            ALog.i(LOG_TAG, "editor null");
+            ALog.w(LOG_TAG, "editor null");
             return;
         }
         editor.clear();
@@ -102,12 +102,12 @@ public class PersistentStorageAosp extends PersistentStorageBase {
     @Override
     public void delete(String key) {
         if (mSharePreferences == null) {
-            ALog.i(LOG_TAG, "delete sharePreference null");
+            ALog.w(LOG_TAG, "delete method sharePreference instantiate is null");
             return;
         }
         SharedPreferences.Editor editor = mSharePreferences.edit();
         if (editor == null) {
-            ALog.i(LOG_TAG, "editor null");
+            ALog.w(LOG_TAG, "editor null");
             return;
         }
         editor.remove(key);
