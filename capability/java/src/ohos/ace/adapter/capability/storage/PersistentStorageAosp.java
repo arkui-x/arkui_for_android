@@ -57,6 +57,10 @@ public class PersistentStorageAosp extends PersistentStorageBase {
 
     @Override
     public void set(String key, String value) {
+        if (mSharePreferences == null) {
+            ALog.i(LOG_TAG, "set sharePreference null");
+            return;
+        }
         SharedPreferences.Editor editor = mSharePreferences.edit();
         if (editor == null) {
             ALog.i(LOG_TAG, "editor null");
@@ -80,6 +84,10 @@ public class PersistentStorageAosp extends PersistentStorageBase {
 
     @Override
     public void clear() {
+        if (mSharePreferences == null) {
+            ALog.i(LOG_TAG, "clear sharePreference null");
+            return;
+        }
         SharedPreferences.Editor editor = mSharePreferences.edit();
         if (editor == null) {
             ALog.i(LOG_TAG, "editor null");
@@ -93,6 +101,10 @@ public class PersistentStorageAosp extends PersistentStorageBase {
 
     @Override
     public void delete(String key) {
+        if (mSharePreferences == null) {
+            ALog.i(LOG_TAG, "delete sharePreference null");
+            return;
+        }
         SharedPreferences.Editor editor = mSharePreferences.edit();
         if (editor == null) {
             ALog.i(LOG_TAG, "editor null");
