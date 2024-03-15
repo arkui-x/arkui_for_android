@@ -139,6 +139,23 @@ void UIContentImpl::DestroyCallback() const
     LOGI("DestroyCallback called.");
 }
 
+void UIContentImpl::InitializeByName(OHOS::Rosen::Window* window, const std::string& name, napi_value storage)
+{
+    InitializeInner(window, name, storage, true);
+}
+
+void UIContentImpl::InitializeInner(OHOS::Rosen::Window* window, const std::string& url, napi_value storage, bool isNamedRouter)
+{
+    if (window) {
+        CommonInitialize(window, url, storage);
+    }
+    LOGI("InitializeInner startUrl = %{public}s", startUrl_.c_str());
+
+    Platform::AceContainerSG::RunPage(
+        instanceId_, Platform::AceContainerSG::GetContainer(instanceId_)->GeneratePageId(), startUrl_, "", isNamedRouter);
+    LOGI("InitializeInner RunPage UIContentImpl done.");
+}
+
 void UIContentImpl::Initialize(OHOS::Rosen::Window* window, const std::string& url, napi_value storage)
 {
     if (window) {
