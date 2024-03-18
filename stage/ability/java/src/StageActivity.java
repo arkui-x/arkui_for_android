@@ -120,6 +120,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         Trace.beginSection("createWindowView");
         windowView = new WindowView(this);
         Trace.endSection();
+        windowView.setId(instanceId);
         initPlatformPlugin(this, instanceId, windowView);
         initBridgeManager();
         initArkUIXPluginRegistry();

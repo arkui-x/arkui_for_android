@@ -131,6 +131,7 @@ public:
     void NotifyKeyboardHeightChanged(int32_t height);
     void NotifySizeChange(Rect rect);
     void NotifySurfaceDestroyed();
+    void NotifyTouchOutside();
 
     void WindowFocusChanged(bool hasWindowFocus);
     void Foreground();
@@ -180,6 +181,8 @@ public:
     WMError UnregisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener);
     WMError RegisterWindowChangeListener(const sptr<IWindowChangeListener>& listener);
     WMError UnregisterWindowChangeListener(const sptr<IWindowChangeListener>& listener);
+    WMError RegisterTouchOutsideListener(const sptr<ITouchOutsideListener>& listener);
+    WMError UnregisterTouchOutsideListener(const sptr<ITouchOutsideListener>& listener);
 
     WMError SetLayoutFullScreen(bool status);
     WMError SetSpecificBarProperty(WindowType type, const SystemBarProperty& property);
@@ -280,6 +283,15 @@ public:
         return context_;
     }
 
+    WMError Hide();
+    WMError SetFocusable(bool isFocusable);
+    WMError SetTouchable(bool isTouchable);
+    bool RequestFocus();
+    bool IsFocused();
+    WMError SetTouchHotAreas(const std::vector<Rect>& rects);
+    WMError SetFullScreen(bool status);
+    WMError SetAutoFullScreen(bool status);
+
 private:
     void SetWindowView(JNIEnv* env, jobject windowView);
     void SetSubWindowView(JNIEnv* env, jobject windowView);
@@ -295,6 +307,7 @@ private:
     WindowType windowType_;
     Rect rect_ = { 0, 0, 0, 0 };
     bool isForground_ = false;
+    bool isFocused_ = false;
 
     uint32_t backgroundColor_;
     float brightness_;
@@ -333,6 +346,7 @@ private:
     static std::recursive_mutex globalMutex_;
     static std::map<uint32_t, std::vector<sptr<IWindowLifeCycle>>> lifecycleListeners_;
     static std::map<uint32_t, std::vector<sptr<IWindowChangeListener>>> windowChangeListeners_;
+    static std::map<uint32_t, std::vector<sptr<ITouchOutsideListener>>> touchOutsideListeners_;
 
     template<typename T1, typename T2, typename Ret>
     using EnableIfSame = typename std::enable_if<std::is_same_v<T1, T2>, Ret>::type;
@@ -384,6 +398,20 @@ private:
         }
         return windowChangeListeners;
     }
+
+    template<typename T>
+    inline EnableIfSame<T, ITouchOutsideListener, std::vector<wptr<ITouchOutsideListener>>> GetListeners()
+    {
+        std::vector<wptr<ITouchOutsideListener>> touchOutsideListeners;
+        {
+            std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+            for (auto& listener : touchOutsideListeners_[GetWindowId()]) {
+                touchOutsideListeners.push_back(listener);
+            }
+        }
+        return touchOutsideListeners;
+    }
+
 #define CALL_LIFECYCLE_LISTENER(windowLifecycleCb)                  \
     do {                                                            \
         auto lifecycleListeners = GetListeners<IWindowLifeCycle>(); \

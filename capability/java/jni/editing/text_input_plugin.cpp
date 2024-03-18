@@ -27,7 +27,7 @@ RefPtr<TextInputConnection> TextInputPlugin::Attach(const WeakPtr<TextInputClien
     const TextInputConfiguration& config, const RefPtr<TaskExecutor>& taskExecutor, int32_t instanceId)
 {
     auto connection = AceType::MakeRefPtr<TextInputConnectionImpl>(client, taskExecutor);
-    TextInputClientHandler::GetInstance().SetCurrentConnection(connection);
+    TextInputClientHandler::GetInstance().SetCurrentConnection(instanceId, connection);
 
     taskExecutor->PostTask([clientId = connection->GetClientId(), config,
                                instanceId] { TextInputJni::SetClient(clientId, config, instanceId); },

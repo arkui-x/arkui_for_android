@@ -53,6 +53,15 @@ struct SubWindowManagerStruct {
     jmethodID getCutoutBarHeightMethod;
     jmethodID getNavigationBarHeightMethod;
     jmethodID getGestureBarHeightMethod;
+    jmethodID hideMethod;
+    jmethodID setFocusableMethod;
+    jmethodID setTouchableMethod;
+    jmethodID requestFocusMethod;
+    jmethodID setTouchHotAreaMethod;
+    jmethodID setFullScreenMethod;
+    jmethodID setAutoFullScreenMethod;
+    jmethodID registerSubWindowMethod;
+    jmethodID unregisterSubWindowMethod;
 };
 
 class SubWindowManagerJni {
@@ -81,10 +90,20 @@ public:
     static uint32_t getCutoutBarHeight();
     static uint32_t GetNavigationBarHeight();
     static uint32_t GetNavigationIndicatorHeight();
+    static bool Hide(const std::string& name);
+    static bool SetFocusable(const std::string& name, bool isFocusable);
+    static bool SetTouchable(const std::string& name, bool isTouchable);
+    static bool RequestFocus(const std::string& name);
+    static bool SetTouchHotAreas(const std::string& name, const std::vector<OHOS::Rosen::Rect>& rects);
+    static bool SetFullScreen(const std::string& name, bool status);
+    static bool SetAutoFullScreen(const std::string& name, bool status);
+    static bool RegisterSubWindow(const std::string& name, void* subWindow);
+    static bool UnregisterSubWindow(const std::string& name);
 
 private:
     static SubWindowManagerStruct subWindowManagerStruct_;
     static void SetupSubWindowManager(JNIEnv* env, jobject obj);
+    static void OnWindowTouchOutside(JNIEnv* env, jobject obj, jlong window);
     ACE_DISALLOW_COPY_AND_MOVE(SubWindowManagerJni);
 };
 
