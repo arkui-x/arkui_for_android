@@ -64,6 +64,11 @@ int32_t UdmfClientImpl::GetSummary(std::string& key, std::map<std::string, int64
     return -1;
 }
 
+bool UdmfClientImpl::GetRemoteStatus(std::string& key)
+{
+    return false;
+}
+
 void UdmfClientImpl::AddFormRecord(
     const RefPtr<UnifiedData>& unifiedData, int32_t formId, const RequestFormInfo& cardInfo)
 {}
