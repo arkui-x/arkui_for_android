@@ -129,6 +129,7 @@ public:
     void CreateSurfaceNode(void* nativeWindow);
     void NotifySurfaceChanged(int32_t width, int32_t height, float density);
     void NotifyKeyboardHeightChanged(int32_t height);
+    void NotifySizeChange(Rect rect);
     void NotifySurfaceDestroyed();
 
     void WindowFocusChanged(bool hasWindowFocus);
@@ -152,7 +153,8 @@ public:
         int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp = 0, int64_t timeStampStart = 0, int32_t source = 0, int32_t deviceId = 0, int32_t metaKey = 0);
 
     WMError SetUIContent(const std::string& contentInfo, NativeEngine* engine, napi_value storage, bool isdistributed,
-        AbilityRuntime::Platform::Ability* ability);
+        AbilityRuntime::Platform::Ability* ability, bool loadContentByName);
+
     Ace::Platform::UIContent* GetUIContent();
 
     WMError SetBackgroundColor(uint32_t color);
@@ -176,6 +178,8 @@ public:
     void SetRequestedOrientation(Orientation);
     WMError RegisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener);
     WMError UnregisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener);
+    WMError RegisterWindowChangeListener(const sptr<IWindowChangeListener>& listener);
+    WMError UnregisterWindowChangeListener(const sptr<IWindowChangeListener>& listener);
 
     void SetRect(std::shared_ptr<WindowOption> option)
     {
@@ -315,9 +319,6 @@ private:
     std::unique_ptr<OHOS::Ace::Platform::UIContent> uiContent_;
 
     std::shared_ptr<VSyncReceiver> receiver_ = nullptr;
-
-    bool delayNotifySurfaceCreated_ = false;
-    bool delayNotifySurfaceChanged_ = false;
     bool delayNotifySurfaceDestroyed_ = false;
     NotifyNativeWinDestroyFunc notifyNativefunc_;
     static std::map<uint32_t, std::vector<sptr<IOccupiedAreaChangeListener>>> occupiedAreaChangeListeners_;
@@ -325,6 +326,7 @@ private:
 
     static std::recursive_mutex globalMutex_;
     static std::map<uint32_t, std::vector<sptr<IWindowLifeCycle>>> lifecycleListeners_;
+    static std::map<uint32_t, std::vector<sptr<IWindowChangeListener>>> windowChangeListeners_;
 
     template<typename T1, typename T2, typename Ret>
     using EnableIfSame = typename std::enable_if<std::is_same_v<T1, T2>, Ret>::type;
@@ -364,6 +366,18 @@ private:
         return lifecycleListeners;
     }
 
+    template<typename T>
+    inline EnableIfSame<T, IWindowChangeListener, std::vector<sptr<IWindowChangeListener>>> GetListeners()
+    {
+        std::vector<sptr<IWindowChangeListener>> windowChangeListeners;
+        {
+            std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+            for (auto& listener : windowChangeListeners_[GetWindowId()]) {
+                windowChangeListeners.push_back(listener);
+            }
+        }
+        return windowChangeListeners;
+    }
 #define CALL_LIFECYCLE_LISTENER(windowLifecycleCb)                  \
     do {                                                            \
         auto lifecycleListeners = GetListeners<IWindowLifeCycle>(); \
@@ -407,7 +421,6 @@ private:
             notifyNativefunc_(windowName);
         }
     }
-
     void ClearListenersById(uint32_t winId);
 
     DISALLOW_COPY_AND_MOVE(Window);
