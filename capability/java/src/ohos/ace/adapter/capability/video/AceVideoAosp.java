@@ -488,6 +488,10 @@ public class AceVideoAosp extends AceVideoBase
                     return FAIL;
                 }
             }
+            if (isSpeedChanged) {
+                setSpeedWithCheckVersion(getSpeed());
+                isSpeedChanged = false;
+            }
             if (mediaPlayer != null) {
                 mediaPlayer.start();
                 isStoped = false;
