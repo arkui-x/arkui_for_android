@@ -158,14 +158,7 @@ void UIContentImpl::InitializeInner(OHOS::Rosen::Window* window, const std::stri
 
 void UIContentImpl::Initialize(OHOS::Rosen::Window* window, const std::string& url, napi_value storage)
 {
-    if (window) {
-        CommonInitialize(window, url, storage);
-    }
-    LOGI("Initialize startUrl = %{public}s", startUrl_.c_str());
-
-    Platform::AceContainerSG::RunPage(
-        instanceId_, Platform::AceContainerSG::GetContainer(instanceId_)->GeneratePageId(), startUrl_, "");
-    LOGI("RunPage UIContentImpl done.");
+    InitializeInner(window, url, storage, false);
 }
 
 napi_value UIContentImpl::GetUINapiContext()

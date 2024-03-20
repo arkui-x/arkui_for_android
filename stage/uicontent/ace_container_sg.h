@@ -241,8 +241,8 @@ public:
     static void OnActive(int32_t instanceId);
     static void OnInactive(int32_t instanceId);
     static bool OnBackPressed(int32_t instanceId);
-    static bool RunPage(int32_t instanceId, int32_t pageId, const std::string& content, const std::string& params);
-    static bool RunPage(int32_t instanceId, int32_t pageId, const std::string& content, const std::string& params, bool isNamedRouter);
+    static bool RunPage(int32_t instanceId, int32_t pageId, const std::string& content,
+        const std::string& params, bool isNamedRouter = false);
     static void SetView(AceView* view, double density,
         int32_t width, int32_t height, OHOS::Rosen::Window* rsWindow);
 
