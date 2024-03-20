@@ -1009,8 +1009,9 @@ bool AceContainerSG::RunPage(
     LOGD("RunPage content=[%{private}s]", content.c_str());
     if (isNamedRouter) {
         front->RunPageByNamedRouter(content);
+        return true;
     }
-    return true;
+    return false;
 }
 
 bool AceContainerSG::RunPage(int32_t instanceId, int32_t pageId, const std::string& content, const std::string& params)
