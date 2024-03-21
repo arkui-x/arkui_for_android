@@ -45,6 +45,7 @@ public:
     std::unique_ptr<NativeEngine> nativeEngine_;
     // UI content lifecycles
     void Initialize(OHOS::Rosen::Window* window, const std::string& url, napi_value storage) override;
+    void InitializeByName(OHOS::Rosen::Window* window, const std::string& name, napi_value storage) override;
     napi_value GetUINapiContext() override;
     void Foreground() override;
     void Background() override;
@@ -85,6 +86,8 @@ public:
     void NotifyMemoryLevel(int32_t level) override;
 
 private:
+    void InitializeInner(
+        OHOS::Rosen::Window* window, const std::string& url, napi_value storage, bool isNamedRouter);
     void CommonInitialize(OHOS::Rosen::Window* window, const std::string& url, napi_value storage);
 
     void DestroyCallback() const;

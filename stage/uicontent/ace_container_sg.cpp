@@ -998,21 +998,21 @@ RefPtr<AceContainerSG> AceContainerSG::GetContainer(int32_t instanceId)
     return nullptr;
 }
 
-bool AceContainerSG::RunPage(int32_t instanceId, int32_t pageId, const std::string& content, const std::string& params)
+bool AceContainerSG::RunPage(
+    int32_t instanceId, int32_t pageId, const std::string& content, const std::string& params, bool isNamedRouter)
 {
-    LOGI("RunPage content=[%{private}s] start", content.c_str());
     auto container = AceEngine::Get().GetContainer(instanceId);
     CHECK_NULL_RETURN(container, false);
     ContainerScope scope(instanceId);
     auto front = container->GetFrontend();
-    if (front) {
-        LOGD("RunPage content=[%{private}s]", content.c_str());
+    CHECK_NULL_RETURN(front, false);
+    LOGI("RunPage content=[%{private}s]", content.c_str());
+    if (isNamedRouter) {
+        front->RunPageByNamedRouter(content);
+    } else {
         front->RunPage(content, params);
-        return true;
     }
-
-    LOGI("RunPage content=[%{private}s] end", content.c_str());
-    return false;
+    return true;
 }
 
 void AceContainerSG::SetResPaths(
