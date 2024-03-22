@@ -61,6 +61,7 @@
       OHOS::Ace::ThemeConstants::*;
       "OHOS::Ace::ToRSColor(OHOS::Ace::LinearColor const&)";
       OHOS::Ace::MemoryMonitor::*;
+      "OHOS::Ace::SystemProperties::colorMode_";
       "OHOS::Ace::SystemProperties::GetDebugEnabled()";
       "OHOS::Ace::SystemProperties::GetResourceDecoupling()";
       OHOS::Ace::V2::PATTERN_LOCK_ETS_TAG;
