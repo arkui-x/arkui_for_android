@@ -422,6 +422,8 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
 
     private native void nativeKeyboardHeightChanged(long windowPtr, int height);
 
+    private native void nativeWindowSizeChanged(long windowPtr, int width, int height);
+
     private native void nativeSurfaceDestroyed(long windowPtr);
 
     private native void nativeOnWindowFocusChanged(long windowPtr, boolean hasWindowFocus);
