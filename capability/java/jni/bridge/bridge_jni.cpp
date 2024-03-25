@@ -64,7 +64,7 @@ static const JNINativeMethod METHODS[] = {
         reinterpret_cast<void *>(&BridgeJni::PlatformSendMethodResultBinary)
     },
     {
-        "nativeplatformCallMethodBinary",
+        "nativePlatformCallMethodBinary",
         "(Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;I)V",
         reinterpret_cast<void *>(&BridgeJni::PlatformCallMethodBinary)
     }
