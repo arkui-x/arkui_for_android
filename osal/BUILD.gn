@@ -30,6 +30,7 @@ template("ace_osal_android_source_set") {
       "advance/data_detector_adapter.cpp",
       "advance/data_detector_mgr.cpp",
       "advance/image_analyzer_adapter_impl.cpp",
+      "advance/image_analyzer_manager.cpp",
       "advance/image_analyzer_mgr.cpp",
       "app_bar_helper_impl.cpp",
       "drag_window.cpp",
