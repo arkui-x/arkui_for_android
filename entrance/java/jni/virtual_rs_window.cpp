@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -26,6 +26,7 @@
 #include "subwindow_manager_jni.h"
 #include "transaction/rs_interfaces.h"
 #include "window_view_adapter.h"
+#include "window_view_jni.h"
 
 #include "adapter/android/entrance/java/jni/ace_env_jni.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
@@ -36,6 +37,9 @@
 using namespace OHOS::Ace::Platform;
 
 namespace OHOS::Rosen {
+namespace {
+static constexpr Rect EMPTY_RECT = {0, 0, 0, 0};
+}  // namespace
 void DummyWindowRelease(Window* window)
 {
     window->DecStrongRef(window);
@@ -171,6 +175,9 @@ std::map<uint32_t, std::vector<sptr<IOccupiedAreaChangeListener>>> Window::occup
 std::map<uint32_t, std::vector<sptr<IWindowLifeCycle>>> Window::lifecycleListeners_;
 std::map<uint32_t, std::vector<sptr<IWindowChangeListener>>> Window::windowChangeListeners_;
 std::recursive_mutex Window::globalMutex_;
+std::recursive_mutex g_sysBarPropMapMutex;
+uint32_t g_KeyboardHeight = 0;
+bool g_IsNavigationIndicatorShow = false;
 
 Window::Window(std::shared_ptr<AbilityRuntime::Platform::Context> context, uint32_t windowId)
     : context_(context), windowId_(windowId), brightness_(SubWindowManagerJni::GetAppScreenBrightness())
@@ -312,7 +319,6 @@ std::shared_ptr<Window> Window::CreateSubWindow(
 
         window->SetSubWindowView(env, view);
         window->CreateSurfaceNode(view);
-        LOGI("Window::CreateSubWindow: success");
 
         return window;
     }
@@ -512,7 +518,6 @@ WMError Window::ResizeWindowTo(int32_t width, int32_t height)
     bool result = SubWindowManagerJni::ResizeWindowTo(this->GetWindowName(), width, height);
 
     if (result) {
-        LOGI("Window::ResizeWindowTo: success");
         NotifySizeChange(rect_);
         return WMError::WM_OK;
     } else {
@@ -544,7 +549,6 @@ WMError Window::SetBrightness(float brightness)
 
     brightness_ = brightness;
     if (result) {
-        LOGI("Window::SetBrightness: success");
         return WMError::WM_OK;
     } else {
         LOGI("Window::SetBrightness: failed");
@@ -558,7 +562,6 @@ WMError Window::SetKeepScreenOn(bool keepScreenOn)
     bool result = SubWindowManagerJni::SetKeepScreenOn(keepScreenOn);
 
     if (result) {
-        LOGI("Window::SetKeepScreenOn: success");
         return WMError::WM_OK;
     } else {
         LOGI("Window::SetKeepScreenOn: failed");
@@ -618,33 +621,24 @@ bool Window::IsKeepScreenOn()
 
 WMError Window::SetSystemBarProperty(WindowType type, const SystemBarProperty& property)
 {
-    LOGI("Window::SetSystemBarProperty called.");
-
     bool hide = !property.enable_;
     bool result = false;
 
     if (type == WindowType::WINDOW_TYPE_NAVIGATION_BAR) {
-        if (hide) {
-            result = SubWindowManagerJni::SetActionBarStatus(true);
-        } else {
-            result = SubWindowManagerJni::SetActionBarStatus(false);
-        }
-
+        result = SubWindowManagerJni::SetNavigationBarStatus(hide);
     } else if (type == WindowType::WINDOW_TYPE_STATUS_BAR) {
-        if (hide) {
-            result = SubWindowManagerJni::SetStatusBarStatus(true);
-        } else {
-            result = SubWindowManagerJni::SetStatusBarStatus(false);
-        }
+        result = SubWindowManagerJni::SetStatusBarStatus(hide);
+    } else {
+        LOGE("The WindowType is not set to SystemBarProperty. The WindowType is %{public}d", type);
     }
 
+    std::lock_guard<std::recursive_mutex> lock(g_sysBarPropMapMutex);
     sysBarPropMap_[type] = property;
 
     if (result) {
-        LOGI("Window::SetSystemBarProperty: success");
         return WMError::WM_OK;
     } else {
-        LOGI("Window::SetSystemBarProperty: failed");
+        LOGE("Window::SetSystemBarProperty: failed. The WindowType is %{public}d", type);
         return WMError::WM_ERROR_INVALID_WINDOW;
     }
 }
@@ -655,9 +649,7 @@ void Window::SetRequestedOrientation(Orientation orientation)
 
     bool result = SubWindowManagerJni::RequestOrientation(orientation);
 
-    if (result) {
-        LOGI("Window::SetRequestedOrientation: success");
-    } else {
+    if (!result) {
         LOGI("Window::SetRequestedOrientation: failed");
     }
 }
@@ -805,6 +797,7 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
 
 void Window::NotifyKeyboardHeightChanged(int32_t height)
 {
+    g_KeyboardHeight = height;
     auto occupiedAreaChangeListeners = GetListeners<IOccupiedAreaChangeListener>();
     for (auto& listener : occupiedAreaChangeListeners) {
         if (listener != nullptr) {
@@ -1045,6 +1038,107 @@ void Window::SetUpThreadInfo()
         bool ret = AceEnvJni::SetThreadInfo(renderTid);
         LOGI("Window::SetUpThreadInfo tid:%{public}d ret:%{public}d.", renderTid, ret);
     }
+}
+
+WMError Window::SetLayoutFullScreen(bool status)
+{
+    if (SubWindowManagerJni::SetWindowLayoutFullScreen(status)) {
+        return WMError::WM_OK;
+    } else {
+        LOGE("Window::SetLayoutFullScreen: failed");
+        return WMError::WM_ERROR_OPER_FULLSCREEN_FAILED;
+    }
+}
+
+WMError Window::SetSpecificBarProperty(WindowType type, const SystemBarProperty& property)
+{
+    bool hide = !property.enable_;
+    bool result = false;
+
+    if (type == WindowType::WINDOW_TYPE_STATUS_BAR) {
+        result = SubWindowManagerJni::SetStatusBarStatus(hide);
+    } else if (type == WindowType::WINDOW_TYPE_NAVIGATION_BAR) {
+        result = SubWindowManagerJni::SetNavigationBarStatus(hide);
+    } else if (type == WindowType::WINDOW_TYPE_NAVIGATION_INDICATOR) {
+        result = SubWindowManagerJni::SetNavigationIndicatorStatus(hide);
+        if (result) {
+            g_IsNavigationIndicatorShow = property.enable_;
+        }
+    } else {
+        LOGE("The WindowType is not set to SpecificBarProperty. The WindowType is %{public}d", type);
+    }
+
+    std::lock_guard<std::recursive_mutex> lock(g_sysBarPropMapMutex);
+    sysBarPropMap_[type] = property;
+
+    if (result) {
+        return WMError::WM_OK;
+    } else {
+        LOGE("Window::SetSpecificBarProperty: failed. The WindowType is %{public}d", type);
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+}
+
+bool Window::IsSysBarPropEnable(WindowType type)
+{
+    std::lock_guard<std::recursive_mutex> lock(g_sysBarPropMapMutex);
+    auto it = sysBarPropMap_.find(type);
+    if (it != sysBarPropMap_.end()) {
+        return it->second.enable_;
+    }
+    return false;
+}
+
+WMError Window::GetAvoidAreaByType(AvoidAreaType type, AvoidArea& avoidArea) {
+    avoidArea.topRect_ = EMPTY_RECT;
+    avoidArea.leftRect_ = EMPTY_RECT;
+    avoidArea.rightRect_ = EMPTY_RECT;
+    avoidArea.bottomRect_ = EMPTY_RECT;
+    auto WMErrorCode = WMError::WM_OK;
+    auto NavigationIndicatorHeight = SubWindowManagerJni::GetNavigationIndicatorHeight();
+
+    switch (type) {
+        case AvoidAreaType::TYPE_SYSTEM:
+            if (IsSysBarPropEnable(WindowType::WINDOW_TYPE_STATUS_BAR)) {
+                avoidArea.topRect_.width_ = surfaceWidth_;
+                avoidArea.topRect_.height_ = SubWindowManagerJni::GetStatusBarHeight();
+            }
+            if (IsSysBarPropEnable(WindowType::WINDOW_TYPE_NAVIGATION_BAR)) {
+                avoidArea.bottomRect_.posY_ = surfaceHeight_ - SubWindowManagerJni::GetNavigationBarHeight();
+                avoidArea.bottomRect_.width_ = surfaceWidth_;
+                avoidArea.bottomRect_.height_ = SubWindowManagerJni::GetNavigationBarHeight();
+            }
+            break;
+        case AvoidAreaType::TYPE_CUTOUT:
+            if (IsSysBarPropEnable(WindowType::WINDOW_TYPE_STATUS_BAR)) {
+                avoidArea.topRect_.height_ = SubWindowManagerJni::getCutoutBarHeight();
+                if (avoidArea.topRect_.height_ > 0) {
+                    avoidArea.topRect_.width_ = surfaceWidth_;
+                }
+            }
+            break;
+        case AvoidAreaType::TYPE_SYSTEM_GESTURE:
+            break;
+        case AvoidAreaType::TYPE_KEYBOARD:
+            if (g_KeyboardHeight > 0) {
+                avoidArea.bottomRect_.posY_ = surfaceHeight_;
+                avoidArea.bottomRect_.width_ = surfaceWidth_;
+                avoidArea.bottomRect_.height_ = g_KeyboardHeight;
+            }
+            break;
+        case AvoidAreaType::TYPE_NAVIGATION_INDICATOR:
+            if (g_IsNavigationIndicatorShow && NavigationIndicatorHeight > 0) {
+                avoidArea.bottomRect_.posY_ = surfaceHeight_ - NavigationIndicatorHeight;
+                avoidArea.bottomRect_.width_ = surfaceWidth_;
+                avoidArea.bottomRect_.height_ = NavigationIndicatorHeight;
+            }
+            break;
+        default:
+            LOGE("Window::GetAvoidAreaByType, Set Invalid AvoidAreaByType. The type is %{public}d", type);
+            WMErrorCode = WMError::WM_ERROR_INVALID_PARAM;
+            break;
+    }
+    return WMErrorCode;
 }
 
 } // namespace OHOS::Rosen

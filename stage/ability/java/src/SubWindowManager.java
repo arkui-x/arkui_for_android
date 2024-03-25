@@ -16,6 +16,7 @@ package ohos.stage.ability.adapter;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.provider.Settings;
 import android.view.View;
@@ -23,8 +24,12 @@ import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.os.Build;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -39,6 +44,11 @@ public class SubWindowManager {
     private Activity mRootActivity;
     private Map<String, SubWindow> mSubWindowMap = new HashMap<>();
     private static SubWindowManager _sinstance;
+    private int uiOptions_ = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+    private static final int NO_HEIGHT = 0;
+    private static final int LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES = 1;
+    private static final int API_28 = 28;
+    private static final int API_29 = 29;
 
     /*
      ** copy from native wm_common.h: enum class Orientation
@@ -427,36 +437,106 @@ public class SubWindowManager {
         return false;
     }
 
-    /**
-     * Sets status bar and action bar status.
-     *
-     * @param hide the hide
-     * @return the status bar status
-     */
-    public boolean setStatusBarStatus(boolean hide) {
-        Log.d(TAG, "setStatusBarStatus called: hide=" + hide);
+    private void setLayoutInDisplayCutoutMode(Window window) {
+        if (window != null) {
+            WindowManager.LayoutParams layoutParams = window.getAttributes();
+            try {
+                Class<?> layoutParamsClass = Class.forName("android.view.WindowManager$LayoutParams");
+                Field displayCutoutModeField = layoutParamsClass.getDeclaredField("layoutInDisplayCutoutMode");
+                displayCutoutModeField.setAccessible(true);
+                displayCutoutModeField.setInt(layoutParams, LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES);
+                window.setAttributes(layoutParams);
+            } catch (ClassNotFoundException e) {
+                Log.e(TAG, "layoutParamsClass Class.forName failed, ClassNotFoundException.");
+            } catch (IllegalAccessException e) {
+                Log.e(TAG, "layoutParamsClass AccessException failed, IllegalAccessException.");
+            } catch (NoSuchFieldException e) {
+                Log.e(TAG, "layoutParamsClass getDeclaredField failed, NoSuchFieldException.");
+            }
+        } else {
+            Log.e(TAG, "setLayoutInDisplayCutoutMode failed.");
+            return;
+        }
+    }
 
+    private boolean setSystemUiVisibilityInner() {
         if (mRootActivity != null) {
             Window window = mRootActivity.getWindow();
-            View decorView = window.getDecorView();
-            ActionBar actionBar = mRootActivity.getActionBar();
-            if (hide) {
-                // Hide the status bar.
-                int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-                decorView.setSystemUiVisibility(uiOptions);
-                // Remember that you should never show the action bar if the
-                // status bar is hidden, so hide that too if necessary.
-                if (actionBar != null && actionBar.isShowing()) {
-                    actionBar.hide();
-                }
-                return true;
-            } else {
-                int uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
-                decorView.setSystemUiVisibility(uiOptions);
-                return true;
+            if (Build.VERSION.SDK_INT >= API_28) {
+                setLayoutInDisplayCutoutMode(window);
             }
+            View decorView = window.getDecorView();
+            decorView.setSystemUiVisibility(this.uiOptions_);
+            return true;
+        } else {
+            return false;
         }
-        return false;
+    }
+
+    /**
+     * Set window layout to fullScreen.
+     *
+     * @param isFullScreen true or false.
+     * @return Setting successful or failed.
+     */
+    public boolean setWindowLayoutFullScreen(boolean isFullScreen) {
+        boolean result = false;
+        if (isFullScreen) {
+            this.uiOptions_ |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+        } else {
+            this.uiOptions_ &= ~View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+        }
+        result = setSystemUiVisibilityInner();
+        return result;
+    }
+
+    /**
+     * Set navigation bar status.
+     *
+     * @param status Hide or show.
+     * @return Setting successful or failed.
+     */
+    public boolean setNavigationBarStatus(boolean status) {
+        boolean result = false;
+        if (status) {
+            this.uiOptions_ |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        } else {
+            this.uiOptions_ &= ~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        }
+        result = setSystemUiVisibilityInner();
+        return result;
+    }
+    
+    /**
+     * Set navigationIndicator bar status.
+     *
+     * @param status Hide or show.
+     * @return Setting successful or failed.
+     */
+    public boolean setNavigationIndicatorStatus(boolean status) {
+        if (Build.VERSION.SDK_INT >= API_29) {
+            return setNavigationBarStatus(status);
+        } else {
+            Log.e(TAG, "Not supported by the Android version.");
+            return false;
+        }
+    }
+
+    /**
+     * Set status bar status.
+     *
+     * @param status Hide or show.
+     * @return Setting successful or failed.
+     */
+    public boolean setStatusBarStatus(boolean status) {
+        boolean result = false;
+        if (status) {
+            this.uiOptions_ |= View.SYSTEM_UI_FLAG_FULLSCREEN;
+        } else {
+            this.uiOptions_ &= ~View.SYSTEM_UI_FLAG_FULLSCREEN;
+        }
+        result = setSystemUiVisibilityInner();
+        return result;
     }
 
     /**
@@ -520,6 +600,70 @@ public class SubWindowManager {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Get the height of the StatusBar.
+     *
+     * @return Statusbar height.
+     */
+    public int getStatusBarHeight() {
+        int result = NO_HEIGHT;
+        if (mRootActivity != null) {
+            int resourceId = mRootActivity.getResources().getIdentifier("status_bar_height", "dimen", "android");
+            if (resourceId > NO_HEIGHT) {
+                result = mRootActivity.getResources().getDimensionPixelSize(resourceId);
+            }
+        } else {
+            Log.e(TAG, "The mRootActivity is null, getStatusBarHeight failed.");
+        }
+        return result;
+    }
+
+    /**
+     * Get the height of the CutoutBar.
+     *
+     * @return CutoutBar height.
+     */
+    public int getCutoutBarHeight() {
+        if (Build.VERSION.SDK_INT >= API_28) {
+            return getStatusBarHeight();
+        } else {
+            Log.e(TAG, "Not supported by the Android version.");
+            return NO_HEIGHT;
+        }
+    }
+
+    /**
+     * Get the height of the NavigationBar.
+     *
+     * @return NavigationBar height.
+     */
+    public int getNavigationBarHeight() {
+        int result = NO_HEIGHT;
+        if (mRootActivity != null) {
+            int resourceId = mRootActivity.getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+            if (resourceId > NO_HEIGHT) {
+                result = mRootActivity.getResources().getDimensionPixelSize(resourceId);
+            }
+        } else {
+            Log.e(TAG, "The mRootActivity is null, getNavigationBarHeight failed.");
+        }
+        return result;
+    }
+
+    /**
+     * Get the height of the GestureBar.
+     *
+     * @return GestureBar height.
+     */
+    public int getNavigationIndicatorHeight() {
+        if (Build.VERSION.SDK_INT >= API_29) {
+            return getNavigationBarHeight();
+        } else {
+            Log.e(TAG, "Not supported by the Android version.");
+            return NO_HEIGHT;
+        }
     }
 
     private native void nativeSetupSubWindowManager();

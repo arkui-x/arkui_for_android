@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -46,6 +46,13 @@ struct SubWindowManagerStruct {
     jmethodID setStatusBarStatusMethod;
     jmethodID setActionBarStatusMethod;
     jmethodID isWindowShowingMethod;
+    jmethodID setWindowLayoutFullScreenMethod;
+    jmethodID setNavigationBarStatusMethod;
+    jmethodID setNavigationIndicatorStatusMethod;
+    jmethodID getStatusBarHeightMethod;
+    jmethodID getCutoutBarHeightMethod;
+    jmethodID getNavigationBarHeightMethod;
+    jmethodID getGestureBarHeightMethod;
 };
 
 class SubWindowManagerJni {
@@ -67,6 +74,13 @@ public:
     static bool SetStatusBarStatus(bool hide);
     static bool SetActionBarStatus(bool hide);
     static bool IsWindowShowing(const std::string& name);
+    static bool SetWindowLayoutFullScreen(bool isFullScreen);
+    static bool SetNavigationBarStatus(bool hide);
+    static bool SetNavigationIndicatorStatus(bool hide);
+    static uint32_t GetStatusBarHeight();
+    static uint32_t getCutoutBarHeight();
+    static uint32_t GetNavigationBarHeight();
+    static uint32_t GetNavigationIndicatorHeight();
 
 private:
     static SubWindowManagerStruct subWindowManagerStruct_;
