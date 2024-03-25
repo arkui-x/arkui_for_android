@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -181,6 +181,10 @@ public:
     WMError RegisterWindowChangeListener(const sptr<IWindowChangeListener>& listener);
     WMError UnregisterWindowChangeListener(const sptr<IWindowChangeListener>& listener);
 
+    WMError SetLayoutFullScreen(bool status);
+    WMError SetSpecificBarProperty(WindowType type, const SystemBarProperty& property);
+    WMError GetAvoidAreaByType(AvoidAreaType type, AvoidArea& avoidArea);
+
     void SetRect(std::shared_ptr<WindowOption> option)
     {
         rect_.width_ = option->GetWindowRect().width_;
@@ -297,6 +301,7 @@ private:
     std::unordered_map<WindowType, SystemBarProperty> sysBarPropMap_ {
         { WindowType::WINDOW_TYPE_STATUS_BAR, SystemBarProperty() },
         { WindowType::WINDOW_TYPE_NAVIGATION_BAR, SystemBarProperty() },
+        { WindowType::WINDOW_TYPE_NAVIGATION_INDICATOR, SystemBarProperty() },
     };
     WindowState state_ { WindowState::STATE_INITIAL };
     static std::map<uint32_t, std::vector<std::shared_ptr<Window>>> subWindowMap_;
@@ -308,6 +313,7 @@ private:
     static void DeleteFromSubWindowMap(std::shared_ptr<Window> window);
     GraphicColorGamut GetSurfaceGamutFromColorSpace(ColorSpace colorSpace) const;
     ColorSpace GetColorSpaceFromSurfaceGamut(GraphicColorGamut colorGamut) const;
+    bool IsSysBarPropEnable(WindowType type);
 
     int32_t surfaceWidth_ = 0;
     int32_t surfaceHeight_ = 0;

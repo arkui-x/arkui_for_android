@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,6 +20,9 @@
 #include "base/utils/utils.h"
 
 namespace OHOS::Ace::Platform {
+namespace {
+static constexpr uint32_t ERROR_ENV = 0;
+}  // namespace
 
 SubWindowManagerStruct SubWindowManagerJni::subWindowManagerStruct_;
 
@@ -74,6 +77,15 @@ void SubWindowManagerJni::SetupSubWindowManager(JNIEnv* env, jobject obj)
     subWindowManagerStruct_.setStatusBarStatusMethod = env->GetMethodID(clazz, "setStatusBarStatus", "(Z)Z");
     subWindowManagerStruct_.setActionBarStatusMethod = env->GetMethodID(clazz, "setActionBarStatus", "(Z)Z");
     subWindowManagerStruct_.isWindowShowingMethod = env->GetMethodID(clazz, "isShowing", "(Ljava/lang/String;)Z");
+    subWindowManagerStruct_.setWindowLayoutFullScreenMethod =
+        env->GetMethodID(clazz, "setWindowLayoutFullScreen", "(Z)Z");
+    subWindowManagerStruct_.setNavigationBarStatusMethod = env->GetMethodID(clazz, "setNavigationBarStatus", "(Z)Z");
+    subWindowManagerStruct_.setNavigationIndicatorStatusMethod =
+        env->GetMethodID(clazz, "setNavigationIndicatorStatus", "(Z)Z");
+    subWindowManagerStruct_.getStatusBarHeightMethod = env->GetMethodID(clazz, "getStatusBarHeight", "()I");
+    subWindowManagerStruct_.getCutoutBarHeightMethod = env->GetMethodID(clazz, "getCutoutBarHeight", "()I");
+    subWindowManagerStruct_.getNavigationBarHeightMethod = env->GetMethodID(clazz, "getNavigationBarHeight", "()I");
+    subWindowManagerStruct_.getGestureBarHeightMethod = env->GetMethodID(clazz, "getNavigationIndicatorHeight", "()I");
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -346,6 +358,54 @@ bool SubWindowManagerJni::RequestOrientation(Rosen::Orientation orientation)
     }
 }
 
+bool SubWindowManagerJni::SetWindowLayoutFullScreen(bool isFullScreen)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("SubWindowManagerJni::SetWindowLayoutFullScreen: env is NULL");
+        return false;
+    }
+
+    jboolean result = env->CallBooleanMethod(
+        subWindowManagerStruct_.object, subWindowManagerStruct_.setWindowLayoutFullScreenMethod, isFullScreen);
+
+    bool conversionResult = static_cast<bool>(result);
+    LOGI("SubWindowManagerJni::SetWindowLayoutFullScreen: result:%{public}d", conversionResult);
+    return conversionResult;
+}
+
+bool SubWindowManagerJni::SetNavigationBarStatus(bool hide)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("SubWindowManagerJni::SetNavigationBarStatus: env is NULL");
+        return false;
+    }
+
+    jboolean result = env->CallBooleanMethod(
+        subWindowManagerStruct_.object, subWindowManagerStruct_.setNavigationBarStatusMethod, hide);
+
+    bool conversionResult = static_cast<bool>(result);
+    LOGI("SubWindowManagerJni::SetNavigationBarStatus: result:%{public}d", conversionResult);
+    return conversionResult;
+}
+
+bool SubWindowManagerJni::SetNavigationIndicatorStatus(bool hide)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("SubWindowManagerJni::SetNavigationIndicatorStatus: env is NULL");
+        return false;
+    }
+
+    jboolean result = env->CallBooleanMethod(
+        subWindowManagerStruct_.object, subWindowManagerStruct_.setNavigationIndicatorStatusMethod, hide);
+
+    bool conversionResult = static_cast<bool>(result);
+    LOGI("SubWindowManagerJni::SetNavigationIndicatorStatus: result:%{public}d", conversionResult);
+    return conversionResult;
+}
+
 bool SubWindowManagerJni::SetStatusBarStatus(bool hide)
 {
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
@@ -354,16 +414,13 @@ bool SubWindowManagerJni::SetStatusBarStatus(bool hide)
         return false;
     }
 
-    jboolean ret = env->CallBooleanMethod(
+    jboolean result = env->CallBooleanMethod(
         subWindowManagerStruct_.object, subWindowManagerStruct_.setStatusBarStatusMethod, hide ? JNI_TRUE : JNI_FALSE);
 
-    if (ret == JNI_TRUE) {
-        LOGI("SubWindowManagerJni::setStatusBarStatus: success");
-        return true;
-    } else {
-        LOGI("SubWindowManagerJni::setStatusBarStatus: failed");
-        return false;
-    }
+    
+    bool conversionResult = static_cast<bool>(result);
+    LOGI("SubWindowManagerJni::SetStatusBarStatus: result:%{public}d", conversionResult);
+    return conversionResult;
 }
 
 bool SubWindowManagerJni::SetActionBarStatus(bool hide)
@@ -407,4 +464,51 @@ bool SubWindowManagerJni::IsWindowShowing(const std::string& name)
     }
 }
 
+uint32_t SubWindowManagerJni::GetStatusBarHeight()
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("SubWindowManagerJni::GetStatusBarHeight: env is NULL");
+        return ERROR_ENV;
+    }
+    jint statusBarHeight = env->CallIntMethod(
+        subWindowManagerStruct_.object, subWindowManagerStruct_.getStatusBarHeightMethod);
+    return static_cast<uint32_t>(statusBarHeight);
+}
+
+uint32_t SubWindowManagerJni::getCutoutBarHeight()
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("SubWindowManagerJni::getCutoutBarHeight: env is NULL");
+        return ERROR_ENV;
+    }
+    jint statusBarWidth = env->CallIntMethod(
+        subWindowManagerStruct_.object, subWindowManagerStruct_.getCutoutBarHeightMethod);
+    return static_cast<uint32_t>(statusBarWidth);
+}
+
+uint32_t SubWindowManagerJni::GetNavigationBarHeight()
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("SubWindowManagerJni::GetNavigationBarHeight: env is NULL");
+        return ERROR_ENV;
+    }
+    jint navigationBarHeight = env->CallIntMethod(
+        subWindowManagerStruct_.object, subWindowManagerStruct_.getNavigationBarHeightMethod);
+    return static_cast<uint32_t>(navigationBarHeight);
+}
+
+uint32_t SubWindowManagerJni::GetNavigationIndicatorHeight()
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("SubWindowManagerJni::GetNavigationIndicatorHeight: env is NULL");
+        return ERROR_ENV;
+    }
+    jint navigationBarWidth = env->CallIntMethod(
+        subWindowManagerStruct_.object, subWindowManagerStruct_.getGestureBarHeightMethod);
+    return static_cast<uint32_t>(navigationBarWidth);
+}
 } // namespace OHOS::Ace::Platform
