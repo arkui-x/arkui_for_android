@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class AceTexturePluginAosp extends AceResourcePlugin {
     private static final String LOG_TAG = "AceTexturePluginAosp";
-    private final AtomicLong nextTextureId = new AtomicLong(0L);
+    private static final AtomicLong nextTextureId = new AtomicLong(0L);
 
     private final IAceTexture textureImpl;
 

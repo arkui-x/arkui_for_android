@@ -150,6 +150,9 @@ public class AcePlatformPlugin implements InputConnectionClient {
      */
     public void notifyLifecycleChanged(Boolean isBackground) {
         resRegister.notifyLifecycleChanged(isBackground);
+        if (isBackground) {
+            textInputPlugin.hideTextInput();
+        }
     }
 
     private native long nativeInitResRegister(AceResourceRegister resRegister, int instanceId);

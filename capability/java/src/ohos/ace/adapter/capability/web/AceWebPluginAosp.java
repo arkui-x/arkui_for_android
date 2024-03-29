@@ -15,6 +15,7 @@
 
 package ohos.ace.adapter.capability.web;
 
+import android.view.View;
 import android.content.Context;
 import android.util.DisplayMetrics;
 import android.widget.FrameLayout;
@@ -55,14 +56,17 @@ public class AceWebPluginAosp extends AceWebPluginBase {
 
     private final AtomicLong nextMapid = new AtomicLong(0L);
 
+    private final View rootView;
+
     private Context context;
 
     private AceWeb aceWeb;
 
     private WebDataBaseManager dataBase;
 
-    private AceWebPluginAosp(Context context) {
+    private AceWebPluginAosp(Context context, View view) {
         this.context = context;
+        this.rootView = view;
         dataBase = WebDataBaseManager.getInstance(context);
     }
 
@@ -81,8 +85,8 @@ public class AceWebPluginAosp extends AceWebPluginBase {
      * @param context the app context
      * @return web register plugin
      */
-    public static AceWebPluginAosp createRegister(Context context) {
-        return new AceWebPluginAosp(context);
+    public static AceWebPluginAosp createRegister(Context context, View view) {
+        return new AceWebPluginAosp(context, view);
     }
 
     @Override
@@ -98,7 +102,7 @@ public class AceWebPluginAosp extends AceWebPluginBase {
             long id = getAtomicId();
 
             // Create AceWeb
-            aceWeb = new AceWeb(id, context, getEventCallback());
+            aceWeb = new AceWeb(id, context, rootView, getEventCallback());
             richTextInit = Integer.parseInt(param.get(RICH_TEXT_INIT)) == 1 ? true : false;
             addResource(id, aceWeb);
             aceWeb.initWeb();
