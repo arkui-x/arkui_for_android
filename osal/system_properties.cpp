@@ -31,6 +31,7 @@ constexpr char UNDEFINED_PARAM[] = "undefined parameter";
 bool SystemProperties::traceEnabled_ = false;
 bool SystemProperties::isRound_ = false;
 bool SystemProperties::isDeviceAccess_ = false;
+bool SystemProperties::developerModeOn_ = false;
 int32_t SystemProperties::deviceWidth_ = 0;
 int32_t SystemProperties::deviceHeight_ = 0;
 int32_t SystemProperties::devicePhysicalWidth_ = 0;
