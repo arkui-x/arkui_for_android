@@ -57,7 +57,7 @@ bool BridgeManager::JSRegisterBridge(int32_t instanceId, std::shared_ptr<BridgeR
             return true;
         }
     }
-    return false;
+    return true;
 }
 
 void BridgeManager::JSUnRegisterBridge(int32_t instanceId, const std::string& bridgeName)
