@@ -42,7 +42,7 @@ pixel_map_support = true
 use_curl_download = false
 use_components_lib = false
 web_components_support = true
-video_texture_support = true
+render_extract_support = true
 
 cflags_cc = [
   "-std=c++17",
@@ -85,6 +85,6 @@ if (defined(web_components_support) && web_components_support) {
   defines += [ "WEB_SUPPORTED" ]
 }
 
-if (defined(video_texture_support) && video_texture_support) {
-  defines += [ "VIDEO_TEXTURE_SUPPORTED" ]
+if (defined(render_extract_support) && render_extract_support) {
+  defines += [ "RENDER_EXTRACT_SUPPORTED" ]
 }
