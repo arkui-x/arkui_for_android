@@ -14,6 +14,12 @@
 import("//build/ohos.gni")
 import("//foundation/arkui/ace_engine/ace_config.gni")
 
+app_framework_root = "//foundation/appframework"
+ability_runtime_cross_platform_path =
+    "//foundation/appframework/ability/ability_runtime/cross_platform"
+app_framework_resource_path = "//foundation/appframework/resource_management"
+app_framework_window_path = "//foundation/appframework/window_manager"
+
 # build static
 template("ace_osal_android_source_set") {
   forward_variables_from(invoker, "*")
@@ -52,7 +58,7 @@ template("ace_osal_android_source_set") {
       "resource_theme_style.cpp",
       "ressched_report.cpp",
       "socperf_client_impl.cpp",
-      "subwindow.cpp",
+      "subwindow_android.cpp",
       "system_properties.cpp",
       "time_event_proxy_android.cpp",
       "trace_id_impl.cpp",
@@ -60,22 +66,35 @@ template("ace_osal_android_source_set") {
     ]
 
     include_dirs = [
+      "$ace_root/adapter/android/entrance/java/jni",
       "$ace_root/frameworks/core/common",
-      "//third_party/flutter/engine/",
+      "$app_framework_window_path/dm/include",
+      "$app_framework_window_path/interfaces/innerkits/dm",
+      "$app_framework_window_path/utils/include",
+      "$flutter_root/engine/",
     ]
 
     deps = [
+      "$ace_root/adapter/android/entrance/java/jni:ace_common_jni_$platform",
       "$ace_root/frameworks/core/components/theme:build_theme_code",
-      "//foundation/appframework/resource_management:global_resmgr",
-      "//foundation/appframework/resource_management/interfaces/js/innerkits/core:resmgr_napi_core",
-      "//foundation/appframework/resource_management/interfaces/js/kits:resourcemanager",
-      "//foundation/appframework/resource_management/interfaces/native/resource:rawfile",
+      "$app_framework_resource_path:global_resmgr",
+      "$app_framework_resource_path/interfaces/js/innerkits/core:resmgr_napi_core",
+      "$app_framework_resource_path/interfaces/js/kits:resourcemanager",
+      "$app_framework_resource_path/interfaces/native/resource:rawfile",
+      "$app_framework_window_path/dm:dm",
     ]
 
     configs = [
+      "$ability_runtime_cross_platform_path/interfaces/kits/native/ability:abilitykit_native_config",
+      "$ability_runtime_cross_platform_path/interfaces/kits/native/appkit:appkit_native_config",
       "$ace_root:ace_config",
-      "//foundation/multimedia/image_framework/interfaces/innerkits:image_external_config",
+      "$crossplatform_multimedia_root/image_framework/interfaces/innerkits:image_external_config",
     ]
+
+    if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
+      deps += [ "$ace_graphic/rosen/modules/render_service_client:librender_service_client_static" ]
+      deps += [ "$ace_napi:ace_napi" ]
+    }
   }
 }
 
@@ -83,6 +102,7 @@ foreach(item, ace_platforms) {
   platform = item.name
   if (platform == "android") {
     ace_osal_android_source_set("ace_osal_android") {
+      platform = item.name
       defines = []
       config = {
       }

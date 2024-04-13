@@ -46,7 +46,7 @@ public:
     AceContainerSG(int32_t instanceId, FrontendType type,
         std::weak_ptr<OHOS::AbilityRuntime::Platform::Context> runtimeContext,
         std::weak_ptr<OHOS::AppExecFwk::AbilityInfo> abilityInfo, std::unique_ptr<PlatformEventCallback> callback,
-        bool useCurrentEventRunner = false);
+        bool useCurrentEventRunner = false, bool isSubContainer = false);
 
     ~AceContainerSG() override = default;
 
@@ -175,6 +175,41 @@ public:
         colorScheme_ = colorScheme;
     }
 
+    void SetWindowName(const std::string& name)
+    {
+        windowName_ = name;
+    }
+
+    std::string& GetWindowName()
+    {
+        return windowName_;
+    }
+
+    void* GetSharedRuntime() override
+    {
+        return sharedRuntime_;
+    }
+
+    void SetParentId(int32_t parentId)
+    {
+        parentId_ = parentId;
+    }
+
+    int32_t GetParentId() const
+    {
+        return parentId_;
+    }
+
+    void SetIsSubContainer(bool isSubContainer)
+    {
+        isSubContainer_ = isSubContainer;
+    }
+
+    bool IsSubContainer() const override
+    {
+        return isSubContainer_;
+    }
+
     void Dispatch(
         const std::string& group, std::vector<uint8_t>&& data, int32_t id, bool replyToComponent) const override;
 
@@ -246,6 +281,10 @@ public:
     static void SetView(AceView* view, double density,
         int32_t width, int32_t height, OHOS::Rosen::Window* rsWindow);
 
+    static void SetUIWindow(int32_t instanceId, sptr<OHOS::Rosen::Window> uiWindow);
+    static sptr<OHOS::Rosen::Window> GetUIWindow(int32_t instanceId);
+    void InitializeSubContainer(int32_t parentContainerId);
+
     int32_t GeneratePageId()
     {
         return pageId_++;
@@ -254,6 +293,21 @@ public:
     std::string GetHapPath() const override
     {
         return resourceInfo_.GetHapPath();
+    }
+
+    void SetHapPath(const std::string& hapPath)
+    {
+        resourceInfo_.SetHapPath(hapPath);
+    }
+
+    std::string GetPackagePathStr() const
+    {
+        return resourceInfo_.GetPackagePath();
+    }
+
+    void SetPackagePathStr(const std::string& packagePath)
+    {
+        resourceInfo_.SetPackagePath(packagePath);
     }
 
     void SetResPaths(const std::vector<std::string>& hapPath, const std::string& path, const ColorMode& colorMode);
@@ -274,6 +328,9 @@ private:
     void SetGetViewScaleCallback();
     void InitThemeManager();
     void SetupRootElement();
+
+    void SetUIWindowInner(sptr<OHOS::Rosen::Window> uiWindow);
+    sptr<OHOS::Rosen::Window> GetUIWindowInner() const;
 
     AceView* aceView_ { nullptr };
     RefPtr<TaskExecutor> taskExecutor_;
@@ -309,6 +366,11 @@ private:
 
     mutable std::mutex frontendMutex_;
     mutable std::mutex pipelineMutex_;
+
+    int32_t parentId_ = 0;
+    sptr<OHOS::Rosen::Window> uiWindow_ = nullptr;
+    std::string windowName_;
+    bool isSubContainer_ = false;
 
     ACE_DISALLOW_COPY_AND_MOVE(AceContainerSG);
 };
