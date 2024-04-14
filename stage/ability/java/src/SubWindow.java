@@ -16,19 +16,51 @@ package ohos.stage.ability.adapter;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.Rect;
+import android.os.Build;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.PopupWindow;
 import ohos.ace.adapter.WindowView;
+import ohos.ace.adapter.AcePlatformPlugin;
+import java.util.Arrays;
+import java.lang.reflect.Field;  
 
 /**
  * The type Sub window.
  */
 public class SubWindow {
-
     private static final String TAG = "SubWindow";
+    private long nativeSubWindowPtr = 0L;
+    private static final int LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES = 1;
 
+    public class PopupSubWindow extends PopupWindow {
+        private static final String TAG = "PopupSubWindow";
+        private boolean dismissEnabled = false;
+
+        public PopupSubWindow() {
+            super();
+        }
+
+        @Override
+        public void dismiss() {
+            if (dismissEnabled) {
+                super.dismiss();
+                dismissEnabled = false;
+            }
+        }
+
+        public void setDismissEnabled(boolean enabled) {
+            dismissEnabled = enabled;
+        }
+    }
+    
     /**
      * The type Window param.
      */
@@ -75,7 +107,6 @@ public class SubWindow {
      */
     public SubWindow(Activity activity, String name) {
         this.name = name;
-        this.windowId = InstanceIdGenerator.getAndIncrement();
         rootActivity = activity;
         rootView = rootActivity.getWindow().getDecorView();
         windowParam = new WindowParam();
@@ -105,8 +136,75 @@ public class SubWindow {
      */
     public void createSubWindow(WindowParam param) {
         Log.d(TAG, "createSubwindow called. name=" + name);
-        subWindowView = new PopupWindow();
-        setContentView(new WindowView(rootActivity));
+        subWindowView = new PopupSubWindow();
+        subWindowView.setOutsideTouchable(true);
+        subWindowView.setFocusable(isFocusable);
+        subWindowView.setTouchable(true);
+
+        WindowView windowView = new WindowView(rootActivity);
+        AcePlatformPlugin platformPlugin = new AcePlatformPlugin(rootActivity, windowId, windowView);
+        if (platformPlugin != null) {
+            windowView.setInputConnectionClient(platformPlugin);
+            platformPlugin.initTexturePlugin(windowId);
+            platformPlugin.initSurfacePlugin(rootActivity, windowId);
+        }
+        setContentView(windowView);
+
+        subWindowView.setTouchInterceptor(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                int x = (int)event.getX();
+                int y = (int)event.getY();
+                Log.d(TAG, "subWindowView onTouch. event.getAction()=" + event.getAction() + ", x=" + x + ", y=" + y);
+                if ((event.getAction() == MotionEvent.ACTION_OUTSIDE) ||
+                    ((event.getAction() == MotionEvent.ACTION_DOWN) &&
+                     (x < 0 || x > subWindowView.getWidth() || y < 0 || y > subWindowView.getHeight()))) {
+                    Log.d(TAG, "touch outside");
+                    if (nativeSubWindowPtr != 0L) {
+                        nativeOnWindowTouchOutside(nativeSubWindowPtr);
+                    }
+                    releaseFocus();
+                } else {
+                    if (hotAreas != null) {
+                        boolean inHotAreas = false;
+                        for (Rect rect : hotAreas) {
+                            if (rect.contains(x, y)) {
+                                inHotAreas = true;
+                                break;
+                            }
+                        }
+                        if (!inHotAreas) {
+                            if ((event.getAction() == MotionEvent.ACTION_DOWN) && (nativeSubWindowPtr != 0L)) {
+                                nativeOnWindowTouchOutside(nativeSubWindowPtr);
+                            }
+                            return dispatchTouchEventToMainWindow(event);
+                        }
+                    }
+
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        getFocus();
+                    }
+                }
+
+                return false;
+            }
+        });
+    }
+
+    /**
+     * Dispatch touch event to main window.
+     */
+    public boolean dispatchTouchEventToMainWindow(MotionEvent event) {
+        View mainView = rootView.findViewById(getParentId());
+        int[] mainLocation = new int[2];
+        mainView.getLocationOnScreen(mainLocation);
+        int touchX = (int)event.getX() + windowParam.x - mainLocation[0];
+        int touchY = (int)event.getY() + windowParam.y - mainLocation[1];
+        MotionEvent newEvent = MotionEvent.obtain(event.getDownTime(), event.getEventTime(), event.getAction(),
+            touchX, touchY, event.getMetaState());
+        rootView.findViewById(getParentId()).dispatchTouchEvent(newEvent);
+        newEvent.recycle();
+        return true;
     }
 
     /**
@@ -144,17 +242,27 @@ public class SubWindow {
     public void showWindow() {
         subWindowView.setWidth(windowParam.width);
         subWindowView.setHeight(windowParam.height);
-        subWindowView.setOutsideTouchable(false);
-        subWindowView.setFocusable(true);
         subWindowView.setElevation(0);
-        subWindowView.setTouchable(true);
-        contentView.setBackgroundColor(Color.GRAY);
-
         subWindowView.setContentView(contentView);
 
         Log.d(TAG, "showWindow called. x=" + windowParam.x + ", y=" + windowParam.y
                             + ", width=" + windowParam.width + ", height=" + windowParam.height);
         subWindowView.showAtLocation(rootView, Gravity.TOP | Gravity.START, windowParam.x, windowParam.y);
+        getFocus();
+
+        ViewTreeObserver.OnGlobalLayoutListener listener = new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if (isFullScreen) {
+                    windowParam.x = 0;
+                    windowParam.y = 0;
+                    windowParam.width = rootView.getWidth();
+                    windowParam.height = rootView.getHeight();
+                    updateWindow();
+                }
+            }
+        };
+        rootView.findViewById(getParentId()).getViewTreeObserver().addOnGlobalLayoutListener(listener);
     }
 
     /**
@@ -193,6 +301,9 @@ public class SubWindow {
      * @param height the height
      */
     public void resize(int width, int height) {
+        if (isFullScreen) {
+            return;
+        }
         windowParam.width = width;
         windowParam.height = height;
         updateWindow();
@@ -205,6 +316,9 @@ public class SubWindow {
      * @param y the y
      */
     public void moveWindowTo(int x, int y) {
+        if (isFullScreen) {
+            return;
+        }
         windowParam.x = x;
         windowParam.y = y;
         updateWindow();
@@ -214,20 +328,148 @@ public class SubWindow {
      * Destroy window.
      */
     public void destroyWindow() {
+        subWindowView.setDismissEnabled(true);
         subWindowView.dismiss();
+    }
+
+    /**
+     * Set window focusable.
+     */
+    public void setFocusable(boolean isFocusable) {
+        subWindowView.setFocusable(isFocusable);
+        this.isFocusable = isFocusable;
+    }
+
+    /**
+     * Set window touchable.
+     */
+    public void setTouchable(boolean isTouchable) {
+        subWindowView.setTouchable(isTouchable);
+    }
+
+    /**
+     * request focus.
+     */
+    public boolean requestFocus() {
+        if (!subWindowView.isShowing()) {
+            Log.e(TAG, "not showing.");
+            return false;
+        }
+
+        if (!this.isFocusable) {
+            Log.e(TAG, "not focusable.");
+            return false;
+        }
+
+        getFocus();
+        return true;
+    }
+
+    public void getFocus() {
+        Log.d(TAG, "getFocus(), isFocusable=" + this.isFocusable);
+        if (this.isFocusable) {
+            subWindowView.setFocusable(true);
+            subWindowView.update();
+        }
+    }
+
+    public void releaseFocus() {
+        Log.d(TAG, "releaseFocus(), isFocusable=" + this.isFocusable);
+        if (this.isFocusable) {
+            subWindowView.setFocusable(false);
+            subWindowView.update();
+        }
+    }
+
+    /**
+     * set window touch hot area.
+     */
+    public void setTouchHotArea(Rect[] rectArray) {
+        Log.d(TAG, "setTouchHotArea(), rectArray:");
+        for (Rect rect : rectArray) {
+            Log.d(TAG, "left=" + rect.left + ", top=" + rect.top + ", right=" + rect.right + ", bottom=" + rect.bottom);
+        }
+        hotAreas = Arrays.copyOf(rectArray, rectArray.length);
+    }
+
+    /**
+     * set FullScreen.
+     */
+    public boolean setFullScreen(boolean status) {
+        int uiOptions;
+        if (status) {
+            windowParam.x = 0;
+            windowParam.y = 0;
+            windowParam.width = rootView.getWidth();
+            windowParam.height = rootView.getHeight();
+            isFullScreen = true;
+        } else {
+            isFullScreen = false;
+        }
+        updateWindow();
+        return true;
+    }
+
+    /**
+     * set Immersive.
+     */
+    public boolean setImmersive(boolean status) {
+        int uiOptions;
+        if (status) {
+            uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+
+            if (Build.VERSION.SDK_INT >= 28) {
+                setDisplayCutoutMode();
+            }
+        } else {
+            uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+        }
+        contentView.setSystemUiVisibility(uiOptions);
+        subWindowView.setContentView(contentView);
+        updateWindow();
+        return true;
+    }
+
+    public void setDisplayCutoutMode() {
+        try {
+            Field windowField = PopupWindow.class.getDeclaredField("mWindow");
+            windowField.setAccessible(true);
+            Window window = (Window)windowField.get(subWindowView);
+
+            Field attrsField = Window.class.getDeclaredField("mAttributes");
+            attrsField.setAccessible(true);
+            WindowManager.LayoutParams attrs = (WindowManager.LayoutParams)attrsField.get(window);
+
+            Field cutoutModeField = WindowManager.LayoutParams.class.getDeclaredField("layoutInDisplayCutoutMode");
+            cutoutModeField.setAccessible(true);
+            int layoutInDisplayCutoutModeShortEdges = LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            cutoutModeField.setInt(attrs, layoutInDisplayCutoutModeShortEdges);
+
+            attrsField.set(window, attrs);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     ///////////////////////////Members Getter & Setter/////////////////////////////////////////////
     private String name;
-    private int windowId;
+    private int windowId = InstanceIdGenerator.getAndIncrement();
     private int parentId;
     private int windowMode;
     private int windowType;
     private WindowParam windowParam;
-    private PopupWindow subWindowView;
+    private PopupSubWindow subWindowView;
     private View contentView;
     private Activity rootActivity;
     private View rootView;
+    private boolean isFocusable = true;
+    private Rect[] hotAreas;
+    private boolean isFullScreen = false;
 
     /**
      * Gets window tag.
@@ -254,7 +496,7 @@ public class SubWindow {
      *
      * @return the sub window view
      */
-    public PopupWindow getSubWindowView() {
+    public PopupSubWindow getSubWindowView() {
         return subWindowView;
     }
 
@@ -263,7 +505,7 @@ public class SubWindow {
      *
      * @param subWindowView the sub window view
      */
-    public void setSubWindowView(PopupWindow subWindowView) {
+    public void setSubWindowView(PopupSubWindow subWindowView) {
         this.subWindowView = subWindowView;
     }
 
@@ -429,4 +671,21 @@ public class SubWindow {
         this.rootView = rootView;
     }
 
+    /**
+     * Called by native to register Window Handle.
+     *
+     * @param windowHandle the handle of navive window
+     */
+    public void registerSubWindow(long subWindowHandle) {
+        nativeSubWindowPtr = subWindowHandle;
+    }
+
+    /**
+     * Called by native to unregister Window Handle.
+     */
+    public void unregisterSubWindow() {
+        nativeSubWindowPtr = 0L;
+    }
+
+    private native void nativeOnWindowTouchOutside(long windowPtr);
 }

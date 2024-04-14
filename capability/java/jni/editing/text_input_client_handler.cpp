@@ -24,9 +24,10 @@ TextInputClientHandler::~TextInputClientHandler() = default;
 void TextInputClientHandler::UpdateEditingValue(
     const int32_t clientId, const std::shared_ptr<TextEditingValue>& value, bool needFireChangeEvent)
 {
-    if (currentConnection_ && currentConnection_->GetClientId() == clientId) {
-        auto weak = AceType::WeakClaim(AceType::RawPtr(currentConnection_));
-        currentConnection_->GetTaskExecutor()->PostTask(
+    TextInputConnection* connection = GetConnectionByClientId(clientId);
+    if (connection) {
+        auto weak = AceType::WeakClaim(connection);
+        connection->GetTaskExecutor()->PostTask(
             [weak, value, needFireChangeEvent]() {
                 auto currentConnection = weak.Upgrade();
                 if (currentConnection == nullptr) {
@@ -44,9 +45,10 @@ void TextInputClientHandler::UpdateEditingValue(
 
 void TextInputClientHandler::PerformAction(const int32_t clientId, const TextInputAction action)
 {
-    if (currentConnection_ && currentConnection_->GetClientId() == clientId) {
-        auto weak = AceType::WeakClaim(AceType::RawPtr(currentConnection_));
-        currentConnection_->GetTaskExecutor()->PostTask(
+    TextInputConnection* connection = GetConnectionByClientId(clientId);
+    if (connection) {
+        auto weak = AceType::WeakClaim(connection);
+        connection->GetTaskExecutor()->PostTask(
             [weak, action] {
                 auto currentConnection = weak.Upgrade();
                 if (currentConnection == nullptr) {
@@ -64,9 +66,10 @@ void TextInputClientHandler::PerformAction(const int32_t clientId, const TextInp
 
 void TextInputClientHandler::UpdateInputFilterErrorText(const int32_t clientId, const std::string& errorText)
 {
-    if (currentConnection_ && currentConnection_->GetClientId() == clientId) {
-        auto weak = AceType::WeakClaim(AceType::RawPtr(currentConnection_));
-        currentConnection_->GetTaskExecutor()->PostTask(
+    TextInputConnection* connection = GetConnectionByClientId(clientId);
+    if (connection) {
+        auto weak = AceType::WeakClaim(connection);
+        connection->GetTaskExecutor()->PostTask(
             [weak, errorText] {
                 auto currentConnection = weak.Upgrade();
                 if (currentConnection == nullptr) {

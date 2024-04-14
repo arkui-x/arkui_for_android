@@ -33,7 +33,7 @@ public:
 
 private:
     TextInputConnectionImpl() = delete;
-    bool Attached();
+    bool Attached(int32_t instanceId);
 };
 
 } // namespace OHOS::Ace::Platform

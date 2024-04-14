@@ -174,6 +174,7 @@ std::map<std::string, std::pair<uint32_t, std::shared_ptr<Window>>> Window::wind
 std::map<uint32_t, std::vector<sptr<IOccupiedAreaChangeListener>>> Window::occupiedAreaChangeListeners_;
 std::map<uint32_t, std::vector<sptr<IWindowLifeCycle>>> Window::lifecycleListeners_;
 std::map<uint32_t, std::vector<sptr<IWindowChangeListener>>> Window::windowChangeListeners_;
+std::map<uint32_t, std::vector<sptr<ITouchOutsideListener>>> Window::touchOutsideListeners_;
 std::recursive_mutex Window::globalMutex_;
 std::recursive_mutex g_sysBarPropMapMutex;
 uint32_t g_KeyboardHeight = 0;
@@ -684,6 +685,20 @@ WMError Window::UnregisterLifeCycleListener(const sptr<IWindowLifeCycle>& listen
     return UnregisterListener(lifecycleListeners_[GetWindowId()], listener);
 }
 
+WMError Window::RegisterTouchOutsideListener(const sptr<ITouchOutsideListener>& listener)
+{
+    LOGD("Start register TouchOutsideListener");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return RegisterListener(touchOutsideListeners_[GetWindowId()], listener);
+}
+
+WMError Window::UnregisterTouchOutsideListener(const sptr<ITouchOutsideListener>& listener)
+{
+    LOGD("Start unregister TouchOutsideListener");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return UnregisterListener(touchOutsideListeners_[GetWindowId()], listener);
+}
+
 template<typename T>
 WMError Window::RegisterListener(std::vector<sptr<T>>& holder, const sptr<T>& listener)
 {
@@ -817,6 +832,16 @@ void Window::NotifySizeChange(Rect rect)
     }
 }
 
+void Window::NotifyTouchOutside()
+{
+    auto touchOutsideListeners = GetListeners<ITouchOutsideListener>();
+    for (auto& listener : touchOutsideListeners) {
+        if (listener != nullptr) {
+            listener->OnTouchOutside();
+        }
+    }
+}
+
 void Window::NotifySurfaceDestroyed()
 {
     surfaceNode_ = nullptr;
@@ -837,10 +862,11 @@ void Window::WindowFocusChanged(bool hasWindowFocus)
         return;
     }
     if (hasWindowFocus) {
-        LOGI("Window: notify uiContent Focus");
+        LOGI("Window(%{public}s): notify uiContent Focus", GetWindowName().c_str());
         uiContent_->Focus();
         NotifyAfterActive();
         isForground_ = true;
+        isFocused_ = true;
 
         if (IsSubWindow() || subWindowMap_.count(GetWindowId()) == 0) {
             return;
@@ -852,10 +878,11 @@ void Window::WindowFocusChanged(bool hasWindowFocus)
             }
         }
     } else {
-        LOGI("Window: notify uiContent UnFocus");
+        LOGI("Window(%{public}s): notify uiContent UnFocus", GetWindowName().c_str());
         uiContent_->UnFocus();
         NotifyAfterInactive();
         isForground_ = false;
+        isFocused_ = false;
     }
 }
 
@@ -1007,6 +1034,7 @@ void Window::SetSubWindowView(JNIEnv* env, jobject windowView)
     }
     windowView_ = env->NewGlobalRef(windowView);
     Ace::Platform::WindowViewJni::RegisterWindow(env, this, windowView);
+    SubWindowManagerJni::RegisterSubWindow(GetWindowName(), this);
 }
 
 void Window::ReleaseWindowView()
@@ -1016,6 +1044,9 @@ void Window::ReleaseWindowView()
     }
     auto jniEnv = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
     Ace::Platform::WindowViewJni::UnRegisterWindow(jniEnv.get(), windowView_);
+    if (IsSubWindow()) {
+        SubWindowManagerJni::UnregisterSubWindow(GetWindowName());
+    }
     Ace::Platform::JniEnvironment::DeleteJavaGlobalRef(windowView_);
     windowView_ = nullptr;
 }
@@ -1139,6 +1170,106 @@ WMError Window::GetAvoidAreaByType(AvoidAreaType type, AvoidArea& avoidArea) {
             break;
     }
     return WMErrorCode;
+}
+
+WMError Window::Hide()
+{
+    LOGI("Window::Hide called.");
+    if (GetWindowName().empty()) {
+        LOGI("Window::Hide called failed due to null option");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+
+    bool result = SubWindowManagerJni::Hide(GetWindowName());
+    if (result) {
+        NotifyAfterBackground();
+        return WMError::WM_OK;
+    } else {
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+}
+
+WMError Window::SetFocusable(bool isFocusable)
+{
+    LOGI("Window::SetFocusable called. isFocusable=%{public}d", isFocusable);
+    bool result = SubWindowManagerJni::SetFocusable(this->GetWindowName(), isFocusable);
+    if (result) {
+        LOGI("Window::SetFocusable: success");
+        return WMError::WM_OK;
+    } else {
+        LOGI("Window::SetFocusable: failed");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+}
+
+WMError Window::SetTouchable(bool isTouchable)
+{
+    LOGI("Window::SetTouchable called. isTouchable=%{public}d", isTouchable);
+    bool result = SubWindowManagerJni::SetTouchable(GetWindowName(), isTouchable);
+    if (result) {
+        LOGI("Window::SetTouchable: success");
+        return WMError::WM_OK;
+    } else {
+        LOGI("Window::SetTouchable: failed");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+}
+
+bool Window::RequestFocus()
+{
+    bool result = SubWindowManagerJni::RequestFocus(GetWindowName());
+    LOGI("Window::RequestFocus return %{public}d", result);
+    return result;
+}
+
+bool Window::IsFocused()
+{
+    LOGI("Window::IsFocused called(%{public}s). isFocused_=%{public}d", GetWindowName().c_str(), isFocused_);
+    return isFocused_;
+}
+
+WMError Window::SetTouchHotAreas(const std::vector<Rect>& rects)
+{
+    LOGI("Window::SetTouchHotAreas called");
+    if (rects.empty()) {
+        LOGI("rects is empty");
+        return WMError::WM_ERROR_INVALID_PARAM;
+    }
+
+    bool result = SubWindowManagerJni::SetTouchHotAreas(GetWindowName(), rects);
+    if (result) {
+        LOGI("Window::SetTouchable: success");
+        return WMError::WM_OK;
+    } else {
+        LOGI("Window::SetTouchable: failed");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+}
+
+WMError Window::SetFullScreen(bool status)
+{
+    LOGI("Window::SetFullScreen called. status=%{public}d", status);
+    bool result = SubWindowManagerJni::SetFullScreen(GetWindowName(), status);
+    if (result) {
+        LOGI("Window::SetFullScreen: success");
+        return WMError::WM_OK;
+    } else {
+        LOGI("Window::SetFullScreen: failed");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+}
+
+WMError Window::SetAutoFullScreen(bool status)
+{
+    LOGI("Window::SetAutoFullScreen called. status=%{public}d", status);
+    bool result = SubWindowManagerJni::SetAutoFullScreen(GetWindowName(), status);
+    if (result) {
+        LOGI("Window::SetAutoFullScreen: success");
+        return WMError::WM_OK;
+    } else {
+        LOGI("Window::SetAutoFullScreen: failed");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
 }
 
 } // namespace OHOS::Rosen

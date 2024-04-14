@@ -27,6 +27,7 @@ import android.widget.PopupWindow;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.os.Build;
+import android.graphics.Rect;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -167,7 +168,7 @@ public class SubWindowManager {
      * @return the top window
      */
     public View getTopWindow() {
-        Log.d(TAG, "getWindowId called. ");
+        Log.d(TAG, "getTopWindow called. ");
         if (mRootActivity != null) {
             View rootView = mRootActivity.getWindow().getDecorView();
             View topView = rootView.findFocus();
@@ -234,13 +235,8 @@ public class SubWindowManager {
         Log.d(TAG, "resize called. name=" + name + ", width=" + width + ", height=" + height);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow != null) {
-            if (subWindow.getSubWindowView().isShowing()) {
-                subWindow.resize(width, height);
-                return true;
-            } else {
-                Log.e(TAG, "resize failed due to not shown.");
-                return false;
-            }
+            subWindow.resize(width, height);
+            return true;
         }
         Log.e(TAG, "not found SubWindow: " + name);
         return false;
@@ -258,13 +254,8 @@ public class SubWindowManager {
         Log.d(TAG, "moveWindowTo called. name=" + name + ", x=" + x + ", y=" + y);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow != null) {
-            if (subWindow.getSubWindowView().isShowing()) {
-                subWindow.moveWindowTo(x, y);
-                return true;
-            } else {
-                Log.e(TAG, "moveWindowTo failed due to not shown.");
-                return false;
-            }
+            subWindow.moveWindowTo(x, y);
+            return true;
         }
         Log.e(TAG, "not found SubWindow: " + name);
         return false;
@@ -280,14 +271,9 @@ public class SubWindowManager {
         Log.d(TAG, "destroyWindow called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow != null) {
-            if (subWindow.getSubWindowView().isShowing()) {
-                subWindow.destroyWindow();
-                mSubWindowMap.remove(name);
-                return true;
-            } else {
-                Log.e(TAG, "destroyWindow failed due to not shown.");
-                return false;
-            }
+            subWindow.destroyWindow();
+            mSubWindowMap.remove(name);
+            return true;
         }
         Log.e(TAG, "not found SubWindow: " + name);
         return false;
@@ -664,6 +650,192 @@ public class SubWindowManager {
             Log.e(TAG, "Not supported by the Android version.");
             return NO_HEIGHT;
         }
+    }
+
+    /**
+     * Hide window boolean.
+     *
+     * @param name the name
+     * @return the boolean
+     */
+    public boolean hide(String name) {
+        Log.d(TAG, "hide called. name=" + name);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        if (!subWindow.getSubWindowView().isShowing()) {
+            Log.e(TAG, "not showing.");
+            return false;
+        }
+
+        subWindow.destroyWindow();
+        if (subWindow.getSubWindowView().isShowing()) {
+            Log.e(TAG, "hide failed.");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * set window focusable boolean.
+     *
+     * @param name   the name
+     * @param isFocusable  if focusable
+     * @return the boolean
+     */
+    public boolean setFocusable(String name, boolean isFocusable) {
+        Log.d(TAG, "setFocusable called. name=" + name + ", isFocusable=" + isFocusable);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        subWindow.setFocusable(isFocusable);
+        if (subWindow.getSubWindowView().isShowing()) {
+            subWindow.getSubWindowView().update();
+        }
+        return true;
+    }
+
+    /**
+     * set window touchable boolean.
+     *
+     * @param name   the name
+     * @param isTouchable  if touchable
+     * @return the boolean
+     */
+    public boolean setTouchable(String name, boolean isTouchable) {
+        Log.d(TAG, "setTouchable called. name=" + name + ", isFocusable=" + isTouchable);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        subWindow.setTouchable(isTouchable);
+        if (subWindow.getSubWindowView().isTouchable() != isTouchable) {
+            Log.e(TAG, "setTouchable to " + isTouchable + " failed.");
+            return false;
+        }
+
+        if (subWindow.getSubWindowView().isShowing()) {
+            subWindow.getSubWindowView().update();
+        }
+        return true;
+    }
+
+    /**
+     * request focus for window.
+     *
+     * @param name the name
+     * @return the boolean
+     */
+    public boolean requestFocus(String name) {
+        Log.d(TAG, "requestFocus called. name=" + name);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        return subWindow.requestFocus();
+    }
+
+    /**
+     * set window touch hot area.
+     *
+     * @param name   the name
+     * @param rectArray  list of hot area
+     * @return the boolean
+     */
+    public boolean setTouchHotArea(String name, Rect[] rectArray) {
+        Log.d(TAG, "setTouchHotArea called. name=" + name);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        subWindow.setTouchHotArea(rectArray);
+        return true;
+    }
+
+    /**
+     * Set fullScreen and hide systembar.
+     *
+     * @param status true or false.
+     * @return Setting successful or failed.
+     */
+    public boolean setFullScreen(String name, boolean status) {
+        Log.d(TAG, "setFullScreen called. name=" + name);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        subWindow.setFullScreen(status);
+        subWindow.setImmersive(status);
+        return true;
+    }
+
+    /**
+     * Set FullScreen.
+     *
+     * @param status true or false.
+     * @return Setting successful or failed.
+     */
+    public boolean setAutoFullScreen(String name, boolean status) {
+        Log.d(TAG, "setAutoFullScreen called. name=" + name);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        subWindow.setFullScreen(status);
+        return true;
+    }
+
+    /**
+     * Called by native to register Window Handle.
+     *
+     * @param name   the name
+     * @param windowHandle the handle of navive window
+     * @return the boolean
+     */
+    public boolean registerSubWindow(String name, long subWindowHandle) {
+        Log.d(TAG, "registerSubWindow called. name=" + name);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        subWindow.registerSubWindow(subWindowHandle);
+        return true;
+    }
+
+    /**
+     * Called by native to unregister Window Handle.
+     * 
+     * @param name   the name
+     * @return the boolean
+     */
+    public boolean unregisterSubWindow(String name) {
+        Log.d(TAG, "unRegisterSubWindow called. name=" + name);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        subWindow.unregisterSubWindow();
+        return true;
     }
 
     private native void nativeSetupSubWindowManager();
