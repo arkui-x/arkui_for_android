@@ -438,6 +438,7 @@
       HiLogIsLoggable;
       OHOS::HiviewDFX::HiLog::*;
       OHOS::Media::ImageSource::*;
+      OHOS::Ace::SubwindowManager::*;
     };
   local:
     *;

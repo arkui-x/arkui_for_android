@@ -26,6 +26,7 @@
 #include "base/log/ace_trace.h"
 #include "base/log/event_report.h"
 #include "base/log/log.h"
+#include "base/subwindow/subwindow_manager.h"
 #include "base/utils/system_properties.h"
 #include "base/utils/utils.h"
 #include "core/common/ace_engine.h"
@@ -101,31 +102,30 @@ void ParseLocaleTag(const std::string& localeTag, std::string& language, std::st
     }
 }
 } // namespace
+
 AceContainerSG::AceContainerSG(int32_t instanceId, FrontendType type,
     std::weak_ptr<OHOS::AbilityRuntime::Platform::Context> runtimeContext,
     std::weak_ptr<OHOS::AppExecFwk::AbilityInfo> abilityInfo, std::unique_ptr<PlatformEventCallback> callback,
-    bool useCurrentEventRunner)
+    bool useCurrentEventRunner, bool isSubAceContainer)
     : messageBridge_(AceType::MakeRefPtr<PlatformBridge>()), type_(type), instanceId_(instanceId),
       runtimeContext_(std::move(runtimeContext)), abilityInfo_(std::move(abilityInfo)),
-      useCurrentEventRunner_(useCurrentEventRunner)
+      useCurrentEventRunner_(useCurrentEventRunner), isSubContainer_(isSubAceContainer)
 {
     ACE_DCHECK(callback);
 
     SetUseNewPipeline();
 
     useStageModel_ = true;
-
-    auto taskExecutorImpl = Referenced::MakeRefPtr<TaskExecutorImpl>();
-    taskExecutorImpl->InitPlatformThread(useCurrentEventRunner_, useStageModel_);
-
-    if (type_ == FrontendType::DECLARATIVE_JS) {
-        GetSettings().useUIAsJSThread = true;
-    } else {
-        taskExecutorImpl->InitJsThread();
+    if (!isSubContainer_) {
+        auto taskExecutorImpl = Referenced::MakeRefPtr<TaskExecutorImpl>();
+        taskExecutorImpl->InitPlatformThread(useCurrentEventRunner_, useStageModel_);
+        if (type_ == FrontendType::DECLARATIVE_JS) {
+            GetSettings().useUIAsJSThread = true;
+        } else {
+            taskExecutorImpl->InitJsThread();
+        }
+        taskExecutor_ = taskExecutorImpl;
     }
-
-    taskExecutor_ = taskExecutorImpl;
-
     platformEventCallback_ = std::move(callback);
 }
 
@@ -158,6 +158,12 @@ void AceContainerSG::Destroy()
             taskExecutor_->PostTask(uiTask, TaskExecutor::TaskType::UI);
         }
 
+        if (isSubContainer_) {
+            // SubAceContainerSG just return.
+            LOGI("Is sub container, just return.");
+            return;
+        }
+
         // 2. Destroy Frontend on JS thread.
         RefPtr<Frontend> frontend;
         {
@@ -188,6 +194,14 @@ void AceContainerSG::Destroy()
 void AceContainerSG::InitializeFrontend()
 {
     if (type_ == FrontendType::DECLARATIVE_JS) {
+
+        if (isSubContainer_) {
+            auto container = GetContainer(parentId_);
+            CHECK_NULL_VOID(container);
+            frontend_ = container->GetFrontend();
+            return;
+        }
+
 #ifdef NG_BUILD
         frontend_ = AceType::MakeRefPtr<DeclarativeFrontendNG>();
         auto declarativeFrontend = AceType::DynamicCast<DeclarativeFrontendNG>(frontend_);
@@ -241,6 +255,16 @@ void AceContainerSG::InitPiplineContext(std::unique_ptr<Window> window, double d
     pipelineContext_->SetDrawDelegate(aceView_->GetDrawDelegate());
     pipelineContext_->SetFontScale(resourceInfo_.GetResourceConfiguration().GetFontRatio());
     pipelineContext_->SetIsJsCard(type_ == FrontendType::JS_CARD);
+
+    if (uiWindow_) {
+        auto windowType = uiWindow_->GetType();
+        pipelineContext_->SetIsAppWindow(
+            windowType < Rosen::WindowType::SYSTEM_WINDOW_BASE && windowType >= Rosen::WindowType::APP_WINDOW_BASE);
+    }
+
+    if (isSubContainer_) {
+        pipelineContext_->SetIsSubPipeline(true);
+    }
 
     LOGI("init piplinecontext end.");
 }
@@ -322,10 +346,15 @@ void AceContainerSG::InitializeCallback()
         auto context = weak.Upgrade();
         CHECK_NULL_VOID(context);
         ContainerScope scope(instanceId);
-        auto task = [weak, width, height, reason]() {
+        auto task = [weak, width, height, reason, id = instanceId]() {
             auto context = weak.Upgrade();
             CHECK_NULL_VOID(context);
             context->OnSurfaceChanged(width, height, reason);
+            if (reason == WindowSizeChangeReason::ROTATION) {
+                auto subwindow = SubwindowManager::GetInstance()->GetSubwindow(id);
+                CHECK_NULL_VOID(subwindow);
+                subwindow->ResizeWindow();
+            }
         };
         if (Container::Current()->GetSettings().usePlatformAsUIThread) {
             task();
@@ -539,6 +568,7 @@ void AceContainerSG::SetView(
     auto eventHandler = std::make_shared<OHOS::AppExecFwk::EventHandler>(OHOS::AppExecFwk::EventRunner::Current());
     rsWindow->CreateVSyncReceiver(eventHandler);
     auto window = std::make_unique<NG::RosenWindow>(rsWindow, container->GetTaskExecutor(), view->GetInstanceId());
+    AceContainerSG::SetUIWindow(view->GetInstanceId(), rsWindow);
     container->AttachView(std::move(window), view, density, width, height);
 #endif
 }
@@ -549,11 +579,13 @@ void AceContainerSG::AttachView(
     aceView_ = view;
     auto instanceId = aceView_->GetInstanceId();
 #ifdef ENABLE_ROSEN_BACKEND
-    auto* aceView = static_cast<Platform::AceViewSG*>(aceView_);
-    CHECK_NULL_VOID(aceView);
     auto taskExecutorImpl = AceType::DynamicCast<TaskExecutorImpl>(taskExecutor_);
     CHECK_NULL_VOID(taskExecutorImpl);
-    taskExecutorImpl->InitOtherThreads(aceView->GetThreadModel());
+    if (!isSubContainer_) {
+        auto* aceView = static_cast<Platform::AceViewSG*>(aceView_);
+        CHECK_NULL_VOID(aceView);
+        taskExecutorImpl->InitOtherThreads(aceView->GetThreadModel());
+    }
 #endif
     ContainerScope scope(instanceId);
     if (type_ == FrontendType::DECLARATIVE_JS) {
@@ -592,7 +624,14 @@ void AceContainerSG::AttachView(
     SetupRootElement();
 
     aceView_->Launch();
-    frontend_->AttachPipelineContext(pipelineContext_);
+    if (!isSubContainer_) {
+        frontend_->AttachPipelineContext(pipelineContext_);
+    } else {
+        auto declarativeFrontend = AceType::DynamicCast<DeclarativeFrontendNG>(frontend_);
+        if (declarativeFrontend) {
+            declarativeFrontend->AttachSubPipelineContext(pipelineContext_);
+        }
+    }
 }
 
 void AceContainerSG::UpdateConfiguration(const std::string& colorMode, const std::string& direction,
@@ -746,11 +785,13 @@ void AceContainerSG::SetupRootElement()
     LOGI("Setup Root Element.");
     ContainerScope scope(instanceId_);
     auto weakContext = AceType::WeakClaim(AceType::RawPtr(pipelineContext_));
-    auto setupRootElementTask = [weakContext]() {
+    auto setupRootElementTask = [weakContext, isSubContainer = isSubContainer_]() {
         LOGI("execute SetupRootElement task start.");
         auto context = weakContext.Upgrade();
         CHECK_NULL_VOID(context);
-        context->SetupRootElement();
+        if (!isSubContainer) {
+            context->SetupRootElement();
+        }
         LOGI("execute SetupRootElement task end.");
     };
 
@@ -807,6 +848,27 @@ bool AceContainerSG::OnBackPressed(int32_t instanceId)
     auto container = AceEngine::Get().GetContainer(instanceId);
     CHECK_NULL_RETURN(container, false);
 
+    // When the container is for overlay, it need close the overlay first.
+    if (container->IsSubContainer()) {
+        LOGI("Back press for remove overlay node");
+        ContainerScope scope(instanceId);
+        auto subPipelineContext = DynamicCast<NG::PipelineContext>(container->GetPipelineContext());
+        CHECK_NULL_RETURN(subPipelineContext, false);
+        auto overlayManager = subPipelineContext->GetOverlayManager();
+        CHECK_NULL_RETURN(overlayManager, false);
+        return overlayManager->RemoveOverlayInSubwindow();
+    }
+
+    // Remove overlay through SubwindowManager if subwindow unfocused.
+    auto subwindow = SubwindowManager::GetInstance()->GetSubwindow(instanceId);
+    if (subwindow) {
+        if (subwindow->GetShown()) {
+            auto overlayManager = subwindow->GetOverlayManager();
+            CHECK_NULL_RETURN(overlayManager, false);
+            return overlayManager->RemoveOverlayInSubwindow();
+        }
+    }
+
     ContainerScope scope(instanceId);
     auto baseContext = container->GetPipelineContext();
     auto context = DynamicCast<NG::PipelineContext>(baseContext);
@@ -841,7 +903,7 @@ void AceContainerSG::OnShow(int32_t instanceId)
         [container]() {
             // When it is subContainer, no need call the OnShow,
             auto front = container->GetFrontend();
-            if (front) {
+            if (front && !container->IsSubContainer()) {
                 front->UpdateState(Frontend::State::ON_SHOW);
                 front->OnShow();
             }
@@ -868,7 +930,7 @@ void AceContainerSG::OnHide(int32_t instanceId)
     taskExecutor->PostTask(
         [container]() {
             auto front = container->GetFrontend();
-            if (front) {
+            if (front && !container->IsSubContainer()) {
                 front->UpdateState(Frontend::State::ON_HIDE);
                 front->OnHide();
             }
@@ -891,7 +953,7 @@ void AceContainerSG::OnActive(int32_t instanceId)
         [container]() {
             // When it is subContainer, no need call the OnActive.
             auto front = container->GetFrontend();
-            if (front) {
+            if (front && !container->IsSubContainer()) {
                 front->UpdateState(Frontend::State::ON_ACTIVE);
                 front->OnActive();
             }
@@ -914,7 +976,7 @@ void AceContainerSG::OnInactive(int32_t instanceId)
         [container]() {
             // When it is subContainer, no need call the OnInactive.
             auto front = container->GetFrontend();
-            if (front) {
+            if (front && !container->IsSubContainer()) {
                 front->UpdateState(Frontend::State::ON_INACTIVE);
                 front->OnInactive();
             }
@@ -1066,5 +1128,42 @@ bool AceContainerSG::MaybeRelease()
         LOGI("Post Destroy AceContainer Task to PLATFORM thread.");
         return !taskExecutor_->PostTask([this] { delete this; }, TaskExecutor::TaskType::PLATFORM);
     }
+}
+
+void AceContainerSG::SetUIWindow(int32_t instanceId, sptr<OHOS::Rosen::Window> uiWindow)
+{
+    CHECK_NULL_VOID(uiWindow);
+    auto container = AceType::DynamicCast<AceContainerSG>(AceEngine::Get().GetContainer(instanceId));
+    CHECK_NULL_VOID(container);
+    container->SetUIWindowInner(uiWindow);
+}
+
+sptr<OHOS::Rosen::Window> AceContainerSG::GetUIWindow(int32_t instanceId)
+{
+    auto container = AceType::DynamicCast<AceContainerSG>(AceEngine::Get().GetContainer(instanceId));
+    CHECK_NULL_RETURN(container, nullptr);
+    return container->GetUIWindowInner();
+}
+
+void AceContainerSG::SetUIWindowInner(sptr<OHOS::Rosen::Window> uiWindow)
+{
+    uiWindow_ = uiWindow;
+}
+
+sptr<OHOS::Rosen::Window> AceContainerSG::GetUIWindowInner() const
+{
+    return uiWindow_;
+}
+
+void AceContainerSG::InitializeSubContainer(int32_t parentContainerId)
+{
+    auto parentContainer = AceEngine::Get().GetContainer(parentContainerId);
+    CHECK_NULL_VOID(parentContainer);
+    auto taskExec = parentContainer->GetTaskExecutor();
+    taskExecutor_ = AceType::DynamicCast<TaskExecutorImpl>(std::move(taskExec));
+    auto parentSettings = parentContainer->GetSettings();
+    GetSettings().useUIAsJSThread = parentSettings.useUIAsJSThread;
+    GetSettings().usePlatformAsUIThread = parentSettings.usePlatformAsUIThread;
+    GetSettings().usingSharedRuntime = parentSettings.usingSharedRuntime;
 }
 } // namespace OHOS::Ace::Platform

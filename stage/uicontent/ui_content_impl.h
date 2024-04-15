@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -89,7 +89,7 @@ private:
     void InitializeInner(
         OHOS::Rosen::Window* window, const std::string& url, napi_value storage, bool isNamedRouter);
     void CommonInitialize(OHOS::Rosen::Window* window, const std::string& url, napi_value storage);
-
+    void InitializeSubWindow();
     void DestroyCallback() const;
 
     void InitOnceAceInfo();
@@ -102,6 +102,7 @@ private:
     std::string startUrl_;
     int32_t instanceId_ = -1;
     OHOS::Rosen::IOccupiedAreaChangeListener* occupiedAreaChangeListener_ = nullptr;
+    OHOS::Rosen::ITouchOutsideListener* touchOutsideListener_ = nullptr;
 };
 } // namespace OHOS::Ace::Platform
 #endif // FOUNDATION_ACE_ADAPTER_ANDROID_STAGE_UI_CONTENT_IMPL_H
