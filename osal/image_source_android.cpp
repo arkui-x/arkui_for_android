@@ -121,4 +121,9 @@ ImageSource::Size ImageSourceAndroid::GetImageSize()
     }
     return { info.size.width, info.size.height };
 }
+
+uint32_t ImageSourceAndroid::GetFrameCount()
+{
+    return 0;
+}
 } // namespace OHOS::Ace

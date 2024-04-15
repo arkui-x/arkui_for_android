@@ -41,7 +41,7 @@ bool ImageAnalyzerManager::IsSupportImageAnalyzerFeature()
     return false;
 }
 
-bool ImageAnalyzerManager::isOverlayCreated()
+bool ImageAnalyzerManager::IsOverlayCreated()
 {
     return false;
 }
