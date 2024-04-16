@@ -98,6 +98,8 @@ public:
         return isShowed_;
     }
 
+    void MarkDirtyDialogSafeArea() override {}
+
     void SetHotAreas(const std::vector<Rect>& rects, int32_t overlayId) override;
 
     void SetDialogHotAreas(const std::vector<Rect>& rects, int32_t overlayId) override;
@@ -125,14 +127,16 @@ public:
 
     void CloseCustomDialog(const int32_t dialogId) override {}
 
+    void CloseCustomDialog(const WeakPtr<NG::UINode>& node, std::function<void(int32_t)> &&callback) override {}
+
     void OpenCustomDialogNG(const DialogProperties& dialogProps, std::function<void(int32_t)>&& callback) override;
 
     void CloseCustomDialogNG(int32_t dialogId) override;
 
-    // void CloseCustomDialogNG(const WeakPtr<NG::UINode>& node, std::function<void(int32_t)>&& callback) override;
+    void CloseCustomDialogNG(const WeakPtr<NG::UINode>& node, std::function<void(int32_t)>&& callback) override {}
 
-    // void UpdateCustomDialogNG(const WeakPtr<NG::UINode>& node, const DialogProperties& dialogProps,
-    //     std::function<void(int32_t)>&& callback) override;
+    void UpdateCustomDialogNG(const WeakPtr<NG::UINode>& node, const DialogProperties& dialogProps,
+        std::function<void(int32_t)>&& callback) override {}
 
     const RefPtr<NG::OverlayManager> GetOverlayManager() override;
 
