@@ -779,25 +779,6 @@ public class SubWindowManager {
         }
 
         subWindow.setFullScreen(status);
-        subWindow.setImmersive(status);
-        return true;
-    }
-
-    /**
-     * Set FullScreen.
-     *
-     * @param status true or false.
-     * @return Setting successful or failed.
-     */
-    public boolean setAutoFullScreen(String name, boolean status) {
-        Log.d(TAG, "setAutoFullScreen called. name=" + name);
-        SubWindow subWindow = mSubWindowMap.get(name);
-        if (subWindow == null) {
-            Log.e(TAG, "not found SubWindow: " + name);
-            return false;
-        }
-
-        subWindow.setFullScreen(status);
         return true;
     }
 

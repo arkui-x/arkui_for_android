@@ -645,7 +645,7 @@ void SubwindowAndroid::ShowToast(const std::string& message, int32_t duration, c
         ShowWindow(false);
         ResizeWindow();
         window_->SetTouchable(false);
-        window_->SetAutoFullScreen(true);
+        window_->SetFullScreen(true);
     }
     delegate->ShowToast(message, duration, bottom, showMode, alignment, offset);
 }
@@ -656,6 +656,7 @@ void SubwindowAndroid::ClearToast()
         LOGW("Default toast needs not to be clear");
         return;
     }
+    window_->SetFullScreen(false);
     auto aceContainer = Platform::AceContainerSG::GetContainer(childContainerId_);
     CHECK_NULL_VOID(aceContainer);
     auto context = DynamicCast<NG::PipelineContext>(aceContainer->GetPipelineContext());

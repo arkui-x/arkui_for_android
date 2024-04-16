@@ -59,7 +59,6 @@ struct SubWindowManagerStruct {
     jmethodID requestFocusMethod;
     jmethodID setTouchHotAreaMethod;
     jmethodID setFullScreenMethod;
-    jmethodID setAutoFullScreenMethod;
     jmethodID registerSubWindowMethod;
     jmethodID unregisterSubWindowMethod;
 };
@@ -96,7 +95,6 @@ public:
     static bool RequestFocus(const std::string& name);
     static bool SetTouchHotAreas(const std::string& name, const std::vector<OHOS::Rosen::Rect>& rects);
     static bool SetFullScreen(const std::string& name, bool status);
-    static bool SetAutoFullScreen(const std::string& name, bool status);
     static bool RegisterSubWindow(const std::string& name, void* subWindow);
     static bool UnregisterSubWindow(const std::string& name);
 

@@ -254,10 +254,11 @@ public class SubWindow {
             @Override
             public void onGlobalLayout() {
                 if (isFullScreen) {
+                    View mainView = rootView.findViewById(getParentId());
                     windowParam.x = 0;
                     windowParam.y = 0;
-                    windowParam.width = rootView.getWidth();
-                    windowParam.height = rootView.getHeight();
+                    windowParam.width = mainView.getWidth();
+                    windowParam.height = mainView.getHeight();
                     updateWindow();
                 }
             }
@@ -396,12 +397,12 @@ public class SubWindow {
      * set FullScreen.
      */
     public boolean setFullScreen(boolean status) {
-        int uiOptions;
         if (status) {
+            View mainView = rootView.findViewById(getParentId());
             windowParam.x = 0;
             windowParam.y = 0;
-            windowParam.width = rootView.getWidth();
-            windowParam.height = rootView.getHeight();
+            windowParam.width = mainView.getWidth();
+            windowParam.height = mainView.getHeight();
             isFullScreen = true;
         } else {
             isFullScreen = false;
@@ -409,53 +410,6 @@ public class SubWindow {
         updateWindow();
         return true;
     }
-
-    /**
-     * set Immersive.
-     */
-    public boolean setImmersive(boolean status) {
-        int uiOptions;
-        if (status) {
-            uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-            | View.SYSTEM_UI_FLAG_FULLSCREEN
-            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-
-            if (Build.VERSION.SDK_INT >= 28) {
-                setDisplayCutoutMode();
-            }
-        } else {
-            uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
-        }
-        contentView.setSystemUiVisibility(uiOptions);
-        subWindowView.setContentView(contentView);
-        updateWindow();
-        return true;
-    }
-
-    public void setDisplayCutoutMode() {
-        try {
-            Field windowField = PopupWindow.class.getDeclaredField("mWindow");
-            windowField.setAccessible(true);
-            Window window = (Window)windowField.get(subWindowView);
-
-            Field attrsField = Window.class.getDeclaredField("mAttributes");
-            attrsField.setAccessible(true);
-            WindowManager.LayoutParams attrs = (WindowManager.LayoutParams)attrsField.get(window);
-
-            Field cutoutModeField = WindowManager.LayoutParams.class.getDeclaredField("layoutInDisplayCutoutMode");
-            cutoutModeField.setAccessible(true);
-            int layoutInDisplayCutoutModeShortEdges = LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-            cutoutModeField.setInt(attrs, layoutInDisplayCutoutModeShortEdges);
-
-            attrsField.set(window, attrs);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-    }
-
     ///////////////////////////Members Getter & Setter/////////////////////////////////////////////
     private String name;
     private int windowId = InstanceIdGenerator.getAndIncrement();

@@ -1259,17 +1259,4 @@ WMError Window::SetFullScreen(bool status)
     }
 }
 
-WMError Window::SetAutoFullScreen(bool status)
-{
-    LOGI("Window::SetAutoFullScreen called. status=%{public}d", status);
-    bool result = SubWindowManagerJni::SetAutoFullScreen(GetWindowName(), status);
-    if (result) {
-        LOGI("Window::SetAutoFullScreen: success");
-        return WMError::WM_OK;
-    } else {
-        LOGI("Window::SetAutoFullScreen: failed");
-        return WMError::WM_ERROR_INVALID_WINDOW;
-    }
-}
-
 } // namespace OHOS::Rosen

@@ -290,7 +290,6 @@ public:
     bool IsFocused();
     WMError SetTouchHotAreas(const std::vector<Rect>& rects);
     WMError SetFullScreen(bool status);
-    WMError SetAutoFullScreen(bool status);
 
 private:
     void SetWindowView(JNIEnv* env, jobject windowView);
