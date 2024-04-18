@@ -189,23 +189,18 @@ bool AceResourceRegister::ReleaseResource(const std::string& resourceHash)
         return false;
     }
 
-    bool hasException = false;
-    bool result = false;
-
     jstring jResrouceHash = env->NewStringUTF(resourceHash.c_str());
     if (jResrouceHash == nullptr) {
         return false;
     }
+    
+    bool hasException = false;
 
-    jboolean jResult = env->CallBooleanMethod(object_.get(), releaseResourceMethod_, jResrouceHash);
     if (env->ExceptionCheck()) {
         LOGE("AceResourceRegister ReleaseResource: has exception");
         env->ExceptionDescribe();
         env->ExceptionClear();
         hasException = true;
-    }
-    if (!hasException && jResult) {
-        result = static_cast<bool>(jResult);
     }
 
     env->DeleteLocalRef(jResrouceHash);

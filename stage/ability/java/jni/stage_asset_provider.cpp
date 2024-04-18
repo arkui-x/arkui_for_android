@@ -538,7 +538,7 @@ bool StageAssetProvider::ExistDir(std::string target)
 bool StageAssetProvider::MakeDir(std::string target)
 {
     if (access(target.c_str(), 0) != 0) {
-        mkdir(target.c_str(), S_IRWXU | S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        mkdir(target.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
         return true;
     } else {
         LOGE("make dir error!");
