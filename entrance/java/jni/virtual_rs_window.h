@@ -308,7 +308,7 @@ private:
     bool isForground_ = false;
     bool isFocused_ = false;
 
-    uint32_t backgroundColor_;
+    uint32_t backgroundColor_ = 0xffffffff;
     float brightness_;
     std::unordered_map<WindowType, SystemBarProperty> sysBarPropMap_ {
         { WindowType::WINDOW_TYPE_STATUS_BAR, SystemBarProperty() },
