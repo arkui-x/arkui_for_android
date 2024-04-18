@@ -113,8 +113,6 @@ void SubWindowManagerJni::SetupSubWindowManager(JNIEnv* env, jobject obj)
         env->GetMethodID(clazz, "setTouchHotArea", "(Ljava/lang/String;[Landroid/graphics/Rect;)Z");
     subWindowManagerStruct_.setFullScreenMethod =
         env->GetMethodID(clazz, "setFullScreen", "(Ljava/lang/String;Z)Z");
-    subWindowManagerStruct_.setAutoFullScreenMethod =
-        env->GetMethodID(clazz, "setAutoFullScreen", "(Ljava/lang/String;Z)Z");
     subWindowManagerStruct_.registerSubWindowMethod = env->GetMethodID(clazz, "registerSubWindow", "(Ljava/lang/String;J)Z");
     subWindowManagerStruct_.unregisterSubWindowMethod = env->GetMethodID(clazz, "unregisterSubWindow", "(Ljava/lang/String;)Z");
 }
@@ -682,27 +680,6 @@ bool SubWindowManagerJni::SetFullScreen(const std::string& name, bool status)
         return true;
     } else {
         LOGI("SubWindowManagerJni::setFullScreen: failed");
-        return false;
-    }
-}
-
-bool SubWindowManagerJni::SetAutoFullScreen(const std::string& name, bool status)
-{
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
-    if (env == nullptr) {
-        LOGE("SubWindowManagerJni::SetAutoFullScreen: env is NULL");
-        return false;
-    }
-
-    jstring windowName = env->NewStringUTF(name.c_str());
-    jboolean ret = env->CallBooleanMethod(
-        subWindowManagerStruct_.object, subWindowManagerStruct_.setAutoFullScreenMethod, windowName, status);
-    env->DeleteLocalRef(windowName);
-    if (ret == JNI_TRUE) {
-        LOGI("SubWindowManagerJni::setAutoFullScreen: success");
-        return true;
-    } else {
-        LOGI("SubWindowManagerJni::setAutoFullScreen: failed");
         return false;
     }
 }
