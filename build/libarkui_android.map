@@ -209,6 +209,7 @@
       vsprintf_s;
       memmove_s;
       vsnprintf_s;
+      vsnprintf_truncated_s;
 
       u_isdigit_72;
       u_isJavaSpaceChar_72;
@@ -232,6 +233,8 @@
       ucnv_toUnicode_72;
       ucnv_reset_72;
       ulocdata_getMeasurementSystem_72;
+      u_errorName_72;
+      ucnv_toUCountPending_72;
       "icu_72::ByteSink::GetAppendBuffer(int, int, char*, int, int*)";
       "icu_72::ByteSink::~ByteSink()";
       "icu_72::ByteSink::Flush()";

@@ -22,7 +22,7 @@ namespace OHOS::Ace::Platform {
 
 class StorageImpl : public Storage {
 public:
-    explicit StorageImpl(const RefPtr<TaskExecutor>& taskExecutor);
+    explicit StorageImpl();
     ~StorageImpl() override = default;
 
     void SetString(const std::string& key, const std::string& value) override;

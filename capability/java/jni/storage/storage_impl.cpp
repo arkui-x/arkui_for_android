@@ -19,7 +19,7 @@
 
 namespace OHOS::Ace::Platform {
 
-StorageImpl::StorageImpl(const RefPtr<TaskExecutor>& taskExecutor) : Storage(taskExecutor) {}
+StorageImpl::StorageImpl() : Storage() {}
 
 void StorageImpl::SetString(const std::string& key, const std::string& value)
 {
