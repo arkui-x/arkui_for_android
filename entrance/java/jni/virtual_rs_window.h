@@ -325,7 +325,11 @@ private:
     static void DeleteFromSubWindowMap(std::shared_ptr<Window> window);
     GraphicColorGamut GetSurfaceGamutFromColorSpace(ColorSpace colorSpace) const;
     ColorSpace GetColorSpaceFromSurfaceGamut(GraphicColorGamut colorGamut) const;
-    bool IsSysBarPropEnable(WindowType type);
+    Rect getTopRect(const Rect& SafeAreaRect);
+    Rect getLeftRect(const Rect& SafeAreaRect);
+    Rect getRightRect(const Rect& SafeAreaRect);
+    Rect getBottomRect(const Rect& SafeAreaRect);
+    void getCutoutRect(const Rect& SafeAreaRect, AvoidArea& avoidArea);
 
     int32_t surfaceWidth_ = 0;
     int32_t surfaceHeight_ = 0;

@@ -159,6 +159,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         Trace.endSection();
 
         keyboardHeightProvider.setKeyboardHeightObserver(this);
+        SubWindowManager.keepSystemUiVisibility(this);
     }
 
     @Override

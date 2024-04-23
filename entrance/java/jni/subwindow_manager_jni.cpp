@@ -102,6 +102,8 @@ void SubWindowManagerJni::SetupSubWindowManager(JNIEnv* env, jobject obj)
     subWindowManagerStruct_.getCutoutBarHeightMethod = env->GetMethodID(clazz, "getCutoutBarHeight", "()I");
     subWindowManagerStruct_.getNavigationBarHeightMethod = env->GetMethodID(clazz, "getNavigationBarHeight", "()I");
     subWindowManagerStruct_.getGestureBarHeightMethod = env->GetMethodID(clazz, "getNavigationIndicatorHeight", "()I");
+    subWindowManagerStruct_.getScreenOrientationMethod = env->GetMethodID(clazz, "getScreenOrientation", "()I");
+    subWindowManagerStruct_.getSafeAreaMethod = env->GetMethodID(clazz, "getSafeArea", "()Landroid/graphics/Rect;");
     subWindowManagerStruct_.hideMethod = env->GetMethodID(clazz, "hide", "(Ljava/lang/String;)Z");
     subWindowManagerStruct_.setFocusableMethod =
         env->GetMethodID(clazz, "setFocusable", "(Ljava/lang/String;Z)Z");
@@ -548,6 +550,42 @@ uint32_t SubWindowManagerJni::GetNavigationIndicatorHeight()
         subWindowManagerStruct_.object, subWindowManagerStruct_.getGestureBarHeightMethod);
     return static_cast<uint32_t>(navigationBarWidth);
 }
+
+int32_t SubWindowManagerJni::GetScreenOrientation()
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("SubWindowManagerJni::GetScreenOrientation: env is NULL");
+        return ERROR_ENV;
+    }
+    jint orientationType = env->CallIntMethod(
+        subWindowManagerStruct_.object, subWindowManagerStruct_.getScreenOrientationMethod);
+    return static_cast<int32_t>(orientationType);
+}
+
+OHOS::Rosen::Rect SubWindowManagerJni::GetSafeArea()
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    OHOS::Rosen::Rect rect = {0, 0, 0, 0};
+    if (env == nullptr) {
+        LOGE("SubWindowManagerJni::GetSafeArea: env is NULL");
+        return rect;
+    }
+    jobject javaRect = env->CallObjectMethod(subWindowManagerStruct_.object, subWindowManagerStruct_.getSafeAreaMethod);
+    jclass rectClass = env->FindClass("android/graphics/Rect");
+    jfieldID xField = env->GetFieldID(rectClass, "left", "I");
+    jfieldID yField = env->GetFieldID(rectClass, "top", "I");
+    jfieldID widthField = env->GetFieldID(rectClass, "right", "I");
+    jfieldID heightField = env->GetFieldID(rectClass, "bottom", "I");
+
+    int x = env->GetIntField(javaRect, xField);
+    int y = env->GetIntField(javaRect, yField);
+    int width = env->GetIntField(javaRect, widthField);
+    int height = env->GetIntField(javaRect, heightField);
+    rect = {x, y, width, height};
+    return rect;
+}
+
 bool SubWindowManagerJni::Hide(const std::string& name)
 {
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
