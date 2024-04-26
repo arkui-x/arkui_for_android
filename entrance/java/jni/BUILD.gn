@@ -28,6 +28,8 @@ template("ace_android_jni_source_set") {
       "$ace_root/adapter/android/entrance/java/jni/window_view_jni.cpp",
     ]
 
+    include_dirs = [ "//foundation/graphic/graphic_surface/interfaces/inner_api/surface", ]
+
     deps = [ "$ace_root/frameworks/core/components/theme:build_theme_code" ]
 
     if (ace_use_new_skia) {
@@ -89,6 +91,7 @@ template("ace_common_jni_source_set") {
       "//foundation/appframework/window_manager/interfaces/innerkits/dm",
       "//foundation/appframework/window_manager/dm/include",
       "//foundation/appframework/window_manager/utils/include",
+      "//foundation/graphic/graphic_surface/interfaces/inner_api/surface",
     ]
 
     if (defined(config.use_curl_download) && config.use_curl_download) {

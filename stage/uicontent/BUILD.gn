@@ -39,6 +39,10 @@ template("ace_uicontent_android_source_set") {
       "//foundation/appframework/arkui/uicontent",
     ]
 
+    if (is_arkui_x) {
+      include_dirs += [ "//foundation/graphic/graphic_surface/interfaces/inner_api/surface", ]
+    }
+
     deps = [
       "$ability_runtime_cross_platform_path/interfaces/kits/native/ability:cross_platform_abilitykit_native",
       "$ace_root/adapter/android/entrance/java/jni:ace_android_jni_$platform",

@@ -235,6 +235,8 @@
       ulocdata_getMeasurementSystem_72;
       u_errorName_72;
       ucnv_toUCountPending_72;
+      ucol_open_72;
+      ucol_setAttribute_72;
       "icu_72::ByteSink::GetAppendBuffer(int, int, char*, int, int*)";
       "icu_72::ByteSink::~ByteSink()";
       "icu_72::ByteSink::Flush()";
