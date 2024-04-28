@@ -127,4 +127,14 @@ void FrameReport::FlushEnd()
     flushEndFunc_ = nullptr;
 }
 
+void FrameReport::EnableSelfRender()
+{
+    enableSelfRenderFunc_ = nullptr;
+}
+
+void FrameReport::DisableSelfRender()
+{
+    disableSelfRenderFunc_ = nullptr;
+}
+
 } // namespace OHOS::Ace

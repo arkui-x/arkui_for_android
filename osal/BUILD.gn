@@ -40,6 +40,7 @@ template("ace_osal_android_source_set") {
       "advance/image_analyzer_mgr.cpp",
       "app_bar_helper_impl.cpp",
       "drag_window.cpp",
+      "drawing_color_filter_android.cpp",
       "event_report.cpp",
       "file_asset_provider.cpp",
       "file_uri_helper_android.cpp",

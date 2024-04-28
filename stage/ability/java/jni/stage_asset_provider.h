@@ -45,6 +45,11 @@ public:
         return assetProvider_->GetAsMapping(assetName);
     }
 
+    std::vector<std::unique_ptr<Ace::AssetMapping>> GetAsMappingFromI18n(const std::string& assetName) const override
+    {
+        return {};
+    }
+
     bool IsValid() const override
     {
         if (!assetProvider_) {
