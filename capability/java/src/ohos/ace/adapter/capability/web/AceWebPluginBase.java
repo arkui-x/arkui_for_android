@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class AceWebPluginBase extends AceResourcePlugin {
     private static final String LOG_TAG = "AceWebPluginBase";
 
-    private static Map<Long, AceWebBase> objectMap;
+    private Map<Long, AceWebBase> objectMap;
 
     private final AtomicLong nextWebId = new AtomicLong(0L);
 
@@ -105,7 +105,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         return null;
     }
 
-    public static Map<Long, AceWebBase> getObjectMap() {
+    public Map<Long, AceWebBase> getObjectMap() {
         return objectMap;
     }
 

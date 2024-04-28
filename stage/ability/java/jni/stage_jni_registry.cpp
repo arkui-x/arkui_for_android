@@ -17,6 +17,7 @@
 
 #include "stage_activity_delegate_jni.h"
 #include "stage_application_delegate_jni.h"
+#include "stage_fragment_delegate_jni.h"
 
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/log/log.h"
@@ -39,6 +40,11 @@ bool StageJniRegistry::Register()
 
     if (!StageActivityDelegateJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register StageActivityDelegateJni");
+        return false;
+    }
+
+    if (!StageFragmentDelegateJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register StageFragmentDelegateJni.");
         return false;
     }
     return true;

@@ -38,6 +38,7 @@ import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.WindowView;
 
+import ohos.ace.adapter.capability.web.AceWebPluginBase;
 import ohos.ace.adapter.capability.bridge.BridgeManager;
 import ohos.ace.adapter.capability.grantresult.GrantResult;
 import ohos.ace.adapter.capability.keyboard.KeyboardHeightObserver;
@@ -452,7 +453,9 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             windowView.setInputConnectionClient(platformPlugin);
             platformPlugin.initTexturePlugin(instanceId);
             platformPlugin.addResourcePlugin(AceVideoPluginAosp.createRegister(context, instanceName));
-            platformPlugin.addResourcePlugin(AceWebPluginAosp.createRegister(context));
+            AceWebPluginBase web = AceWebPluginAosp.createRegister(context, windowView);
+            windowView.setWebPlugin(web);
+            platformPlugin.addResourcePlugin(web);
             platformPlugin.initSurfacePlugin(context, instanceId);
         }
         Trace.endSection();

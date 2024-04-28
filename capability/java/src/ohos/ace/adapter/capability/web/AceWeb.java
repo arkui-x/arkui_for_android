@@ -144,6 +144,8 @@ public class AceWeb extends AceWebBase {
 
     private final AceWebView webView;
 
+    private final View rootView;
+
     private boolean isWebOnPage = true;
 
     private MotionEvent motionEvent;
@@ -165,10 +167,11 @@ public class AceWeb extends AceWebBase {
         }
     }
 
-    public AceWeb(long id, Context context, IAceOnResourceEvent callback) {
+    public AceWeb(long id, Context context, View view, IAceOnResourceEvent callback) {
         super(id, callback);
         this.callback = callback;
         this.context = context;
+        this.rootView = view;
         webView = new AceWebView(context);
     }
 
@@ -231,8 +234,12 @@ public class AceWeb extends AceWebBase {
         if (activity.getWindow() == null) {
             return;
         }
-        View contentView = activity.getWindow().getDecorView().findViewById(android.R.id.content);
-        android.widget.FrameLayout contentView1;
+        if (this.rootView == null) {
+            ALog.w(LOG_TAG, "addWebToSurface rooView null");
+            return;
+        }
+        View contentView = (ViewGroup) this.rootView.getParent();
+        ViewGroup contentView1;
         if (contentView instanceof FrameLayout) {
             contentView1 = (FrameLayout) contentView;
             contentView1.addView(webView, 0, params);
@@ -247,6 +254,8 @@ public class AceWeb extends AceWebBase {
                     view.setZ(-1.f);
                 }
             }
+        } else {
+            ALog.w(LOG_TAG, "addWebToSurface error, not FrameLayout");
         }
     }
 

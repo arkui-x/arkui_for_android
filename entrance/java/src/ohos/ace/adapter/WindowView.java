@@ -60,6 +60,8 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     private int lastMouseButtonState = 0;
     private int lastMouseActionKey = 0;
 
+    private AceWebPluginBase aceWebPluginBase;
+
     /**
      * Constructor of WindowView
      *
@@ -100,10 +102,20 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         nativeWindowPtr = 0L;
     }
 
+    public void setWebPlugin(AceWebPluginBase pluginBase) {
+        aceWebPluginBase = pluginBase;
+    }
+
     private void delayNotifyIfNeeded() {
         if (nativeWindowPtr == 0L) {
             ALog.e(LOG_TAG, "delay notify, nativeWindow is invalid!");
             return;
+        }
+
+        if (delayNotifySurfaceDestroyed) {
+            ALog.i(LOG_TAG, "delay notify surfaceDestroyed");
+            nativeSurfaceDestroyed(nativeWindowPtr);
+            delayNotifySurfaceDestroyed = false;
         }
 
         if (delayNotifyCreateSurface != null) {
@@ -118,12 +130,6 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
             nativeSurfaceChanged(
                 nativeWindowPtr, surfaceWidth, surfaceHeight, getResources().getDisplayMetrics().density);
             delayNotifySurfaceChanged = false;
-        }
-
-        if (delayNotifySurfaceDestroyed) {
-            ALog.i(LOG_TAG, "delay notify surfaceDestroyed");
-            nativeSurfaceDestroyed(nativeWindowPtr);
-            delayNotifySurfaceDestroyed = false;
         }
     }
 
@@ -295,17 +301,26 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    private void setWebTouchEvent(MotionEvent event){
+        if (aceWebPluginBase == null) {
+            return;
+        }
+        Map<Long, AceWebBase> webObjectMap = aceWebPluginBase.getObjectMap();
+        if (webObjectMap != null) {
+            for (Map.Entry<Long, AceWebBase> entry : webObjectMap.entrySet()) {
+                entry.getValue().setTouchEvent(event);
+            }
+        }
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
         if (nativeWindowPtr == 0L) {
             return super.onTouchEvent(event);
         }
+        this.setWebTouchEvent(event);
 
-        Map<Long, AceWebBase> webObjectMap = AceWebPluginBase.getObjectMap();
-        for (Map.Entry<Long, AceWebBase> entry : webObjectMap.entrySet()) {
-            entry.getValue().setTouchEvent(event);
-        }
         try {
             int source = event.getSource();
             if (source == InputDevice.SOURCE_MOUSE) {
