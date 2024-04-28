@@ -53,6 +53,8 @@ struct SubWindowManagerStruct {
     jmethodID getCutoutBarHeightMethod;
     jmethodID getNavigationBarHeightMethod;
     jmethodID getGestureBarHeightMethod;
+    jmethodID getScreenOrientationMethod;
+    jmethodID getSafeAreaMethod;
     jmethodID hideMethod;
     jmethodID setFocusableMethod;
     jmethodID setTouchableMethod;
@@ -89,6 +91,8 @@ public:
     static uint32_t getCutoutBarHeight();
     static uint32_t GetNavigationBarHeight();
     static uint32_t GetNavigationIndicatorHeight();
+    static int32_t GetScreenOrientation();
+    static OHOS::Rosen::Rect GetSafeArea();
     static bool Hide(const std::string& name);
     static bool SetFocusable(const std::string& name, bool isFocusable);
     static bool SetTouchable(const std::string& name, bool isTouchable);

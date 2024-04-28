@@ -18,8 +18,11 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.provider.Settings;
+import android.view.Display;
 import android.view.View;
+import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
@@ -46,10 +49,15 @@ public class SubWindowManager {
     private Map<String, SubWindow> mSubWindowMap = new HashMap<>();
     private static SubWindowManager _sinstance;
     private int uiOptions_ = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+    public static int uiOptionsStatic = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
     private static final int NO_HEIGHT = 0;
     private static final int LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES = 1;
+    private static final int LOCATION_X = 0;
+    private static final int LOCATION_Y = 1;
+    private static final int LOCATION_SIZE = 2;
     private static final int API_28 = 28;
     private static final int API_29 = 29;
+    private static final int API_30 = 30;
 
     /*
      ** copy from native wm_common.h: enum class Orientation
@@ -445,6 +453,18 @@ public class SubWindowManager {
         }
     }
 
+    /**
+     * Maintain the previous state after the application hot start.
+     *
+     */
+    public static void keepSystemUiVisibility(Activity stageActivity) {
+        if (stageActivity != null && Build.VERSION.SDK_INT < API_30) {
+            Window window = stageActivity.getWindow();
+            View decorView = window.getDecorView();
+            decorView.setSystemUiVisibility(uiOptionsStatic);
+        }
+    }
+
     private boolean setSystemUiVisibilityInner() {
         if (mRootActivity != null) {
             Window window = mRootActivity.getWindow();
@@ -453,6 +473,7 @@ public class SubWindowManager {
             }
             View decorView = window.getDecorView();
             decorView.setSystemUiVisibility(this.uiOptions_);
+            uiOptionsStatic = uiOptions_;
             return true;
         } else {
             return false;
@@ -586,6 +607,61 @@ public class SubWindowManager {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Get Screen rotation direction.
+     *
+     * @return Orientation type.
+     */
+    public int getScreenOrientation() {
+        int result = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        if (mRootActivity == null) {
+            Log.e(TAG, "The mRootActivity is null, getScreenOrientation failed.");
+            return result;
+        }
+        WindowManager windowManager = (WindowManager) mRootActivity.getSystemService(mRootActivity.WINDOW_SERVICE);
+        if (windowManager == null) {
+            Log.e(TAG, "The windowManager is null, getScreenOrientation failed.");
+            return result;
+        }
+        Display display = windowManager.getDefaultDisplay();
+        if (display == null) {
+            Log.e(TAG, "The display is null, getScreenOrientation failed.");
+            return result;
+        }
+        int rotation = display.getRotation();
+        int orientation = mRootActivity.getResources().getConfiguration().orientation;
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_90) {
+                result = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+            } else {
+                result = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get screen display safety area.
+     *
+     * @return Safe Area.
+     */
+    public Rect getSafeArea() {
+        Rect rect = new Rect(0, 0, 0, 0);
+        if (mRootActivity != null && mRootActivity instanceof StageActivity) {
+            int instanceId = ((StageActivity) mRootActivity).getInstanceId();
+            int width = mRootActivity.getWindow().getDecorView().findViewById(instanceId).getWidth();
+            int height = mRootActivity.getWindow().getDecorView().findViewById(instanceId).getHeight();
+            int[] location = new int[LOCATION_SIZE];
+            mRootActivity.getWindow().getDecorView().findViewById(instanceId).getLocationOnScreen(location);
+            int x = location[LOCATION_X];
+            int y = location[LOCATION_Y];
+            rect.set(x, y, width, height);
+        } else {
+            Log.e(TAG, "The mRootActivity is null or of the wrong type, getSafeArea failed.");
+        }
+        return rect;
     }
 
     /**
