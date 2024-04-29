@@ -16,8 +16,6 @@
 package ohos.ace.adapter.capability.bridge;
 
 import java.util.ArrayList;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.Iterator;
 import java.util.List;
 import ohos.ace.adapter.ALog;
@@ -32,8 +30,6 @@ import org.json.JSONObject;
  */
 public class ParameterHelper {
     private static final String LOG_TAG = "ParameterHelper";
-
-    private static List<Object> arraysObject = new ArrayList<Object>();
 
     private static final int HASH_CODE = 1;
 
@@ -91,16 +87,14 @@ public class ParameterHelper {
      * @return Parameter in the form of Object.
      */
     public static Object[] jsonTransformObject(JSONObject paramJsonObj) {
-        Lock transformObjectLock = new ReentrantLock();
-        transformObjectLock.lock();
         try {
-            arraysObject.clear();
+            List<Object> arraysObject = new ArrayList<Object>();
             Iterator<String> keys = paramJsonObj.keys();
             while (keys.hasNext()) {
                 String str = keys.next();
                 if (paramJsonObj.get(str) instanceof JSONArray && arraysObject != null) {
                     JSONArray JsonArray = (JSONArray) paramJsonObj.get(str);
-                    addArraysObject(JsonArray);
+                    addArraysObject(JsonArray, arraysObject);
                 } else if (arraysObject != null) {
                     arraysObject.add(paramJsonObj.get(str));
                 } else {
@@ -110,27 +104,25 @@ public class ParameterHelper {
             return arraysObject.toArray();
         } catch (JSONException e) {
             ALog.e(LOG_TAG, "jsonTransformObject failed, JSONException.");
-        } finally {
-            transformObjectLock.unlock();
         }
         return null;
     }
 
-    private static void addArraysObject(JSONArray JsonArray) {
+    private static void addArraysObject(JSONArray JsonArray, List<Object> arraysObject) {
         try {
             int next = 0;
             if (JsonArray != null && JsonArray.get(next) instanceof String) {
-                addArraysString(JsonArray, next);
+                addArraysString(JsonArray, arraysObject, next);
             } else if (JsonArray != null && JsonArray.get(next) instanceof Integer) {
-                addArraysInteger(JsonArray, next);
+                addArraysInteger(JsonArray, arraysObject, next);
             } else if (JsonArray != null && JsonArray.get(next) instanceof Boolean) {
-                addArraysBoolean(JsonArray, next);
+                addArraysBoolean(JsonArray, arraysObject, next);
             } else if (JsonArray != null && JsonArray.get(next) instanceof Character) {
-                addArraysCharacter(JsonArray, next);
+                addArraysCharacter(JsonArray, arraysObject, next);
             } else if (JsonArray != null && JsonArray.get(next) instanceof Double) {
-                addArraysDouble(JsonArray, next);
+                addArraysDouble(JsonArray, arraysObject, next);
             } else if (JsonArray != null && JsonArray.get(next) instanceof Float) {
-                addArraysFloat(JsonArray, next);
+                addArraysFloat(JsonArray, arraysObject, next);
             } else {
                 return;
             }
@@ -139,7 +131,7 @@ public class ParameterHelper {
         }
     }
 
-    private static void addArraysString(JSONArray JsonArray, int next) {
+    private static void addArraysString(JSONArray JsonArray, List<Object> arraysObject, int next) {
         try {
             List<String> stringList = new ArrayList<String>();
             while (JsonArray.hashCode() != HASH_CODE) {
@@ -156,7 +148,7 @@ public class ParameterHelper {
         }
     }
 
-    private static void addArraysInteger(JSONArray JsonArray, int next) {
+    private static void addArraysInteger(JSONArray JsonArray, List<Object> arraysObject, int next) {
         try {
             List<Integer> intList = new ArrayList<Integer>();
             while (JsonArray.hashCode() != HASH_CODE) {
@@ -173,7 +165,7 @@ public class ParameterHelper {
         }
     }
 
-    private static void addArraysBoolean(JSONArray JsonArray, int next) {
+    private static void addArraysBoolean(JSONArray JsonArray, List<Object> arraysObject, int next) {
         try {
             List<Boolean> boolList = new ArrayList<Boolean>();
             while (JsonArray.hashCode() != HASH_CODE) {
@@ -190,7 +182,7 @@ public class ParameterHelper {
         }
     }
 
-    private static void addArraysCharacter(JSONArray JsonArray, int next) {
+    private static void addArraysCharacter(JSONArray JsonArray, List<Object> arraysObject, int next) {
         try {
             List<Character> charList = new ArrayList<Character>();
             while (JsonArray.hashCode() != HASH_CODE) {
@@ -207,7 +199,7 @@ public class ParameterHelper {
         }
     }
 
-    private static void addArraysDouble(JSONArray JsonArray, int next) {
+    private static void addArraysDouble(JSONArray JsonArray, List<Object> arraysObject, int next) {
         try {
             List<Double> doubleList = new ArrayList<Double>();
             while (JsonArray.hashCode() != HASH_CODE) {
@@ -224,7 +216,7 @@ public class ParameterHelper {
         }
     }
 
-    private static void addArraysFloat(JSONArray JsonArray, int next) {
+    private static void addArraysFloat(JSONArray JsonArray, List<Object> arraysObject, int next) {
         try {
             List<Float> floatList = new ArrayList<Float>();
             while (JsonArray.hashCode() != HASH_CODE) {

@@ -421,16 +421,6 @@ public abstract class BridgePlugin {
      * @param errorMessage Message of error.
      */
     protected void jsSendMethodResult(Object result, String methodName, int errorCode, String errorMessage) {
-        if (this.isUseTaskQueue_) {
-            this.outPutHandler_.dispatch(() -> {
-                jsSendMethodResultInner(result, methodName, errorCode, errorMessage);
-            });
-        } else {
-            jsSendMethodResultInner(result, methodName, errorCode, errorMessage);
-        }
-    }
-
-    private void jsSendMethodResultInner(Object result, String methodName, int errorCode, String errorMessage) {
         if (this.iMethodResult_ == null) {
             return;
         }
