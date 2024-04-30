@@ -333,4 +333,12 @@ public class StageFragment extends Fragment {
         }
         return pluginContext;
     }
+
+    /**
+     * Call this when your fragment is done and should be closed.
+     */
+    public void finish() {
+        Log.i(LOG_TAG, "StageFragment finish called.");
+        return;
+    }
 }
