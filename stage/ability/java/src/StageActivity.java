@@ -228,7 +228,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
                 resultWantParams = "";
             }
         }
-        activityDelegate.dispatchOnActivityResult(getInstanceName(), requestCode, resultCode, resultWantParams);
+        activityDelegate.dispatchOnActivityResult(getInstanceName(), requestCode, resultCode, resultWantParams, intent);
     }
 
     /**

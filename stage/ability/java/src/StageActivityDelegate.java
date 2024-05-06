@@ -20,6 +20,11 @@ import android.util.Log;
 
 import ohos.ace.adapter.WindowView;
 
+import android.content.Intent;
+
+import java.util.List;
+import java.util.ArrayList;
+
 /**
  * This class is responsible for communicating with the stage activity delegate jni.
  *
@@ -27,6 +32,26 @@ import ohos.ace.adapter.WindowView;
  */
 public class StageActivityDelegate {
     private static final String LOG_TAG = "StageActivityDelegate";
+
+    private static final List<INTENTCALLBACK> intentCallbackList = new ArrayList<>();
+
+    public interface INTENTCALLBACK {
+        void onResult(int requestCode, int resultCode, Intent intent);
+    }
+
+    public static void addIntentCallback(INTENTCALLBACK callback) {
+        if (callback != null) {
+            intentCallbackList.add(callback);
+        }
+    }
+
+    public static void triggerIntentCallback(int requestCode, int resultCode, Intent intent) {
+        if (intentCallbackList != null) {
+            for (INTENTCALLBACK callback : intentCallbackList) {
+                callback.onResult(requestCode, resultCode, intent);
+            }
+        }
+    }
 
     /**
      * Constructor.
@@ -134,8 +159,9 @@ public class StageActivityDelegate {
      * @param resultWantParams the data returned after the ability is destroyed.
      */
     public void dispatchOnActivityResult(
-        String instanceName, int requestCode, int resultCode, String resultWantParams) {
+        String instanceName, int requestCode, int resultCode, String resultWantParams, Intent intent) {
         Log.i(LOG_TAG, "dispatchOnActivityResult called");
+        triggerIntentCallback(requestCode, resultCode, intent);
         nativeDispatchOnAbilityResult(instanceName, requestCode, resultCode, resultWantParams);
     }
 
