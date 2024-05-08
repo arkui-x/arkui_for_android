@@ -76,6 +76,7 @@
       OHOS::Rosen::Drawing::Brush::*;
       OHOS::Ace::ResourceManager::*;
       OHOS::Ace::SpringMotion::*;
+      OHOS::Ace::PerfMonitor::*;
 
       virtual?thunk?to?OHOS::Ace::Animator::~Animator??;
 
