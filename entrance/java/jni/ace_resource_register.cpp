@@ -195,7 +195,7 @@ bool AceResourceRegister::ReleaseResource(const std::string& resourceHash)
     }
     
     bool hasException = false;
-
+    env->CallBooleanMethod(object_.get(), releaseResourceMethod_, jResrouceHash);
     if (env->ExceptionCheck()) {
         LOGE("AceResourceRegister ReleaseResource: has exception");
         env->ExceptionDescribe();
