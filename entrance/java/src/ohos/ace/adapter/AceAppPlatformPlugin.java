@@ -19,6 +19,7 @@ import android.content.Context;
 
 import ohos.ace.adapter.capability.clipboard.ClipboardPluginAosp;
 import ohos.ace.adapter.capability.environment.EnvironmentAosp;
+import ohos.ace.adapter.capability.font.SystemFontManager;
 import ohos.ace.adapter.capability.plugin.PluginManager;
 import ohos.ace.adapter.capability.storage.PersistentStorageAosp;
 import ohos.ace.adapter.capability.vibrator.VibratorPluginAosp;
@@ -30,6 +31,8 @@ public class AceAppPlatformPlugin {
     private ClipboardPluginAosp clipboardPlugin;
 
     private EnvironmentAosp environmentPlugin;
+
+    private SystemFontManager systemFontManager;
 
     private PersistentStorageAosp persistentStoragePlugin;
 
@@ -48,6 +51,8 @@ public class AceAppPlatformPlugin {
         clipboardPlugin = new ClipboardPluginAosp(context);
 
         environmentPlugin = new EnvironmentAosp(context);
+
+        systemFontManager = new SystemFontManager();
 
         persistentStoragePlugin = new PersistentStorageAosp(context);
 

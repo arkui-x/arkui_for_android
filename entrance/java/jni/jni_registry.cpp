@@ -21,6 +21,7 @@
 #include "adapter/android/capability/java/jni/clipboard/clipboard_jni.h"
 #include "adapter/android/capability/java/jni/editing/text_input_jni.h"
 #include "adapter/android/capability/java/jni/environment/environment_jni.h"
+#include "adapter/android/capability/java/jni/font/system_font_jni.h"
 #include "adapter/android/capability/java/jni/grantresult/grant_result_jni.h"
 #include "adapter/android/capability/java/jni/storage/storage_jni.h"
 #include "adapter/android/capability/java/jni/vibrator/vibrator_jni.h"
@@ -71,6 +72,11 @@ bool JniRegistry::Register()
 
     if (!EnvironmentJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register EnvironmentJni");
+        return false;
+    }
+
+    if (!SystemFontJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register SystemFontJni");
         return false;
     }
 
