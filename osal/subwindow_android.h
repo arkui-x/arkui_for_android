@@ -102,8 +102,6 @@ public:
 
     void SetHotAreas(const std::vector<Rect>& rects, int32_t overlayId) override;
 
-    void SetDialogHotAreas(const std::vector<Rect>& rects, int32_t overlayId) override;
-
     void DeleteHotAreas(int32_t overlayId) override;
 
     void ClearToast() override;
@@ -155,10 +153,6 @@ public:
     void ResizeWindowForFoldStatus() override {}
 
     void ResizeWindowForFoldStatus(int32_t parentContainerId) override {}
-
-    void SetPopupHotAreas(const std::vector<Rect>& rects, int32_t overlayId) override;
-
-    void DeletePopupHotAreas(int32_t overlayId) override;
 
     bool IsToastWindow() const
     {
