@@ -37,6 +37,7 @@
 #include "base/log/ace_trace.h"
 #include "base/log/event_report.h"
 #include "base/log/log.h"
+#include "base/perfmonitor/perf_monitor.h"
 #include "base/subwindow/subwindow_manager.h"
 #include "core/common/ace_engine.h"
 #include "core/common/ace_view.h"
@@ -461,6 +462,7 @@ void UIContentImpl::InitAceInfoFromResConfig()
 void UIContentImpl::Foreground()
 {
     LOGI("UIContentImpl: window foreground");
+    PerfMonitor::GetPerfMonitor()->SetAppStartStatus();
     ContainerScope::UpdateRecentForeground(instanceId_);
     Platform::AceContainerSG::OnShow(instanceId_);
     // set the flag isForegroundCalled to be true
@@ -561,6 +563,7 @@ bool UIContentImpl::ProcessBackPressed()
     auto container = AceEngine::Get().GetContainer(instanceId_);
     CHECK_NULL_RETURN(container, false);
 
+    PerfMonitor::GetPerfMonitor()->RecordInputEvent(LAST_UP, UNKNOWN_SOURCE, 0);
     LOGI("UIContentImpl::ProcessBackPressed AceContainerSG");
     if (Platform::AceContainerSG::OnBackPressed(instanceId_)) {
         LOGI("UIContentImpl::ProcessBackPressed AceContainerSG return true");
