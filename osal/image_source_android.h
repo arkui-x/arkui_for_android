@@ -34,6 +34,7 @@ public:
     RefPtr<PixelMap> CreatePixelMap() override;
     Size GetImageSize() override;
     uint32_t GetFrameCount() override;
+    std::string GetEncodedFormat() override;
 
 private:
     std::unique_ptr<Media::ImageSource> imageSource_;

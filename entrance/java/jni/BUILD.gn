@@ -82,8 +82,10 @@ template("ace_common_jni_source_set") {
       "$ace_root/adapter/android/entrance/java/jni/pack_asset_provider.cpp",
       "$ace_root/adapter/android/entrance/java/jni/subwindow_manager_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/touch_event.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/touch_event_convertor.cpp",
       "$ace_root/adapter/android/entrance/java/jni/udmf/udmf_impl.cpp",
       "$ace_root/adapter/android/entrance/java/jni/web_adapter_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/xcollie/xcollieInterface_impl.cpp",
     ]
 
     include_dirs = [

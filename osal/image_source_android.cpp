@@ -126,4 +126,9 @@ uint32_t ImageSourceAndroid::GetFrameCount()
 {
     return 0;
 }
+
+std::string ImageSourceAndroid::GetEncodedFormat()
+{
+    return "";
+}
 } // namespace OHOS::Ace

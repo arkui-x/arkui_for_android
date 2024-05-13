@@ -56,6 +56,7 @@ bool SystemProperties::svgTraceEnable_ = false;
 bool SystemProperties::rosenBackendEnabled_ = true;
 bool SystemProperties::downloadByNetworkEnabled_ = false;
 bool SystemProperties::isHookModeEnabled_ = false;
+bool SystemProperties::syncDebugTraceEnable_ = false;
 bool SystemProperties::accessibilityEnabled_ = false;
 bool SystemProperties::windowAnimationEnabled_ = false;
 bool SystemProperties::debugBoundaryEnabled_ = false;
@@ -71,6 +72,7 @@ bool SystemProperties::gridCacheEnabled_ = false;
 bool SystemProperties::sideBarContainerBlurEnable_ = false;
 bool SystemProperties::acePerformanceMonitorEnable_ = false;
 bool SystemProperties::imageFileCacheConvertAstc_ = false;
+int32_t SystemProperties::imageFileCacheConvertAstcThreshold_ = 2;
 bool SystemProperties::traceInputEventEnable_ = false;
 
 void SystemProperties::InitDeviceType(DeviceType type)
