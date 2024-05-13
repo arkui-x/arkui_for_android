@@ -844,19 +844,12 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public void onActivityResume() {
         runAsync(() -> {
-            mediaPlayerLock.lock();
-            try {
-                if(!isTrueBack) {
-                    isNeedResume = true;
-                    isResumePlaying = ((mediaPlayer != null && mediaPlayer.isPlaying()) || isAutoPlay()) && !isPaused;
-                    reset();
-                }
-                if (!resume()) {
-                    ALog.w(LOG_TAG, "media player resume failed.");
-                    reset();
-                }
-            } finally {
-                mediaPlayerLock.unlock();
+           if (isResumePlaying) {
+                start(null);
+                isResumePlaying = false;
+                runOnUIThread(() -> {
+                    firePlayStatusChange(true);
+                });
             }
         });
     }
@@ -864,18 +857,8 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public void onActivityPause() {
         runAsync(() -> {
-            mediaPlayerLock.lock();
-            try {
-                if (mediaPlayer != null) {
-                    isTrueBack = true;
-                    isNeedResume = true;
-                    isResumePlaying = (mediaPlayer.isPlaying() || isAutoPlay()) && !isPaused;
-                    reset();
-                }
-            } finally {
-                mediaPlayerLock.unlock();
-            }
-            setKeepScreenOn(false);
+            isResumePlaying = mediaPlayer != null && mediaPlayer.isPlaying() && !isPaused;
+            pause(null);
             runAsync(
                 new Runnable() {
 
