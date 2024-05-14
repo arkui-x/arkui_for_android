@@ -857,7 +857,7 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public void onActivityPause() {
         runAsync(() -> {
-            isResumePlaying = mediaPlayer != null && mediaPlayer.isPlaying() && !isPaused;
+            isResumePlaying = (mediaPlayer != null) && mediaPlayer.isPlaying() && !isPaused;
             pause(null);
             runAsync(
                 new Runnable() {
