@@ -129,9 +129,10 @@ public class AceEventProcessorAosp {
         packet.putDouble(event.getSize(actionIndex));
         packet.putLong(eventSourceTransKeySource(event.getSource()));
         packet.putLong(event.getDeviceId());
-        int actionPoint = 0;
-        if (actionIndex == event.getActionIndex()) {
-            actionPoint = 1;
+        int actionPoint = 1;
+        if ((actionType == ActionType.DOWN || actionType == ActionType.UP) &&
+            actionIndex != event.getActionIndex()) {
+            actionPoint = 0;
         }
         packet.putLong(actionPoint);
     }
