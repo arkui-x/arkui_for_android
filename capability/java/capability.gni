@@ -113,6 +113,8 @@ capability_cpp_files = [
   "$ace_root/adapter/android/capability/java/jni/environment/environment_impl.cpp",
   "$ace_root/adapter/android/capability/java/jni/environment/environment_jni.cpp",
   "$ace_root/adapter/android/capability/java/jni/environment/environment_proxy_impl.cpp",
+  "$ace_root/adapter/android/capability/java/jni/font/font_platform_impl.cpp",
+  "$ace_root/adapter/android/capability/java/jni/font/font_platform_proxy_impl.cpp",
   "$ace_root/adapter/android/capability/java/jni/font/system_font_jni.cpp",
   "$ace_root/adapter/android/capability/java/jni/font/system_font_manager.cpp",
   "$ace_root/adapter/android/capability/java/jni/grantresult/grant_result_jni.cpp",

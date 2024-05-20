@@ -14,8 +14,12 @@
  */
 #include "adapter/android/capability/java/jni/font/system_font_jni.h"
 
+#include "adapter/android/capability/java/jni/font/font_platform_proxy_impl.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/log/log.h"
+#ifdef USE_PLATFORM_FONT
+#include "core/common/font/font_platform_proxy.h"
+#endif
 
 namespace OHOS::Ace::Platform {
 namespace {
@@ -71,7 +75,15 @@ bool SystemFontJni::Register(std::shared_ptr<JNIEnv> env)
         LOGW("SystemFont Jni: RegisterNatives failed.");
         return false;
     }
+    OnJniRegistered();
     return true;
+}
+
+void SystemFontJni::OnJniRegistered()
+{
+#ifdef USE_PLATFORM_FONT
+    FontPlatformProxy::GetInstance().SetDelegate(std::make_unique<FontPlatformProxyImpl>());
+#endif
 }
 
 void SystemFontJni::NativeInit(JNIEnv* env, jobject jobj)

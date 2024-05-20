@@ -38,6 +38,7 @@ public:
     // Called by C++
     static void GetSystemFontInfo(std::vector<FontInfoAndroid>& fontInfos);
 private:
+    static void OnJniRegistered();
     static void InitFontInfo(JNIEnv* env);
     static void ConvertFontInfo(jobjectArray jObjectArray, std::vector<FontInfoAndroid>& fontInfos);
 

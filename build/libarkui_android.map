@@ -120,7 +120,6 @@
       OHOS::Ace::Platform::BridgeManager::*;
       OHOS::Ace::Platform::BufferMapping::*;
       OHOS::Ace::SubwindowManager::*;
-      OHOS::Ace::Platform::SystemFontManager::*;
 
       "OHOS::AppExecFwk::AbilityDelegatorRegistry::GetAbilityDelegator()";
       "OHOS::AppExecFwk::AbilityDelegator::GetCurrentTopAbility()";
