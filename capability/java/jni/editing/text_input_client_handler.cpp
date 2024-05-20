@@ -39,7 +39,7 @@ void TextInputClientHandler::UpdateEditingValue(
                     client->UpdateEditingValue(value, needFireChangeEvent);
                 }
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XTextInputClientHandlerUpdateEditingValue");
     }
 }
 
@@ -60,7 +60,7 @@ void TextInputClientHandler::PerformAction(const int32_t clientId, const TextInp
                     client->PerformAction(action, true);
                 }
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XTextInputClientHandlerPerformAction");
     }
 }
 
@@ -81,7 +81,7 @@ void TextInputClientHandler::UpdateInputFilterErrorText(const int32_t clientId, 
                     client->UpdateInputFilterErrorText(errorText);
                 }
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XTextInputClientHandlerUpdateInputFilterErrorText");
     }
 }
 } // namespace OHOS::Ace::Platform

@@ -19,8 +19,8 @@
 
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/ace_platform_plugin_jni.h"
-#include "adapter/android/entrance/java/jni/jni_registry.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
+#include "adapter/android/entrance/java/jni/jni_registry.h"
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
 #include "base/i18n/localization.h"
 #include "base/log/ace_trace.h"
@@ -155,7 +155,7 @@ void AceContainerSG::Destroy()
             uiTask();
             LOGI("AceContainerSG::Destroy pipelineContext_ end");
         } else {
-            taskExecutor_->PostTask(uiTask, TaskExecutor::TaskType::UI);
+            taskExecutor_->PostTask(uiTask, TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGDestroyPipeline");
         }
 
         if (isSubContainer_) {
@@ -180,7 +180,7 @@ void AceContainerSG::Destroy()
             jsTask();
             LOGI("AceContainerSG::Destroy frontend end");
         } else {
-            taskExecutor_->PostTask(jsTask, TaskExecutor::TaskType::JS);
+            taskExecutor_->PostTask(jsTask, TaskExecutor::TaskType::JS, "ArkUI-XAceContainerSGDestroyFrontend");
         }
     }
     // Clear the data of this container
@@ -194,7 +194,6 @@ void AceContainerSG::Destroy()
 void AceContainerSG::InitializeFrontend()
 {
     if (type_ == FrontendType::DECLARATIVE_JS) {
-
         if (isSubContainer_) {
             auto container = GetContainer(parentId_);
             CHECK_NULL_VOID(container);
@@ -291,7 +290,7 @@ void AceContainerSG::InitializeCallback()
                 context->OnTouchEvent(event);
                 context->NotifyDispatchTouchEventDismiss(event);
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGTouchEventCallback");
     };
     aceView_->RegisterTouchEventCallback(touchEventCallback);
 
@@ -304,8 +303,8 @@ void AceContainerSG::InitializeCallback()
         auto bombId = GetMilliseconds();
         AceEngine::Get().BuriedBomb(instanceId, bombId);
         AceEngine::Get().DefusingBomb(instanceId);
-        context->GetTaskExecutor()->PostSyncTask(
-            [context, event, &result]() { result = context->OnKeyEvent(event); }, TaskExecutor::TaskType::UI);
+        context->GetTaskExecutor()->PostSyncTask([context, event, &result]() { result = context->OnKeyEvent(event); },
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGKeyEventCallback");
         return result;
     };
     aceView_->RegisterKeyEventCallback(keyEventCallback);
@@ -325,7 +324,7 @@ void AceContainerSG::InitializeCallback()
                 CHECK_NULL_VOID(context);
                 context->OnMouseEvent(event);
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGMouseEventCallback");
     };
     aceView_->RegisterMouseEventCallback(mouseEventCallback);
 
@@ -335,7 +334,8 @@ void AceContainerSG::InitializeCallback()
         CHECK_NULL_RETURN(context, result);
         ContainerScope scope(instanceId);
         context->GetTaskExecutor()->PostSyncTask(
-            [context, event, &result]() { result = context->OnRotationEvent(event); }, TaskExecutor::TaskType::UI);
+            [context, event, &result]() { result = context->OnRotationEvent(event); }, TaskExecutor::TaskType::UI,
+            "ArkUI-XAceContainerSGRotationEventCallback");
         return result;
     };
     aceView_->RegisterRotationEventCallback(rotationEventCallback);
@@ -359,7 +359,8 @@ void AceContainerSG::InitializeCallback()
         if (Container::Current()->GetSettings().usePlatformAsUIThread) {
             task();
         } else {
-            context->GetTaskExecutor()->PostTask(task, TaskExecutor::TaskType::UI);
+            context->GetTaskExecutor()->PostTask(
+                task, TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGViewChangeCallback");
         }
     };
     aceView_->RegisterViewChangeCallback(viewChangeCallback);
@@ -375,7 +376,7 @@ void AceContainerSG::InitializeCallback()
                 CHECK_NULL_VOID(context);
                 context->OnSurfacePositionChanged(posX, posY);
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGViewPositionChangeCallback");
     };
     aceView_->RegisterViewPositionChangeCallback(viewPositionChangeCallback);
 
@@ -390,7 +391,7 @@ void AceContainerSG::InitializeCallback()
                 CHECK_NULL_VOID(context);
                 context->OnSurfaceDensityChanged(density);
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGDensityChangeCallback");
     };
     aceView_->RegisterDensityChangeCallback(densityChangeCallback);
 
@@ -405,7 +406,7 @@ void AceContainerSG::InitializeCallback()
                 CHECK_NULL_VOID(context);
                 context->OnSystemBarHeightChanged(statusBar, navigationBar);
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGSytemBarHeighChangeCallback");
     };
     aceView_->RegisterSystemBarHeightChangeCallback(systemBarHeightChangeCallback);
 
@@ -420,7 +421,7 @@ void AceContainerSG::InitializeCallback()
                 CHECK_NULL_VOID(context);
                 context->OnSurfaceDestroyed();
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGSurfaceDestroyCallback");
     };
     aceView_->RegisterSurfaceDestroyCallback(surfaceDestroyCallback);
 
@@ -435,7 +436,7 @@ void AceContainerSG::InitializeCallback()
                 CHECK_NULL_VOID(context);
                 context->OnIdle(deadline);
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGIdleCallback");
     };
     aceView_->RegisterIdleCallback(idleCallback);
 
@@ -449,7 +450,7 @@ void AceContainerSG::InitializeCallback()
                 CHECK_NULL_VOID(context);
                 context->NotifyOnPreDraw();
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGPreDrawCallback");
     };
     aceView_->RegisterPreDrawCallback(preDrawCallback);
 }
@@ -476,7 +477,7 @@ void AceContainerSG::InitializeFinishEventHandler(int32_t instanceId)
                 CHECK_NULL_VOID(container);
                 container->OnFinish();
             },
-            TaskExecutor::TaskType::PLATFORM);
+            TaskExecutor::TaskType::PLATFORM, "ArkUI-XAceContainerSGFinishEventHandler");
     };
     pipelineContext_->SetFinishEventHandler(finishEventHandler);
 }
@@ -497,7 +498,7 @@ void AceContainerSG::InitializeStatusBarEventHandler(int32_t instanceId)
                     container->platformEventCallback_->OnStatusBarBgColorChanged(color);
                 }
             },
-            TaskExecutor::TaskType::PLATFORM);
+            TaskExecutor::TaskType::PLATFORM, "ArkUI-XAceContainerSGStatusBarEventHandler");
     };
     pipelineContext_->SetStatusBarEventHandler(setStatusBarEventHandler);
 }
@@ -537,7 +538,7 @@ void AceContainerSG::DispatchPluginError(int32_t callbackId, int32_t errorCode, 
             CHECK_NULL_VOID(front);
             front->TransferJsPluginGetError(callbackId, errorCode, std::move(errorMessage));
         },
-        TaskExecutor::TaskType::BACKGROUND);
+        TaskExecutor::TaskType::BACKGROUND, "ArkUI-XAceContainerSGDispatchPluginError");
 }
 
 bool AceContainerSG::Dump(const std::vector<std::string>& params, std::vector<std::string>& info)
@@ -776,7 +777,8 @@ void AceContainerSG::InitThemeManager()
     if (GetSettings().usePlatformAsUIThread) {
         initThemeManagerTask();
     } else {
-        taskExecutor_->PostTask(initThemeManagerTask, TaskExecutor::TaskType::UI);
+        taskExecutor_->PostTask(
+            initThemeManagerTask, TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGInitThemeManager");
     }
 }
 
@@ -798,7 +800,8 @@ void AceContainerSG::SetupRootElement()
     if (GetSettings().usePlatformAsUIThread) {
         setupRootElementTask();
     } else {
-        taskExecutor_->PostTask(setupRootElementTask, TaskExecutor::TaskType::UI);
+        taskExecutor_->PostTask(
+            setupRootElementTask, TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGSetupRootElement");
     }
 }
 
@@ -815,7 +818,8 @@ void AceContainerSG::SetHostClassName(const std::string& name)
 void AceContainerSG::TriggerGarbageCollection()
 {
     ContainerScope scope(instanceId_);
-    taskExecutor_->PostTask([] { PurgeMallocCache(); }, TaskExecutor::TaskType::UI);
+    taskExecutor_->PostTask(
+        [] { PurgeMallocCache(); }, TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGTriggerGarbageCollectionUI");
     taskExecutor_->PostTask(
         [frontend = WeakPtr<Frontend>(frontend_)]() {
             auto frontendRef = frontend.Upgrade();
@@ -824,7 +828,7 @@ void AceContainerSG::TriggerGarbageCollection()
             }
             PurgeMallocCache();
         },
-        TaskExecutor::TaskType::JS);
+        TaskExecutor::TaskType::JS, "ArkUI-XAceContainerSGTriggerGarbageCollectionJS");
 }
 
 void AceContainerSG::NotifyFontNodes()
@@ -912,7 +916,7 @@ void AceContainerSG::OnShow(int32_t instanceId)
             pipelineBase->OnShow();
             pipelineBase->SetForegroundCalled(true);
         },
-        TaskExecutor::TaskType::UI);
+        TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGOnShow");
 }
 
 void AceContainerSG::OnHide(int32_t instanceId)
@@ -939,7 +943,7 @@ void AceContainerSG::OnHide(int32_t instanceId)
             CHECK_NULL_VOID(pipelineContext);
             pipelineContext->OnHide();
         },
-        TaskExecutor::TaskType::UI);
+        TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGOnHide");
 }
 
 void AceContainerSG::OnActive(int32_t instanceId)
@@ -961,7 +965,7 @@ void AceContainerSG::OnActive(int32_t instanceId)
             CHECK_NULL_VOID(pipelineContext);
             pipelineContext->WindowFocus(true);
         },
-        TaskExecutor::TaskType::UI);
+        TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGOnActive");
 }
 
 void AceContainerSG::OnInactive(int32_t instanceId)
@@ -984,7 +988,7 @@ void AceContainerSG::OnInactive(int32_t instanceId)
             CHECK_NULL_VOID(pipelineContext);
             pipelineContext->WindowFocus(false);
         },
-        TaskExecutor::TaskType::UI);
+        TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGOnInactive");
 }
 
 void AceContainerSG::OnConfigurationUpdated(int32_t instanceId, const std::string& configuration)
@@ -1030,8 +1034,10 @@ void AceContainerSG::DestroyContainer(int32_t instanceId, const std::function<vo
     AceEngine::Get().UnRegisterFromWatchDog(instanceId);
     auto taskExecutor = container->GetTaskExecutor();
     if (taskExecutor) {
-        taskExecutor->PostSyncTask([] { LOGI("Wait UI thread..."); }, TaskExecutor::TaskType::UI);
-        taskExecutor->PostSyncTask([] { LOGI("Wait JS thread..."); }, TaskExecutor::TaskType::JS);
+        taskExecutor->PostSyncTask(
+            [] { LOGI("Wait UI thread..."); }, TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGDestroyContainerWaitUI");
+        taskExecutor->PostSyncTask(
+            [] { LOGI("Wait JS thread..."); }, TaskExecutor::TaskType::JS, "ArkUI-XAceContainerSGDestroyContainerWaitJS");
     }
     container->DestroyView(); // Stop all threads(ui,gpu,io) for current ability.
     auto removeContainerTask = [instanceId, destroyCallback] {
@@ -1046,7 +1052,8 @@ void AceContainerSG::DestroyContainer(int32_t instanceId, const std::function<vo
     if (container->GetSettings().usePlatformAsUIThread) {
         removeContainerTask();
     } else {
-        taskExecutor->PostTask(removeContainerTask, TaskExecutor::TaskType::PLATFORM);
+        taskExecutor->PostTask(
+            removeContainerTask, TaskExecutor::TaskType::PLATFORM, "ArkUI-XAceContainerSGDestroyContainer");
     }
 }
 
@@ -1115,7 +1122,7 @@ void AceContainerSG::SetLocalStorage(NativeReference* storage, NativeReference* 
                 jsEngine->SetLocalStorage(id, storage);
             }
         },
-        TaskExecutor::TaskType::JS);
+        TaskExecutor::TaskType::JS, "ArkUI-XAceContainerSGSetLocalStorage");
 }
 
 bool AceContainerSG::MaybeRelease()
@@ -1126,7 +1133,8 @@ bool AceContainerSG::MaybeRelease()
         return true;
     } else {
         LOGI("Post Destroy AceContainer Task to PLATFORM thread.");
-        return !taskExecutor_->PostTask([this] { delete this; }, TaskExecutor::TaskType::PLATFORM);
+        return !taskExecutor_->PostTask(
+            [this] { delete this; }, TaskExecutor::TaskType::PLATFORM, "ArkUI-XAceContainerSGMaybeRelease");
     }
 }
 

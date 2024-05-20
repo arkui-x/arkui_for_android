@@ -24,7 +24,7 @@ ImageAnalyzerManager::ImageAnalyzerManager(const RefPtr<NG::FrameNode>& frameNod
     isAnalyzerOverlayBuild_ = false;
 }
 
-void ImageAnalyzerManager::CreateAnalyzerOverlay(const RefPtr<OHOS::Ace::PixelMap>& pixelMap)
+void ImageAnalyzerManager::CreateAnalyzerOverlay(const RefPtr<OHOS::Ace::PixelMap>& pixelMap, const NG::OffsetF& offset)
 {
 }
 

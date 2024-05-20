@@ -31,7 +31,7 @@ RefPtr<TextInputConnection> TextInputPlugin::Attach(const WeakPtr<TextInputClien
 
     taskExecutor->PostTask([clientId = connection->GetClientId(), config,
                                instanceId] { TextInputJni::SetClient(clientId, config, instanceId); },
-        TaskExecutor::TaskType::PLATFORM);
+        TaskExecutor::TaskType::PLATFORM, "ArkUI-XTextInputPluginAttach");
 
     return connection;
 }

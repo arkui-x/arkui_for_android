@@ -470,7 +470,7 @@ void AccessibilityManagerImpl::DumpHandleEvent(const std::vector<std::string>& p
                 CHECK_NULL_VOID(accessibilityManager);
                 accessibilityManager->ExecuteActionNG(nodeId, action, pipeline);
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAccessibilityManagerImplDumpHandleEvent");
         return;
     }
 }
