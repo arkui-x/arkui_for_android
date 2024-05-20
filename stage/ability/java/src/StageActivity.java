@@ -36,6 +36,9 @@ import ohos.ace.adapter.IArkUIXPlugin;
 import ohos.ace.adapter.PluginContext;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginAosp;
+import ohos.ace.adapter.capability.platformview.IPlatformView;
+import ohos.ace.adapter.capability.platformview.PlatformViewFactory;
+import ohos.ace.adapter.capability.platformview.AcePlatformViewPluginAosp;
 import ohos.ace.adapter.WindowView;
 
 import ohos.ace.adapter.capability.web.AceWebPluginBase;
@@ -92,6 +95,8 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     private ArkUIXPluginRegistry arkUIXPluginRegistry = null;
 
     private PluginContext pluginContext = null;
+
+    private AcePlatformViewPluginAosp platformViewPluginAosp = null;
 
     @Override
     public void onKeyboardHeightChanged(int height) {
@@ -456,6 +461,9 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             AceWebPluginBase web = AceWebPluginAosp.createRegister(context, windowView);
             windowView.setWebPlugin(web);
             platformPlugin.addResourcePlugin(web);
+            platformViewPluginAosp = AcePlatformViewPluginAosp.createRegister(context);
+            platformPlugin.addResourcePlugin(platformViewPluginAosp);
+            windowView.setPlatformViewPlugin(platformViewPluginAosp);
             platformPlugin.initSurfacePlugin(context, instanceId);
         }
         Trace.endSection();
@@ -519,5 +527,21 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         Log.i(LOG_TAG, "Report fully drawn start." + System.nanoTime());
         reportFullyDrawn();
         Log.i(LOG_TAG, "Report fully drawn end." + System.nanoTime());
+    }
+
+    
+    /**
+     * Register the platformView to activity. before super.onCreate.
+     */
+    public void registerPlatformViewFactory(PlatformViewFactory platformViewFactory) {
+        if(platformViewPluginAosp == null){
+            Log.i(LOG_TAG, "PlatformViewPluginAosp is null");
+            return;
+        }
+        if (platformViewFactory == null) {
+            Log.i(LOG_TAG, "PlatformViewFactory is null");
+            return;
+        }
+        platformViewPluginAosp.registerPlatformViewFactory(platformViewFactory);
     }
 }
