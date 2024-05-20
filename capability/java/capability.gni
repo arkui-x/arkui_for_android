@@ -37,6 +37,11 @@ common_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebBase.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebPluginBase.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/IAceWebErrorReceiveObject.java",
+
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/platformview/AcePlatformViewBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/platformview/AcePlatformViewPluginBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/platformview/IPlatformView.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/platformview/PlatformViewFactory.java",
 ]
 
 # android capability java files
@@ -97,6 +102,11 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/MethodData.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/ParameterHelper.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/TaskOption.java",
+
+  # platformview
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/platformview/AcePlatformViewAosp.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/platformview/AcePlatformViewPluginAosp.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/platformview/PlatformViewWrapper.java",
 ]
 
 # capability cpp files
