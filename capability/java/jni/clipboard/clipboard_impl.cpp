@@ -16,7 +16,6 @@
 #include "adapter/android/capability/java/jni/clipboard/clipboard_impl.h"
 
 #include "adapter/android/capability/java/jni/clipboard/clipboard_jni.h"
-
 #include "frameworks/base/utils/utils.h"
 
 namespace OHOS::Ace::Platform {
@@ -38,15 +37,16 @@ RefPtr<PasteDataMix> ClipboardImpl::CreatePasteDataMix()
 void ClipboardImpl::SetData(const std::string& data, CopyOptions copyOption, bool isDragData)
 {
     CHECK_NULL_VOID(taskExecutor_);
-    taskExecutor_->PostTask([data] { ClipboardJni::SetData(data); }, TaskExecutor::TaskType::PLATFORM);
+    taskExecutor_->PostTask(
+        [data] { ClipboardJni::SetData(data); }, TaskExecutor::TaskType::PLATFORM, "ArkUI-XClipboardImplSetData");
 }
 
 void ClipboardImpl::GetData(const std::function<void(const std::string&)>& callback, bool syncMode)
 {
     if (taskExecutor_) {
         taskExecutor_->PostTask([callback, taskExecutor = WeakClaim(RawPtr(
-            taskExecutor_))] { ClipboardJni::GetData(callback, taskExecutor); },
-            TaskExecutor::TaskType::PLATFORM);
+                                               taskExecutor_))] { ClipboardJni::GetData(callback, taskExecutor); },
+            TaskExecutor::TaskType::PLATFORM, "ArkUI-XClipboardImplGetData");
     }
 }
 
@@ -56,7 +56,7 @@ void ClipboardImpl::HasData(const std::function<void(bool hasData)>& callback)
         auto task = [callback, taskExecutor = WeakClaim(RawPtr(taskExecutor_))] {
             ClipboardJni::HasData(callback, taskExecutor);
         };
-        taskExecutor_->PostTask(task, TaskExecutor::TaskType::PLATFORM);
+        taskExecutor_->PostTask(task, TaskExecutor::TaskType::PLATFORM, "ArkUI-XClipboardImplHasData");
     }
 }
 
@@ -68,7 +68,7 @@ void ClipboardImpl::SetPixelMapData(const RefPtr<PixelMap>& pixmap, CopyOptions 
     }
     taskExecutor_->PostTask([callbackSetClipboardPixmapData = callbackSetClipboardPixmapData_,
                                 pixmap] { callbackSetClipboardPixmapData(pixmap); },
-        TaskExecutor::TaskType::UI);
+        TaskExecutor::TaskType::UI, "ArkUI-XClipboardImplSetPixelMapData");
 }
 
 void ClipboardImpl::GetPixelMapData(const std::function<void(const RefPtr<PixelMap>&)>& callback, bool syncMode)
@@ -79,7 +79,7 @@ void ClipboardImpl::GetPixelMapData(const std::function<void(const RefPtr<PixelM
     }
     taskExecutor_->PostTask([callbackGetClipboardPixmapData = callbackGetClipboardPixmapData_,
                                 callback] { callback(callbackGetClipboardPixmapData()); },
-        TaskExecutor::TaskType::UI);
+        TaskExecutor::TaskType::UI, "ArkUI-XClipboardImplGetPixelMapData");
 }
 
 void ClipboardImpl::Clear() {}

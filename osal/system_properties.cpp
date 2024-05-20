@@ -74,6 +74,7 @@ bool SystemProperties::acePerformanceMonitorEnable_ = false;
 bool SystemProperties::imageFileCacheConvertAstc_ = false;
 int32_t SystemProperties::imageFileCacheConvertAstcThreshold_ = 2;
 bool SystemProperties::traceInputEventEnable_ = false;
+std::pair<float, float> SystemProperties::brightUpPercent_ = {};
 
 void SystemProperties::InitDeviceType(DeviceType type)
 {

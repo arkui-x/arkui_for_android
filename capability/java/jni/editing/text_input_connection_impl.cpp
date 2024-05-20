@@ -36,7 +36,7 @@ void TextInputConnectionImpl::Show(bool isFocusViewChanged, int32_t instanceId)
             [instanceId, isFocusViewChanged] {
                 TextInputJni::ShowTextInput(isFocusViewChanged, instanceId);
             },
-            TaskExecutor::TaskType::PLATFORM, KEYBOARD_SHOW_DELAY_TIME);
+            TaskExecutor::TaskType::PLATFORM, KEYBOARD_SHOW_DELAY_TIME, "ArkUI-XTextInputConnectionImplShow");
     }
 }
 
@@ -48,7 +48,7 @@ void TextInputConnectionImpl::SetEditingState(
             [value, instanceId, needFireChangeEvent] {
                 TextInputJni::SetEditingState(value, instanceId, needFireChangeEvent);
             },
-            TaskExecutor::TaskType::PLATFORM);
+            TaskExecutor::TaskType::PLATFORM, "ArkUI-XTextInputConnectionImplSetEditingState");
     }
 }
 
@@ -60,7 +60,7 @@ void TextInputConnectionImpl::Close(int32_t instanceId)
                 TextInputJni::ClearClient(instanceId);
                 TextInputJni::HideTextInput(instanceId);
             },
-            TaskExecutor::TaskType::PLATFORM);
+            TaskExecutor::TaskType::PLATFORM, "ArkUI-XTextInputConnectionImplClose");
     }
     TextInputClientHandler::GetInstance().SetCurrentConnection(instanceId, nullptr);
 

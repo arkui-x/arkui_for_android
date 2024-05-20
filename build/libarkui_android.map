@@ -95,6 +95,7 @@
       vtable?for?OHOS::Ace::NG::BoxLayoutAlgorithm;
       vtable?for?OHOS::Ace::NG::LayoutProperty;
       vtable?for?OHOS::Ace::NG::TouchEventActuator;
+      vtable?for?OHOS::Ace::ResourceWrapper;
 
       VTT?for?OHOS::Ace::Animator;
       VTT?for?OHOS::Ace::Container;
@@ -105,6 +106,7 @@
       VTT?for?OHOS::Ace::NG::BoxLayoutAlgorithm;
       VTT?for?OHOS::Ace::NG::LayoutProperty;
       VTT?for?OHOS::Ace::NG::TouchEventActuator;
+      VTT?for?OHOS::Ace::ResourceWrapper;
 
       JNI_OnLoad;
 

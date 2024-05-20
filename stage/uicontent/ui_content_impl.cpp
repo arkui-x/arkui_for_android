@@ -111,7 +111,7 @@ public:
                     CHECK_NULL_VOID(context);
                     context->OnVirtualKeyboardAreaChange(keyboardRect);
                 },
-                TaskExecutor::TaskType::UI);
+                TaskExecutor::TaskType::UI, "ArkUI-XUicontentOnSizeChange");
         }
     }
 
@@ -136,7 +136,7 @@ public:
             [instanceId = instanceId_, targetId = targetId_] {
                 SubwindowManager::GetInstance()->ClearMenuNG(instanceId, targetId, true, true);
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XUicontentOnTouchOutside");
     }
 
 private:
@@ -533,7 +533,7 @@ uint32_t UIContentImpl::GetBackgroundColor()
             CHECK_NULL_VOID(pipelineContext);
             bgColor = pipelineContext->GetAppBgColor().GetValue();
         },
-        TaskExecutor::TaskType::UI);
+        TaskExecutor::TaskType::UI, "ArkUI-XUIContentImplGetBackgroundColor");
 
     LOGI("UIContentImpl::GetBackgroundColor, value is %{public}u", bgColor);
     return bgColor;
@@ -554,7 +554,7 @@ void UIContentImpl::SetBackgroundColor(uint32_t color)
             CHECK_NULL_VOID(pipelineContext);
             pipelineContext->SetAppBgColor(Color(bgColor));
         },
-        TaskExecutor::TaskType::UI);
+        TaskExecutor::TaskType::UI, "ArkUI-XUIContentImplSetBackgroundColor");
 }
 
 bool UIContentImpl::ProcessBackPressed()
@@ -640,7 +640,7 @@ void UIContentImpl::UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRunti
             auto language = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_LANGUAGE);
             container->UpdateConfiguration(colorMode, direction, densityDpi, language);
         },
-        TaskExecutor::TaskType::UI);
+        TaskExecutor::TaskType::UI, "ArkUI-XUicontentUpdateConfiguration");
     LOGI("UIContentImpl: UpdateConfiguration called End");
 }
 

@@ -627,6 +627,17 @@ Rect SubwindowAndroid::GetParentWindowRect() const
     return Rect(parentWindowRect.posX_, parentWindowRect.posY_, parentWindowRect.width_, parentWindowRect.height_);
 }
 
+Rect SubwindowAndroid::GetUIExtensionHostWindowRect() const
+{
+    Rect rect;
+    return rect;
+}
+
+bool SubwindowAndroid::CheckHostWindowStatus() const
+{
+    return false;
+}
+
 void SubwindowAndroid::RequestFocus()
 {
     if (window_->IsFocused()) {
