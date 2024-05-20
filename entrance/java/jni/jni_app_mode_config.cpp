@@ -18,6 +18,7 @@
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "adapter/android/entrance/java/jni/jni_registry.h"
 #include "adapter/android/stage/ability/java/jni/stage_jni_registry.h"
+#include "adapter/android/osal/platformview/platform_view_register.h"
 #include "base/log/log.h"
 #include "base/utils/utils.h"
 
@@ -64,6 +65,11 @@ void JniAppModeConfig::InitAppMode(JNIEnv* env, jclass myclass)
     }
     if (!OHOS::Ace::Platform::JniRegistry::Register()) {
         LOGE("JNI Onload: failed to call JniRegistry");
+        return;
+    }
+    
+    if (!PlatformViewRegister::Register()) {
+        LOGE("PlatformView Initialize: failed to register PlatformViewRegister");
         return;
     }
 }
