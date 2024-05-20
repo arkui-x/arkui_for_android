@@ -19,6 +19,8 @@ import android.content.Context;
 import android.graphics.PixelFormat;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import ohos.ace.adapter.capability.platformview.AcePlatformViewPluginBase;
+import ohos.ace.adapter.capability.platformview.AcePlatformViewBase;
 import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginBase;
 import ohos.ace.adapter.capability.web.AceWebBase;
@@ -60,6 +62,7 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     private int lastMouseButtonState = 0;
     private int lastMouseActionKey = 0;
 
+    private AcePlatformViewPluginBase acePlatformViewPluginBase;
     private AceWebPluginBase aceWebPluginBase;
 
     /**
@@ -104,6 +107,10 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
 
     public void setWebPlugin(AceWebPluginBase pluginBase) {
         aceWebPluginBase = pluginBase;
+    }
+
+    public void setPlatformViewPlugin(AcePlatformViewPluginBase pluginBase) {
+        acePlatformViewPluginBase = pluginBase;
     }
 
     private void delayNotifyIfNeeded() {
@@ -313,6 +320,18 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    private void setPlatformViewTouchEvent(MotionEvent event){
+        if (acePlatformViewPluginBase == null) {
+            return;
+        }
+        Map<Long, AcePlatformViewBase> platformViewObjectMap = acePlatformViewPluginBase.getObjectMap();
+        if (platformViewObjectMap != null) {
+            for (Map.Entry<Long, AcePlatformViewBase> entry : platformViewObjectMap.entrySet()) {
+                entry.getValue().setTouchEvent(event);
+            }
+        }
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
@@ -320,6 +339,7 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
             return super.onTouchEvent(event);
         }
         this.setWebTouchEvent(event);
+        this.setPlatformViewTouchEvent(event);
 
         try {
             int source = event.getSource();
