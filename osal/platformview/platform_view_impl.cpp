@@ -17,12 +17,12 @@
 #ifdef RENDER_EXTRACT_SUPPORTED
 #include "core/components_ng/render/adapter/render_texture_impl.h"
 #endif
-#include "core/pipeline_ng/pipeline_context.h"
 #include "base/memory/referenced.h"
 #include "base/thread/task_executor.h"
 #include "base/utils/system_properties.h"
 #include "base/utils/utils.h"
 #include "core/common/container.h"
+#include "core/pipeline_ng/pipeline_context.h"
 
 namespace OHOS::Ace::NG {
 
@@ -39,8 +39,10 @@ void PlatformViewImpl::InitPlatformView()
     auto container = Container::Current();
     CHECK_NULL_VOID(container);
     auto uiTaskExecutor = SingleTaskExecutor::Make(container->GetTaskExecutor(), TaskExecutor::TaskType::UI);
-    auto errorCallback = [weak = WeakClaim(this), uiTaskExecutor](const std::string& errorId,
-                             const std::string& param) { uiTaskExecutor.PostSyncTask([weak, errorId, param] {}); };
+    auto errorCallback = [weak = WeakClaim(this), uiTaskExecutor](
+                             const std::string& errorId, const std::string& param) {
+        uiTaskExecutor.PostSyncTask([weak, errorId, param] {}, "ArkUI-XPlatformViewImplInitPlatformView");
+    };
     platformViewDelegate_ = AceType::MakeRefPtr<PlatformViewDelegate>(container->GetPipelineContext(), errorCallback);
     platformViewDelegate_->Create(id_);
     platformViewDelegate_->SetPlatformViewReadyCallback([weak = WeakClaim(this)]() {
@@ -49,7 +51,7 @@ void PlatformViewImpl::InitPlatformView()
         auto callback = delegate_->platformViewReadyCallback_;
         CHECK_NULL_VOID(callback);
         callback();
-    });    
+    });
 }
 
 void PlatformViewImpl::UpdatePlatformViewLayout(const NG::SizeF& drawSize, const NG::OffsetF& offset)

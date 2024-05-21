@@ -53,7 +53,7 @@ PlatformViewDelegate::~PlatformViewDelegate()
             auto resRegister = weak.Upgrade();
             CHECK_NULL_VOID(resRegister);
             resRegister->UnregisterEvent(eventHash);
-        });
+        }, "ArkUI-XPlatformViewDelegatePlatformViewDelegate");
     }
 }
 
@@ -68,7 +68,7 @@ void PlatformViewDelegate::Create(const std::string& viewTag)
         if (platformView) {
             platformView->CreatePlatformView(viewTag);
         }
-    });
+    }, "ArkUI-XPlatformViewDelegateCreate");
 }
 
 void PlatformViewDelegate::CreatePlatformView(const std::string& viewTag)
