@@ -63,7 +63,7 @@ void PlatformViewResource::Release(const std::function<void(bool)>& onRelease)
     if (platformTaskExecutor.IsRunOnCurrentThread()) {
         releaseTask();
     } else {
-        platformTaskExecutor.PostTask(releaseTask);
+        platformTaskExecutor.PostTask(releaseTask, "ArkUI-XPlatformViewResourceRelease");
     }
 }
 
@@ -241,7 +241,7 @@ void PlatformViewResource::CallResRegisterMethod(
         if (callback) {
             callback(result);
         }
-    });
+    }, "ArkUI-XPlatformViewResourceCallResRegisterMethod");
 }
 
 void PlatformViewResource::CallSyncResRegisterMethod(
