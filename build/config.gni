@@ -43,6 +43,7 @@ use_curl_download = false
 use_components_lib = false
 web_components_support = true
 render_extract_support = true
+platform_view_support = true
 use_platform_font = true
 
 cflags_cc = [
@@ -62,6 +63,9 @@ libace_target =
 
 if (xcomponent_components_support) {
   defines += [ "XCOMPONENT_SUPPORTED" ]
+  if (defined(platform_view_support) && platform_view_support) {
+    defines += [ "PLATFORM_VIEW_SUPPORTED" ]
+  }
 }
 
 if (use_components_lib) {
