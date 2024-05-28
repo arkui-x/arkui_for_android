@@ -336,6 +336,7 @@ void SubwindowAndroid::ShowPopupNG(int32_t targetId, const NG::PopupInfo& popupI
     CHECK_NULL_VOID(overlayManager);
 
     ShowWindow(false);
+    window_->SetFullScreen(true);
     window_->SetTouchable(true);
 
     ResizeWindow();
@@ -635,7 +636,11 @@ Rect SubwindowAndroid::GetUIExtensionHostWindowRect() const
 
 bool SubwindowAndroid::CheckHostWindowStatus() const
 {
-    return false;
+    auto parentContainer = Platform::AceContainerSG::GetContainer(parentContainerId_);
+    CHECK_NULL_RETURN(parentContainer, false);
+    auto parentWindow = parentContainer->GetUIWindow(parentContainerId_);
+    CHECK_NULL_RETURN(parentWindow, false);
+    return true;
 }
 
 void SubwindowAndroid::RequestFocus()
