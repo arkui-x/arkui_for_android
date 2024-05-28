@@ -17,6 +17,8 @@
 
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
 #include "adapter/android/entrance/java/jni/display_info.h"
+#include "core/components_ng/pattern/menu/menu_view.h"
+#include "core/components_ng/pattern/menu/wrapper/menu_wrapper_pattern.h"
 #include "display_manager.h"
 #include "frameworks/bridge/common/utils/engine_helper.h"
 #include "interfaces/inner_api/ace/viewport_config.h"
@@ -394,6 +396,15 @@ void SubwindowAndroid::ShowMenuNG(const RefPtr<NG::FrameNode> menuNode, int32_t 
     window_->SetTouchable(true);
     ContainerScope scope(childContainerId_);
     overlay->ShowMenuInSubWindow(targetId, offset, menuNode);
+}
+
+void SubwindowAndroid::ShowMenuNG(const RefPtr<NG::FrameNode> customNode, const NG::MenuParam& menuParam,
+    const RefPtr<NG::FrameNode>& targetNode, const NG::OffsetF& offset)
+{
+    CHECK_NULL_VOID(customNode);
+    CHECK_NULL_VOID(targetNode);
+    ShowMenuNG(customNode,targetNode->GetId(),offset);
+    
 }
 
 void SubwindowAndroid::HideMenuNG(bool showPreviewAnimation, bool startDrag)

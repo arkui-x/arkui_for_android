@@ -123,7 +123,7 @@ public:
     bool CreateVSyncReceiver(std::shared_ptr<AppExecFwk::EventHandler> handler);
     void RequestNextVsync(std::function<void(int64_t, void*)> callback);
 
-    virtual void FlushFrameRate(int32_t rate) {}
+    virtual void FlushFrameRate(int32_t rate, bool isAnimatorStopped) {}
     virtual void RequestVsync(const std::shared_ptr<VsyncCallback>& vsyncCallback);
 
     void CreateSurfaceNode(void* nativeWindow);
