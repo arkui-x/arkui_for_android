@@ -437,9 +437,7 @@ private:
 
     inline void NotifyAfterBackground(bool needNotifyListeners = true, bool needNotifyUiContent = true)
     {
-        LOGI("Window: NotifyAfterBackground");
         if (needNotifyListeners) {
-            LOGI("Window: NotifyAfterBackground");
             CALL_LIFECYCLE_LISTENER(AfterBackground);
         }
     }

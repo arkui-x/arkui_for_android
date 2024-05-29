@@ -144,6 +144,31 @@ private:
     int32_t targetId_ = -1;
 };
 
+class WindowLifeCycleListener : public OHOS::Rosen::IWindowLifeCycle {
+public:
+    explicit WindowLifeCycleListener(int32_t instanceId) : instanceId_(instanceId) {}
+    ~WindowLifeCycleListener() = default;
+
+    void AfterBackground() override
+    {
+        LOGI("window is AfterBackground. The instance id is %{public}d", instanceId_);
+        auto container = Platform::AceContainerSG::GetContainer(instanceId_);
+        CHECK_NULL_VOID(container);
+        auto taskExecutor = container->GetTaskExecutor();
+        CHECK_NULL_VOID(taskExecutor);
+        ContainerScope scope(instanceId_);
+        taskExecutor->PostTask(
+            [instanceId = instanceId_, targetId = targetId_] {
+                SubwindowManager::GetInstance()->HidePopupNG(targetId, -1);
+            },
+            TaskExecutor::TaskType::UI, "ArkUI-XUicontentAfterBackground");
+    }
+
+private:
+    int32_t instanceId_ = -1;
+    int32_t targetId_ = -1;
+};
+
 UIContentImpl::UIContentImpl(OHOS::AbilityRuntime::Platform::Context* context, NativeEngine* runtime)
     : runtime_(reinterpret_cast<void*>(runtime))
 {
@@ -770,6 +795,8 @@ void UIContentImpl::InitializeSubWindow()
     AceEngine::Get().AddContainer(instanceId_, container);
     touchOutsideListener_ = new TouchOutsideListener(instanceId_);
     window_->RegisterTouchOutsideListener(touchOutsideListener_);
+    windowLifeCycleListener_ = new WindowLifeCycleListener(instanceId_);
+    window_->RegisterLifeCycleListener(windowLifeCycleListener_);
     occupiedAreaChangeListener_ = new OccupiedAreaChangeListener(instanceId_);
     window_->RegisterOccupiedAreaChangeListener(occupiedAreaChangeListener_);
 }

@@ -103,6 +103,7 @@ private:
     int32_t instanceId_ = -1;
     OHOS::Rosen::IOccupiedAreaChangeListener* occupiedAreaChangeListener_ = nullptr;
     OHOS::Rosen::ITouchOutsideListener* touchOutsideListener_ = nullptr;
+    OHOS::Rosen::IWindowLifeCycle* windowLifeCycleListener_ = nullptr;
 };
 } // namespace OHOS::Ace::Platform
 #endif // FOUNDATION_ACE_ADAPTER_ANDROID_STAGE_UI_CONTENT_IMPL_H

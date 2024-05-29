@@ -253,7 +253,7 @@ void SubwindowAndroid::HideWindow()
         window_->SetTouchable(true);
     }
 
-    if (ret != OHOS::Rosen::WMError::WM_OK) {
+    if (ret != OHOS::Rosen::WMError::WM_OK && window_->IsWindowShow()) {
         LOGW("Hide window failed with errCode: %{public}d", static_cast<int32_t>(ret));
         return;
     }
@@ -335,7 +335,7 @@ void SubwindowAndroid::ShowPopupNG(int32_t targetId, const NG::PopupInfo& popupI
     auto overlayManager = context->GetOverlayManager();
     CHECK_NULL_VOID(overlayManager);
 
-    ShowWindow(false);
+    ShowWindow(popupInfo.focusable);
     window_->SetFullScreen(true);
     window_->SetTouchable(true);
 
@@ -358,6 +358,7 @@ void SubwindowAndroid::HidePopupNG(int32_t targetId)
     popupInfo.markNeedUpdate = true;
     ContainerScope scope(childContainerId_);
     overlayManager->HidePopup(targetId == -1 ? popupTargetId_ : targetId, popupInfo);
+    HideWindow();
     context->FlushPipelineImmediately();
     HideEventColumn();
     HidePixelMap();
