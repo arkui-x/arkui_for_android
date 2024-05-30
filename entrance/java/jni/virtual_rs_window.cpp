@@ -345,8 +345,6 @@ WMError Window::Destroy()
 
     NotifyBeforeDestroy(GetWindowName());
 
-    ClearListenersById(GetWindowId());
-
     // Remove subWindows of current window from subWindowMap_
     if (subWindowMap_.count(GetWindowId()) > 0) {
         auto& subWindows = subWindowMap_.at(GetWindowId());
@@ -386,6 +384,8 @@ WMError Window::Destroy()
     }
 
     NotifyAfterBackground();
+
+    ClearListenersById(GetWindowId());
     return WMError::WM_OK;
 }
 
@@ -434,7 +434,7 @@ std::vector<std::shared_ptr<Window>> Window::GetSubWindow(uint32_t parentId)
 
 std::shared_ptr<Window> Window::FindWindow(const std::string& name)
 {
-    LOGI("Window::GetSubWindow called. name=%s", name.c_str());
+    LOGI("Window::FindWindow called. name=%s", name.c_str());
     auto iter = windowMap_.find(name);
     if (iter == windowMap_.end()) {
         return nullptr;
@@ -843,6 +843,11 @@ void Window::NotifyTouchOutside()
             listener->OnTouchOutside();
         }
     }
+}
+
+void Window::SubWindowHide()
+{
+    NotifyAfterBackground();
 }
 
 void Window::NotifySurfaceDestroyed()

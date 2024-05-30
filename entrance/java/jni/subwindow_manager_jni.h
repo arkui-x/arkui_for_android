@@ -106,6 +106,7 @@ private:
     static SubWindowManagerStruct subWindowManagerStruct_;
     static void SetupSubWindowManager(JNIEnv* env, jobject obj);
     static void OnWindowTouchOutside(JNIEnv* env, jobject obj, jlong window);
+    static void OnSubWindowHide(JNIEnv* env, jobject obj, jlong window);
     ACE_DISALLOW_COPY_AND_MOVE(SubWindowManagerJni);
 };
 

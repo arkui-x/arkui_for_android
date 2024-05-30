@@ -42,7 +42,6 @@ public class SubWindow {
 
     public class PopupSubWindow extends PopupWindow {
         private static final String TAG = "PopupSubWindow";
-        private boolean dismissEnabled = false;
 
         public PopupSubWindow() {
             super();
@@ -50,14 +49,18 @@ public class SubWindow {
 
         @Override
         public void dismiss() {
-            if (dismissEnabled) {
-                super.dismiss();
-                dismissEnabled = false;
+            StackTraceElement[] stackTrace = new Exception().getStackTrace();
+            if (stackTrace.length >= 2 && "onTouchEvent".equals(stackTrace[1].getMethodName())) {
+                return;
+            }
+            super.dismiss();
+            if (nativeSubWindowPtr != 0L) {
+                nativeOnSubWindowHide(nativeSubWindowPtr);
             }
         }
 
-        public void setDismissEnabled(boolean enabled) {
-            dismissEnabled = enabled;
+        public void shutdown() {
+            super.dismiss();
         }
     }
     
@@ -329,8 +332,7 @@ public class SubWindow {
      * Destroy window.
      */
     public void destroyWindow() {
-        subWindowView.setDismissEnabled(true);
-        subWindowView.dismiss();
+        subWindowView.shutdown();
     }
 
     /**
@@ -642,4 +644,5 @@ public class SubWindow {
     }
 
     private native void nativeOnWindowTouchOutside(long windowPtr);
+    private native void nativeOnSubWindowHide(long windowPtr);
 }

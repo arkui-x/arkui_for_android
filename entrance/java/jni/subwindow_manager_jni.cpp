@@ -34,11 +34,18 @@ bool SubWindowManagerJni::Register(const std::shared_ptr<JNIEnv>& env)
         .signature = "()V",
         .fnPtr = reinterpret_cast<void*>(&SetupSubWindowManager),
     } };
-    static const JNINativeMethod subWindowMethods[] = { {
-        .name = "nativeOnWindowTouchOutside",
-        .signature = "(J)V",
-        .fnPtr = reinterpret_cast<void*>(&OnWindowTouchOutside),
-    } };
+    static const JNINativeMethod subWindowMethods[] = {
+        {
+            .name = "nativeOnWindowTouchOutside",
+            .signature = "(J)V",
+            .fnPtr = reinterpret_cast<void*>(&OnWindowTouchOutside),
+        },
+        {
+            .name = "nativeOnSubWindowHide",
+            .signature = "(J)V",
+            .fnPtr = reinterpret_cast<void*>(&OnSubWindowHide),
+        }
+    };
 
     if (!env) {
         LOGE("JNI Window: null java env");
@@ -124,6 +131,14 @@ void SubWindowManagerJni::OnWindowTouchOutside(JNIEnv* env, jobject obj, jlong w
     auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
     if (windowPtr != nullptr) {
         windowPtr->NotifyTouchOutside();
+    }
+}
+
+void SubWindowManagerJni::OnSubWindowHide(JNIEnv* env, jobject obj, jlong window)
+{
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
+    if (windowPtr != nullptr) {
+        windowPtr->SubWindowHide();
     }
 }
 

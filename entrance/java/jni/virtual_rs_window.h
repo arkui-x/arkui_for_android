@@ -132,6 +132,7 @@ public:
     void NotifySizeChange(Rect rect);
     void NotifySurfaceDestroyed();
     void NotifyTouchOutside();
+    void SubWindowHide();
 
     void WindowFocusChanged(bool hasWindowFocus);
     void Foreground();
