@@ -95,6 +95,7 @@ template("ace_common_jni_source_set") {
       "//foundation/appframework/window_manager/dm/include",
       "//foundation/appframework/window_manager/utils/include",
       "//foundation/graphic/graphic_surface/interfaces/inner_api/surface",
+      "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
     ]
 
     if (defined(config.use_curl_download) && config.use_curl_download) {
