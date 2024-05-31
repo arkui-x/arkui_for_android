@@ -1,0 +1,90 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+defines = [
+  "ANDROID_PLATFORM",
+  "NG_BUILD",
+  "SK_BUILD_FOR_ANDROID",
+]
+
+js_engines = []
+ark_engine = {
+  engine_name = "ark"
+  engine_path = "jsi"
+  engine_defines = [ "USE_ARK_ENGINE" ]
+}
+js_engines += [ ark_engine ]
+build_for_android = true
+
+use_build_in_js_engine = true
+accessibility_support = false
+rich_components_support = true
+advance_components_support = true
+form_components_support = false
+js_pa_support = false
+connect_server_support = false
+xcomponent_components_support = false
+enable_rosen_backend = true
+use_external_icu = "static"
+build_container_scope_lib = true
+video_components_support = true
+pixel_map_support = true
+use_curl_download = false
+use_components_lib = false
+web_components_support = true
+video_texture_support = true
+
+cflags_cc = [
+  "-std=c++17",
+  "-Wno-thread-safety-attributes",
+]
+
+platform_deps = [
+  "//foundation/arkui/ace_engine/adapter/android/entrance/java/jni:ace_common_jni_android",
+  "//foundation/arkui/ace_engine/adapter/android/osal:ace_osal_android",
+  "//foundation/arkui/ace_engine/adapter/android/stage/ability/java/jni:stage_android_jni_android",
+  "//foundation/arkui/ace_engine/adapter/android/stage/uicontent:ace_uicontent_android",
+]
+
+libace_target =
+    "//foundation/arkui/ace_engine/adapter/android/build:libarkui_android"
+
+if (xcomponent_components_support) {
+  defines += [ "XCOMPONENT_SUPPORTED" ]
+}
+
+if (use_components_lib) {
+  defines += [ "USE_COMPONENTS_LIB" ]
+}
+
+if (defined(enable_rosen_backend) && enable_rosen_backend) {
+  defines += [ "ENABLE_ROSEN_BACKEND" ]
+  defines += [ "VIRTUAL_RS_WINDOW" ]
+  defines += [ "QUICK_PUSH_TRANSITION" ]
+}
+
+if (defined(video_components_support) && video_components_support) {
+  defines += [ "VIDEO_SUPPORTED" ]
+}
+
+if (defined(pixel_map_support) && pixel_map_support) {
+  defines += [ "PIXEL_MAP_SUPPORTED" ]
+}
+
+if (defined(web_components_support) && web_components_support) {
+  defines += [ "WEB_SUPPORTED" ]
+}
+
+if (defined(video_texture_support) && video_texture_support) {
+  defines += [ "VIDEO_TEXTURE_SUPPORTED" ]
+}

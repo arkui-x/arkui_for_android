@@ -1,0 +1,129 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("//foundation/arkui/ace_engine/ace_config.gni")
+import(
+    "//foundation/arkui/ace_engine/frameworks/core/components_ng/components_plugin.gni")
+import("//foundation/arkui/ace_engine/interfaces/napi/kits/napi_lib.gni")
+import("//foundation/arkui/napi/napi.gni")
+import("//plugins/plugin_lib.gni")
+import("config.gni")
+
+# libace target
+ohos_shared_library("libarkui_android") {
+  deps = [
+    "$ace_root/build:libace_static_android",
+    "//foundation/appframework:appframework_napis",
+    "//foundation/appframework/icu_data:static_icudata",
+    "//plugins/interfaces/native:ace_plugin_util_inner_android",
+  ]
+  if (defined(ark_engine)) {
+    deps += [
+      "//arkcompiler/runtime_core/libpandabase:libarkbase_static",
+      "//arkcompiler/runtime_core/libpandafile:libarkfile_static",
+
+      # for enable debugger
+      # "//arkcompiler/toolchain/inspector:ark_debugger_static",
+      # "//arkcompiler/toolchain/tooling:libark_ecma_debugger_set",
+    ]
+  }
+  public_configs = [ "//foundation/arkui/napi:ace_napi_config" ]
+
+  version_script = "libarkui_android.map"
+  part_name = "arkui-x"
+  subsystem_name = "arkui"
+}
+
+# Install final jar
+ohos_combine_jars("ace_android_adapter_java") {
+  deps = [
+    "$ace_root/adapter/android/entrance/java:ace_platform_android_java",
+    "$ace_root/adapter/android/entrance/java:ace_platform_common_java",
+    "$ace_root/adapter/android/stage/ability/java:stage_platform_android_java",
+  ]
+
+  part_name = "arkui-x"
+  subsystem_name = "arkui"
+  jar_path = "${root_out_dir}/arkui_android_adapter.jar"
+}
+
+common_napi_modules = []
+foreach(module, common_napi_libs) {
+  module_path_names = []
+  module_path_names = string_split(module, "/")
+  prefix_dir = module_path_names[0]
+
+  module_path = prefix_dir
+  if (prefix_dir != module) {
+    module_path = module_path_names[1]
+  }
+
+  module_name_ext = string_replace(module_path, "_", "")
+
+  module_name = string_replace(module, "_", "")
+  module_name = string_replace(module_name, "/", "_")
+  ohos_shared_library(module_name) {
+    deps = [ "$ace_root/interfaces/napi/kits/${module_path}:${module_name_ext}_static_android" ]
+
+    part_name = "ace_engine_cross"
+    subsystem_name = "arkui"
+  }
+  common_napi_modules += [ ":$module_name" ]
+}
+
+common_plugin_modules = []
+foreach(module, common_plugin_libs) {
+  plugin_lib(module) {
+    platform = "android"
+  }
+  module_name = string_replace(module, "_", "")
+  module_name = string_replace(module_name, "/", "_")
+  common_plugin_modules += [ ":$module_name" ]
+}
+
+# component_plugin_modules = []
+
+# foreach(module, component_plugins) {
+#   sub_name = string_replace(module, "_", "")
+#   module_name = "arkui_$sub_name"
+#   ohos_shared_library(module_name) {
+#     deps = [ "$ace_root/frameworks/core/components_ng/pattern/${module}:components_plugins_${module}_source_android" ]
+
+#     part_name = "arkui_components"
+#     subsystem_name = "arkui"
+#   }
+#   component_plugin_modules += [ ":$module_name" ]
+# }
+
+# Install packages
+group("ace_packages") {
+  deps = [
+    ":ace_android_adapter_java",
+    ":libarkui_android",
+  ]
+
+  # include ark_js debugger shared library
+  deps += [
+    "$ark_toolchain_path/inspector:ark_debugger",
+    "$ark_toolchain_path/tooling:libark_ecma_debugger",
+  ]
+
+  deps += [ "$ace_root/interfaces/native:ace_packages_ndk" ]
+
+  deps += common_napi_modules
+  deps += common_plugin_modules
+  if (defined(use_components_lib) && use_components_lib) {
+    deps += component_plugin_modules
+  }
+}

@@ -1,0 +1,92 @@
+# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("//foundation/arkui/ace_engine/ace_config.gni")
+import(
+    "//foundation/arkui/ace_engine/adapter/android/stage/uicontent/uicontent.gni")
+
+# build static
+template("ace_uicontent_android_source_set") {
+  forward_variables_from(invoker, "*")
+
+  ohos_source_set(target_name) {
+    defines += invoker.defines
+    libs = [ "log" ]
+
+    sources = [
+      "$ace_root/adapter/android/stage/uicontent/ace_container_sg.cpp",
+      "$ace_root/adapter/android/stage/uicontent/ace_view_sg.cpp",
+      "$ace_root/adapter/android/stage/uicontent/ui_content_impl.cpp",
+    ]
+
+    include_dirs = [
+      "//arkcompiler/ets_runtime",
+      "//arkcompiler/runtime_core",
+      "//base/global/resource_management/interfaces/inner_api/include",
+      "//foundation/arkui/napi",
+      "//third_party/flutter/engine",
+      "//foundation/appframework/arkui/uicontent",
+    ]
+
+    deps = [
+      "$ability_runtime_cross_platform_path/interfaces/kits/native/ability:cross_platform_abilitykit_native",
+      "$ace_root/adapter/android/entrance/java/jni:ace_android_jni_$platform",
+      "$ace_root/adapter/android/entrance/java/jni:ace_common_jni_$platform",
+      "//foundation/appframework/resource_management:global_resmgr",
+      "//foundation/arkui/napi:ace_napi",
+      "//third_party/icu/icu4c:static_icui18n",
+      "//third_party/icu/icu4c:static_icuuc",
+    ]
+
+    if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
+      deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client_static" ]
+    }
+
+    configs = [
+      "$ace_root:ace_config",
+      "$ability_runtime_cross_platform_path/interfaces/kits/native/ability:abilitykit_native_config",
+      "$ability_runtime_cross_platform_path/interfaces/kits/native/appkit:appkit_native_config",
+      "$ability_runtime_cross_platform_path/interfaces/inner_api/hilog:ability_cross_platform_hilog_config",
+      "$ability_runtime_cross_platform_path/interfaces/inner_api/jsruntime:jsruntime_config",
+    ]
+
+    if (ace_use_new_skia) {
+      deps += [ "$ace_flutter_engine_root:flutter_for_ng" ]
+    } else {
+      deps += [
+        "$ace_flutter_engine_root:third_party_flutter_engine_$platform",
+        "$ace_flutter_engine_root/skia:ace_skia_$platform",
+      ]
+    }
+
+    defines += [ "ANDROID_PLATFORM" ]
+  }
+}
+
+foreach(item, ace_platforms) {
+  platform = item.name
+  if (platform == "android") {
+    ace_uicontent_android_source_set("ace_uicontent_" + item.name) {
+      platform = item.name
+      defines = []
+
+      if (defined(item.config)) {
+        config = item.config
+      }
+      if (defined(config.defines)) {
+        defines = config.defines
+      }
+    }
+  }
+}
