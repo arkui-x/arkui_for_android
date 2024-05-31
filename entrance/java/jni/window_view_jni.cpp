@@ -81,8 +81,13 @@ static const JNINativeMethod COMMON_METHODS[] = {
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::DispatchPointerDataPacket),
     },
     {
+        .name = "nativeDispatchMouseDataPacket",
+        .signature = "(JLjava/nio/ByteBuffer;I)Z",
+        .fnPtr = reinterpret_cast<void*>(&WindowViewJni::DispatchMouseDataPacket),
+    },
+    {
         .name = "nativeDispatchKeyEvent",
-        .signature = "(JIIIJJ)Z",
+        .signature = "(JIIIJJIII)Z",
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::DispatchKeyEvent),
     },
 };
@@ -195,8 +200,26 @@ jboolean WindowViewJni::DispatchPointerDataPacket(
     return windowPtr->ProcessPointerEvent(packet);
 }
 
+jboolean WindowViewJni::DispatchMouseDataPacket(
+    JNIEnv* env, jobject myObject, jlong window, jobject buffer, jint position)
+{
+    if (env == nullptr) {
+        LOGW("env is null");
+        return false;
+    }
+
+    uint8_t* data = static_cast<uint8_t*>(env->GetDirectBufferAddress(buffer));
+    std::vector<uint8_t> packet(data, data + position);
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
+    if (windowPtr == nullptr) {
+        LOGE("DispatchMouseDataPacket window is nullptr");
+        return false;
+    }
+    return windowPtr->ProcessMouseEvent(packet);
+}
+
 jboolean WindowViewJni::DispatchKeyEvent(JNIEnv* env, jobject myObject, jlong window, jint keyCode, jint action,
-    jint repeatTime, jlong timeStamp, jlong timeStampStart)
+    jint repeatTime, jlong timeStamp, jlong timeStampStart, jint source, jint deviceId, jint metaKey)
 {
     auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
     if (windowPtr == nullptr) {
@@ -204,7 +227,7 @@ jboolean WindowViewJni::DispatchKeyEvent(JNIEnv* env, jobject myObject, jlong wi
         return false;
     }
 
-    return windowPtr->ProcessKeyEvent(keyCode, action, repeatTime, timeStamp, timeStampStart);
+    return windowPtr->ProcessKeyEvent(keyCode, action, repeatTime, timeStamp, timeStampStart, source, deviceId, metaKey);
 }
 
 bool WindowViewJni::RegisterCommonNatives(JNIEnv* env, const jclass myClass)

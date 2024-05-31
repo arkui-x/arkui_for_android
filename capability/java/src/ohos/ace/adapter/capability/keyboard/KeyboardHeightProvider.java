@@ -115,6 +115,9 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
 
         Rect rect = new Rect();
         popupView.getWindowVisibleDisplayFrame(rect);
+        if (rect.bottom < 0) {
+            return;
+        }
 
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             if (rect.bottom > rect.right) {

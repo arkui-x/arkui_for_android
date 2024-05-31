@@ -22,6 +22,7 @@ import android.view.inputmethod.InputConnection;
 import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginBase;
 import ohos.ace.adapter.capability.web.AceWebBase;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -51,6 +52,13 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
 
     private InputConnectionClient inputClient = null;
     private boolean isFocused = true;
+
+    private boolean enterPressed = false;
+    private boolean numpadEnterPressed = false;
+    private float lastMouseX = 0;
+    private float lastMouseY = 0;
+    private int lastMouseButtonState = 0;
+    private int lastMouseActionKey = 0;
 
     /**
      * Constructor of WindowView
@@ -228,6 +236,29 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         nativeDestroy(nativeWindowPtr);
     }
 
+    private int getActionKey(int actionMasked, int buttonState) {
+        int actionKey = lastMouseButtonState ^ buttonState;
+        int action = actionMasked;
+        if (actionMasked == MotionEvent.ACTION_DOWN) {            
+            lastMouseButtonState = buttonState;
+            lastMouseActionKey = actionKey;
+        } else if (actionMasked == MotionEvent.ACTION_UP) {
+            lastMouseButtonState = lastMouseButtonState ^ actionKey;
+        } else if (actionMasked == MotionEvent.ACTION_MOVE) {
+            if (buttonState < lastMouseButtonState) {
+                lastMouseButtonState = lastMouseButtonState ^ actionKey;
+                action = MotionEvent.ACTION_UP;
+            } else if (buttonState > lastMouseButtonState) {
+                lastMouseButtonState = buttonState;
+                action = MotionEvent.ACTION_DOWN;
+                lastMouseActionKey = actionKey;
+            } else {
+                actionKey = lastMouseActionKey;
+            }
+        }
+        return ((actionKey << 4) + action);
+    }
+
     /**
      * Notify nativeWindow backPressed.
      *
@@ -243,6 +274,28 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     @Override
+    public boolean onHoverEvent(MotionEvent event) {
+        if (nativeWindowPtr == 0L) {
+            return super.onHoverEvent(event);
+        }
+        try {
+            lastMouseX = event.getX(event.getActionIndex());
+            lastMouseY = event.getY(event.getActionIndex());
+                
+            int actionMasked = event.getActionMasked();
+            int buttonState = event.getButtonState();
+
+            int actionKey = getActionKey(actionMasked, buttonState);
+            ByteBuffer packet = AceEventProcessorAosp.processMouseEvent(event, actionKey, lastMouseX, lastMouseY);
+            nativeDispatchMouseDataPacket(nativeWindowPtr, packet, packet.position());
+            return true;
+        } catch (AssertionError error) {
+            ALog.e(LOG_TAG, "process hover event failed: " + error.getMessage());
+            return false;
+        }
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
 
         if (nativeWindowPtr == 0L) {
@@ -254,6 +307,17 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
             entry.getValue().setTouchEvent(event);
         }
         try {
+            int source = event.getSource();
+            if (source == InputDevice.SOURCE_MOUSE) {
+                lastMouseX = event.getX(event.getActionIndex());
+                lastMouseY = event.getY(event.getActionIndex());
+                int actionMasked = event.getActionMasked();
+                int buttonState = event.getButtonState();
+
+                int actionKey = getActionKey(actionMasked, buttonState);
+                ByteBuffer mousePacket = AceEventProcessorAosp.processMouseEvent(event, actionKey, lastMouseX, lastMouseY);
+                nativeDispatchMouseDataPacket(nativeWindowPtr, mousePacket, mousePacket.position());
+            }
             ByteBuffer packet = AceEventProcessorAosp.processTouchEvent(event);
             nativeDispatchPointerDataPacket(nativeWindowPtr, packet, packet.position());
             return true;
@@ -263,14 +327,62 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    private void markdownNumpadKeyStatus(int keyCode, int action) {
+        if (keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER) {
+            if (action == KeyEvent.ACTION_DOWN) {
+                numpadEnterPressed = true;
+            } else {
+                numpadEnterPressed = false;
+            }
+        } else if (keyCode == KeyEvent.KEYCODE_ENTER) {
+            if (action == KeyEvent.ACTION_DOWN) {
+                enterPressed = true;
+            } else {
+                enterPressed = false;
+            }
+        }
+    }
+
+    private boolean filterNumpadKeyCode(int keyCode, int action) {
+        if (keyCode == KeyEvent.KEYCODE_ENTER) {
+            if (action == KeyEvent.ACTION_DOWN) {
+                if (numpadEnterPressed) {
+                    return true;
+                }
+            } else {
+                if (!enterPressed) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (nativeWindowPtr == 0L) {
             return super.onKeyDown(keyCode, event);
         }
 
+        if (filterNumpadKeyCode(keyCode, event.getAction())) {
+            return super.onKeyDown(keyCode, event);
+        }
+        int deviceId = event.getDeviceId();
+        int eventSouce = event.getSource();
+
+        if (eventSouce == InputDevice.SOURCE_MOUSE) {
+            if (keyCode == KeyEvent.KEYCODE_FORWARD || keyCode == KeyEvent.KEYCODE_BACK) {
+                ByteBuffer packet = AceEventProcessorAosp.processMouseEvent(event, lastMouseX, lastMouseY);
+                nativeDispatchMouseDataPacket(nativeWindowPtr, packet, packet.position());
+                return true;
+            }
+        }
+
+        int modifierKeys = AceEventProcessorAosp.getModifierKeys(event);
+        int source = AceEventProcessorAosp.eventSourceTransKeySource(eventSouce);
+        markdownNumpadKeyStatus(keyCode, event.getAction());
         if (nativeDispatchKeyEvent(nativeWindowPtr, event.getKeyCode(), event.getAction(), event.getRepeatCount(),
-                event.getEventTime(), event.getDownTime())) {
+                event.getEventTime(), event.getDownTime(), source, deviceId, modifierKeys)) {
             return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -281,9 +393,24 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         if (nativeWindowPtr == 0L) {
             return super.onKeyUp(keyCode, event);
         }
+        if (filterNumpadKeyCode(keyCode, event.getAction())) {
+            return super.onKeyUp(keyCode, event); 
+        }
+        int deviceId = event.getDeviceId();
+        int eventSouce = event.getSource();
+        if (eventSouce == InputDevice.SOURCE_MOUSE) {
+            if (keyCode == KeyEvent.KEYCODE_FORWARD || keyCode == KeyEvent.KEYCODE_BACK) {
+                ByteBuffer packet = AceEventProcessorAosp.processMouseEvent(event, lastMouseX, lastMouseY);
+                nativeDispatchMouseDataPacket(nativeWindowPtr, packet, packet.position());
+                return true;
+            }
+        }
 
+        int modifierKeys = AceEventProcessorAosp.getModifierKeys(event);
+        int source = AceEventProcessorAosp.eventSourceTransKeySource(eventSouce);
+        markdownNumpadKeyStatus(keyCode, event.getAction());
         if (nativeDispatchKeyEvent(nativeWindowPtr, event.getKeyCode(), event.getAction(), event.getRepeatCount(),
-                event.getEventTime(), event.getDownTime())) {
+                event.getEventTime(), event.getDownTime(), source, deviceId, modifierKeys)) {          
             return true;
         }
         return super.onKeyUp(keyCode, event);
@@ -309,6 +436,8 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
 
     private native boolean nativeDispatchPointerDataPacket(long windowPtr, ByteBuffer buffer, int position);
 
+    private native boolean nativeDispatchMouseDataPacket(long windowPtr, ByteBuffer buffer, int position);
+
     private native boolean nativeDispatchKeyEvent(long windowPtr, int keyCode, int action, int repeatTime,
-            long timeStamp, long timeStampStart);
+            long timeStamp, long timeStampStart, int source, int deviceId, int metaKey);
 }

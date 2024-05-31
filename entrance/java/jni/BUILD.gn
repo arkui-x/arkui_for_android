@@ -41,6 +41,7 @@ template("ace_android_jni_source_set") {
 
     if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
       deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client_static" ]
+      deps += [ "//foundation/arkui/napi:ace_napi" ]
     }
   }
 }
@@ -57,7 +58,6 @@ template("ace_common_jni_source_set") {
       "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/inner_api/hilog:ability_cross_platform_hilog_config",
       "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/kits/native/appkit:appkit_native_config",
       "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/inner_api/jsruntime:jsruntime_config",
-      "//foundation/appframework/arkui/uicontent:uicontent_config",
     ]
 
     sources = [
@@ -69,12 +69,17 @@ template("ace_common_jni_source_set") {
       "$ace_root/adapter/android/entrance/java/jni/download_manager.cpp",
       "$ace_root/adapter/android/entrance/java/jni/download_manager_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/dump_helper_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/foldable_window_android.cpp",
       "$ace_root/adapter/android/entrance/java/jni/java_event_callback.cpp",
       "$ace_root/adapter/android/entrance/java/jni/jni_app_mode_config.cpp",
       "$ace_root/adapter/android/entrance/java/jni/jni_environment.cpp",
       "$ace_root/adapter/android/entrance/java/jni/jni_load.cpp",
       "$ace_root/adapter/android/entrance/java/jni/jni_registry.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/msdp/interaction_impl.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/pack_asset_provider.cpp",
       "$ace_root/adapter/android/entrance/java/jni/subwindow_manager_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/touch_event.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/udmf/udmf_impl.cpp",
       "$ace_root/adapter/android/entrance/java/jni/web_adapter_jni.cpp",
     ]
 
@@ -97,7 +102,10 @@ template("ace_common_jni_source_set") {
       defines += [ "_ARM64_" ]
     }
 
-    deps = [ ":ace_android_jni_$platform" ]
+    deps = [
+      ":ace_android_jni_$platform",
+      "//foundation/appframework/arkui/uicontent:ace_uicontent_interface",
+    ]
 
     if (ace_use_new_skia) {
       deps += [ "$ace_flutter_engine_root:flutter_for_ng" ]
@@ -115,6 +123,7 @@ template("ace_common_jni_source_set") {
       sources += [
         "$ace_root/adapter/android/entrance/java/jni/virtual_rs_window.cpp",
       ]
+      deps += [ "//foundation/arkui/napi:ace_napi" ]
     }
   }
 }

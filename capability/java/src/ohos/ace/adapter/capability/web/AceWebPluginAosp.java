@@ -49,6 +49,8 @@ public class AceWebPluginAosp extends AceWebPluginBase {
 
     private static final String WEBVIEW_PAGE_URL = "pageUrl";
 
+    private static final String RICH_TEXT_INIT = "richTextInit";
+
     private static final long INVALID_CREATE_ID = -1;
 
     private final AtomicLong nextMapid = new AtomicLong(0L);
@@ -57,8 +59,11 @@ public class AceWebPluginAosp extends AceWebPluginBase {
 
     private AceWeb aceWeb;
 
+    private WebDataBaseManager dataBase;
+
     private AceWebPluginAosp(Context context) {
         this.context = context;
+        dataBase = WebDataBaseManager.getInstance(context);
     }
 
     /**
@@ -94,6 +99,7 @@ public class AceWebPluginAosp extends AceWebPluginBase {
 
             // Create AceWeb
             aceWeb = new AceWeb(id, context, getEventCallback());
+            richTextInit = Integer.parseInt(param.get(RICH_TEXT_INIT)) == 1 ? true : false;
             addResource(id, aceWeb);
             aceWeb.initWeb();
             aceWeb.setPageUrl(pageUrl);
@@ -130,6 +136,22 @@ public class AceWebPluginAosp extends AceWebPluginBase {
     private int toPhysicalPixels(double logicalPixels) {
         float density = 1.0f;
         return (int) Math.round(logicalPixels * density);
+    }
+
+    public boolean existHttpAuthCredentials() {
+        return dataBase.existHttpAuthCredentials();
+    }
+
+    public void deleteHttpAuthCredentials() {
+        dataBase.deleteAllAuthCredentials();
+    }
+
+    public void saveHttpAuthCredentials(String host, String realm, String username, String password) {
+        dataBase.saveHttpAuthCredential(host, realm, username, password);
+    }
+
+    public Object getHttpAuthCredentials(String host, String realm) {
+        return dataBase.getHttpAuthCredential(host, realm);
     }
 
 }

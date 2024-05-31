@@ -28,7 +28,7 @@ bool AceEnvJni::SetThreadInfo(int32_t threadId)
         return false;
     }
     auto jniEnv = JniEnvironment::GetInstance().GetJniEnv();
-    CHECK_NULL_RETURN_NOLOG(jniEnv, false);
+    CHECK_NULL_RETURN(jniEnv, false);
 
     const jclass clazz = jniEnv->FindClass("ohos/ace/runtime/AceVipThreadUtility");
     if (!clazz || jniEnv->ExceptionCheck()) {

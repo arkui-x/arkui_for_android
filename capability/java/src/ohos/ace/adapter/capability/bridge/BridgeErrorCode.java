@@ -39,10 +39,10 @@ public enum BridgeErrorCode {
     private String errorMessage;
 
     /**
-     * constructor of BridgeErrorCode
+     * Constructor of BridgeErrorCode.
      *
      * @param id BridgeErrorCodeId.
-     * @param errorMessage BridgErrorMessage.
+     * @param errorMessage BridgeErrorMessage.
      */
     BridgeErrorCode(int id, String errorMessage) {
         this.id = id;
@@ -61,7 +61,7 @@ public enum BridgeErrorCode {
     /**
      * Get errorMessage of BridgeErrorCode.
      *
-     * @return The BridgErrorMessage.
+     * @return The BridgeErrorMessage.
      */
     public String getErrorMessage() {
         return this.errorMessage;

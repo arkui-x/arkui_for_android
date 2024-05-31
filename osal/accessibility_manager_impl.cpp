@@ -173,21 +173,21 @@ inline std::string ConvertInputTypeToString(int32_t inputType)
 bool RequestFocus(RefPtr<NG::FrameNode>& frameNode)
 {
     auto focusHub = frameNode->GetFocusHub();
-    CHECK_NULL_RETURN_NOLOG(focusHub, false);
+    CHECK_NULL_RETURN(focusHub, false);
     return focusHub->RequestFocusImmediately();
 }
 
 bool ActClick(RefPtr<NG::FrameNode>& frameNode)
 {
     auto gesture = frameNode->GetEventHub<NG::EventHub>()->GetGestureEventHub();
-    CHECK_NULL_RETURN_NOLOG(gesture, false);
+    CHECK_NULL_RETURN(gesture, false);
     return gesture->ActClick();
 }
 
 bool ActLongClick(RefPtr<NG::FrameNode>& frameNode)
 {
     auto gesture = frameNode->GetEventHub<NG::EventHub>()->GetGestureEventHub();
-    CHECK_NULL_RETURN_NOLOG(gesture, false);
+    CHECK_NULL_RETURN(gesture, false);
     return gesture->ActLongClick();
 }
 
@@ -218,7 +218,7 @@ static std::string ConvertActionTypeToString(AceAction action)
 static void DumpCommonPropertyNG(
     const RefPtr<NG::FrameNode>& frameNode, const RefPtr<PipelineBase>& pipeline, int32_t pageId)
 {
-    CHECK_NULL_VOID_NOLOG(frameNode);
+    CHECK_NULL_VOID(frameNode);
     auto gestureEventHub = frameNode->GetEventHub<NG::EventHub>()->GetGestureEventHub();
     DumpLog::GetInstance().AddDesc("ID: ", frameNode->GetAccessibilityId());
     DumpLog::GetInstance().AddDesc("parent ID: ", GetParentId(frameNode));
@@ -251,9 +251,9 @@ static void DumpCommonPropertyNG(
 
 static void DumpAccessibilityPropertyNG(const RefPtr<NG::FrameNode>& frameNode)
 {
-    CHECK_NULL_VOID_NOLOG(frameNode);
+    CHECK_NULL_VOID(frameNode);
     auto accessibilityProperty = frameNode->GetAccessibilityProperty<NG::AccessibilityProperty>();
-    CHECK_NULL_VOID_NOLOG(accessibilityProperty);
+    CHECK_NULL_VOID(accessibilityProperty);
     DumpLog::GetInstance().AddDesc("text: ", accessibilityProperty->GetText());
     DumpLog::GetInstance().AddDesc("checked: ", BoolToString(accessibilityProperty->IsChecked()));
     DumpLog::GetInstance().AddDesc("selected: ", BoolToString(accessibilityProperty->IsSelected()));
@@ -321,7 +321,7 @@ static void DumpAccessibilityPropertyNG(const RefPtr<NG::FrameNode>& frameNode)
     DumpLog::GetInstance().AddDesc("support action: ", actionForDump);
 }
 
-void AccessibilityManagerImpl::DumpTree(int32_t depth, NodeId nodeID)
+void AccessibilityManagerImpl::DumpTree(int32_t depth, int64_t nodeID)
 {
     DumpLog::GetInstance().Print("Dump Accessiability Tree:");
     auto pipeline = context_.Upgrade();
@@ -462,8 +462,8 @@ void AccessibilityManagerImpl::DumpHandleEvent(const std::vector<std::string>& p
     if (AceType::InstanceOf<NG::PipelineContext>(pipeline)) {
         RefPtr<NG::FrameNode> node;
         pipeline = FindPipelineByElementId(nodeId, node);
-        CHECK_NULL_VOID_NOLOG(pipeline);
-        CHECK_NULL_VOID_NOLOG(node);
+        CHECK_NULL_VOID(pipeline);
+        CHECK_NULL_VOID(node);
         pipeline->GetTaskExecutor()->PostTask(
             [weak = WeakClaim(this), action, nodeId, pipeline]() {
                 auto accessibilityManager = weak.Upgrade();

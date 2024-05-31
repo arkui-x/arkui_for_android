@@ -33,6 +33,8 @@ bool SystemProperties::isRound_ = false;
 bool SystemProperties::isDeviceAccess_ = false;
 int32_t SystemProperties::deviceWidth_ = 0;
 int32_t SystemProperties::deviceHeight_ = 0;
+int32_t SystemProperties::devicePhysicalWidth_ = 0;
+int32_t SystemProperties::devicePhysicalHeight_ = 0;
 double SystemProperties::resolution_ = 1.0;
 DeviceType SystemProperties::deviceType_ { DeviceType::PHONE };
 DeviceOrientation SystemProperties::orientation_ { DeviceOrientation::PORTRAIT };
@@ -51,12 +53,20 @@ LongScreenType SystemProperties::LongScreen_ { LongScreenType::NOT_LONG };
 bool SystemProperties::unZipHap_ = true;
 bool SystemProperties::svgTraceEnable_ = false;
 bool SystemProperties::rosenBackendEnabled_ = true;
+bool SystemProperties::downloadByNetworkEnabled_ = false;
 bool SystemProperties::isHookModeEnabled_ = false;
 bool SystemProperties::accessibilityEnabled_ = false;
 bool SystemProperties::windowAnimationEnabled_ = false;
 bool SystemProperties::debugBoundaryEnabled_ = false;
+bool SystemProperties::debugAutoUIEnabled_ = false;
 bool SystemProperties::extSurfaceEnabled_ = true;
 uint32_t SystemProperties::dumpFrameCount_ = 0;
+bool SystemProperties::layoutTraceEnable_ = false;
+bool SystemProperties::buildTraceEnable_ = false;
+bool SystemProperties::enableScrollableItemPool_ = false;
+bool SystemProperties::navigationBlurEnabled_ = true;
+bool SystemProperties::gridCacheEnabled_ = false;
+bool SystemProperties::sideBarContainerBlurEnable_ = false;
 
 void SystemProperties::InitDeviceType(DeviceType type)
 {
@@ -167,6 +177,61 @@ bool SystemProperties::IsFormAnimationLimited()
 bool SystemProperties::GetImageFrameworkEnabled()
 {
     return false;
+}
+
+bool SystemProperties::GetDebugPixelMapSaveEnabled()
+{
+    return false;
+}
+
+bool SystemProperties::GetResourceDecoupling()
+{
+    return false;
+}
+
+int32_t SystemProperties::GetJankFrameThreshold()
+{
+    return 0;
+}
+
+bool SystemProperties::GetTitleStyleEnabled()
+{
+    return false;
+}
+
+std::string SystemProperties::GetCustomTitleFilePath()
+{
+    return UNDEFINED_PARAM;
+}
+
+bool SystemProperties::Is24HourClock()
+{
+    return false;
+}
+
+bool SystemProperties::GetDisplaySyncSkipEnabled()
+{
+    return true;
+}
+
+bool SystemProperties::GetNavigationBlurEnabled()
+{
+    return navigationBlurEnabled_;
+}
+
+bool SystemProperties::GetGridCacheEnabled()
+{
+    return gridCacheEnabled_;
+}
+
+bool SystemProperties::GetSideBarContainerBlurEnable()
+{
+    return sideBarContainerBlurEnable_;
+}
+
+float SystemProperties::GetDefaultResolution()
+{
+    return 1.0f;
 }
 
 } // namespace OHOS::Ace

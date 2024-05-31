@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Copyright (c) 2022-2023 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -23,6 +23,7 @@ common_java_files = [
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/ALog.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AppModeConfig.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/DumpHelper.java",
+  "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/ExecutorServiceInstance.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IAceOnCallResourceMethod.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IAceOnResourceEvent.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/ILogger.java",
@@ -46,11 +47,16 @@ java_library("ace_platform_android_java") {
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceEventProcessorAosp.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AcePlatformPlugin.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceSurfaceHolder.java",
+    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceTextureHolder.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/DownloadManager.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/InputConnectionClient.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/LoggerAosp.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/WindowView.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/DisplayInfo.java",
+    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/ArkUIXPluginRegistry.java",
+    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IPluginRegistry.java",
+    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/IArkUIXPlugin.java",
+    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/PluginContext.java",
   ]
 
   java_files += android_capability_java_files

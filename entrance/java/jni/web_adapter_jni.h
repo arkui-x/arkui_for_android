@@ -25,15 +25,20 @@ namespace OHOS::Ace::Platform {
 namespace JNI_TOOL {
     std::string GetStringFromJNI(const jobject& obj, std::string funcName);
     int GetIntFromJNI(const jobject& obj, std::string funcName);
+    float GetFloatFromJNI(const jobject& obj, std::string funcName);
     long GetLongFromJNI(const jobject& obj, std::string funcName);
     bool GetBoolFromJNI(const jobject& obj, std::string funcName);
     std::map<std::string, std::string> GetStringMapFromJNI(const jobject& obj, std::string funcName);
+    std::vector<std::string> GetStringVectorFromJNI(const jobject& obj, std::string funcName);
+    void CallVoidMethodFromJNI(const jobject& obj, std::string funcName);
 }
 
 class WebAdapterJni final {
 public:
     static bool Register(const std::shared_ptr<JNIEnv>& env);
     static void NativeOnObjectEvent(
+        JNIEnv* env, jobject clazz, jstring enventId, jstring param, jobject object);
+    static bool NativeOnObjectEventWithBoolReturn(
         JNIEnv* env, jobject clazz, jstring enventId, jstring param, jobject object);
 };
 }

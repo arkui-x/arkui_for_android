@@ -16,6 +16,7 @@
 #include "base/log/log_wrapper.h"
 #include "base/utils/utils.h"
 #include "adapter/android/osal/pixel_map_android.h"
+#include "core/image/image_file_cache.h"
 
 namespace OHOS::Ace {
 
@@ -95,6 +96,12 @@ AlphaType PixelMapAndroid::GetAlphaType() const
     return AlphaTypeConverter(pixmap_->GetAlphaType());
 }
 
+int32_t PixelMapAndroid::GetRowStride() const
+{
+    CHECK_NULL_RETURN(pixmap_, 0);
+    return pixmap_->GetRowStride();
+}
+
 int32_t PixelMapAndroid::GetRowBytes() const
 {
     CHECK_NULL_RETURN(pixmap_, 0);
@@ -103,14 +110,14 @@ int32_t PixelMapAndroid::GetRowBytes() const
 
 int32_t PixelMapAndroid::GetByteCount() const
 {
-    CHECK_NULL_RETURN_NOLOG(pixmap_, 0);
+    CHECK_NULL_RETURN(pixmap_, 0);
     return pixmap_->GetByteCount();
 }
 
 void* PixelMapAndroid::GetPixelManager() const
 {
     Media::InitializationOptions opts;
-    CHECK_NULL_RETURN_NOLOG(pixmap_, nullptr);
+    CHECK_NULL_RETURN(pixmap_, nullptr);
     auto newPixelMap = Media::PixelMap::Create(*pixmap_, opts);
     return reinterpret_cast<void*>(new Media::PixelMapManager(newPixelMap.release()));
 }
@@ -176,4 +183,35 @@ void* PixelMapAndroid::GetWritablePixels() const
     return pixmap_->GetWritablePixels();
 }
 
+void PixelMapAndroid::Scale(float xAxis, float yAxis)
+{
+    CHECK_NULL_VOID(pixmap_);
+    pixmap_->scale(xAxis, yAxis);
+}
+
+void PixelMapAndroid::Scale(float xAxis, float yAxis, const AceAntiAliasingOption &option)
+{
+    CHECK_NULL_VOID(pixmap_);
+    switch (option) {
+        case AceAntiAliasingOption::NONE:
+            pixmap_->scale(xAxis, yAxis, Media::AntiAliasingOption::NONE);
+            break;
+        case AceAntiAliasingOption::LOW:
+            pixmap_->scale(xAxis, yAxis, Media::AntiAliasingOption::LOW);
+            break;
+        case AceAntiAliasingOption::MEDIUM:
+            pixmap_->scale(xAxis, yAxis, Media::AntiAliasingOption::MEDIUM);
+            break;
+        case AceAntiAliasingOption::HIGH:
+            pixmap_->scale(xAxis, yAxis, Media::AntiAliasingOption::HIGH);
+            break;
+        default:
+            pixmap_->scale(xAxis, yAxis, Media::AntiAliasingOption::NONE);
+            break;
+    }
+}
+
+void PixelMapAndroid::SavePixelMapToFile(const std::string& dst) const
+{
+}
 } // namespace OHOS::Ace

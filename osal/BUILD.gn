@@ -27,8 +27,10 @@ template("ace_osal_android_source_set") {
       "ace_checker.cpp",
       "ace_engine_ext.cpp",
       "ace_trace.cpp",
+      "advance/data_detector_adapter.cpp",
+      "advance/data_detector_mgr.cpp",
+      "advance/image_analyzer_mgr.cpp",
       "app_bar_helper_impl.cpp",
-      "download_manager_android.cpp",
       "drag_window.cpp",
       "event_report.cpp",
       "file_asset_provider.cpp",
@@ -42,13 +44,16 @@ template("ace_osal_android_source_set") {
       "page_url_checker_android.cpp",
       "pixel_map_android.cpp",
       "resource_adapter_impl.cpp",
+      "resource_adapter_impl_v2.cpp",
       "resource_convertor.cpp",
       "resource_theme_style.cpp",
       "ressched_report.cpp",
       "socperf_client_impl.cpp",
       "subwindow.cpp",
       "system_properties.cpp",
+      "time_event_proxy_android.cpp",
       "trace_id_impl.cpp",
+      "view_data_wrap_impl.cpp",
     ]
 
     include_dirs = [
@@ -59,6 +64,9 @@ template("ace_osal_android_source_set") {
     deps = [
       "$ace_root/frameworks/core/components/theme:build_theme_code",
       "//foundation/appframework/resource_management:global_resmgr",
+      "//foundation/appframework/resource_management/interfaces/js/innerkits/core:resmgr_napi_core",
+      "//foundation/appframework/resource_management/interfaces/js/kits:resourcemanager",
+      "//foundation/appframework/resource_management/interfaces/native/resource:rawfile",
     ]
 
     configs = [

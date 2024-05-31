@@ -16,12 +16,15 @@
 package ohos.ace.adapter.capability.bridge;
 
 import android.content.Context;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
+import java.lang.reflect.Method;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.HashMap;
 import ohos.ace.adapter.ALog;
+import ohos.ace.adapter.ExecutorServiceInstance;
+import ohos.ace.adapter.capability.bridge.BridgeTaskQueue.TaskTag;
 
 /**
  * Bridge plugin.
@@ -33,88 +36,174 @@ public abstract class BridgePlugin {
 
     private final String bridgeName_;
 
-    private final int instanceId_;
-
     private final Object object_ = null;
 
     private final Context context_;
 
-    private boolean isAvailable = false;
+    private boolean isAvailable_ = false;
 
-    private IMessageListener iMessageListener;
+    private IMessageListener iMessageListener_;
 
-    private IMethodResult iMethodResult;
+    private IMethodResult iMethodResult_;
 
     private BridgeManager bridgeManager_;
 
     private HashMap<String, Method> methodsMap_;
 
+    private Lock methodMapLock_ = new ReentrantLock();
+
     private BridgeType bridgeType_ = BridgeType.JSON_TYPE;
 
+    private boolean isUseTaskQueue_ = false;
+
+    private BridgeTaskQueueHandler outPutHandler_ = null;
+
+    private BridgeTaskQueueHandler intPutHandler_ = null;
+
+    private ExecutorService executorService_ = ExecutorServiceInstance.getExecutorService();
+
     /**
-     * Bridge dependent plugin.
+     * Constructor of base BridgePlugin.
      *
      * @param context context of the application.
      * @param bridgeName name of bridge.
      * @param instanceId the id of instance.
      * @return BridgePlugin object.
+     * @since 10
+     * @deprecated since 11
      */
     public BridgePlugin(Context context, String bridgeName, int instanceId) {
         this.bridgeName_ = bridgeName;
-        this.instanceId_ = instanceId;
         this.context_ = context;
-        this.bridgeManager_ = BridgeManager.getInstance();
-        this.isAvailable = this.bridgeManager_.registerBridgePlugin(bridgeName, this);
+        this.bridgeManager_ = BridgeManager.findBridgeManager(instanceId);
         this.methodsMap_ = new HashMap<String, Method>();
+        if (checkBridgeInner()) {
+            this.isAvailable_ = this.bridgeManager_.registerBridgePlugin(bridgeName, this);
+        }
     }
 
     /**
-     * Bridge dependent plugin by BINARY_TYPE.
+     * Constructor of binary BridgePlugin.
      *
      * @param context context of the application.
      * @param bridgeName name of bridge.
      * @param instanceId the id of instance.
      * @param bridgeType the bridge of type.
      * @return BridgePlugin object.
+     * @since 10
+     * @deprecated since 11
      */
     public BridgePlugin(Context context, String bridgeName, int instanceId, BridgeType bridgeType) {
         this.bridgeName_ = bridgeName;
-        this.instanceId_ = instanceId;
         this.context_ = context;
         this.bridgeType_ = bridgeType;
-        this.bridgeManager_ = BridgeManager.getInstance();
-        this.isAvailable = this.bridgeManager_.registerBridgePlugin(bridgeName, this);
+        this.bridgeManager_ = BridgeManager.findBridgeManager(instanceId);
         this.methodsMap_ = new HashMap<String, Method>();
+        if (checkBridgeInner()) {
+            this.isAvailable_ = this.bridgeManager_.registerBridgePlugin(bridgeName, this);
+        }
+    }
+
+    /**
+     * Constructor of base BridgePlugin.
+     *
+     * @param context context of the application.
+     * @param bridgeName name of bridge.
+     * @param bridgeManager Object of BridgeManager.
+     * @return BridgePlugin object.
+     * @since 11
+     */
+    public BridgePlugin(Context context, String bridgeName, BridgeManager bridgeManager) {
+        this.bridgeManager_ = bridgeManager;
+        this.bridgeName_ = bridgeName;
+        this.context_ = context;
+        this.methodsMap_ = new HashMap<String, Method>();
+        if (checkBridgeInner()) {
+            this.isAvailable_ = this.bridgeManager_.registerBridgePlugin(bridgeName, this);
+        }
+    }
+
+    /**
+     * Constructor of binary BridgePlugin.
+     *
+     * @param context context of the application.
+     * @param bridgeName name of bridge.
+     * @param bridgeManager Object of BridgeManager.
+     * @param bridgeType the bridge of type.
+     * @return BridgePlugin object.
+     * @since 11
+     */
+    public BridgePlugin(Context context, String bridgeName, BridgeManager bridgeManager, BridgeType bridgeType) {
+        this.bridgeManager_ = bridgeManager;
+        this.bridgeName_ = bridgeName;
+        this.context_ = context;
+        this.bridgeType_ = bridgeType;
+        this.methodsMap_ = new HashMap<String, Method>();
+        if (checkBridgeInner()) {
+            this.isAvailable_ = this.bridgeManager_.registerBridgePlugin(bridgeName, this);
+        }
+    }
+
+    /**
+     * Constructor of concurrent BridgePlugin.
+     *
+     * @param context context of the application.
+     * @param bridgeName name of bridge.
+     * @param bridgeManager Object of BridgeManager.
+     * @param bridgeType The bridge of type.
+     * @param taskOption Task option of Bridge.
+     * @return BridgePlugin object.
+     * @since 11
+     */
+    public BridgePlugin(Context context, String bridgeName, BridgeManager bridgeManager,
+        BridgeType bridgeType, TaskOption taskOption) {
+        this.bridgeManager_ = bridgeManager;
+        this.bridgeName_ = bridgeName;
+        this.context_ = context;
+        this.bridgeType_ = bridgeType;
+        this.methodsMap_ = new HashMap<String, Method>();
+        if (taskOption != null && checkBridgeInner()) {
+            this.isUseTaskQueue_ = true;
+            this.outPutHandler_ = new BridgeTaskQueueHandler(this.executorService_, TaskTag.OUTPUT, taskOption);
+            this.intPutHandler_ = new BridgeTaskQueueHandler(this.executorService_, TaskTag.INPUT, taskOption);
+            if (this.bridgeManager_.registerTaskQueueHandler(bridgeName, this.intPutHandler_)) {
+                this.isAvailable_ = this.bridgeManager_.registerBridgePlugin(bridgeName, this);
+            }
+        }
+    }
+
+    private boolean checkBridgeInner() {
+        if (this.bridgeName_ != null && this.bridgeManager_ != null && this.context_ != null) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private void registerMethod(String methodName, Method methods) {
-        Lock registerLock = new ReentrantLock();
-        registerLock.lock();
+        this.methodMapLock_.lock();
         try {
-            if (methodsMap_.containsKey(methodName)) {
-                ALog.e(LOG_TAG, "The methodName Already exists");
-                return;
+            if (this.methodsMap_ != null) {
+                this.methodsMap_.put(methodName, methods);
             } else {
-                ALog.i(LOG_TAG, "registerMethod success");
-                methodsMap_.put(methodName, methods);
+                ALog.e(LOG_TAG, "The methodsMap failed");
+                return;
             }
         } finally {
-            registerLock.unlock();
+            this.methodMapLock_.unlock();
         }
     }
 
     private Method findMethod(String methodName) {
-        Lock findBridgeLock = new ReentrantLock();
-        findBridgeLock.lock();
+        this.methodMapLock_.lock();
         try {
-            if (methodsMap_.containsKey(methodName)) {
-                return methodsMap_.get(methodName);
+            if (this.methodsMap_ != null) {
+                return this.methodsMap_.get(methodName);
             } else {
-                ALog.i(LOG_TAG, "The first call of methodName.");
                 return null;
             }
         } finally {
-            findBridgeLock.unlock();
+            this.methodMapLock_.unlock();
         }
     }
 
@@ -128,21 +217,30 @@ public abstract class BridgePlugin {
     }
 
     /**
-     * Get the Id of platform.
-     *
-     * @return The InstanceId.
-     */
-    protected int getInstanceId() {
-        return this.instanceId_;
-    }
-
-    /**
      * Get bridge type.
      *
      * @return The BridgeType.
      */
     public BridgeType getBridgeType() {
         return this.bridgeType_;
+    }
+
+    /**
+     * Check if BridgePlugin is available.
+     *
+     * @return The isAvailable of BridgePlugin.
+     */
+    public boolean isBridgeAvailable() {
+        return this.isAvailable_;
+    }
+
+    /**
+     * Get bridge isUseTaskQueue.
+     *
+     * @return The Bridge isUseTaskQueue.
+     */
+    protected boolean isUseTaskQueue() {
+        return this.isUseTaskQueue_;
     }
 
     /**
@@ -161,7 +259,7 @@ public abstract class BridgePlugin {
      * @param messageListener Interface function for message listening.
      */
     public void setMessageListener(IMessageListener messageListener) {
-        this.iMessageListener = messageListener;
+        this.iMessageListener_ = messageListener;
     }
 
     /**
@@ -170,7 +268,19 @@ public abstract class BridgePlugin {
      * @param methodResultListener Interface function for method listening.
      */
     public void setMethodResultListener(IMethodResult methodResultListener) {
-        this.iMethodResult = methodResultListener;
+        this.iMethodResult_ = methodResultListener;
+    }
+
+    private void callMethodInner(MethodData methodData) {
+        BridgeErrorCode errorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
+        if (this.bridgeType_ == BridgeType.BINARY_TYPE) {
+            errorCode = this.bridgeManager_.platformCallMethodBinary(bridgeName_, methodData);
+        } else {
+            errorCode = this.bridgeManager_.platformCallMethod(bridgeName_, methodData);
+        }
+        if (this.iMethodResult_ != null && errorCode.getId() != 0) {
+            this.iMethodResult_.onError(methodData.getMethodName(), errorCode.getId(), errorCode.getErrorMessage());
+        }
     }
 
     /**
@@ -179,19 +289,25 @@ public abstract class BridgePlugin {
      * @param methodData Method packaging structure.
      */
     public void callMethod(MethodData methodData) {
-        if (!this.isAvailable) {
-            ALog.e(LOG_TAG, "callMethod is fail, The bridge is not available" + this.bridgeName_);
+        if (!this.isAvailable_) {
+            ALog.e(LOG_TAG, "The bridge is not available.");
             return;
         }
-        BridgeErrorCode errorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
-        if (this.bridgeType_ == BridgeType.BINARY_TYPE) {
-            errorCode = this.bridgeManager_.platformCallMethodBinary(bridgeName_, methodData);
+        if (this.isUseTaskQueue_) {
+            this.outPutHandler_.dispatch(() -> {
+                callMethodInner(methodData);
+            });
         } else {
-            errorCode = this.bridgeManager_.platformCallMethod(bridgeName_, methodData);
+            callMethodInner(methodData);
         }
-        if (this.iMethodResult != null && errorCode.getId() != 0) {
-            this.iMethodResult.onError(methodData.getMethodName(), errorCode.getId(), errorCode.getErrorMessage());
+    }
+
+    private void sendMessageInner(Object data) {
+        if (this.bridgeType_ == BridgeType.BINARY_TYPE) {
+            this.bridgeManager_.platformSendMessageBinary(this.bridgeName_, data);
+            return;
         }
+        this.bridgeManager_.platformSendMessage(this.bridgeName_, data);
     }
 
     /**
@@ -200,15 +316,17 @@ public abstract class BridgePlugin {
      * @param data Data to be sent.
      */
     public void sendMessage(Object data) {
-        if (!this.isAvailable) {
-            ALog.e(LOG_TAG, "sendMessage is fail, The bridge is not available" + this.bridgeName_);
+        if (!this.isAvailable_) {
+            ALog.e(LOG_TAG, "The bridge is not available.");
             return;
         }
-        if (this.bridgeType_ == BridgeType.BINARY_TYPE) {
-            this.bridgeManager_.platformSendMessageBinary(this.bridgeName_, data);
-            return;
+        if (this.isUseTaskQueue_) {
+            this.outPutHandler_.dispatch(() -> {
+                sendMessageInner(data);
+            });
+        } else {
+            sendMessageInner(data);
         }
-        this.bridgeManager_.platformSendMessage(this.bridgeName_, data);
     }
 
     /**
@@ -219,9 +337,42 @@ public abstract class BridgePlugin {
      * @return Return the call result.
      */
     protected Object jsCallMethod(Object object, MethodData methodData) {
-        Object[] parametersObject = methodData.getMethodParameter();
-        Class clazz = object.getClass();
-        Object resValues = null;
+        if (object != null && methodData != null) {
+            Method callMethod = initMethod(object.getClass(), methodData);
+            Object[] parametersObject = methodData.getMethodParameter();
+            return bridgeInvokeMethod(object, callMethod, parametersObject);
+        } else {
+            return BridgeErrorCode.BRIDGE_METHOD_UNIMPL;
+        }
+    }
+
+    private Object bridgeInvokeMethod(Object object, Method callMethod, Object[] parametersObject) {
+        BridgeErrorCode bridgeErrorCode = BridgeErrorCode.BRIDGE_METHOD_UNIMPL;
+        if (object != null && callMethod != null && parametersObject != null) {
+            Object resValues = null;
+            try {
+                if (parametersObject != null && parametersObject.length != 0) {
+                    resValues = callMethod.invoke(object, parametersObject);
+                } else {
+                    resValues = callMethod.invoke(object);
+                }
+                return resValues;
+            } catch (IllegalAccessException e) {
+                ALog.e(LOG_TAG, "jsCallMethod failed, IllegalAccessException.");
+            } catch (IllegalArgumentException e) {
+                ALog.e(LOG_TAG, "jsCallMethod failed, IllegalArgumentException.");
+                bridgeErrorCode = BridgeErrorCode.BRIDGE_METHOD_PARAM_ERROR;
+            } catch (InvocationTargetException e) {
+                ALog.e(LOG_TAG, "jsCallMethod failed, InvocationTargetException.");
+            }
+        }
+        return bridgeErrorCode;
+    }
+
+    private Method initMethod(Class<?> clazz, MethodData methodData) {
+        if (clazz == null || methodData == null) {
+            return null;
+        }
         Method callMethod = findMethod(methodData.getMethodName());
         try {
             if (callMethod == null) {
@@ -237,23 +388,9 @@ public abstract class BridgePlugin {
             }
         } catch (NoSuchMethodException e) {
             ALog.e(LOG_TAG, "jsCallMethod failed, NoSuchMethodException.");
-            return BridgeErrorCode.BRIDGE_METHOD_NAME_ERROR;
+            callMethod = null;
         }
-        try {
-            if (callMethod != null && parametersObject != null && parametersObject.length != 0) {
-                resValues = callMethod.invoke(object, parametersObject);
-            } else {
-                resValues = callMethod.invoke(object);
-            }
-            return resValues;
-        } catch (IllegalAccessException e) {
-            ALog.e(LOG_TAG, "jsCallMethod failed, IllegalAccessException.");
-        } catch (IllegalArgumentException e) {
-            ALog.e(LOG_TAG, "jsCallMethod failed, IllegalArgumentException.");
-        } catch (InvocationTargetException e) {
-            ALog.e(LOG_TAG, "jsCallMethod failed, InvocationTargetException.");
-        }
-        return BridgeErrorCode.BRIDGE_METHOD_UNIMPL;
+        return callMethod;
     }
 
     /**
@@ -262,8 +399,8 @@ public abstract class BridgePlugin {
      * @param data Data to be sent.
      */
     protected void jsSendMessage(Object data) {
-        if (this.iMessageListener != null) {
-            Object dataResponse = this.iMessageListener.onMessage(data);
+        if (this.iMessageListener_ != null) {
+            Object dataResponse = this.iMessageListener_.onMessage(data);
             this.bridgeManager_.platformSendMessageResponse(this.bridgeName_, dataResponse);
         }
     }
@@ -276,15 +413,24 @@ public abstract class BridgePlugin {
      * @param errorCode Code of error.
      * @param errorMessage Message of error.
      */
-    protected void jsSendMethodResult(Object result, String methodName, int errorCode,
-        String errorMessage) {
-        if (this.iMethodResult == null) {
+    protected void jsSendMethodResult(Object result, String methodName, int errorCode, String errorMessage) {
+        if (this.isUseTaskQueue_) {
+            this.outPutHandler_.dispatch(() -> {
+                jsSendMethodResultInner(result, methodName, errorCode, errorMessage);
+            });
+        } else {
+            jsSendMethodResultInner(result, methodName, errorCode, errorMessage);
+        }
+    }
+
+    private void jsSendMethodResultInner(Object result, String methodName, int errorCode, String errorMessage) {
+        if (this.iMethodResult_ == null) {
             return;
         }
         if (errorCode == 0) {
-            this.iMethodResult.onSuccess(result);
+            this.iMethodResult_.onSuccess(result);
         } else {
-            this.iMethodResult.onError(methodName, errorCode, errorMessage);
+            this.iMethodResult_.onError(methodName, errorCode, errorMessage);
         }
     }
 
@@ -294,8 +440,8 @@ public abstract class BridgePlugin {
      * @param data Data to be sent.
      */
     protected void jsSendMessageResponse(Object data) {
-        if (this.iMessageListener != null) {
-            this.iMessageListener.onMessageResponse(data);
+        if (this.iMessageListener_ != null) {
+            this.iMessageListener_.onMessageResponse(data);
         }
     }
 
@@ -306,8 +452,8 @@ public abstract class BridgePlugin {
      * @param methodName Name of method.
      */
     protected void jsCancelMethod(String methodName) {
-        if (this.iMethodResult != null) {
-            this.iMethodResult.onMethodCancel(methodName);
+        if (this.iMethodResult_ != null) {
+            this.iMethodResult_.onMethodCancel(methodName);
         }
     }
 

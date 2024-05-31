@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,9 +35,12 @@ public class AceTexturePluginAosp extends AceResourcePlugin {
 
     private final Map<Long, AceTexture> objectMap;
 
-    private AceTexturePluginAosp(IAceTexture textureImpl) {
+    private int instanceId = -1;
+
+    private AceTexturePluginAosp(int instanceId, IAceTexture textureImpl) {
         // plugin name is texture, version is 1.0.
         super("texture", 1.0f);
+        this.instanceId = instanceId;
         this.textureImpl = textureImpl;
         this.objectMap = new HashMap<Long, AceTexture>();
     }
@@ -48,8 +51,8 @@ public class AceTexturePluginAosp extends AceResourcePlugin {
      * @param textureImpl interface for texture interaction with the engine.
      * @return texture plugin
      */
-    public static AceTexturePluginAosp createRegister(IAceTexture textureImpl) {
-        return new AceTexturePluginAosp(textureImpl);
+    public static AceTexturePluginAosp createRegister(int instanceId, IAceTexture textureImpl) {
+        return new AceTexturePluginAosp(instanceId, textureImpl);
     }
 
     /**
@@ -59,7 +62,7 @@ public class AceTexturePluginAosp extends AceResourcePlugin {
      * @return texture id
      */
     public long create(Map<String, String> param) {
-        AceTexture aceTexture = new AceTexture(nextTextureId.get(), textureImpl, 
+        AceTexture aceTexture = new AceTexture(instanceId, nextTextureId.get(), textureImpl, 
                                                 getEventCallback(), param);
         objectMap.put(nextTextureId.get(), aceTexture);
         registerCallMethod(aceTexture.getCallMethod());

@@ -160,7 +160,7 @@ bool AceViewSG::DispatchBasicEvent(const std::vector<TouchEvent>& touchEvents)
             continue;
         }
         if (touchEventCallback_) {
-            touchEventCallback_(point, nullptr);
+            touchEventCallback_(point, nullptr, nullptr);
         }
     }
     // if it is last page, let os know to quit app
@@ -179,31 +179,46 @@ bool AceViewSG::DispatchTouchEvent(const std::vector<uint8_t>& data)
             LOGW("Unknown event");
             continue;
         }
-        point.sourceType = SourceType::TOUCH;
         if (touchEventCallback_) {
-            touchEventCallback_(point, nullptr);
+            touchEventCallback_(point, nullptr, nullptr);
         }
     }
     // if it is last page, let os know to quit app
     return forbiddenToPlatform || (!IsLastPage());
 }
 
+
+bool AceViewSG::DispatchMouseEvent(const std::vector<uint8_t>& data)
+{
+    MouseEvent mouseEvent;
+    ConvertMouseEvent(data, mouseEvent);
+    if (mouseEventCallback_) {
+        mouseEventCallback_(mouseEvent, nullptr, nullptr);
+    }
+    // if it is last page, let os know to quit app
+    return (!IsLastPage());
+}
+
 bool AceViewSG::IsLastPage() const
 {
     auto container = AceEngine::Get().GetContainer(instanceId_);
-    CHECK_NULL_RETURN_NOLOG(container, false);
+    CHECK_NULL_RETURN(container, false);
     ContainerScope scope(instanceId_);
     auto context = container->GetPipelineContext();
-    CHECK_NULL_RETURN_NOLOG(context, false);
+    CHECK_NULL_RETURN(context, false);
     return context->IsLastPage();
 }
 
 bool AceViewSG::DispatchKeyEvent(const KeyEventInfo& eventInfo)
 {
-    CHECK_NULL_RETURN_NOLOG(keyEventCallback_, false);
+    CHECK_NULL_RETURN(keyEventCallback_, false);
 
     auto keyEvents = keyEventRecognizer_.GetKeyEvents(eventInfo.keyCode, eventInfo.keyAction, eventInfo.repeatTime,
-        eventInfo.timeStamp, eventInfo.timeStampStart, eventInfo.metaKey, eventInfo.sourceDevice, eventInfo.deviceId);
+        eventInfo.timeStamp, eventInfo.timeStampStart, eventInfo.metaKey, eventInfo.sourceDevice, eventInfo.deviceId,
+        eventInfo.msg);
+    if (keyEvents.size() == 0) {
+        return false;
+    }
     // distribute special event firstly
     // because platform receives a raw event, the special event processing is ignored
     if (keyEvents.size() > 1) {
@@ -235,7 +250,7 @@ void AceViewSG::NotifyDensityChanged(double density)
 
 void AceViewSG::SetViewportMetrics(AceViewSG* view, const ViewportConfig& config)
 {
-    CHECK_NULL_VOID_NOLOG(view);
+    CHECK_NULL_VOID(view);
     view->NotifyDensityChanged(config.Density());
 }
 
@@ -256,7 +271,7 @@ void AceViewSG::SurfaceChanged(AceViewSG* view, int32_t width, int32_t height, i
 
 void AceViewSG::SurfacePositionChanged(AceViewSG* view, int32_t posX, int32_t posY)
 {
-    CHECK_NULL_VOID_NOLOG(view);
+    CHECK_NULL_VOID(view);
     view->NotifySurfacePositionChanged(posX, posY);
 }
 

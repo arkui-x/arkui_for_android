@@ -45,6 +45,29 @@ RefPtr<ImageSource> ImageSource::Create(const uint8_t* data, uint32_t size)
     return MakeRefPtr<ImageSourceAndroid>(std::move(src));
 }
 
+RefPtr<ImageSource> ImageSource::Create(const std::string& filePath)
+{
+    Media::SourceOptions opts;
+    opts.formatHint = "image/svg+xml";
+    uint32_t errorCode = 0;
+    auto src = Media::ImageSource::CreateImageSource(filePath, opts, errorCode);
+    if (errorCode != Media::SUCCESS) {
+        TAG_LOGW(AceLogTag::ACE_IMAGE, "create image source failed, errorCode = %{public}u", errorCode);
+        return nullptr;
+    }
+    return MakeRefPtr<ImageSourceAndroid>(std::move(src));
+}
+
+bool ImageSource::IsAstc(const uint8_t* data, size_t size)
+{
+    return false;
+}
+
+ImageSource::Size ImageSource::GetASTCInfo(const uint8_t* data, size_t size)
+{
+    return { 0, 0 };
+}
+
 std::string ImageSourceAndroid::GetProperty(const std::string& key)
 {
     std::string value;
@@ -73,6 +96,19 @@ RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap(uint32_t index, const Size& 
         return nullptr;
     }
     return PixelMap::Create(std::move(pixmap));
+}
+
+RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap()
+{
+    uint32_t errorCode;
+    Media::DecodeOptions decodeOpts;
+    auto pixelMap = imageSource_->CreatePixelMap(decodeOpts, errorCode);
+    if (errorCode != Media::SUCCESS) {
+        TAG_LOGW(AceLogTag::ACE_IMAGE,
+            "create PixelMap from ImageSource failed, errorCode = %{public}u", errorCode);
+        return nullptr;
+    }
+    return PixelMap::Create(std::move(pixelMap));
 }
 
 ImageSource::Size ImageSourceAndroid::GetImageSize()

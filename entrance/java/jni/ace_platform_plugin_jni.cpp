@@ -25,8 +25,10 @@
 
 namespace OHOS::Ace::Platform {
 using NativeWindowMap = std::unordered_map<int64_t, void*>;
+using NativeTextureMap = std::unordered_map<int64_t, fml::jni::JavaObjectWeakGlobalRef>;
 std::unordered_map<int, RefPtr<AceResourceRegister>> g_resRegisters;
 std::unordered_map<int, NativeWindowMap> g_nativeWindowMaps;
+std::unordered_map<int, NativeTextureMap> g_surfaceTextureMaps;
 bool AcePlatformPluginJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
     static const JNINativeMethod methods[] = {
@@ -44,6 +46,16 @@ bool AcePlatformPluginJni::Register(const std::shared_ptr<JNIEnv>& env)
             .name = "nativeUnregisterSurface",
             .signature = "(IJ)V",
             .fnPtr = reinterpret_cast<void*>(&AcePlatformPluginJni::UnregisterSurface),
+        },
+        {
+            .name = "nativeRegisterTexture",
+            .signature = "(IJLjava/lang/Object;)V",
+            .fnPtr = reinterpret_cast<void*>(&AcePlatformPluginJni::RegisterTexture),
+        },
+        {
+            .name = "nativeUnregisterTexture",
+            .signature = "(IJ)V",
+            .fnPtr = reinterpret_cast<void*>(&AcePlatformPluginJni::UnregisterTexture),
         },
     };
 
@@ -130,9 +142,45 @@ void AcePlatformPluginJni::UnregisterSurface(JNIEnv* env, jobject myObject, jint
     iter->second.erase(static_cast<int64_t>(textureId));
 }
 
+void AcePlatformPluginJni::RegisterTexture(JNIEnv* env, jobject myObject,
+    jint instanceId, jlong textureId, jobject surfaceTexture)
+{
+    if (env == nullptr) {
+        LOGW("env is null");
+        return;
+    }
+
+    auto nativeTexture = fml::jni::JavaObjectWeakGlobalRef(env, surfaceTexture);
+    auto iter = g_surfaceTextureMaps.find(static_cast<int32_t>(instanceId));
+    if (iter != g_surfaceTextureMaps.end()) {
+        iter->second.emplace(static_cast<int64_t>(textureId), nativeTexture);
+    } else {
+        NativeTextureMap nativeTextureMap;
+        nativeTextureMap.emplace(static_cast<int64_t>(textureId), nativeTexture);
+        g_surfaceTextureMaps.emplace(static_cast<int32_t>(instanceId), nativeTextureMap);
+    }
+}
+
+void AcePlatformPluginJni::UnregisterTexture(JNIEnv* env, jobject myObject, jint instanceId, jlong textureId)
+{
+    if (env == nullptr) {
+        LOGW("env is null");
+        return;
+    }
+    
+    auto iter = g_surfaceTextureMaps.find(static_cast<int32_t>(instanceId));
+    if (iter == g_surfaceTextureMaps.end()) {
+        LOGW("UnregisterSurface fail, instanceId :%{public}d", instanceId);
+        return;
+    }
+
+    iter->second.erase(static_cast<int64_t>(textureId));
+}
+
 void AcePlatformPluginJni::ReleaseInstance(int32_t instanceId)
 {
     g_nativeWindowMaps.erase(instanceId);
     g_resRegisters.erase(instanceId);
+    g_surfaceTextureMaps.erase(instanceId);
 }
 } // namespace OHOS::Ace::Platform

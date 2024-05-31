@@ -12,11 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "core/event/time/time_event_proxy.h"
 
-#include "base/network/download_manager.h"
 namespace OHOS::Ace {
-bool DownloadManager::GetProxy(ProxyInfo& /* unused */)
+std::unique_ptr<TimeEventProxy> TimeEventProxy::instance_;
+std::mutex TimeEventProxy::mutex_;
+
+TimeEventProxy* TimeEventProxy::GetInstance()
 {
-    return false;
+    return nullptr;
 }
 } // namespace OHOS::Ace

@@ -27,6 +27,7 @@
 
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
+#include "adapter/android/entrance/java/jni/pack_asset_provider.h"
 #include "adapter/android/osal/accessibility_manager_impl.h"
 #include "adapter/android/osal/file_asset_provider.h"
 #include "adapter/android/osal/page_url_checker_android.h"
@@ -38,10 +39,11 @@
 #include "base/log/log.h"
 #include "core/common/ace_engine.h"
 #include "core/common/ace_view.h"
+#include "core/common/asset_manager_impl.h"
 #include "core/common/container.h"
 #include "core/common/container_scope.h"
-#include "core/common/flutter/flutter_asset_manager.h"
 #include "core/event/touch_event.h"
+#include "core/image/image_file_cache.h"
 #include "frameworks/bridge/declarative_frontend/ng/declarative_frontend_ng.h"
 
 namespace OHOS::Ace::Platform {
@@ -65,14 +67,14 @@ public:
     void OnFinish() const override
     {
         LOGI("UIContent OnFinish");
-        CHECK_NULL_VOID_NOLOG(onFinish_);
+        CHECK_NULL_VOID(onFinish_);
         onFinish_();
     }
 
     void OnStartAbility(const std::string& address) override
     {
         LOGI("UIContent OnStartAbility");
-        CHECK_NULL_VOID_NOLOG(onStartAbility_);
+        CHECK_NULL_VOID(onStartAbility_);
         onStartAbility_(address);
     }
 
@@ -103,7 +105,7 @@ public:
             taskExecutor->PostTask(
                 [container, keyboardRect] {
                     auto context = container->GetPipelineContext();
-                    CHECK_NULL_VOID_NOLOG(context);
+                    CHECK_NULL_VOID(context);
                     context->OnVirtualKeyboardAreaChange(keyboardRect);
                 },
                 TaskExecutor::TaskType::UI);
@@ -120,10 +122,10 @@ UIContentImpl::UIContentImpl(OHOS::AbilityRuntime::Platform::Context* context, N
     CHECK_NULL_VOID(context);
     const auto& obj = context->GetBindingObject();
     auto ref = obj->Get<NativeReference>();
-    auto object = AbilityRuntime::ConvertNativeValueTo<NativeObject>(ref->Get());
-    auto weak = static_cast<std::weak_ptr<AbilityRuntime::Platform::Context>*>(object->GetNativePointer());
+    void* result = nullptr;
+    napi_unwrap(reinterpret_cast<napi_env>(runtime), ref->GetNapiValue(), &result);
+    auto weak = static_cast<std::weak_ptr<AbilityRuntime::Platform::Context>*>(result);
     context_ = *weak;
-
     LOGI("Create UIContentImpl successfully.");
 }
 
@@ -137,7 +139,7 @@ void UIContentImpl::DestroyCallback() const
     LOGI("DestroyCallback called.");
 }
 
-void UIContentImpl::Initialize(OHOS::Rosen::Window* window, const std::string& url, NativeValue* storage)
+void UIContentImpl::Initialize(OHOS::Rosen::Window* window, const std::string& url, napi_value storage)
 {
     if (window) {
         CommonInitialize(window, url, storage);
@@ -149,7 +151,7 @@ void UIContentImpl::Initialize(OHOS::Rosen::Window* window, const std::string& u
     LOGI("RunPage UIContentImpl done.");
 }
 
-NativeValue* UIContentImpl::GetUIContext()
+napi_value UIContentImpl::GetUINapiContext()
 {
     auto container = Platform::AceContainerSG::GetContainer(instanceId_);
     ContainerScope scope(instanceId_);
@@ -164,7 +166,7 @@ NativeValue* UIContentImpl::GetUIContext()
     return nullptr;
 }
 
-void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::string& url, NativeValue* storage)
+void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::string& url, napi_value storage)
 {
     ACE_FUNCTION_TRACE();
     window_ = window;
@@ -186,7 +188,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
         AceApplicationInfo::GetInstance().SetAbilityName(info->name);
     }
 
-    RefPtr<FlutterAssetManager> flutterAssetManager = Referenced::MakeRefPtr<FlutterAssetManager>();
+    RefPtr<AssetManagerImpl> assetManagerImpl = Referenced::MakeRefPtr<AssetManagerImpl>();
     bool isModelJson = info != nullptr ? info->isModuleJson : false;
     std::string moduleName = info != nullptr ? info->moduleName : "";
     auto appInfo = context->GetApplicationInfo();
@@ -202,7 +204,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
         }
         LOGI("hapPath:%{public}s", hapPath.c_str());
         // first use hap provider
-        if (flutterAssetManager && !hapPath.empty()) {
+        if (assetManagerImpl && !hapPath.empty()) {
             auto assetProvider = AbilityRuntime::Platform::StageAssetProvider::GetInstance();
             CHECK_NULL_VOID(assetProvider);
             auto dynamicLoadFlag = true;
@@ -222,17 +224,17 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
                 if (fileAssetProvider->Initialize(
                         assetProvider->GetAppDataModuleDir() + "/" + moduleName, hapAssetPaths)) {
                     LOGD("Push AssetProvider to queue.");
-                    flutterAssetManager->PushBack(std::move(fileAssetProvider));
+                    assetManagerImpl->PushBack(std::move(fileAssetProvider));
                 }
             } else {
                 for (const auto& path : hapAssetPaths) {
                     auto apkAssetProvider =
-                        AceType::MakeRefPtr<ApkAssetProvider>(std::make_unique<flutter::APKAssetProvider>(env.get(),
+                        AceType::MakeRefPtr<ApkAssetProvider>(std::make_unique<PackAssetProvider>(env.get(),
                                                                   assetProvider->GetAssetManager(), hapPath + path),
                             hapPath + path);
                     apkAssetProvider->SetAssetManager(
                         AAssetManager_fromJava(env.get(), assetProvider->GetAssetManager()));
-                    flutterAssetManager->PushBack(std::move(apkAssetProvider));
+                    assetManagerImpl->PushBack(std::move(apkAssetProvider));
                 }
             }
         }
@@ -278,6 +280,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
 
     CHECK_NULL_VOID(container);
     AceEngine::Get().AddContainer(instanceId_, container);
+    ContainerScope::Add(instanceId_);
     container->SetInstanceName(info->name);
     container->SetHostClassName(info->name);
     if (runtime_) {
@@ -305,7 +308,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     aceResCfg.SetColorMode(SystemProperties::GetColorMode());
     aceResCfg.SetDeviceAccess(SystemProperties::GetDeviceAccess());
     container->SetResourceConfiguration(aceResCfg);
-    container->SetAssetManagerIfNull(flutterAssetManager);
+    container->SetAssetManagerIfNull(assetManagerImpl);
     container->SetBundlePath(context->GetBundleCodeDir());
     container->SetFilesDataPath(context->GetFilesDir());
     container->SetModuleName(moduleName);
@@ -345,9 +348,11 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
         if (!storage) {
             container->SetLocalStorage(nullptr, context->GetBindingObject()->Get<NativeReference>());
         } else {
-            LOGI("SetLocalStorage %{public}d", storage->TypeOf());
+            auto env = reinterpret_cast<napi_env>(nativeEngine);
+            napi_ref ref = nullptr;
+            napi_create_reference(env, storage, 1, &ref);
             container->SetLocalStorage(
-                nativeEngine->CreateReference(storage, 1), context->GetBindingObject()->Get<NativeReference>());
+                reinterpret_cast<NativeReference*>(ref), context->GetBindingObject()->Get<NativeReference>());
         }
     }
 }
@@ -366,8 +371,8 @@ void UIContentImpl::InitOnceAceInfo()
         AceApplicationInfo::GetInstance().SetDataFileDirPath(context->GetFilesDir());
         AceApplicationInfo::GetInstance().SetUid(context->GetApplicationInfo()->uid);
         AceApplicationInfo::GetInstance().SetPid(context->GetApplicationInfo()->pid);
-        ImageCache::SetImageCacheFilePath(context->GetCacheDir());
-        ImageCache::SetCacheFileInfo();
+        ImageFileCache::GetInstance().SetImageCacheFilePath(context->GetCacheDir());
+        ImageFileCache::GetInstance().SetCacheFileInfo();
     });
 }
 
@@ -413,6 +418,7 @@ void UIContentImpl::InitAceInfoFromResConfig()
 void UIContentImpl::Foreground()
 {
     LOGI("UIContentImpl: window foreground");
+    ContainerScope::UpdateRecentForeground(instanceId_);
     Platform::AceContainerSG::OnShow(instanceId_);
     // set the flag isForegroundCalled to be true
     auto container = Platform::AceContainerSG::GetContainer(instanceId_);
@@ -431,6 +437,7 @@ void UIContentImpl::Background()
 void UIContentImpl::Focus()
 {
     LOGI("UIContentImpl: window focus");
+    ContainerScope::UpdateRecentActive(instanceId_);
     Platform::AceContainerSG::OnActive(instanceId_);
 }
 
@@ -446,6 +453,7 @@ void UIContentImpl::Destroy()
     auto container = AceEngine::Get().GetContainer(instanceId_);
     CHECK_NULL_VOID(container);
     Platform::AceContainerSG::DestroyContainer(instanceId_);
+    ContainerScope::RemoveAndCheck(instanceId_);
 }
 
 void UIContentImpl::OnNewWant(const OHOS::AAFwk::Want& want)
@@ -508,7 +516,7 @@ bool UIContentImpl::ProcessBackPressed()
 {
     LOGI("UIContentImpl: ProcessBackPressed: Platform::AceContainerSG::OnBackPressed called");
     auto container = AceEngine::Get().GetContainer(instanceId_);
-    CHECK_NULL_RETURN_NOLOG(container, false);
+    CHECK_NULL_RETURN(container, false);
 
     LOGI("UIContentImpl::ProcessBackPressed AceContainerSG");
     if (Platform::AceContainerSG::OnBackPressed(instanceId_)) {
@@ -522,10 +530,10 @@ bool UIContentImpl::ProcessBackPressed()
 bool UIContentImpl::ProcessBasicEvent(const std::vector<TouchEvent>& touchEvents)
 {
     auto container = AceEngine::Get().GetContainer(instanceId_);
-    CHECK_NULL_RETURN_NOLOG(container, false);
+    CHECK_NULL_RETURN(container, false);
 
     auto aceView = static_cast<Platform::AceViewSG*>(container->GetView());
-    CHECK_NULL_RETURN_NOLOG(aceView, false);
+    CHECK_NULL_RETURN(aceView, false);
 
     return aceView->DispatchBasicEvent(touchEvents);
 }
@@ -534,26 +542,37 @@ bool UIContentImpl::ProcessPointerEvent(const std::vector<uint8_t>& data)
 {
     LOGI("UIContentImpl::ProcessPointerEvent called");
     auto container = AceEngine::Get().GetContainer(instanceId_);
-    CHECK_NULL_RETURN_NOLOG(container, false);
+    CHECK_NULL_RETURN(container, false);
 
     auto aceView = static_cast<Platform::AceViewSG*>(container->GetView());
-    CHECK_NULL_RETURN_NOLOG(aceView, false);
+    CHECK_NULL_RETURN(aceView, false);
 
     return aceView->DispatchTouchEvent(data);
 }
 
+bool UIContentImpl::ProcessMouseEvent(const std::vector<uint8_t>& data)
+{
+    LOGI("UIContentImpl::ProcessMouseEvent called");
+    auto container = AceEngine::Get().GetContainer(instanceId_);
+    CHECK_NULL_RETURN(container, false);
+
+    auto aceView = static_cast<Platform::AceViewSG*>(container->GetView());
+    CHECK_NULL_RETURN(aceView, false);
+    return aceView->DispatchMouseEvent(data);
+}
+
 bool UIContentImpl::ProcessKeyEvent(int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp,
-    int64_t timeStampStart, int32_t metaKey, int32_t sourceDevice, int32_t deviceId)
+    int64_t timeStampStart, int32_t metaKey, int32_t sourceDevice, int32_t deviceId, std::string msg)
 {
     LOGI("UIContentImpl: OnKeyUp called");
     auto container = AceEngine::Get().GetContainer(instanceId_);
-    CHECK_NULL_RETURN_NOLOG(container, false);
+    CHECK_NULL_RETURN(container, false);
 
     auto aceView = static_cast<Platform::AceViewSG*>(container->GetView());
-    CHECK_NULL_RETURN_NOLOG(aceView, false);
+    CHECK_NULL_RETURN(aceView, false);
 
     return aceView->DispatchKeyEvent(
-        { keyCode, keyAction, repeatTime, timeStamp, timeStampStart, metaKey, sourceDevice, deviceId });
+        { keyCode, keyAction, repeatTime, timeStamp, timeStampStart, metaKey, sourceDevice, deviceId, msg });
 }
 
 void UIContentImpl::UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRuntime::Platform::Configuration>& config)
@@ -567,7 +586,7 @@ void UIContentImpl::UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRunti
     taskExecutor->PostTask(
         [weakContainer = WeakPtr<Platform::AceContainerSG>(container), config]() {
             auto container = weakContainer.Upgrade();
-            CHECK_NULL_VOID_NOLOG(container);
+            CHECK_NULL_VOID(container);
             auto colorMode = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::SYSTEM_COLORMODE);
             auto direction = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_DIRECTION);
             auto densityDpi =

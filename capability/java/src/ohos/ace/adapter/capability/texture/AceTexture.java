@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,7 +20,9 @@ import java.util.Map;
 
 import android.graphics.SurfaceTexture;
 import android.view.Surface;
+import android.view.SurfaceHolder;
 
+import ohos.ace.adapter.AceTextureHolder;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.IAceOnCallResourceMethod;
 import ohos.ace.adapter.IAceOnResourceEvent;
@@ -44,9 +46,13 @@ public class AceTexture {
 
     private static final String TEXTURE_WIDTH_KEY = "textureWidth";
     private static final String TEXTURE_HEIGHT_KEY = "textureHeight";
-    private static final String TEXTURE_SET_DEFAULT_SIZE_KEY = "setDefaultSize";
+    private static final String TEXTURE_SET_TEXTURE_SIZE_KEY = "setTextureSize";
+    private static final String TEXTURE_UPDATE_TEXTURE_IMAGE_KEY = "updateTextureImage";
+    private static final String TEXTURE_ATTACH_TO_GL_CONTEXT_KEY = "attachToGLContext";
     private static final String TEXTURE_INIT_PARAM_KEY = "initParam";
     private static final String TEXTURE_REGISTER_SURFACE_VALUE = "registerSurface";
+    private static final String TEXTURE_ID_KEY = "textureId";
+    private static final String TEXTURE_IS_ATTACH = "isAttach";
 
     /**
      * IAceTexture.
@@ -83,6 +89,10 @@ public class AceTexture {
 
     private int textureHeight = 0;
 
+    private int instanceId = -1;
+    
+    private float[] transform = new float[16];
+
     private SurfaceTexture.OnFrameAvailableListener onFrameListener = new SurfaceTexture.OnFrameAvailableListener() {
         @Override
         public void onFrameAvailable(SurfaceTexture texture) {
@@ -98,11 +108,11 @@ public class AceTexture {
      * @param callback resource callback
      * @param initParam initialization parameters
      */
-    public AceTexture(long id, IAceTexture textureImpl, IAceOnResourceEvent callback, Map<String, String> initParam) {
+    public AceTexture(int instanceId, long id, IAceTexture textureImpl, IAceOnResourceEvent callback, Map<String, String> initParam) {
         this.surfaceTexture = new SurfaceTexture(0);
         this.surfaceTexture.detachFromGLContext();
         this.surfaceTexture.setOnFrameAvailableListener(onFrameListener);
-
+        this.instanceId = instanceId;
         this.id = id;
         this.textureImpl = textureImpl;
         this.callback = callback;
@@ -118,12 +128,40 @@ public class AceTexture {
                 return setTextureSize(param);
             }
         };
-        this.callMethodMap.put("texture@" + id + METHOD + PARAM_EQUALS + "setTextureSize" + PARAM_BEGIN, callSetTextureSize);
+        this.callMethodMap.put("texture@" + id + METHOD + PARAM_EQUALS + TEXTURE_SET_TEXTURE_SIZE_KEY +
+            PARAM_BEGIN, callSetTextureSize);
 
-        if (initParam.containsKey(TEXTURE_INIT_PARAM_KEY)
-                && initParam.get(TEXTURE_INIT_PARAM_KEY).equals(TEXTURE_REGISTER_SURFACE_VALUE)) {
-            registerSurface();
-        }
+        IAceOnCallResourceMethod callAttachToGLContext = new IAceOnCallResourceMethod() {
+
+            /**
+             * attatch to glcontext
+             * @param params size params
+             * @return result of attatch
+             */
+            public String onCall(Map<String, String> param) {
+                return attachToGLContext(param);
+            }
+        };
+        this.callMethodMap.put("texture@" + id + METHOD + PARAM_EQUALS + TEXTURE_ATTACH_TO_GL_CONTEXT_KEY +
+            PARAM_BEGIN, callAttachToGLContext);
+
+        IAceOnCallResourceMethod callUpdateTextureImage = new IAceOnCallResourceMethod() {
+
+            /**
+             * update texture image
+             * @param params size params
+             * @return result of update
+             */
+            public String onCall(Map<String, String> param) {
+                return updateTextureImage(param);
+            }
+        };
+        this.callMethodMap.put("texture@" + id + METHOD + PARAM_EQUALS + TEXTURE_UPDATE_TEXTURE_IMAGE_KEY +
+            PARAM_BEGIN, callUpdateTextureImage);
+
+        registerSurface();
+
+        AceTextureHolder.addSurfaceTexture(id, surfaceTexture);
     }
 
     /**
@@ -153,9 +191,65 @@ public class AceTexture {
             return FALSE;
         }
 
-        if (params.containsKey(TEXTURE_SET_DEFAULT_SIZE_KEY)) {
-            setDefaultBufferSize(textureWidth, textureHeight);
+        setDefaultBufferSize(textureWidth, textureHeight);
+
+        return SUCCESS;
+    }
+
+    /**
+     * Update texture image
+     *
+     * @param params size params
+     * @return result of update
+     */
+    public String updateTextureImage(Map<String, String> params) {
+        if (surfaceTexture == null) {
+            ALog.e(LOG_TAG, "updateTextureImage surfaceTexture is null.");
+            return FALSE;
         }
+
+        surfaceTexture.updateTexImage();
+        surfaceTexture.getTransformMatrix(transform);
+        long timestamp = surfaceTexture.getTimestamp();
+        if (timestamp == 0) {
+            ALog.e(LOG_TAG, "updateTextureImage etimestamp " + timestamp);
+        }
+        String param = "transform=" + "[" + transform[0];
+        for (int i = 1; i < transform.length; i++) {
+            param += ",";
+            param += transform[i];
+        }
+        param += "]";
+
+        return param;
+    }
+
+    /**
+     * Attach to glcontext.
+     *
+     * @param params size params
+     * @return result of attach
+     */
+    public String attachToGLContext(Map<String, String> params) {
+        ALog.i(LOG_TAG, "attachToGLContext start.");
+        if (!params.containsKey(TEXTURE_ID_KEY)) {
+            ALog.e(LOG_TAG, "attachToGLContext texture id is empty.");
+            return FALSE;
+        }
+
+        if (surfaceTexture == null) {
+            ALog.e(LOG_TAG, "attachToGLContext surfaceTexture is null.");
+            return FALSE;
+        }
+
+        int texName = Integer.parseInt(params.get(TEXTURE_ID_KEY));
+        if (Integer.parseInt(params.get(TEXTURE_IS_ATTACH)) == 1){
+            surfaceTexture.attachToGLContext(texName);
+        } else {
+            surfaceTexture.detachFromGLContext();
+        }
+        ALog.i(LOG_TAG, "attachToGLContext end." + texName);
+
         return SUCCESS;
     }
 
@@ -190,6 +284,7 @@ public class AceTexture {
         }
 
         if (!hasRegisterSurface) {
+            ALog.i(LOG_TAG, "registerSurface, id:" + this.id);
             this.textureImpl.registerSurface(this.id, surface);
             hasRegisterSurface = true;
         }
@@ -221,6 +316,7 @@ public class AceTexture {
         surfaceTexture.setOnFrameAvailableListener(null);
         textureImpl.unregisterTexture(id);
         textureImpl.unregisterSurface(id);
+        AceTextureHolder.removeSurfaceTexture(id);
         if (surface != null) {
             surface.release();
         }
@@ -246,7 +342,7 @@ public class AceTexture {
         }
 
         this.textureImpl.markTextureFrameAvailable(id);
-        callback.onEvent(TEXTURE_FLAG + id + EVENT + PARAM_EQUALS + "markTextureFrameAvailable" + PARAM_BEGIN, "");
+        String param = "instanceId=" + instanceId + "&textureId=" + id;
+        callback.onEvent(TEXTURE_FLAG + id + EVENT + PARAM_EQUALS + "markTextureAvailable" + PARAM_BEGIN, param);
     }
 }
-

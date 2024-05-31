@@ -17,7 +17,6 @@ package ohos.ace.adapter.capability.storage;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.Preference;
 
 import ohos.ace.adapter.ALog;
 
@@ -29,9 +28,11 @@ import ohos.ace.adapter.ALog;
 public class PersistentStorageAosp extends PersistentStorageBase {
     private static final String LOG_TAG = "PersistentStorageAosp";
 
+    private static final String SHARE_PREFERENCE_NAME = "storage_data";
+
     private String databasePath;
 
-    private Preference preferences;
+    SharedPreferences mSharePreferences;
 
     private Context context;
 
@@ -43,9 +44,9 @@ public class PersistentStorageAosp extends PersistentStorageBase {
     public PersistentStorageAosp(Context context) {
         this.context = context;
         if (context == null) {
-            ALog.i(LOG_TAG, "PersistentStorageAosp context null");
+            ALog.w(LOG_TAG, "PersistentStorageAosp context null");
         }
-        preferences = new Preference(context);
+        mSharePreferences = context.getSharedPreferences(SHARE_PREFERENCE_NAME, context.MODE_PRIVATE);
         ALog.i(LOG_TAG, "PersistentStorageAosp constructor");
         nativeInit();
     }
@@ -56,9 +57,13 @@ public class PersistentStorageAosp extends PersistentStorageBase {
 
     @Override
     public void set(String key, String value) {
-        SharedPreferences.Editor editor = preferences.getEditor();
+        if (mSharePreferences == null) {
+            ALog.w(LOG_TAG, "set method sharePreference instantiate is null");
+            return;
+        }
+        SharedPreferences.Editor editor = mSharePreferences.edit();
         if (editor == null) {
-            ALog.i(LOG_TAG, "editor null");
+            ALog.w(LOG_TAG, "editor null");
             return;
         }
         editor.putString(key, value);
@@ -70,19 +75,22 @@ public class PersistentStorageAosp extends PersistentStorageBase {
     @Override
     public String get(String key) {
         ALog.i(LOG_TAG, "PersistentStorageAosp get");
-        SharedPreferences sharePreference = preferences.getSharedPreferences();
-        if (sharePreference == null) {
-            ALog.i(LOG_TAG, "sharePreference null");
+        if (mSharePreferences == null) {
+            ALog.w(LOG_TAG, "sharePreference null");
             return "";
         }
-        return sharePreference.getString(key, "");
+        return mSharePreferences.getString(key, "");
     }
 
     @Override
     public void clear() {
-        SharedPreferences.Editor editor = preferences.getEditor();
+        if (mSharePreferences == null) {
+            ALog.w(LOG_TAG, "clear method sharePreference instantiate is null");
+            return;
+        }
+        SharedPreferences.Editor editor = mSharePreferences.edit();
         if (editor == null) {
-            ALog.i(LOG_TAG, "editor null");
+            ALog.w(LOG_TAG, "editor null");
             return;
         }
         editor.clear();
@@ -93,9 +101,13 @@ public class PersistentStorageAosp extends PersistentStorageBase {
 
     @Override
     public void delete(String key) {
-        SharedPreferences.Editor editor = preferences.getEditor();
+        if (mSharePreferences == null) {
+            ALog.w(LOG_TAG, "delete method sharePreference instantiate is null");
+            return;
+        }
+        SharedPreferences.Editor editor = mSharePreferences.edit();
         if (editor == null) {
-            ALog.i(LOG_TAG, "editor null");
+            ALog.w(LOG_TAG, "editor null");
             return;
         }
         editor.remove(key);

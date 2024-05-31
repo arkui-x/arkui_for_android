@@ -17,6 +17,11 @@ package ohos.ace.adapter.capability.bridge;
 
 import java.nio.ByteBuffer;
 
+/**
+ * The Binary Codec interface of bridge.
+ *
+ * @since 10
+ */
 public interface BridgeBaseCodec<T> {
 
     ByteBuffer encodeData(T message);

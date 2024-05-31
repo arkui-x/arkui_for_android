@@ -31,6 +31,7 @@ public:
     std::string GetProperty(const std::string& key) override;
     RefPtr<PixelMap> CreatePixelMap(const Size& size) override;
     RefPtr<PixelMap> CreatePixelMap(uint32_t index, const Size& size) override;
+    RefPtr<PixelMap> CreatePixelMap() override;
     Size GetImageSize() override;
 
 private:

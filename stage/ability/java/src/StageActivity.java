@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,8 @@ package ohos.stage.ability.adapter;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.util.HashSet;
+import java.util.Set;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -29,6 +31,9 @@ import android.os.Trace;
 
 import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.AcePlatformPlugin;
+import ohos.ace.adapter.ArkUIXPluginRegistry;
+import ohos.ace.adapter.IArkUIXPlugin;
+import ohos.ace.adapter.PluginContext;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.WindowView;
@@ -74,11 +79,19 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     private AcePlatformPlugin platformPlugin = null;
 
+    private BridgeManager bridgeManager = null;
+
     private static final int ERR_INVALID_PARAMETERS = -1;
 
     private static final int ERR_OK = 0;
 
     private KeyboardHeightProvider keyboardHeightProvider;
+
+    private Set<String> pluginList = new HashSet<>();
+
+    private ArkUIXPluginRegistry arkUIXPluginRegistry = null;
+
+    private PluginContext pluginContext = null;
 
     @Override
     public void onKeyboardHeightChanged(int height) {
@@ -109,7 +122,8 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         windowView = new WindowView(this);
         Trace.endSection();
         initPlatformPlugin(this, instanceId, windowView);
-
+        initBridgeManager();
+        initArkUIXPluginRegistry();
         Trace.beginSection("setContentView");
         setContentView(windowView);
         Trace.endSection();
@@ -177,9 +191,9 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         super.onDestroy();
         activityDelegate.dispatchOnDestroy(getInstanceName());
         windowView.destroy();
-        BridgeManager.deleteBridgeByInstanceId(this.instanceId);
-
+        arkUIXPluginRegistry.unRegistryAllPlugins();
         keyboardHeightProvider.close();
+        BridgeManager.unRegisterBridgeManager(instanceId);
         if (platformPlugin != null) {
             platformPlugin.releseResRegister(instanceId);
             Log.i(LOG_TAG, "StageActivity onDestroy releseResRegister called");
@@ -234,11 +248,34 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     }
 
     /**
+     * Get the BridgeManager of StageActivity.
+     *
+     * @return The BridgeManager.
+     */
+    public BridgeManager getBridgeManager() {
+        if (this.bridgeManager == null) {
+            this.bridgeManager = new BridgeManager(instanceId);
+        }
+        return this.bridgeManager;
+    }
+
+    private void initBridgeManager() {
+        if (bridgeManager == null) {
+            getBridgeManager();
+        }
+        if (BridgeManager.findBridgeManager(instanceId) == null) {
+            bridgeManager.nativeInit(instanceId);
+            BridgeManager.registerBridgeManager(instanceId, bridgeManager);
+        }
+    }
+
+    /**
      * Get the Id of StageActivity.
      *
      * @return The InstanceId.
      */
     public int getInstanceId() {
+        initBridgeManager();
         return this.instanceId;
     }
 
@@ -289,7 +326,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             String packageName = getApplicationContext().getPackageName();
             Log.i(LOG_TAG, "Current package name: " + packageName);
             ComponentName componentName = null;
-            if (packageName == bundleName) {
+            if (packageName.equals(bundleName)) {
                 componentName = new ComponentName(getBaseContext(), activityName);
             } else {
                 componentName = new ComponentName(bundleName, activityName);
@@ -322,7 +359,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             String packageName = getApplicationContext().getPackageName();
             Log.i(LOG_TAG, "Current package name: " + packageName);
             ComponentName componentName = null;
-            if (packageName == bundleName) {
+            if (packageName.equals(bundleName)) {
                 componentName = new ComponentName(getBaseContext(), activityName);
             } else {
                 componentName = new ComponentName(bundleName, activityName);
@@ -428,5 +465,51 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         Context context = getApplicationContext();
         GrantResult grantResultsClass = new GrantResult(context);
         grantResultsClass.onRequestPremissionCallback(permissions, grantResults);
+    }
+
+    /**
+     * add ArkUI-X plugin to list for registry.
+     * 
+     * @param pluginName The full class name includes the package name of the plugin.
+     * @since 11
+     */
+    public void addPlugin(String pluginName) {
+        if (pluginName == null) {
+            Log.e(LOG_TAG, "plugin name is null!");
+        }
+        else {
+            Log.d(LOG_TAG, "add plugin: " + pluginName);
+            pluginList.add(pluginName);
+        }
+    }
+
+    /**
+     * Initialize arkui-x plugins and arkui-x plugins registry.
+     */
+    private void initArkUIXPluginRegistry() {
+        Trace.beginSection("StageActivity::intitArkUIXPlugins");
+        arkUIXPluginRegistry = new ArkUIXPluginRegistry(getPluginContext());
+        arkUIXPluginRegistry.registryPlugins(pluginList);
+        Trace.endSection();
+    }
+
+    /**
+     * Get the BridgeManager of StageActivity.
+     *
+     * @return The BridgeManager.
+     */
+    public PluginContext getPluginContext() {
+        if (this.pluginContext == null) {
+            this.pluginContext = new PluginContext(this, getBridgeManager(), this.moduleName);
+        }
+        return this.pluginContext;
+    }
+
+    /**
+     * Report to the system that your app is now fully drawn.
+     */
+    public void reportDrawnCompleted() {
+        Log.i(LOG_TAG, "Report fully drawn.");
+        reportFullyDrawn();
     }
 }

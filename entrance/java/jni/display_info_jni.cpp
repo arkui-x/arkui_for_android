@@ -57,6 +57,9 @@ void DisplayInfoJni::SetupDisplayInfo(JNIEnv* env, jobject obj)
     displayInfoStruct_.getWidthMethod = env->GetMethodID(clazz, "getWidth", "()I");
     displayInfoStruct_.getHeightMethod = env->GetMethodID(clazz, "getHeight", "()I");
     displayInfoStruct_.getRefreshRateMethod = env->GetMethodID(clazz, "getRefreshRate", "()F");
+    displayInfoStruct_.getDensityPixelsMethod = env->GetMethodID(clazz, "getDensityPixels", "()F");
+    displayInfoStruct_.getDensityDpiMethod = env->GetMethodID(clazz, "getDensityDpi", "()I");
+    displayInfoStruct_.getScaledDensityMethod = env->GetMethodID(clazz, "getScaledDensity", "()F");
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -125,4 +128,42 @@ float DisplayInfoJni::getRefreshRate()
     return (float)refreshRate;
 }
 
+float DisplayInfoJni::getDensityPixels()
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("DisplayInfo:: env is NULL");
+        return -1;
+    }
+
+    jfloat refreshRate = env->CallFloatMethod(displayInfoStruct_.object, displayInfoStruct_.getDensityPixelsMethod);
+
+    return (float)refreshRate;
+}
+
+int DisplayInfoJni::getDensityDpi()
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("DisplayInfo:: env is NULL");
+        return -1;
+    }
+
+    jfloat refreshRate = env->CallIntMethod(displayInfoStruct_.object, displayInfoStruct_.getDensityDpiMethod);
+
+    return (int)refreshRate;
+}
+
+float DisplayInfoJni::getScaledDensity()
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("DisplayInfo:: env is NULL");
+        return -1;
+    }
+
+    jfloat refreshRate = env->CallFloatMethod(displayInfoStruct_.object, displayInfoStruct_.getScaledDensityMethod);
+
+    return (float)refreshRate;
+}
 } // namespace OHOS::Ace::Platform

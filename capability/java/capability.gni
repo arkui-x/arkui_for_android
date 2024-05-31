@@ -56,9 +56,29 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoPluginAosp.java",
 
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseColumns.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseHelper.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseCredential.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseHttpAuth.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseCredentialDao.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseHttpAuthDao.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseManager.java",
+
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWeb.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebPluginAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebErrorReceiveObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebScrollObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebHttpErrorReceiveObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebScaleObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebConsoleMessageObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebOverrideUrlObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebFileChooserObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebGeolocationPermissionsShowObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebDownloadStartObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebHttpAuthRequestObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebPermissionRequestObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebJsDialogObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebJsPromptObject.java",
 
   # bridge files
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeBaseCodec.java",
@@ -67,10 +87,13 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeManager.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgePlugin.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeSerializer.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeTaskQueue.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeTaskQueueHandler.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/IMessageListener.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/IMethodResult.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/MethodData.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/ParameterHelper.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/TaskOption.java",
 ]
 
 # capability cpp files

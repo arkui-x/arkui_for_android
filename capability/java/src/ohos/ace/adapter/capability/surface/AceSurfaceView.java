@@ -118,7 +118,7 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
         this.callMethodMap.put("surface@" + id + METHOD + PARAM_EQUALS + "setIsFullScreen" + PARAM_BEGIN,
                 callSetIsFullScreen);
-        
+
         FrameLayout.LayoutParams layoutParams = buildLayoutParams(0, 0, 0, 0);
         Activity activity = (Activity) context;
         activity.addContentView(this, layoutParams);

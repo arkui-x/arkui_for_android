@@ -33,10 +33,10 @@
 #include "core/common/connect_server_manager.h"
 #include "core/common/container.h"
 #include "core/common/container_scope.h"
-#include "core/common/flutter/flutter_asset_manager.h"
-#include "core/common/flutter/flutter_task_executor.h"
 #include "core/common/font_manager.h"
 #include "core/common/platform_window.h"
+#include "core/common/resource/resource_manager.h"
+#include "core/common/task_executor_impl.h"
 #include "core/common/thread_checker.h"
 #include "core/common/watch_dog.h"
 #include "core/common/window.h"
@@ -73,8 +73,7 @@ constexpr int THEME_ID_DARK = 117440516;
 constexpr int INDEX_LANGUAGE = 0;
 constexpr int INDEX_REGION = 1;
 constexpr int INDEX_SCRIPT = 2;
-void ParseLocaleTag(
-    const std::string& localeTag, std::string& language, std::string& script, std::string& region)
+void ParseLocaleTag(const std::string& localeTag, std::string& language, std::string& script, std::string& region)
 {
     if (localeTag.empty()) {
         return;
@@ -116,16 +115,16 @@ AceContainerSG::AceContainerSG(int32_t instanceId, FrontendType type,
 
     useStageModel_ = true;
 
-    auto flutterTaskExecutor = Referenced::MakeRefPtr<FlutterTaskExecutor>();
-    flutterTaskExecutor->InitPlatformThread(useCurrentEventRunner_, useStageModel_);
+    auto taskExecutorImpl = Referenced::MakeRefPtr<TaskExecutorImpl>();
+    taskExecutorImpl->InitPlatformThread(useCurrentEventRunner_, useStageModel_);
 
     if (type_ == FrontendType::DECLARATIVE_JS) {
         GetSettings().useUIAsJSThread = true;
     } else {
-        flutterTaskExecutor->InitJsThread();
+        taskExecutorImpl->InitJsThread();
     }
 
-    taskExecutor_ = flutterTaskExecutor;
+    taskExecutor_ = taskExecutorImpl;
 
     platformEventCallback_ = std::move(callback);
 }
@@ -252,7 +251,8 @@ void AceContainerSG::InitializeCallback()
     ACE_DCHECK(aceView_ && taskExecutor_ && pipelineContext_);
     auto weak = AceType::WeakClaim(AceType::RawPtr(pipelineContext_));
     auto instanceId = aceView_->GetInstanceId();
-    auto&& touchEventCallback = [weak, instanceId](const TouchEvent& event, const std::function<void()>& markProcess) {
+    auto&& touchEventCallback = [weak, instanceId](const TouchEvent& event, const std::function<void()>& markProcess,
+                                    const RefPtr<OHOS::Ace::NG::FrameNode>& node) {
         auto context = weak.Upgrade();
         CHECK_NULL_VOID(context);
 
@@ -286,7 +286,8 @@ void AceContainerSG::InitializeCallback()
     };
     aceView_->RegisterKeyEventCallback(keyEventCallback);
 
-    auto&& mouseEventCallback = [weak, instanceId](const MouseEvent& event, const std::function<void()>& markProcess) {
+    auto&& mouseEventCallback = [weak, instanceId](const MouseEvent& event, const std::function<void()>& markProcess,
+                                    const RefPtr<OHOS::Ace::NG::FrameNode>& node) {
         auto context = weak.Upgrade();
         CHECK_NULL_VOID(context);
 
@@ -550,14 +551,14 @@ void AceContainerSG::AttachView(
 #ifdef ENABLE_ROSEN_BACKEND
     auto* aceView = static_cast<Platform::AceViewSG*>(aceView_);
     CHECK_NULL_VOID(aceView);
-    auto flutterTaskExecutor = AceType::DynamicCast<FlutterTaskExecutor>(taskExecutor_);
-    CHECK_NULL_VOID(flutterTaskExecutor);
-    flutterTaskExecutor->InitOtherThreads(aceView->GetThreadModel());
+    auto taskExecutorImpl = AceType::DynamicCast<TaskExecutorImpl>(taskExecutor_);
+    CHECK_NULL_VOID(taskExecutorImpl);
+    taskExecutorImpl->InitOtherThreads(aceView->GetThreadModel());
 #endif
     ContainerScope scope(instanceId);
     if (type_ == FrontendType::DECLARATIVE_JS) {
         // for declarative js frontend display ui in js thread
-        flutterTaskExecutor->InitJsThread(false);
+        taskExecutorImpl->InitJsThread(false);
         InitializeFrontend();
         auto front = GetFrontend();
         if (front) {
@@ -594,11 +595,11 @@ void AceContainerSG::AttachView(
     frontend_->AttachPipelineContext(pipelineContext_);
 }
 
-void AceContainerSG::UpdateConfiguration(const std::string& colorMode,
-    const std::string& direction, const std::string& densityDpi, const std::string& languageTag)
+void AceContainerSG::UpdateConfiguration(const std::string& colorMode, const std::string& direction,
+    const std::string& densityDpi, const std::string& languageTag)
 {
     LOGI("AceContainerSG::UpdateConfiguration, colorMode:%{public}s, direction:%{public}s, densityDpi:%{public}s,"
-        "language:%{public}s",
+         "language:%{public}s",
         colorMode.c_str(), direction.c_str(), densityDpi.c_str(), languageTag.c_str());
     if (colorMode.empty() && direction.empty() && densityDpi.empty() && languageTag.empty()) {
         LOGW("AceContainerSG::UpdateResourceConfiguration param is empty");
@@ -608,7 +609,7 @@ void AceContainerSG::UpdateConfiguration(const std::string& colorMode,
     ContainerScope scope(instanceId_);
     auto themeManager = pipelineContext_->GetThemeManager();
     CHECK_NULL_VOID(themeManager);
-    OnConfigurationChange configurationChange;
+    ConfigurationChange configurationChange;
     auto resConfig = GetResourceConfiguration();
     if (!colorMode.empty()) {
         configurationChange.colorModeUpdate = true;
@@ -632,10 +633,12 @@ void AceContainerSG::UpdateConfiguration(const std::string& colorMode,
         } else if (direction == "horizontal") {
             resConfig.SetOrientation(DeviceOrientation::LANDSCAPE);
         }
+        configurationChange.directionUpdate = true;
     }
     if (!densityDpi.empty()) {
         double density = std::stoi(densityDpi) / DPI_BASE;
         LOGI("resconfig density : %{public}f", density);
+        configurationChange.dpiUpdate = true;
         resConfig.SetDensity(density);
     }
     if (!languageTag.empty()) {
@@ -643,8 +646,8 @@ void AceContainerSG::UpdateConfiguration(const std::string& colorMode,
         std::string script;
         std::string region;
         ParseLocaleTag(languageTag, language, script, region);
-        LOGI("language:%{public}s, script:%{public}s, region:%{public}s",
-            language.c_str(), script.c_str(), region.c_str());
+        LOGI("language:%{public}s, script:%{public}s, region:%{public}s", language.c_str(), script.c_str(),
+            region.c_str());
         if (!language.empty() || !script.empty() || !region.empty()) {
             configurationChange.languageUpdate = true;
             AceApplicationInfo::GetInstance().SetLocale(language, region, script, "");
@@ -652,6 +655,9 @@ void AceContainerSG::UpdateConfiguration(const std::string& colorMode,
     }
     SetResourceConfiguration(resConfig);
     themeManager->UpdateConfig(resConfig);
+    if (SystemProperties::GetResourceDecoupling()) {
+        ResourceManager::GetInstance().UpdateResourceConfig(resConfig);
+    }
     themeManager->LoadResourceThemes();
     themeManager->ParseSystemTheme();
     themeManager->SetColorScheme(colorScheme_);
@@ -661,26 +667,66 @@ void AceContainerSG::UpdateConfiguration(const std::string& colorMode,
         pipelineContext_->SetAppBgColor(Color::WHITE);
     }
     pipelineContext_->RefreshRootBgColor();
-    pipelineContext_->NotifyConfigurationChange(configurationChange);
-    pipelineContext_->FlushReload();
+    pipelineContext_->NotifyConfigurationChange();
+    pipelineContext_->FlushReload(configurationChange);
     pipelineContext_->FlushReloadTransition();
+}
+
+void InitResourceAndThemeManager(const RefPtr<PipelineBase>& pipelineContext, const RefPtr<AssetManager>& assetManager,
+    const ColorScheme& colorScheme, const ResourceInfo& resourceInfo, AceView* aceView,
+    const std::shared_ptr<OHOS::AbilityRuntime::Platform::Context>& context,
+    const std::shared_ptr<OHOS::AppExecFwk::AbilityInfo>& abilityInfo)
+{
+    auto resourceAdapter = ResourceAdapter::CreateV2();
+    resourceAdapter->Init(resourceInfo);
+
+    ThemeConstants::InitDeviceType();
+    auto themeManager = AceType::MakeRefPtr<ThemeManagerImpl>(resourceAdapter);
+    pipelineContext->SetThemeManager(themeManager);
+    themeManager->SetColorScheme(colorScheme);
+    themeManager->LoadCustomTheme(assetManager);
+    themeManager->LoadResourceThemes();
+    aceView->SetBackgroundColor(themeManager->GetBackgroundColor());
+
+    auto defaultBundleName = "";
+    auto defaultModuleName = "";
+    ResourceManager::GetInstance().AddResourceAdapter(defaultBundleName, defaultModuleName, resourceAdapter);
+    if (context) {
+        auto bundleName = context->GetBundleName();
+        auto moduleName = context->GetHapModuleInfo()->name;
+        if (!bundleName.empty() && !moduleName.empty()) {
+            ResourceManager::GetInstance().AddResourceAdapter(bundleName, moduleName, resourceAdapter);
+        }
+    } else if (abilityInfo) {
+        auto bundleName = abilityInfo->bundleName;
+        auto moduleName = abilityInfo->moduleName;
+        if (!bundleName.empty() && !moduleName.empty()) {
+            ResourceManager::GetInstance().AddResourceAdapter(bundleName, moduleName, resourceAdapter);
+        }
+    }
 }
 
 void AceContainerSG::InitThemeManager()
 {
     LOGI("Init theme manager");
     auto initThemeManagerTask = [pipelineContext = pipelineContext_, assetManager = assetManager_,
-                                    colorScheme = colorScheme_, resourceInfo = resourceInfo_, aceView = aceView_]() {
+                                    colorScheme = colorScheme_, resourceInfo = resourceInfo_, aceView = aceView_,
+                                    context = runtimeContext_.lock(), abilityInfo = abilityInfo_.lock()]() {
         ACE_SCOPED_TRACE("OHOS::LoadThemes()");
         LOGI("UIContent load theme");
-        ThemeConstants::InitDeviceType();
-        auto themeManager = AceType::MakeRefPtr<ThemeManagerImpl>();
-        pipelineContext->SetThemeManager(themeManager);
-        themeManager->InitResource(resourceInfo);
-        themeManager->LoadSystemTheme(resourceInfo.GetThemeId());
-        themeManager->SetColorScheme(colorScheme);
-        themeManager->LoadResourceThemes();
-        aceView->SetBackgroundColor(themeManager->GetBackgroundColor());
+        if (SystemProperties::GetResourceDecoupling()) {
+            InitResourceAndThemeManager(
+                pipelineContext, assetManager, colorScheme, resourceInfo, aceView, context, abilityInfo);
+        } else {
+            ThemeConstants::InitDeviceType();
+            auto themeManager = AceType::MakeRefPtr<ThemeManagerImpl>();
+            pipelineContext->SetThemeManager(themeManager);
+            themeManager->InitResource(resourceInfo);
+            themeManager->LoadSystemTheme(resourceInfo.GetThemeId());
+            themeManager->SetColorScheme(colorScheme);
+            themeManager->LoadResourceThemes();
+            aceView->SetBackgroundColor(themeManager->GetBackgroundColor());
+        }
         if (colorScheme == ColorScheme::SCHEME_DARK) {
             pipelineContext->SetAppBgColor(Color::BLACK);
         } else {
@@ -905,7 +951,7 @@ void AceContainerSG::OnNewRequest(int32_t instanceId, const std::string& data)
 void AceContainerSG::DestroyView()
 {
     ContainerScope scope(instanceId_);
-    CHECK_NULL_VOID_NOLOG(aceView_);
+    CHECK_NULL_VOID(aceView_);
     auto aceView = static_cast<AceViewSG*>(aceView_);
     if (aceView) {
         aceView->DecRefCount();
@@ -962,7 +1008,7 @@ bool AceContainerSG::RunPage(int32_t instanceId, int32_t pageId, const std::stri
     auto front = container->GetFrontend();
     if (front) {
         LOGD("RunPage content=[%{private}s]", content.c_str());
-        front->RunPage(pageId, content, params);
+        front->RunPage(content, params);
         return true;
     }
 

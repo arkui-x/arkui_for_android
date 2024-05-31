@@ -16,6 +16,7 @@
 package ohos.ace.adapter.capability.web;
 
 import android.view.MotionEvent;
+import android.webkit.WebBackForwardList;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.IAceOnCallResourceMethod;
 import ohos.ace.adapter.IAceOnResourceEvent;
@@ -83,6 +84,36 @@ public abstract class AceWebBase {
             "javascriptAccess" +
             PARAM_BEGIN,
             javascriptAccess);
+        IAceOnCallResourceMethod minFontSize = (param) -> minFontSize(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD +
+            PARAM_EQUALS +
+            "minFontSize" +
+            PARAM_BEGIN,
+            minFontSize);
+        IAceOnCallResourceMethod horizontalScrollBarAccess = (param) -> horizontalScrollBarAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD +
+            PARAM_EQUALS +
+            "horizontalScrollBarAccess" +
+            PARAM_BEGIN,
+            horizontalScrollBarAccess);
+        IAceOnCallResourceMethod verticalScrollBarAccess = (param) -> verticalScrollBarAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD +
+            PARAM_EQUALS +
+            "verticalScrollBarAccess" +
+            PARAM_BEGIN,
+            verticalScrollBarAccess);
+        IAceOnCallResourceMethod backgroundColor = (param) -> backgroundColor(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD +
+            PARAM_EQUALS +
+            "backgroundColor" +
+            PARAM_BEGIN,
+            backgroundColor);
+        IAceOnCallResourceMethod mediaPlayGestureAccess = (param) -> mediaPlayGestureAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD +
+            PARAM_EQUALS +
+            "mediaPlayGestureAccess" +
+            PARAM_BEGIN,
+            mediaPlayGestureAccess);
     }
 
     private void callMethodMapPutXWardMethod() {
@@ -370,8 +401,8 @@ public abstract class AceWebBase {
      *
      * @param obj the jni object.
      */
-    public void fireRefreshHistory(Object obj) {
-        this.nativeOnObjectEvent(makeEventHash("onRefreshAccessedHistory"), "onRefreshAccessedHistory", obj);
+    public void fireRefreshHistory(String url) {
+        callback.onEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS + "onRefreshAccessedHistory" + PARAM_BEGIN, url);
     }
 
     /**
@@ -379,8 +410,8 @@ public abstract class AceWebBase {
      *
      * @param obj the jni object.
      */
-    public void fireUrlLoadIntercept(Object obj) {
-        this.nativeOnObjectEvent(makeEventHash("onUrlLoadIntercept"), "onUrlLoadIntercept", obj);
+    public boolean fireUrlLoadIntercept(Object obj) {
+        return this.nativeOnObjectEventWithBoolReturn(makeEventHash("onLoadIntercept"), "onLoadIntercept", obj);
     }
 
     /**
@@ -406,6 +437,15 @@ public abstract class AceWebBase {
     }
 
     /**
+     * This is called to fire on page visible event.
+     *
+     * @param url The URL corresponding to the page navigation that triggered this callback.
+     */
+    public void firePageVisible(String url) {
+        callback.onEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS + "onPageVisible" + PARAM_BEGIN, url);
+    }
+
+    /**
      * This is called to fire on page finished event.
      *
      * @param url the current url of this page.
@@ -422,6 +462,26 @@ public abstract class AceWebBase {
     public void firePageChanged(int newProgress) {
         String param = String.valueOf(newProgress);
         callback.onEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS + "onProgressChanged" + PARAM_BEGIN, param);
+    }
+
+    /**
+     * This is called to fire on page scroll event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public void fireScrollChanged(Object obj) {
+        this.nativeOnObjectEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onScroll" + PARAM_BEGIN, "onScroll", obj);
+    }
+
+    /**
+     * This is called to fire on page scale event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public void fireScaleChanged(Object obj) {
+        this.nativeOnObjectEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onScaleChange" + PARAM_BEGIN, "onScaleChange", obj);
     }
 
     /**
@@ -447,9 +507,9 @@ public abstract class AceWebBase {
      * @param origin the origin of this event.
      * @param obj the jni object of this event.
      */
-    public void firePageGeoPermission(String origin, Object obj) {
+    public void firePageGeoPermission(Object obj) {
         this.nativeOnObjectEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS +
-            "onGeoPermission" + PARAM_BEGIN, origin, obj);
+            "onGeoPermission" + PARAM_BEGIN, "onGeoPermission", obj);
     }
 
     /**
@@ -468,8 +528,8 @@ public abstract class AceWebBase {
      *
      * @param obj the jni object of this event.
      */
-    public void firePageOnConsoleMessage(Object obj) {
-        this.nativeOnObjectEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+    public boolean firePageOnConsoleMessage(Object obj) {
+        return this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
             "onConsoleMessage" + PARAM_BEGIN, "onConsoleMessage", obj);
     }
 
@@ -478,8 +538,8 @@ public abstract class AceWebBase {
      *
      * @param obj the jni object of this event.
      */
-    public void firePageOnShowFileChooser(Object obj) {
-        this.nativeOnObjectEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+    public boolean firePageOnShowFileChooser(Object obj) {
+        return this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
             "onShowFileChooser" + PARAM_BEGIN, "onShowFileChooser", obj);
     }
 
@@ -502,6 +562,56 @@ public abstract class AceWebBase {
     public void fireHttpErrorReceive(Object obj) {
         this.nativeOnObjectEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS +
             "onHttpErrorReceive" + PARAM_BEGIN, "onHttpErrorReceive", obj);
+    }
+
+    /**
+     * This is called to http auth request receive event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public void fireHttpAuthRequestReceive(Object obj) {
+        this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onHttpAuthRequest" + PARAM_BEGIN, "onHttpAuthRequest", obj);
+    }
+
+    /**
+     * This is called to permission request receive event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public void firePermissionRequest(Object obj) {
+        this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onPermissionRequest" + PARAM_BEGIN, "onPermissionRequest", obj);
+    }
+
+    /**
+     * This is called to fire prompt event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public boolean fireJsPrompt(Object obj) {
+        return this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onPrompt" + PARAM_BEGIN, "onPrompt", obj);
+    }
+
+    /**
+     * This is called to fire alert event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public boolean fireJsAlert(Object obj) {
+        return this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onAlert" + PARAM_BEGIN, "onAlert", obj);
+    }
+
+    /**
+     * This is called to fire confirm event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public boolean fireJsConfirm(Object obj) {
+        return this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onConfirm" + PARAM_BEGIN, "onConfirm", obj);
     }
 
     /**
@@ -682,7 +792,51 @@ public abstract class AceWebBase {
 
     public abstract String javascriptAccess(Map<String, String> params);
 
+    public abstract String minFontSize(Map<String, String> params);
+
+    public abstract String horizontalScrollBarAccess(Map<String, String> params);
+
+    public abstract String verticalScrollBarAccess(Map<String, String> params);
+
+    public abstract String backgroundColor(Map<String, String> params);
+
+    public abstract String mediaPlayGestureAccess(Map<String, String> params);
+
     public abstract void loadUrl(String url, Map<String, String> header);
 
+    public abstract String getUrl();
+
+    public abstract void evaluateJavascript(String script, long asyncCallbackInfoId);
+
+    public abstract WebBackForwardList getBackForwardEntries();
+
+    public abstract void clearCache(boolean includeDiskFiles);
+
+    public abstract void goBackOrForward(int steps);
+
+    public abstract String getTitle();
+
+    public abstract int getContentHeight();
+
+    public abstract String scrollTo(Map<String, String> params);
+
+    public abstract String scrollBy(Map<String, String> params);
+
+    public abstract void setUserAgentString(String userAgent);
+
+    public abstract String getUserAgentString();
+
     private native void nativeOnObjectEvent(String id, String param, Object object);
+
+    private native boolean nativeOnObjectEventWithBoolReturn(String id, String param, Object object);
+
+    public abstract String[] createWebMessagePorts();
+
+    public abstract void postWebMessage(String message, String[] ports, String Uri);
+
+    public abstract void closeWebMessagePort(String portHandle);
+
+    public abstract int postMessageEvent(String portHandle, String webMessageData);
+
+    public abstract int onWebMessagePortEvent(long id, String portHandle);
 }

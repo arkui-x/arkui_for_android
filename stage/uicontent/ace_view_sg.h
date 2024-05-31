@@ -27,7 +27,7 @@
 #include "core/event/key_event_recognizer.h"
 #include "core/event/touch_event.h"
 #ifdef ENABLE_ROSEN_BACKEND
-#include "core/common/flutter/flutter_thread_model.h"
+#include "core/common/thread_model_impl.h"
 #include "adapter/android/entrance/java/jni/virtual_rs_window.h"
 #endif
 
@@ -37,7 +37,7 @@ public:
     explicit AceViewSG(int32_t id) : instanceId_(id)
     {
 #ifdef ENABLE_ROSEN_BACKEND
-        threadModel_ = FlutterThreadModel::CreateThreadModel(true, false, false);
+        threadModel_ = ThreadModelImpl::CreateThreadModel(true, false, false);
 #endif
     }
     ~AceViewSG() override = default;
@@ -58,6 +58,7 @@ public:
         int32_t metaKey {};
         int32_t sourceDevice {};
         int32_t deviceId {};
+        std::string msg {};
     };
 
     int32_t GetInstanceId() const override
@@ -88,7 +89,7 @@ public:
     void Launch() override;
 
 #ifdef ENABLE_ROSEN_BACKEND
-    FlutterThreadModel* GetThreadModel()
+    ThreadModelImpl* GetThreadModel()
     {
         return threadModel_.get();
     }
@@ -96,6 +97,7 @@ public:
     bool DispatchBasicEvent(const std::vector<TouchEvent>& touchEvents);
     bool DispatchTouchEvent(const std::vector<uint8_t>& data);
     bool DispatchKeyEvent(const KeyEventInfo& eventInfo);
+    bool DispatchMouseEvent(const std::vector<uint8_t>& data);
 
     void NotifySurfaceDestroyed() const;
     void NotifySurfaceChanged(int32_t width, int32_t height, WindowSizeChangeReason type);
@@ -138,7 +140,7 @@ private:
     RefPtr<PlatformResRegister> resRegister_;
 
 #ifdef ENABLE_ROSEN_BACKEND
-    std::unique_ptr<FlutterThreadModel> threadModel_;
+    std::unique_ptr<ThreadModelImpl> threadModel_;
     sptr<Rosen::Window> rsWinodw_;
 #endif
 

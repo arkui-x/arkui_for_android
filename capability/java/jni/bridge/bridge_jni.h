@@ -33,35 +33,39 @@ public:
     BridgeJni() = delete;
     ~BridgeJni() = delete;
 
-    static RefPtr<TaskExecutor> GetPlatformTaskExecutor(int32_t instanceId);
+    static RefPtr<TaskExecutor> GetPlatformTaskExecutor(const int32_t instanceId);
     static bool Register(const std::shared_ptr<JNIEnv> &env);
-    static void NativeInit(JNIEnv *env, jobject jobj);
-    static void JSCallMethodJni(const std::string& bridgeName,
+    static void NativeInit(JNIEnv *env, jobject jobj, jint instanceId);
+    static void JSCallMethodJni(const int32_t instanceId, const std::string& bridgeName,
         const std::string& methodName, const std::string& parameters);
     static void PlatformSendMethodResult(JNIEnv *env, jobject jobj,
         jstring jBridgeName, jstring jMethodName, jstring jResult, jint instanceId);
     static void PlatformCallMethod(JNIEnv *env, jobject jobj,
         jstring jBridgeName, jstring jMethodName, jstring jParam, jint instanceId);
-    static void JSSendMethodResultJni(const std::string& bridgeName,
+    static void JSSendMethodResultJni(const int32_t instanceId, const std::string& bridgeName,
         const std::string& methodName, const std::string& resultValue);
-    static void JSSendMessageJni(const std::string& bridgeName, const std::string& data);
+    static void JSSendMessageJni(const int32_t instanceId, const std::string& bridgeName, const std::string& data);
     static void PlatformSendMessageResponse(JNIEnv *env, jobject jobj,
         jstring jBridgeName, jstring jData, jint instanceId);
     static void PlatformSendMessage(JNIEnv *env, jobject jobj, jstring jBridgeName, jstring jData, jint instanceId);
-    static void JSSendMessageResponseJni(const std::string& bridgeName, const std::string& data);
-    static void JSCancelMethodJni(const std::string& bridgeName, const std::string& methodName);
+    static void JSSendMessageResponseJni(const int32_t instanceId,
+        const std::string& bridgeName, const std::string& data);
+    static void JSCancelMethodJni(const int32_t instanceId,
+        const std::string& bridgeName, const std::string& methodName);
 
-    static void JSSendMessageBinaryJni(const std::string& bridgeName, const std::vector<uint8_t>& data);
+    static void JSSendMessageBinaryJni(const int32_t instanceId,
+        const std::string& bridgeName, const std::vector<uint8_t>& data);
     static void PlatformSendMessageBinary(JNIEnv *env, jobject jobj,
         jstring jBridgeName, jobject jBuffer, jint instanceId);
-    static void JSCallMethodBinaryJni(const std::string& bridgeName,
+    static void JSCallMethodBinaryJni(const int32_t instanceId, const std::string& bridgeName,
         const std::string& methodName, const std::vector<uint8_t>& data);
     static void PlatformSendMethodResultBinary(JNIEnv *env, jobject jobj, jstring jBridgeName, jstring jMethodName,
         jobject jBuffer, jint instanceId, jint jErrorCode, jstring jErrorMessage);
     static void PlatformCallMethodBinary(JNIEnv *env, jobject jobj,
         jstring jBridgeName, jstring jMethodName, jobject jBuffer, jint instanceId);
-    static void JSSendMethodResultBinaryJni(const std::string& bridgeName, const std::string& methodName,
-        int errorCode, const std::string& errorMessage, std::unique_ptr<std::vector<uint8_t>> result);
+    static void JSSendMethodResultBinaryJni(const int32_t instanceId, const std::string& bridgeName,
+        const std::string& methodName, const int32_t errorCode, const std::string& errorMessage,
+        std::unique_ptr<std::vector<uint8_t>> result);
 };
 }  // namespace OHOS::Ace::Platform
 #endif  // FOUNDATION_ACE_ADAPTER_CAPABILITY_JAVA_JNI_BRIDGE_ACE_BRIDGE_JNI_H

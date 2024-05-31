@@ -25,7 +25,7 @@ public class MethodData {
     private Object[] Parameters_;
 
     /**
-     * Method packaging structure.
+     * Constructor of MethodData.
      *
      * @param methodName Name of method.
      * @param parameter parameters of method.

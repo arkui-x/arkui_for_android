@@ -34,6 +34,8 @@ import android.os.Build;
 import android.os.Process;
 import android.os.Trace;
 import android.util.Log;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -109,6 +111,8 @@ public class StageApplicationDelegate {
     private static boolean isInitialized = false;
 
     private static final int DEFAULT_VERSION_CODE = -1;
+
+    private static boolean isCopyNativeLibs = false;
 
     /**
      * Constructor.
@@ -379,6 +383,8 @@ public class StageApplicationDelegate {
             return;
         }
 
+        isCopyNativeLibs = true;
+
         Log.i(LOG_TAG, "Start copying resources.");
         AssetManager assets = stageApplication.getAssets();
         String moduleResourcesDirectory = "";
@@ -434,9 +440,6 @@ public class StageApplicationDelegate {
                     copyFilesFromAssets(assetsPath + "/" + fileName, savePath + "/" + fileName);
                 }
             } else {
-                if (file.exists()) {
-                    return;
-                }
                 is = stageApplication.getAssets().open(assetsPath);
                 fos = new FileOutputStream(file);
                 byte[] buffer = new byte[1024];
@@ -469,8 +472,29 @@ public class StageApplicationDelegate {
     private void initConfiguration() {
         Log.i(LOG_TAG, "StageApplication initConfiguration called");
         Configuration cfg = stageApplication.getResources().getConfiguration();
-        JSONObject json = StageConfiguration.convertConfiguration(cfg);
+        double diagonalSize = getDeviceTypeByPhysicalSize();
+        JSONObject json = StageConfiguration.convertConfiguration(cfg, diagonalSize);
         nativeInitConfiguration(json.toString());
+    }
+
+    private double getDeviceTypeByPhysicalSize() {
+        // Find the current window manager, if none is found we default to the current device as a mobile phone.
+        WindowManager windowManager = (WindowManager) stageApplication.getSystemService(stageApplication.WINDOW_SERVICE);
+        if (windowManager == null) {
+            return 0;
+        }
+
+        DisplayMetrics metrics = new DisplayMetrics();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            windowManager.getDefaultDisplay().getRealMetrics(metrics);
+        } else {
+            windowManager.getDefaultDisplay().getMetrics(metrics);
+        }
+
+        double width = metrics.widthPixels / (double) metrics.xdpi;
+        double height = metrics.heightPixels / (double) metrics.ydpi;
+        double diagonalSize = Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2));
+        return diagonalSize;
     }
 
     /**
@@ -611,7 +635,8 @@ public class StageApplicationDelegate {
      * Launch application.
      */
     public void launchApplication() {
-        nativeLaunchApplication();
+        Log.i(LOG_TAG, "isCopyNativeLibs is " + isCopyNativeLibs);
+        nativeLaunchApplication(isCopyNativeLibs);
     }
 
     /**
@@ -658,7 +683,7 @@ public class StageApplicationDelegate {
      */
     public void onConfigurationChanged(Configuration newConfig) {
         setLocaleInfo();
-        JSONObject json = StageConfiguration.convertConfiguration(newConfig);
+        JSONObject json = StageConfiguration.convertConfiguration(newConfig, -1.0);
         nativeOnConfigurationChanged(json.toString());
     }
 
@@ -796,7 +821,7 @@ public class StageApplicationDelegate {
 
     private native void nativeSetPackageName(String hapPath);
 
-    private native void nativeLaunchApplication();
+    private native void nativeLaunchApplication(boolean isCopyNativeLibs);
 
     private native void nativeSetAssetsFileRelativePath(String path);
 

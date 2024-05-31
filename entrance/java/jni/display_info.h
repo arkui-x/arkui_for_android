@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <parcel.h>
 
+#include "base/utils/macros.h"
 #include "dm_common.h"
 #include "wm_common.h"
 #include "wm_single_instance.h"
@@ -31,7 +32,7 @@ constexpr int ROTATION_90 = 1;
 constexpr int ROTATION_180 = 2;
 constexpr int ROTATION_270 = 3;
 
-class DisplayInfo : public virtual RefBase {
+class ACE_EXPORT DisplayInfo : public virtual RefBase {
 public:
     DisplayInfo();
     ~DisplayInfo();
@@ -43,6 +44,9 @@ public:
     Orientation GetOrientation() const;
     DisplayOrientation GetDisplayOrientation() const;
     float GetRefreshRate() const;
+    float GetDensityPixels() const;
+    float GetScaledDensity() const;
+    int GetDensityDpi() const;
 
     void SetRefreshRate(float refreshRate);
     void SetDisplayId(DisplayId displayId);
@@ -50,6 +54,9 @@ public:
     void SetHeight(int32_t height);
     void SetOrientation(Orientation orientation);
     void SetDisplayOrientation(DisplayOrientation displayOrientation);
+    void SetDensityPixels(float displayDensity);
+    void SetScaledDensity(float scaledDensity);
+    void SetDensityDpi(int dpi);
 
 private:
     DisplayId id_ { DISPLAY_ID_INVALID };
@@ -58,6 +65,9 @@ private:
     float refreshRate_;
     Orientation orientation_ { Orientation::UNSPECIFIED };
     DisplayOrientation displayOrientation_ { DisplayOrientation::UNKNOWN };
+    float displayDensity_ { 0.0 };
+    float scaledDensity_ { 0.0 };
+    int densityDpi_ { 0 };
 };
 } // namespace OHOS::Rosen
 #endif // FOUNDATION_DMSERVER_DISPLAY_INFO_H

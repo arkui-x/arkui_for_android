@@ -30,6 +30,9 @@ struct DisplayInfoStruct {
     jmethodID getWidthMethod;
     jmethodID getHeightMethod;
     jmethodID getRefreshRateMethod;
+    jmethodID getDensityPixelsMethod;
+    jmethodID getDensityDpiMethod;
+    jmethodID getScaledDensityMethod;
 };
 
 class DisplayInfoJni {
@@ -40,6 +43,9 @@ public:
     static int32_t getDisplayHeight();
     static int getOrentation();
     static float getRefreshRate();
+    static float getDensityPixels();
+    static int getDensityDpi();
+    static float getScaledDensity();
 
 private:
     static DisplayInfoStruct displayInfoStruct_;

@@ -44,8 +44,8 @@ void AceTraceEnd()
     ATrace_endSection();
 }
 
-void AceAsyncTraceBegin(int32_t taskId, const char* name) {}
+void AceAsyncTraceBegin(int32_t taskId, const char* name, bool isAnimationTrace) {}
 
-void AceAsyncTraceEnd(int32_t taskId, const char* name) {}
+void AceAsyncTraceEnd(int32_t taskId, const char* name, bool isAnimationTrace) {}
 
 } // namespace OHOS::Ace

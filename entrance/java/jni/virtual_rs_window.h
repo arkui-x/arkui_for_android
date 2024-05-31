@@ -19,7 +19,6 @@
 #include <map>
 #include <memory>
 
-#include "flutter/shell/common/vsync_waiter.h"
 #include "foundation/appframework/window_manager/interfaces/innerkits/wm/window_interface.h"
 #include "foundation/appframework/window_manager/interfaces/innerkits/wm/window_option.h"
 #include "refbase.h"
@@ -31,8 +30,8 @@
 #include "base/utils/noncopyable.h"
 #include "core/event/touch_event.h"
 
-class NativeValue;
 class NativeEngine;
+typedef struct napi_value__* napi_value;
 
 namespace OHOS {
 namespace AbilityRuntime::Platform {
@@ -107,7 +106,6 @@ public:
     static std::shared_ptr<Window> CreateSubWindow(std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context,
         std::shared_ptr<OHOS::Rosen::WindowOption> option);
 
-    explicit Window(const flutter::TaskRunners& taskRunners);
     explicit Window(std::shared_ptr<AbilityRuntime::Platform::Context> context);
     explicit Window(std::shared_ptr<AbilityRuntime::Platform::Context> context, uint32_t windowId);
     ~Window() override;
@@ -125,6 +123,7 @@ public:
     bool CreateVSyncReceiver(std::shared_ptr<AppExecFwk::EventHandler> handler);
     void RequestNextVsync(std::function<void(int64_t, void*)> callback);
 
+    virtual void FlushFrameRate(int32_t rate) {}
     virtual void RequestVsync(const std::shared_ptr<VsyncCallback>& vsyncCallback);
 
     void CreateSurfaceNode(void* nativeWindow);
@@ -148,11 +147,12 @@ public:
     bool ProcessBackPressed();
     bool ProcessBasicEvent(const std::vector<Ace::TouchEvent>& touchEvents);
     bool ProcessPointerEvent(const std::vector<uint8_t>& data);
+    bool ProcessMouseEvent(const std::vector<uint8_t>& data);
     bool ProcessKeyEvent(
-        int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp = 0, int64_t timeStampStart = 0);
+        int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp = 0, int64_t timeStampStart = 0, int32_t source = 0, int32_t deviceId = 0, int32_t metaKey = 0);
 
-    WMError SetUIContent(const std::string& contentInfo, NativeEngine* engine, NativeValue* storage,
-        bool isdistributed, AbilityRuntime::Platform::Ability* ability);
+    WMError SetUIContent(const std::string& contentInfo, NativeEngine* engine, napi_value storage, bool isdistributed,
+        AbilityRuntime::Platform::Ability* ability);
     Ace::Platform::UIContent* GetUIContent();
 
     WMError SetBackgroundColor(uint32_t color);
@@ -161,6 +161,10 @@ public:
         return backgroundColor_;
     }
     WMError SetBrightness(float brightness);
+
+    WMError SetColorSpace(ColorSpace colorSpace);
+    ColorSpace GetColorSpace() const;
+
     float GetBrightness() const
     {
         return brightness_;
@@ -298,12 +302,13 @@ private:
     static void DeleteFromWindowMap(Window* window);
     static void AddToSubWindowMap(std::shared_ptr<Window> window);
     static void DeleteFromSubWindowMap(std::shared_ptr<Window> window);
+    GraphicColorGamut GetSurfaceGamutFromColorSpace(ColorSpace colorSpace) const;
+    ColorSpace GetColorSpaceFromSurfaceGamut(GraphicColorGamut colorGamut) const;
 
     int32_t surfaceWidth_ = 0;
     int32_t surfaceHeight_ = 0;
     float density_ = 3.0f;
     std::shared_ptr<RSSurfaceNode> surfaceNode_;
-    std::shared_ptr<flutter::VsyncWaiter> vsyncWaiter_;
 
     jobject windowView_ = nullptr;
     std::shared_ptr<AbilityRuntime::Platform::Context> context_;
@@ -387,12 +392,12 @@ private:
 
     inline void NotifyAfterActive()
     {
-        CALL_LIFECYCLE_LISTENER(AfterActive);
+        CALL_LIFECYCLE_LISTENER(AfterFocused);
     }
 
     inline void NotifyAfterInactive()
     {
-        CALL_LIFECYCLE_LISTENER(AfterInactive);
+        CALL_LIFECYCLE_LISTENER(AfterUnfocused);
     }
 
     inline void NotifyBeforeDestroy(std::string windowName)

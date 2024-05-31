@@ -40,8 +40,10 @@ public:
     static jboolean BackPressed(JNIEnv* env, jobject myObject, jlong window);
     static jboolean DispatchPointerDataPacket(
         JNIEnv* env, jobject myObject, jlong window, jobject buffer, jint position);
+    static jboolean DispatchMouseDataPacket(
+        JNIEnv* env, jobject myObject, jlong window, jobject buffer, jint position);
     static jboolean DispatchKeyEvent(JNIEnv* env, jobject myObject, jlong window, jint keyCode, jint action,
-        jint repeatTime, jlong timeStamp, jlong timeStampStart);
+        jint repeatTime, jlong timeStamp, jlong timeStampStart, jint source, jint deviceId, jint metaKey);
 
 private:
     static bool RegisterCommonNatives(JNIEnv* env, const jclass myClass);

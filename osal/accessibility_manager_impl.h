@@ -38,7 +38,7 @@ public:
 protected:
     void DumpHandleEvent(const std::vector<std::string>& params) override;
     void DumpProperty(const std::vector<std::string>& params) override;
-    void DumpTree(int32_t depth, NodeId nodeID) override;
+    void DumpTree(int32_t depth, int64_t nodeID) override;
 
 private:
     RefPtr<NG::PipelineContext> FindPipelineByElementId(const int32_t elementId, RefPtr<NG::FrameNode>& node);

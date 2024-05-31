@@ -30,6 +30,7 @@ public:
     const uint8_t* GetPixels() const override;
     PixelFormat GetPixelFormat() const override;
     AlphaType GetAlphaType() const override;
+    int32_t GetRowStride() const override;
     int32_t GetRowBytes() const override;
     int32_t GetByteCount() const override;
     void* GetPixelManager() const override;
@@ -38,6 +39,9 @@ public:
     std::string GetModifyId() override;
     std::shared_ptr<Media::PixelMap> GetPixelMapSharedPtr() override;
     void* GetWritablePixels() const override;
+    void Scale(float xAxis, float yAxis) override;
+    void Scale(float xAxis, float yAxis, const AceAntiAliasingOption &option) override;
+    void SavePixelMapToFile(const std::string& dst) const override;
 private:
     std::shared_ptr<Media::PixelMap> pixmap_;
 };

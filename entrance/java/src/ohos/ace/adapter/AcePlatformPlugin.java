@@ -20,7 +20,6 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
-import ohos.ace.adapter.capability.bridge.BridgeManager;
 import ohos.ace.adapter.capability.clipboard.ClipboardPluginAosp;
 import ohos.ace.adapter.capability.editing.TextInputPluginAosp;
 import ohos.ace.adapter.capability.environment.EnvironmentAosp;
@@ -65,8 +64,6 @@ public class AcePlatformPlugin implements InputConnectionClient {
         persistentStoragePlugin = new PersistentStorageAosp(context);
         vibratorPlugin = new VibratorPluginAosp(context);
         pluginManager = new PluginManager(context);
-        BridgeManager bridgeManager = BridgeManager.getInstance();
-        bridgeManager.nativeInit();
     }
 
     /**
@@ -123,16 +120,17 @@ public class AcePlatformPlugin implements InputConnectionClient {
             @Override
             public void registerTexture(long textureId, Object surfaceTexture) {
                 ALog.i(LOG_TAG, "registerTexture.");
+                nativeRegisterTexture(instanceId, textureId, surfaceTexture);
             }
 
             @Override
             public void markTextureFrameAvailable(long textureId) {
-                ALog.i(LOG_TAG, "markTextureFrameAvailable.");
             }
 
             @Override
             public void unregisterTexture(long textureId) {
                 ALog.i(LOG_TAG, "unregisterTexture.");
+                nativeUnregisterTexture(instanceId, textureId);
             }
 
             @Override
@@ -141,7 +139,7 @@ public class AcePlatformPlugin implements InputConnectionClient {
                 nativeUnregisterSurface(instanceId, textureId);
             }
         };
-        addResourcePlugin(AceTexturePluginAosp.createRegister(textureImpl));
+        addResourcePlugin(AceTexturePluginAosp.createRegister(instanceId, textureImpl));
     }
 
     /**
@@ -156,4 +154,6 @@ public class AcePlatformPlugin implements InputConnectionClient {
     private native long nativeInitResRegister(AceResourceRegister resRegister, int instanceId);
     private native void nativeRegisterSurface(int instanceId, long textureId, Object surface);
     private native void nativeUnregisterSurface(int instanceId, long textureId);
+    private native void nativeRegisterTexture(int instanceId, long textureId, Object surfaceTexture);
+    private native void nativeUnregisterTexture(int instanceId, long textureId);
 }
