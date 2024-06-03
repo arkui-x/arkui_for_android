@@ -64,6 +64,8 @@ template("ace_osal_android_source_set") {
       "resource_theme_style.cpp",
       "ressched_report.cpp",
       "socperf_client_impl.cpp",
+      "stylus_detector_default.cpp",
+      "stylus_detector_mgr.cpp",
       "subwindow_android.cpp",
       "system_properties.cpp",
       "time_event_proxy_android.cpp",

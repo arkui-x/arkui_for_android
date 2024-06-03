@@ -325,7 +325,8 @@ void SubwindowAndroid::GetPopupInfoNG(int32_t targetId, NG::PopupInfo& popupInfo
     popupInfo = overlayManager->GetPopupInfo(targetId);
 }
 
-void SubwindowAndroid::ShowPopupNG(int32_t targetId, const NG::PopupInfo& popupInfo)
+void SubwindowAndroid::ShowPopupNG(int32_t targetId, const NG::PopupInfo& popupInfo,
+    const std::function<void(int32_t)>&& onWillDismiss, bool interactiveDismiss)
 {
     LOGI("Show popup ng enter.");
     CHECK_NULL_VOID(window_);

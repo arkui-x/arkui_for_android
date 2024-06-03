@@ -157,6 +157,11 @@ RefPtr<PixelMap> PixelMapAndroid::GetCropPixelMap(const Rect& srcRect)
     return nullptr;
 }
 
+bool PixelMapAndroid::EncodeTlv(std::vector<uint8_t>& buff)
+{
+    return false;
+}
+
 RefPtr<PixelMap> PixelMap::CreatePixelMap(void* rawPtr)
 {
     std::shared_ptr<Media::PixelMap>* pixmapPtr = reinterpret_cast<std::shared_ptr<Media::PixelMap>*>(rawPtr);

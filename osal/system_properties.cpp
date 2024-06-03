@@ -27,8 +27,6 @@ constexpr char UNDEFINED_PARAM[] = "undefined parameter";
 
 } // namespace
 
-// It is not used currently. Use ATrace_isEnabled instead.
-bool SystemProperties::traceEnabled_ = false;
 bool SystemProperties::isRound_ = false;
 bool SystemProperties::isDeviceAccess_ = false;
 bool SystemProperties::developerModeOn_ = false;
@@ -57,6 +55,7 @@ bool SystemProperties::rosenBackendEnabled_ = true;
 bool SystemProperties::downloadByNetworkEnabled_ = false;
 bool SystemProperties::isHookModeEnabled_ = false;
 bool SystemProperties::syncDebugTraceEnable_ = false;
+bool SystemProperties::textTraceEnable_ = false;
 bool SystemProperties::accessibilityEnabled_ = false;
 bool SystemProperties::windowAnimationEnabled_ = false;
 bool SystemProperties::debugBoundaryEnabled_ = false;
@@ -75,6 +74,11 @@ bool SystemProperties::imageFileCacheConvertAstc_ = false;
 int32_t SystemProperties::imageFileCacheConvertAstcThreshold_ = 2;
 bool SystemProperties::traceInputEventEnable_ = false;
 std::pair<float, float> SystemProperties::brightUpPercent_ = {};
+
+bool SystemProperties::IsOpIncEnable()
+{
+    return false;
+}
 
 void SystemProperties::InitDeviceType(DeviceType type)
 {
