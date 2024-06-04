@@ -17,6 +17,7 @@ package ohos.stage.ability.adapter;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,8 +27,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.os.Trace;
+import android.util.Log;
+import android.view.inputmethod.InputMethodManager;
 
 import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.AcePlatformPlugin;
@@ -204,6 +206,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             platformPlugin.release();
             Log.i(LOG_TAG, "StageActivity onDestroy platformPlugin release called");
         }
+        fixLeak(this);
         super.onDestroy();
         Log.i(LOG_TAG, "StageActivity onDestroy end");
     }
@@ -543,5 +546,25 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             return;
         }
         platformViewPluginAosp.registerPlatformViewFactory(platformViewFactory);
+    }
+
+    private void fixLeak(Context context) {
+        InputMethodManager inputMethodManager = (InputMethodManager) context
+            .getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (inputMethodManager == null) {
+            return;
+        }
+        String fieldName = "mLastSrvView";
+        Field[] fields = inputMethodManager.getClass().getDeclaredFields();
+        for (Field f : fields) {
+            if (fieldName.equals(f.getName())) {
+                f.setAccessible(true);
+                try {
+                    f.set(inputMethodManager, null);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }
