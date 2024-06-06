@@ -80,6 +80,7 @@ template("ace_osal_android_source_set") {
       "$app_framework_window_path/interfaces/innerkits/dm",
       "$app_framework_window_path/utils/include",
       "$flutter_root/engine/",
+      "//third_party/zlib",
     ]
 
     deps = [
