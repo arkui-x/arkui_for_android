@@ -26,8 +26,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.os.Trace;
+import android.util.Log;
 
 import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.AcePlatformPlugin;
@@ -36,11 +36,14 @@ import ohos.ace.adapter.IArkUIXPlugin;
 import ohos.ace.adapter.PluginContext;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginAosp;
+import ohos.ace.adapter.capability.platformview.IPlatformView;
+import ohos.ace.adapter.capability.platformview.PlatformViewFactory;
+import ohos.ace.adapter.capability.platformview.AcePlatformViewPluginAosp;
 import ohos.ace.adapter.WindowView;
 
+import ohos.ace.adapter.capability.web.AceWebPluginBase;
 import ohos.ace.adapter.capability.bridge.BridgeManager;
 import ohos.ace.adapter.capability.grantresult.GrantResult;
-import ohos.ace.adapter.capability.surface.AceSurfacePluginAosp;
 import ohos.ace.adapter.capability.keyboard.KeyboardHeightObserver;
 import ohos.ace.adapter.capability.keyboard.KeyboardHeightProvider;
 
@@ -93,6 +96,8 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     private PluginContext pluginContext = null;
 
+    private AcePlatformViewPluginAosp platformViewPluginAosp = null;
+
     @Override
     public void onKeyboardHeightChanged(int height) {
         if (windowView != null) {
@@ -121,6 +126,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         Trace.beginSection("createWindowView");
         windowView = new WindowView(this);
         Trace.endSection();
+        windowView.setId(instanceId);
         initPlatformPlugin(this, instanceId, windowView);
         initBridgeManager();
         initArkUIXPluginRegistry();
@@ -159,6 +165,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         Trace.endSection();
 
         keyboardHeightProvider.setKeyboardHeightObserver(this);
+        SubWindowManager.keepSystemUiVisibility(this);
     }
 
     @Override
@@ -171,6 +178,9 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     @Override
     protected void onRestart() {
         Log.i(LOG_TAG, "StageActivity onRestart called");
+        if (this.bridgeManager != null) {
+            this.bridgeManager.nativeUpdateCurrentInstanceId(instanceId);
+        }
         super.onRestart();
     }
 
@@ -188,16 +198,17 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     @Override
     protected void onDestroy() {
         Log.i(LOG_TAG, "StageActivity onDestroy called");
-        super.onDestroy();
         activityDelegate.dispatchOnDestroy(getInstanceName());
         windowView.destroy();
         arkUIXPluginRegistry.unRegistryAllPlugins();
         keyboardHeightProvider.close();
         BridgeManager.unRegisterBridgeManager(instanceId);
         if (platformPlugin != null) {
-            platformPlugin.releseResRegister(instanceId);
-            Log.i(LOG_TAG, "StageActivity onDestroy releseResRegister called");
+            platformPlugin.release();
+            Log.i(LOG_TAG, "StageActivity onDestroy platformPlugin release called");
         }
+        super.onDestroy();
+        Log.i(LOG_TAG, "StageActivity onDestroy end");
     }
 
     @Override
@@ -225,7 +236,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
                 resultWantParams = "";
             }
         }
-        activityDelegate.dispatchOnActivityResult(getInstanceName(), requestCode, resultCode, resultWantParams);
+        activityDelegate.dispatchOnActivityResult(getInstanceName(), requestCode, resultCode, resultWantParams, intent);
     }
 
     /**
@@ -297,12 +308,14 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             return;
         }
         boolean hasTestValue = intent.hasExtra(TEST_PARAMS);
-        if (hasTestValue && !isFrist) {
+        String testBundleName = intent.getStringExtra("bundleName");
+        String testModuleName = intent.getStringExtra("moduleName");
+        String testRunerName = intent.getStringExtra("unittest");
+        String timeout = intent.getStringExtra("timeout");
+        boolean isExist = !(testBundleName == null || testModuleName == null ||
+                testRunerName == null || timeout == null);
+        if (hasTestValue && !isFrist && isExist) {
             Log.i(LOG_TAG, "Start creating abilityDelegate");
-            String testBundleName = intent.getStringExtra("bundleName");
-            String testModuleName = intent.getStringExtra("moduleName");
-            String testRunerName = intent.getStringExtra("unittest");
-            String timeout = intent.getStringExtra("timeout");
             activityDelegate.createAbilityDelegator(testBundleName, testModuleName, testRunerName, timeout);
             isFrist = true;
         } else {
@@ -447,9 +460,14 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         if (platformPlugin != null) {
             windowView.setInputConnectionClient(platformPlugin);
             platformPlugin.initTexturePlugin(instanceId);
-            platformPlugin.addResourcePlugin(AceVideoPluginAosp.createRegister(context, moduleName));
-            platformPlugin.addResourcePlugin(AceWebPluginAosp.createRegister(context));
-            platformPlugin.addResourcePlugin(AceSurfacePluginAosp.createRegister(context));
+            platformPlugin.addResourcePlugin(AceVideoPluginAosp.createRegister(context, instanceName));
+            AceWebPluginBase web = AceWebPluginAosp.createRegister(context, windowView);
+            windowView.setWebPlugin(web);
+            platformPlugin.addResourcePlugin(web);
+            platformViewPluginAosp = AcePlatformViewPluginAosp.createRegister(context);
+            platformPlugin.addResourcePlugin(platformViewPluginAosp);
+            windowView.setPlatformViewPlugin(platformViewPluginAosp);
+            platformPlugin.initSurfacePlugin(context, instanceId);
         }
         Trace.endSection();
     }
@@ -494,9 +512,9 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     }
 
     /**
-     * Get the BridgeManager of StageActivity.
+     * Get the PluginContext of StageActivity.
      *
-     * @return The BridgeManager.
+     * @return The PluginContext.
      */
     public PluginContext getPluginContext() {
         if (this.pluginContext == null) {
@@ -509,7 +527,24 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      * Report to the system that your app is now fully drawn.
      */
     public void reportDrawnCompleted() {
-        Log.i(LOG_TAG, "Report fully drawn.");
+        Log.i(LOG_TAG, "Report fully drawn start." + System.nanoTime());
         reportFullyDrawn();
+        Log.i(LOG_TAG, "Report fully drawn end." + System.nanoTime());
+    }
+
+    
+    /**
+     * Register the platformView to activity. before super.onCreate.
+     */
+    public void registerPlatformViewFactory(PlatformViewFactory platformViewFactory) {
+        if(platformViewPluginAosp == null){
+            Log.i(LOG_TAG, "PlatformViewPluginAosp is null");
+            return;
+        }
+        if (platformViewFactory == null) {
+            Log.i(LOG_TAG, "PlatformViewFactory is null");
+            return;
+        }
+        platformViewPluginAosp.registerPlatformViewFactory(platformViewFactory);
     }
 }

@@ -31,7 +31,7 @@ Platform::JniEnvironment::JavaGlobalRef DownloadManagerJni::downloadManagerClass
 jmethodID DownloadManagerJni::downloadMethod_ = nullptr;
 
 bool DownloadManagerJni::Register(const std::shared_ptr<JNIEnv>& env)
-{   
+{
     if (!env) {
         LOGE("JNIEnv is null when registering DownloadManager jni!");
         return false;
@@ -49,8 +49,7 @@ bool DownloadManagerJni::Register(const std::shared_ptr<JNIEnv>& env)
         LOGE("Failed to find method: %{public}s", METHOD_DOWNLOAD);
         return false;
     }
-    downloadManagerClass_ = Platform::JniEnvironment::MakeJavaGlobalRef(
-        env, static_cast<jobject>(myClass));
+    downloadManagerClass_ = Platform::JniEnvironment::MakeJavaGlobalRef(env, static_cast<jobject>(myClass));
 
     env->DeleteLocalRef(myClass);
     return true;
@@ -66,7 +65,7 @@ bool DownloadManagerJni::Download(const std::string& url, std::vector<uint8_t>& 
     if (downloadManagerClass_ == nullptr || downloadMethod_ == nullptr) {
         LOGE("downloadManagerClass or downloadMethod is null. Stop downloading data, url: %{private}s", url.c_str());
         return false;
-    } 
+    }
     jstring jUrl = env->NewStringUTF(url.c_str());
     if (jUrl == nullptr) {
         return false;

@@ -22,21 +22,28 @@ import android.content.Context;
 import ohos.ace.adapter.ALog;
 
 /**
- * ClipboardPluginAosp
+ * ClipboardAosp
  *
  * @since 1
  */
-public class ClipboardPluginAosp extends ClipboardPluginBase {
+public class ClipboardAosp extends ClipboardPluginBase {
     private static final String LOG_TAG = "ClipboardPlugin";
 
-    private final ClipboardManager clipManager;
+    private ClipboardManager clipManager;
+
+    private Context context;
 
     /**
      * ClipboardPlugin on AOSP platform
      *
      * @param context context of the application
      */
-    public ClipboardPluginAosp(Context context) {
+    public ClipboardAosp(Context context) {
+        this.context = context;
+        nativeInit();
+    }
+
+    private void initClipManager() {
         if (context != null) {
             Object service = context.getSystemService(Context.CLIPBOARD_SERVICE);
             if (service instanceof ClipboardManager) {
@@ -49,11 +56,13 @@ public class ClipboardPluginAosp extends ClipboardPluginBase {
             ALog.e(LOG_TAG, "context is null");
             this.clipManager = null;
         }
-        nativeInit();
     }
 
     @Override
     public String getData() {
+        if(clipManager == null){
+            initClipManager();
+        }
         if (clipManager != null) {
             ClipData clipData = clipManager.getPrimaryClip();
             CharSequence charSequence = null;
@@ -69,6 +78,9 @@ public class ClipboardPluginAosp extends ClipboardPluginBase {
 
     @Override
     public void setData(String data) {
+        if(clipManager == null){
+            initClipManager();
+        }
         if (clipManager != null) {
             ClipData clipData = ClipData.newPlainText(null, data);
             clipManager.setPrimaryClip(clipData);
@@ -77,6 +89,9 @@ public class ClipboardPluginAosp extends ClipboardPluginBase {
 
     @Override
     public boolean hasData() {
+        if(clipManager == null){
+            initClipManager();
+        }
         if (clipManager != null) {
             return clipManager.hasPrimaryClip();
         }
@@ -85,6 +100,9 @@ public class ClipboardPluginAosp extends ClipboardPluginBase {
 
     @Override
     public void clear() {
+        if(clipManager == null){
+            initClipManager();
+        }
         if (clipManager != null) {
             clipManager.setPrimaryClip(ClipData.newPlainText(null, null));
         }

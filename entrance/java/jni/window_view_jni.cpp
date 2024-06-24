@@ -227,7 +227,8 @@ jboolean WindowViewJni::DispatchKeyEvent(JNIEnv* env, jobject myObject, jlong wi
         return false;
     }
 
-    return windowPtr->ProcessKeyEvent(keyCode, action, repeatTime, timeStamp, timeStampStart, source, deviceId, metaKey);
+    return windowPtr->ProcessKeyEvent(
+        keyCode, action, repeatTime, timeStamp, timeStampStart, source, deviceId, metaKey);
 }
 
 bool WindowViewJni::RegisterCommonNatives(JNIEnv* env, const jclass myClass)

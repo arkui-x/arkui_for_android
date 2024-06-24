@@ -37,7 +37,14 @@ template("ace_uicontent_android_source_set") {
       "//foundation/arkui/napi",
       "//third_party/flutter/engine",
       "//foundation/appframework/arkui/uicontent",
+      "//third_party/zlib",
     ]
+
+    if (is_arkui_x) {
+      include_dirs += [
+        "//foundation/graphic/graphic_surface/interfaces/inner_api/surface",
+      ]
+    }
 
     deps = [
       "$ability_runtime_cross_platform_path/interfaces/kits/native/ability:cross_platform_abilitykit_native",
@@ -48,6 +55,8 @@ template("ace_uicontent_android_source_set") {
       "//third_party/icu/icu4c:static_icui18n",
       "//third_party/icu/icu4c:static_icuuc",
     ]
+
+    deps += [ "//foundation/multimodalinput/input/frameworks/proxy:libmmi-client-crossplatform" ]
 
     if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
       deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client_static" ]

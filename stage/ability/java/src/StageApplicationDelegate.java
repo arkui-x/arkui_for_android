@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import ohos.ace.adapter.AcePlatformCapability;
 import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.AppModeConfig;
@@ -111,6 +112,8 @@ public class StageApplicationDelegate {
     private static boolean isInitialized = false;
 
     private static final int DEFAULT_VERSION_CODE = -1;
+
+    private AcePlatformCapability platformCapability = null;
 
     private static boolean isCopyNativeLibs = false;
 
@@ -195,9 +198,13 @@ public class StageApplicationDelegate {
         launchApplication();
         initConfiguration();
         setPackageName();
-        createCacertFile(stageApplication.getExternalFilesDir((String) null).getAbsolutePath());
+        File file = stageApplication.getExternalFilesDir((String) null);
+        if(file != null){
+            createCacertFile(file.getAbsolutePath());
+        }
 
         initActivity();
+        initPlatformCapability(context);
         Trace.endSection();
     }
 
@@ -475,6 +482,11 @@ public class StageApplicationDelegate {
         double diagonalSize = getDeviceTypeByPhysicalSize();
         JSONObject json = StageConfiguration.convertConfiguration(cfg, diagonalSize);
         nativeInitConfiguration(json.toString());
+    }
+
+    private void initPlatformCapability(Context context) {
+        Log.i(LOG_TAG, "StageApplication initPlatformCapability called");
+        platformCapability = new AcePlatformCapability(context);
     }
 
     private double getDeviceTypeByPhysicalSize() {

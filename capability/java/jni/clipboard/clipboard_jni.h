@@ -40,10 +40,11 @@ public:
     static bool HasData(const std::function<void(const bool)>& callback, const WeakPtr<TaskExecutor>& taskExecutor);
 
     static bool Clear();
-private:
-    ClipboardJni() = delete;
-    ~ClipboardJni() = delete;
 
+    ClipboardJni() = delete;
+
+    ~ClipboardJni() = delete;
+private:
     static void OnJniRegistered();
 
     ACE_DISALLOW_COPY_AND_MOVE(ClipboardJni);

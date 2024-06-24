@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,25 +13,45 @@
  * limitations under the License.
  */
 
-
 #ifndef FOUNDATION_ACE_FRAMEWORKS_CORE_COMMON_INTERACTION_MANAGER_IMPL_H
 #define FOUNDATION_ACE_FRAMEWORKS_CORE_COMMON_INTERACTION_MANAGER_IMPL_H
+
+#include "virtual_rs_window.h"
 
 #include "core/common/interaction/interaction_interface.h"
 
 namespace OHOS::Ace {
+
+class SurfaceNodeListener : public OHOS::Rosen::IWindowSurfaceNodeListener {
+public:
+    explicit SurfaceNodeListener(std::shared_ptr<OHOS::Rosen::Window> dragWindow, const DragDataCore& dragData)
+        : dragWindow_(dragWindow), dragData(dragData) {};
+    ~SurfaceNodeListener() = default;
+
+    void OnSurfaceNodeCreated() {}
+
+    void OnSurfaceNodeChanged(int32_t width, int32_t height, float density);
+
+    void OnSurfaceNodeDestroyed() {}
+
+    std::shared_ptr<OHOS::Rosen::Window> dragWindow_;
+    DragDataCore dragData;
+};
+
 class InteractionImpl : public InteractionInterface {
-DECLARE_ACE_TYPE(InteractionImpl, InteractionInterface);
+    DECLARE_ACE_TYPE(InteractionImpl, InteractionInterface);
 
 public:
     int32_t UpdateShadowPic(const ShadowInfoCore& shadowInfo) override;
 
     int32_t SetDragWindowVisible(bool visible) override;
 
+    int32_t SetMouseDragMonitorState(bool state) override;
+
     int32_t StartDrag(const DragDataCore& dragData,
         std::function<void(const OHOS::Ace::DragNotifyMsg&)> callback) override;
 
-    int32_t UpdateDragStyle(DragCursorStyleCore style) override;
+    int32_t UpdateDragStyle(DragCursorStyleCore style, const int32_t eventId = -1) override;
 
     int32_t UpdatePreviewStyle(const PreviewStyle& previewStyle) override;
 
@@ -57,7 +77,13 @@ public:
     int32_t RegisterCoordinationListener(std::function<void()> dragOutCallback) override;
 
     int32_t UnRegisterCoordinationListener() override;
-};
 
+    int32_t UpdatePointAction(const std::shared_ptr<MMI::PointerEvent>& pointerEvent);
+private:
+    std::shared_ptr<OHOS::Rosen::Window> GetDragWindow();
+    void RegisterDragWindow();
+    void SetSVGFilePath();
+    OHOS::sptr<SurfaceNodeListener> surfaceNodeListener_;
+};
 } // namespace OHOS::Ace
 #endif // FOUNDATION_ACE_ACE_ENGINE_ADAPTER_OHOS_CAPABILITY_INTERACTION_IMPL_H

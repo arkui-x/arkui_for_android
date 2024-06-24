@@ -33,7 +33,7 @@ advance_components_support = true
 form_components_support = false
 js_pa_support = false
 connect_server_support = false
-xcomponent_components_support = false
+xcomponent_components_support = true
 enable_rosen_backend = true
 use_external_icu = "static"
 build_container_scope_lib = true
@@ -42,7 +42,10 @@ pixel_map_support = true
 use_curl_download = false
 use_components_lib = false
 web_components_support = true
-video_texture_support = true
+render_extract_support = true
+platform_view_support = true
+use_platform_font = true
+enable_drag_framework = false
 
 cflags_cc = [
   "-std=c++17",
@@ -61,6 +64,9 @@ libace_target =
 
 if (xcomponent_components_support) {
   defines += [ "XCOMPONENT_SUPPORTED" ]
+  if (defined(platform_view_support) && platform_view_support) {
+    defines += [ "PLATFORM_VIEW_SUPPORTED" ]
+  }
 }
 
 if (use_components_lib) {
@@ -85,6 +91,14 @@ if (defined(web_components_support) && web_components_support) {
   defines += [ "WEB_SUPPORTED" ]
 }
 
-if (defined(video_texture_support) && video_texture_support) {
-  defines += [ "VIDEO_TEXTURE_SUPPORTED" ]
+if (defined(render_extract_support) && render_extract_support) {
+  defines += [ "RENDER_EXTRACT_SUPPORTED" ]
+}
+
+if (defined(use_platform_font) && use_platform_font) {
+  defines += [ "USE_PLATFORM_FONT" ]
+}
+
+if (defined(enable_drag_framework) && enable_drag_framework) {
+  defines += [ "ENABLE_DRAG_FRAMEWORK" ]
 }

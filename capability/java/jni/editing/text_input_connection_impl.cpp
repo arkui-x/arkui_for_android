@@ -31,49 +31,49 @@ TextInputConnectionImpl::TextInputConnectionImpl(
 
 void TextInputConnectionImpl::Show(bool isFocusViewChanged, int32_t instanceId)
 {
-    if (taskExecutor_ && Attached()) {
+    if (taskExecutor_ && Attached(instanceId)) {
         taskExecutor_->PostDelayedTask(
             [instanceId, isFocusViewChanged] {
                 TextInputJni::ShowTextInput(isFocusViewChanged, instanceId);
             },
-            TaskExecutor::TaskType::PLATFORM, KEYBOARD_SHOW_DELAY_TIME);
+            TaskExecutor::TaskType::PLATFORM, KEYBOARD_SHOW_DELAY_TIME, "ArkUI-XTextInputConnectionImplShow");
     }
 }
 
 void TextInputConnectionImpl::SetEditingState(
     const TextEditingValue& value, int32_t instanceId, bool needFireChangeEvent)
 {
-    if (taskExecutor_ && Attached()) {
+    if (taskExecutor_ && Attached(instanceId)) {
         taskExecutor_->PostTask(
             [value, instanceId, needFireChangeEvent] {
                 TextInputJni::SetEditingState(value, instanceId, needFireChangeEvent);
             },
-            TaskExecutor::TaskType::PLATFORM);
+            TaskExecutor::TaskType::PLATFORM, "ArkUI-XTextInputConnectionImplSetEditingState");
     }
 }
 
 void TextInputConnectionImpl::Close(int32_t instanceId)
 {
-    if (taskExecutor_ && Attached()) {
+    if (taskExecutor_ && Attached(instanceId)) {
         taskExecutor_->PostSyncTask(
             [instanceId] {
                 TextInputJni::ClearClient(instanceId);
                 TextInputJni::HideTextInput(instanceId);
             },
-            TaskExecutor::TaskType::PLATFORM);
+            TaskExecutor::TaskType::PLATFORM, "ArkUI-XTextInputConnectionImplClose");
     }
-    TextInputClientHandler::GetInstance().SetCurrentConnection(nullptr);
+    TextInputClientHandler::GetInstance().SetCurrentConnection(instanceId, nullptr);
 
-    if (Attached()) {
+    if (Attached(instanceId)) {
         LOGE("text input connection close failed");
         EventReport::SendComponentException(ComponentExcepType::TEXT_INPUT_CONNECTION_CLOSE_ERR);
     }
 }
 
-bool TextInputConnectionImpl::Attached()
+bool TextInputConnectionImpl::Attached(int32_t instanceId)
 {
     // Should be called on AceUI thread.
-    return TextInputClientHandler::GetInstance().ConnectionIsCurrent(this);
+    return TextInputClientHandler::GetInstance().ConnectionIsCurrent(instanceId, this);
 }
 
 } // namespace OHOS::Ace::Platform

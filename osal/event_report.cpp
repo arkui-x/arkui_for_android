@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,7 +16,6 @@
 #include "base/log/event_report.h"
 
 namespace OHOS::Ace {
-
 void EventReport::SendEvent(const EventInfo& eventInfo) {}
 
 void EventReport::SendAppStartException(AppStartExcepType type) {}
@@ -68,4 +67,13 @@ void EventReport::ReportJankFrameFiltered(JankInfo& info) {}
 void EventReport::ReportDoubleClickTitle(int32_t stateChange) {}
 
 void EventReport::ReportClickTitleMaximizeMenu(int32_t maxMenuItem, int32_t stateChange) {}
+
+void EventReport::ReportPageNodeOverflow(const std::string& pageUrl, int32_t nodeCount, int32_t threshold) {}
+
+void EventReport::ReportPageDepthOverflow(const std::string& pageUrl, int32_t depth, int32_t threshold) {}
+
+void EventReport::ReportFunctionTimeout(const std::string& functionName, int64_t time, int32_t threshold) {}
+
+void EventReport::ReportPageShowMsg(const std::string& pageUrl, const std::string& bundleName,
+                                    const std::string& pageName) {}
 } // namespace OHOS::Ace

@@ -35,11 +35,10 @@ using AceMethodResultBinaryCallback = std::function<void(
                                             const std::string& errorMessage,
                                             std::unique_ptr<BufferMapping> resultValue)>;
 
-using AceCallMethodBinaryCallback = std::function<void(
-                                            const std::string& methodName,
-                                            std::unique_ptr<BufferMapping> resultValue)>;
+using AceCallMethodBinaryCallback =
+    std::function<void(const std::string& methodName, std::unique_ptr<BufferMapping> resultValue)>;
 
-using AceSendMessageBinaryCallback = std::function<void(std::unique_ptr<BufferMapping> resultValue)>;                               
+using AceSendMessageBinaryCallback = std::function<void(std::unique_ptr<BufferMapping> resultValue)>;
 
 struct ACE_EXPORT BridgeReceiver {
     int32_t instanceId_ = -1;

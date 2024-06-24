@@ -22,11 +22,12 @@ TextInputClientHandler::TextInputClientHandler() = default;
 TextInputClientHandler::~TextInputClientHandler() = default;
 
 void TextInputClientHandler::UpdateEditingValue(
-    const int32_t clientId, const std::shared_ptr<TextEditingValue>& value, bool needFireChangeEvent)
+    const int32_t clientId, const std::shared_ptr<TextEditingValue>& value, bool needFireChangeEvent) const
 {
-    if (currentConnection_ && currentConnection_->GetClientId() == clientId) {
-        auto weak = AceType::WeakClaim(AceType::RawPtr(currentConnection_));
-        currentConnection_->GetTaskExecutor()->PostTask(
+    TextInputConnection* connection = GetConnectionByClientId(clientId);
+    if (connection) {
+        auto weak = AceType::WeakClaim(connection);
+        connection->GetTaskExecutor()->PostTask(
             [weak, value, needFireChangeEvent]() {
                 auto currentConnection = weak.Upgrade();
                 if (currentConnection == nullptr) {
@@ -38,15 +39,16 @@ void TextInputClientHandler::UpdateEditingValue(
                     client->UpdateEditingValue(value, needFireChangeEvent);
                 }
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XTextInputClientHandlerUpdateEditingValue");
     }
 }
 
 void TextInputClientHandler::PerformAction(const int32_t clientId, const TextInputAction action)
 {
-    if (currentConnection_ && currentConnection_->GetClientId() == clientId) {
-        auto weak = AceType::WeakClaim(AceType::RawPtr(currentConnection_));
-        currentConnection_->GetTaskExecutor()->PostTask(
+    TextInputConnection* connection = GetConnectionByClientId(clientId);
+    if (connection) {
+        auto weak = AceType::WeakClaim(connection);
+        connection->GetTaskExecutor()->PostTask(
             [weak, action] {
                 auto currentConnection = weak.Upgrade();
                 if (currentConnection == nullptr) {
@@ -58,15 +60,16 @@ void TextInputClientHandler::PerformAction(const int32_t clientId, const TextInp
                     client->PerformAction(action, true);
                 }
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XTextInputClientHandlerPerformAction");
     }
 }
 
 void TextInputClientHandler::UpdateInputFilterErrorText(const int32_t clientId, const std::string& errorText)
 {
-    if (currentConnection_ && currentConnection_->GetClientId() == clientId) {
-        auto weak = AceType::WeakClaim(AceType::RawPtr(currentConnection_));
-        currentConnection_->GetTaskExecutor()->PostTask(
+    TextInputConnection* connection = GetConnectionByClientId(clientId);
+    if (connection) {
+        auto weak = AceType::WeakClaim(connection);
+        connection->GetTaskExecutor()->PostTask(
             [weak, errorText] {
                 auto currentConnection = weak.Upgrade();
                 if (currentConnection == nullptr) {
@@ -78,7 +81,7 @@ void TextInputClientHandler::UpdateInputFilterErrorText(const int32_t clientId, 
                     client->UpdateInputFilterErrorText(errorText);
                 }
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XTextInputClientHandlerUpdateInputFilterErrorText");
     }
 }
 } // namespace OHOS::Ace::Platform

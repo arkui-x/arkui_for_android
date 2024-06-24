@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,15 +17,16 @@
 
 #include <numeric>
 
-#include "adapter/android/capability/java/jni/editing/text_input_jni.h"
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/ace_platform_plugin_jni.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
+#include "adapter/android/entrance/java/jni/jni_registry.h"
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
 #include "base/i18n/localization.h"
 #include "base/log/ace_trace.h"
 #include "base/log/event_report.h"
 #include "base/log/log.h"
+#include "base/subwindow/subwindow_manager.h"
 #include "base/utils/system_properties.h"
 #include "base/utils/utils.h"
 #include "core/common/ace_engine.h"
@@ -101,31 +102,30 @@ void ParseLocaleTag(const std::string& localeTag, std::string& language, std::st
     }
 }
 } // namespace
+
 AceContainerSG::AceContainerSG(int32_t instanceId, FrontendType type,
     std::weak_ptr<OHOS::AbilityRuntime::Platform::Context> runtimeContext,
     std::weak_ptr<OHOS::AppExecFwk::AbilityInfo> abilityInfo, std::unique_ptr<PlatformEventCallback> callback,
-    bool useCurrentEventRunner)
+    bool useCurrentEventRunner, bool isSubAceContainer)
     : messageBridge_(AceType::MakeRefPtr<PlatformBridge>()), type_(type), instanceId_(instanceId),
       runtimeContext_(std::move(runtimeContext)), abilityInfo_(std::move(abilityInfo)),
-      useCurrentEventRunner_(useCurrentEventRunner)
+      useCurrentEventRunner_(useCurrentEventRunner), isSubContainer_(isSubAceContainer)
 {
     ACE_DCHECK(callback);
 
     SetUseNewPipeline();
 
     useStageModel_ = true;
-
-    auto taskExecutorImpl = Referenced::MakeRefPtr<TaskExecutorImpl>();
-    taskExecutorImpl->InitPlatformThread(useCurrentEventRunner_, useStageModel_);
-
-    if (type_ == FrontendType::DECLARATIVE_JS) {
-        GetSettings().useUIAsJSThread = true;
-    } else {
-        taskExecutorImpl->InitJsThread();
+    if (!isSubContainer_) {
+        auto taskExecutorImpl = Referenced::MakeRefPtr<TaskExecutorImpl>();
+        taskExecutorImpl->InitPlatformThread(useCurrentEventRunner_, useStageModel_);
+        if (type_ == FrontendType::DECLARATIVE_JS) {
+            GetSettings().useUIAsJSThread = true;
+        } else {
+            taskExecutorImpl->InitJsThread();
+        }
+        taskExecutor_ = taskExecutorImpl;
     }
-
-    taskExecutor_ = taskExecutorImpl;
-
     platformEventCallback_ = std::move(callback);
 }
 
@@ -155,7 +155,13 @@ void AceContainerSG::Destroy()
             uiTask();
             LOGI("AceContainerSG::Destroy pipelineContext_ end");
         } else {
-            taskExecutor_->PostTask(uiTask, TaskExecutor::TaskType::UI);
+            taskExecutor_->PostTask(uiTask, TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGDestroyPipeline");
+        }
+
+        if (isSubContainer_) {
+            // SubAceContainerSG just return.
+            LOGI("Is sub container, just return.");
+            return;
         }
 
         // 2. Destroy Frontend on JS thread.
@@ -174,7 +180,7 @@ void AceContainerSG::Destroy()
             jsTask();
             LOGI("AceContainerSG::Destroy frontend end");
         } else {
-            taskExecutor_->PostTask(jsTask, TaskExecutor::TaskType::JS);
+            taskExecutor_->PostTask(jsTask, TaskExecutor::TaskType::JS, "ArkUI-XAceContainerSGDestroyFrontend");
         }
     }
     // Clear the data of this container
@@ -188,6 +194,13 @@ void AceContainerSG::Destroy()
 void AceContainerSG::InitializeFrontend()
 {
     if (type_ == FrontendType::DECLARATIVE_JS) {
+        if (isSubContainer_) {
+            auto container = GetContainer(parentId_);
+            CHECK_NULL_VOID(container);
+            frontend_ = container->GetFrontend();
+            return;
+        }
+
 #ifdef NG_BUILD
         frontend_ = AceType::MakeRefPtr<DeclarativeFrontendNG>();
         auto declarativeFrontend = AceType::DynamicCast<DeclarativeFrontendNG>(frontend_);
@@ -242,6 +255,16 @@ void AceContainerSG::InitPiplineContext(std::unique_ptr<Window> window, double d
     pipelineContext_->SetFontScale(resourceInfo_.GetResourceConfiguration().GetFontRatio());
     pipelineContext_->SetIsJsCard(type_ == FrontendType::JS_CARD);
 
+    if (uiWindow_) {
+        auto windowType = uiWindow_->GetType();
+        pipelineContext_->SetIsAppWindow(
+            windowType < Rosen::WindowType::SYSTEM_WINDOW_BASE && windowType >= Rosen::WindowType::APP_WINDOW_BASE);
+    }
+
+    if (isSubContainer_) {
+        pipelineContext_->SetIsSubPipeline(true);
+    }
+
     LOGI("init piplinecontext end.");
 }
 
@@ -267,7 +290,7 @@ void AceContainerSG::InitializeCallback()
                 context->OnTouchEvent(event);
                 context->NotifyDispatchTouchEventDismiss(event);
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGTouchEventCallback");
     };
     aceView_->RegisterTouchEventCallback(touchEventCallback);
 
@@ -280,8 +303,8 @@ void AceContainerSG::InitializeCallback()
         auto bombId = GetMilliseconds();
         AceEngine::Get().BuriedBomb(instanceId, bombId);
         AceEngine::Get().DefusingBomb(instanceId);
-        context->GetTaskExecutor()->PostSyncTask(
-            [context, event, &result]() { result = context->OnKeyEvent(event); }, TaskExecutor::TaskType::UI);
+        context->GetTaskExecutor()->PostSyncTask([context, event, &result]() { result = context->OnKeyEvent(event); },
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGKeyEventCallback");
         return result;
     };
     aceView_->RegisterKeyEventCallback(keyEventCallback);
@@ -301,7 +324,7 @@ void AceContainerSG::InitializeCallback()
                 CHECK_NULL_VOID(context);
                 context->OnMouseEvent(event);
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGMouseEventCallback");
     };
     aceView_->RegisterMouseEventCallback(mouseEventCallback);
 
@@ -311,7 +334,8 @@ void AceContainerSG::InitializeCallback()
         CHECK_NULL_RETURN(context, result);
         ContainerScope scope(instanceId);
         context->GetTaskExecutor()->PostSyncTask(
-            [context, event, &result]() { result = context->OnRotationEvent(event); }, TaskExecutor::TaskType::UI);
+            [context, event, &result]() { result = context->OnRotationEvent(event); }, TaskExecutor::TaskType::UI,
+            "ArkUI-XAceContainerSGRotationEventCallback");
         return result;
     };
     aceView_->RegisterRotationEventCallback(rotationEventCallback);
@@ -322,15 +346,21 @@ void AceContainerSG::InitializeCallback()
         auto context = weak.Upgrade();
         CHECK_NULL_VOID(context);
         ContainerScope scope(instanceId);
-        auto task = [weak, width, height, reason]() {
+        auto task = [weak, width, height, reason, id = instanceId]() {
             auto context = weak.Upgrade();
             CHECK_NULL_VOID(context);
             context->OnSurfaceChanged(width, height, reason);
+            if (reason == WindowSizeChangeReason::ROTATION) {
+                auto subwindow = SubwindowManager::GetInstance()->GetSubwindow(id);
+                CHECK_NULL_VOID(subwindow);
+                subwindow->ResizeWindow();
+            }
         };
         if (Container::Current()->GetSettings().usePlatformAsUIThread) {
             task();
         } else {
-            context->GetTaskExecutor()->PostTask(task, TaskExecutor::TaskType::UI);
+            context->GetTaskExecutor()->PostTask(
+                task, TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGViewChangeCallback");
         }
     };
     aceView_->RegisterViewChangeCallback(viewChangeCallback);
@@ -346,7 +376,7 @@ void AceContainerSG::InitializeCallback()
                 CHECK_NULL_VOID(context);
                 context->OnSurfacePositionChanged(posX, posY);
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGViewPositionChangeCallback");
     };
     aceView_->RegisterViewPositionChangeCallback(viewPositionChangeCallback);
 
@@ -361,7 +391,7 @@ void AceContainerSG::InitializeCallback()
                 CHECK_NULL_VOID(context);
                 context->OnSurfaceDensityChanged(density);
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGDensityChangeCallback");
     };
     aceView_->RegisterDensityChangeCallback(densityChangeCallback);
 
@@ -376,7 +406,7 @@ void AceContainerSG::InitializeCallback()
                 CHECK_NULL_VOID(context);
                 context->OnSystemBarHeightChanged(statusBar, navigationBar);
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGSytemBarHeighChangeCallback");
     };
     aceView_->RegisterSystemBarHeightChangeCallback(systemBarHeightChangeCallback);
 
@@ -391,7 +421,7 @@ void AceContainerSG::InitializeCallback()
                 CHECK_NULL_VOID(context);
                 context->OnSurfaceDestroyed();
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGSurfaceDestroyCallback");
     };
     aceView_->RegisterSurfaceDestroyCallback(surfaceDestroyCallback);
 
@@ -406,7 +436,7 @@ void AceContainerSG::InitializeCallback()
                 CHECK_NULL_VOID(context);
                 context->OnIdle(deadline);
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGIdleCallback");
     };
     aceView_->RegisterIdleCallback(idleCallback);
 
@@ -420,9 +450,26 @@ void AceContainerSG::InitializeCallback()
                 CHECK_NULL_VOID(context);
                 context->NotifyOnPreDraw();
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGPreDrawCallback");
     };
     aceView_->RegisterPreDrawCallback(preDrawCallback);
+
+    auto&& dragEventCallback = [weak, instanceId](const PointerEvent& pointerEvent, const DragEventAction& action,
+                                   const RefPtr<NG::FrameNode>& node) {
+        ContainerScope scope(instanceId);
+        auto context = weak.Upgrade();
+        CHECK_NULL_VOID(context);
+        auto callback = [context, pointerEvent, action, node]() { context->OnDragEvent(pointerEvent, action, node); };
+        auto taskExecutor = context->GetTaskExecutor();
+        CHECK_NULL_VOID(taskExecutor);
+        auto uiTaskRunner = SingleTaskExecutor::Make(taskExecutor, TaskExecutor::TaskType::UI);
+        if (uiTaskRunner.IsRunOnCurrentThread()) {
+            callback();
+            return;
+        }
+        taskExecutor->PostTask(callback, TaskExecutor::TaskType::UI, "ArkUI-XAceContainerDragEvent", PriorityType::VIP);
+    };
+    aceView_->RegisterDragEventCallback(dragEventCallback);
 }
 
 void AceContainerSG::InitializeEventHandler()
@@ -447,7 +494,7 @@ void AceContainerSG::InitializeFinishEventHandler(int32_t instanceId)
                 CHECK_NULL_VOID(container);
                 container->OnFinish();
             },
-            TaskExecutor::TaskType::PLATFORM);
+            TaskExecutor::TaskType::PLATFORM, "ArkUI-XAceContainerSGFinishEventHandler");
     };
     pipelineContext_->SetFinishEventHandler(finishEventHandler);
 }
@@ -468,7 +515,7 @@ void AceContainerSG::InitializeStatusBarEventHandler(int32_t instanceId)
                     container->platformEventCallback_->OnStatusBarBgColorChanged(color);
                 }
             },
-            TaskExecutor::TaskType::PLATFORM);
+            TaskExecutor::TaskType::PLATFORM, "ArkUI-XAceContainerSGStatusBarEventHandler");
     };
     pipelineContext_->SetStatusBarEventHandler(setStatusBarEventHandler);
 }
@@ -508,7 +555,7 @@ void AceContainerSG::DispatchPluginError(int32_t callbackId, int32_t errorCode, 
             CHECK_NULL_VOID(front);
             front->TransferJsPluginGetError(callbackId, errorCode, std::move(errorMessage));
         },
-        TaskExecutor::TaskType::BACKGROUND);
+        TaskExecutor::TaskType::BACKGROUND, "ArkUI-XAceContainerSGDispatchPluginError");
 }
 
 bool AceContainerSG::Dump(const std::vector<std::string>& params, std::vector<std::string>& info)
@@ -539,6 +586,7 @@ void AceContainerSG::SetView(
     auto eventHandler = std::make_shared<OHOS::AppExecFwk::EventHandler>(OHOS::AppExecFwk::EventRunner::Current());
     rsWindow->CreateVSyncReceiver(eventHandler);
     auto window = std::make_unique<NG::RosenWindow>(rsWindow, container->GetTaskExecutor(), view->GetInstanceId());
+    AceContainerSG::SetUIWindow(view->GetInstanceId(), rsWindow);
     container->AttachView(std::move(window), view, density, width, height);
 #endif
 }
@@ -549,11 +597,13 @@ void AceContainerSG::AttachView(
     aceView_ = view;
     auto instanceId = aceView_->GetInstanceId();
 #ifdef ENABLE_ROSEN_BACKEND
-    auto* aceView = static_cast<Platform::AceViewSG*>(aceView_);
-    CHECK_NULL_VOID(aceView);
     auto taskExecutorImpl = AceType::DynamicCast<TaskExecutorImpl>(taskExecutor_);
     CHECK_NULL_VOID(taskExecutorImpl);
-    taskExecutorImpl->InitOtherThreads(aceView->GetThreadModel());
+    if (!isSubContainer_) {
+        auto* aceView = static_cast<Platform::AceViewSG*>(aceView_);
+        CHECK_NULL_VOID(aceView);
+        taskExecutorImpl->InitOtherThreads(aceView->GetThreadModel());
+    }
 #endif
     ContainerScope scope(instanceId);
     if (type_ == FrontendType::DECLARATIVE_JS) {
@@ -592,7 +642,14 @@ void AceContainerSG::AttachView(
     SetupRootElement();
 
     aceView_->Launch();
-    frontend_->AttachPipelineContext(pipelineContext_);
+    if (!isSubContainer_) {
+        frontend_->AttachPipelineContext(pipelineContext_);
+    } else {
+        auto declarativeFrontend = AceType::DynamicCast<DeclarativeFrontendNG>(frontend_);
+        if (declarativeFrontend) {
+            declarativeFrontend->AttachSubPipelineContext(pipelineContext_);
+        }
+    }
 }
 
 void AceContainerSG::UpdateConfiguration(const std::string& colorMode, const std::string& direction,
@@ -737,7 +794,8 @@ void AceContainerSG::InitThemeManager()
     if (GetSettings().usePlatformAsUIThread) {
         initThemeManagerTask();
     } else {
-        taskExecutor_->PostTask(initThemeManagerTask, TaskExecutor::TaskType::UI);
+        taskExecutor_->PostTask(
+            initThemeManagerTask, TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGInitThemeManager");
     }
 }
 
@@ -746,18 +804,21 @@ void AceContainerSG::SetupRootElement()
     LOGI("Setup Root Element.");
     ContainerScope scope(instanceId_);
     auto weakContext = AceType::WeakClaim(AceType::RawPtr(pipelineContext_));
-    auto setupRootElementTask = [weakContext]() {
+    auto setupRootElementTask = [weakContext, isSubContainer = isSubContainer_]() {
         LOGI("execute SetupRootElement task start.");
         auto context = weakContext.Upgrade();
         CHECK_NULL_VOID(context);
-        context->SetupRootElement();
+        if (!isSubContainer) {
+            context->SetupRootElement();
+        }
         LOGI("execute SetupRootElement task end.");
     };
 
     if (GetSettings().usePlatformAsUIThread) {
         setupRootElementTask();
     } else {
-        taskExecutor_->PostTask(setupRootElementTask, TaskExecutor::TaskType::UI);
+        taskExecutor_->PostTask(
+            setupRootElementTask, TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGSetupRootElement");
     }
 }
 
@@ -774,7 +835,8 @@ void AceContainerSG::SetHostClassName(const std::string& name)
 void AceContainerSG::TriggerGarbageCollection()
 {
     ContainerScope scope(instanceId_);
-    taskExecutor_->PostTask([] { PurgeMallocCache(); }, TaskExecutor::TaskType::UI);
+    taskExecutor_->PostTask(
+        [] { PurgeMallocCache(); }, TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGTriggerGarbageCollectionUI");
     taskExecutor_->PostTask(
         [frontend = WeakPtr<Frontend>(frontend_)]() {
             auto frontendRef = frontend.Upgrade();
@@ -783,7 +845,7 @@ void AceContainerSG::TriggerGarbageCollection()
             }
             PurgeMallocCache();
         },
-        TaskExecutor::TaskType::JS);
+        TaskExecutor::TaskType::JS, "ArkUI-XAceContainerSGTriggerGarbageCollectionJS");
 }
 
 void AceContainerSG::NotifyFontNodes()
@@ -806,6 +868,27 @@ bool AceContainerSG::OnBackPressed(int32_t instanceId)
 {
     auto container = AceEngine::Get().GetContainer(instanceId);
     CHECK_NULL_RETURN(container, false);
+
+    // When the container is for overlay, it need close the overlay first.
+    if (container->IsSubContainer()) {
+        LOGI("Back press for remove overlay node");
+        ContainerScope scope(instanceId);
+        auto subPipelineContext = DynamicCast<NG::PipelineContext>(container->GetPipelineContext());
+        CHECK_NULL_RETURN(subPipelineContext, false);
+        auto overlayManager = subPipelineContext->GetOverlayManager();
+        CHECK_NULL_RETURN(overlayManager, false);
+        return overlayManager->RemoveOverlayInSubwindow();
+    }
+
+    // Remove overlay through SubwindowManager if subwindow unfocused.
+    auto subwindow = SubwindowManager::GetInstance()->GetSubwindow(instanceId);
+    if (subwindow) {
+        if (subwindow->GetShown()) {
+            auto overlayManager = subwindow->GetOverlayManager();
+            CHECK_NULL_RETURN(overlayManager, false);
+            return overlayManager->RemoveOverlayInSubwindow();
+        }
+    }
 
     ContainerScope scope(instanceId);
     auto baseContext = container->GetPipelineContext();
@@ -841,7 +924,7 @@ void AceContainerSG::OnShow(int32_t instanceId)
         [container]() {
             // When it is subContainer, no need call the OnShow,
             auto front = container->GetFrontend();
-            if (front) {
+            if (front && !container->IsSubContainer()) {
                 front->UpdateState(Frontend::State::ON_SHOW);
                 front->OnShow();
             }
@@ -850,7 +933,7 @@ void AceContainerSG::OnShow(int32_t instanceId)
             pipelineBase->OnShow();
             pipelineBase->SetForegroundCalled(true);
         },
-        TaskExecutor::TaskType::UI);
+        TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGOnShow");
 }
 
 void AceContainerSG::OnHide(int32_t instanceId)
@@ -868,7 +951,7 @@ void AceContainerSG::OnHide(int32_t instanceId)
     taskExecutor->PostTask(
         [container]() {
             auto front = container->GetFrontend();
-            if (front) {
+            if (front && !container->IsSubContainer()) {
                 front->UpdateState(Frontend::State::ON_HIDE);
                 front->OnHide();
             }
@@ -877,7 +960,7 @@ void AceContainerSG::OnHide(int32_t instanceId)
             CHECK_NULL_VOID(pipelineContext);
             pipelineContext->OnHide();
         },
-        TaskExecutor::TaskType::UI);
+        TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGOnHide");
 }
 
 void AceContainerSG::OnActive(int32_t instanceId)
@@ -891,7 +974,7 @@ void AceContainerSG::OnActive(int32_t instanceId)
         [container]() {
             // When it is subContainer, no need call the OnActive.
             auto front = container->GetFrontend();
-            if (front) {
+            if (front && !container->IsSubContainer()) {
                 front->UpdateState(Frontend::State::ON_ACTIVE);
                 front->OnActive();
             }
@@ -899,7 +982,7 @@ void AceContainerSG::OnActive(int32_t instanceId)
             CHECK_NULL_VOID(pipelineContext);
             pipelineContext->WindowFocus(true);
         },
-        TaskExecutor::TaskType::UI);
+        TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGOnActive");
 }
 
 void AceContainerSG::OnInactive(int32_t instanceId)
@@ -914,7 +997,7 @@ void AceContainerSG::OnInactive(int32_t instanceId)
         [container]() {
             // When it is subContainer, no need call the OnInactive.
             auto front = container->GetFrontend();
-            if (front) {
+            if (front && !container->IsSubContainer()) {
                 front->UpdateState(Frontend::State::ON_INACTIVE);
                 front->OnInactive();
             }
@@ -922,7 +1005,7 @@ void AceContainerSG::OnInactive(int32_t instanceId)
             CHECK_NULL_VOID(pipelineContext);
             pipelineContext->WindowFocus(false);
         },
-        TaskExecutor::TaskType::UI);
+        TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGOnInactive");
 }
 
 void AceContainerSG::OnConfigurationUpdated(int32_t instanceId, const std::string& configuration)
@@ -968,14 +1051,15 @@ void AceContainerSG::DestroyContainer(int32_t instanceId, const std::function<vo
     AceEngine::Get().UnRegisterFromWatchDog(instanceId);
     auto taskExecutor = container->GetTaskExecutor();
     if (taskExecutor) {
-        taskExecutor->PostSyncTask([] { LOGI("Wait UI thread..."); }, TaskExecutor::TaskType::UI);
-        taskExecutor->PostSyncTask([] { LOGI("Wait JS thread..."); }, TaskExecutor::TaskType::JS);
+        taskExecutor->PostSyncTask([] { LOGI("Wait UI thread..."); }, TaskExecutor::TaskType::UI,
+            "ArkUI-XAceContainerSGDestroyContainerWaitUI");
+        taskExecutor->PostSyncTask([] { LOGI("Wait JS thread..."); }, TaskExecutor::TaskType::JS,
+            "ArkUI-XAceContainerSGDestroyContainerWaitJS");
     }
     container->DestroyView(); // Stop all threads(ui,gpu,io) for current ability.
     auto removeContainerTask = [instanceId, destroyCallback] {
         LOGI("Remove on Platform thread...");
-        TextInputJni::ReleaseInstance(instanceId);
-        AcePlatformPluginJni::ReleaseInstance(instanceId);
+        JniRegistry::ReleaseInstance(instanceId);
         EngineHelper::RemoveEngine(instanceId);
         AceEngine::Get().RemoveContainer(instanceId);
         if (destroyCallback) {
@@ -985,7 +1069,8 @@ void AceContainerSG::DestroyContainer(int32_t instanceId, const std::function<vo
     if (container->GetSettings().usePlatformAsUIThread) {
         removeContainerTask();
     } else {
-        taskExecutor->PostTask(removeContainerTask, TaskExecutor::TaskType::PLATFORM);
+        taskExecutor->PostTask(
+            removeContainerTask, TaskExecutor::TaskType::PLATFORM, "ArkUI-XAceContainerSGDestroyContainer");
     }
 }
 
@@ -999,21 +1084,21 @@ RefPtr<AceContainerSG> AceContainerSG::GetContainer(int32_t instanceId)
     return nullptr;
 }
 
-bool AceContainerSG::RunPage(int32_t instanceId, int32_t pageId, const std::string& content, const std::string& params)
+bool AceContainerSG::RunPage(
+    int32_t instanceId, int32_t pageId, const std::string& content, const std::string& params, bool isNamedRouter)
 {
-    LOGI("RunPage content=[%{private}s] start", content.c_str());
     auto container = AceEngine::Get().GetContainer(instanceId);
     CHECK_NULL_RETURN(container, false);
     ContainerScope scope(instanceId);
     auto front = container->GetFrontend();
-    if (front) {
-        LOGD("RunPage content=[%{private}s]", content.c_str());
+    CHECK_NULL_RETURN(front, false);
+    LOGI("RunPage content=[%{private}s]", content.c_str());
+    if (isNamedRouter) {
+        front->RunPageByNamedRouter(content);
+    } else {
         front->RunPage(content, params);
-        return true;
     }
-
-    LOGI("RunPage content=[%{private}s] end", content.c_str());
-    return false;
+    return true;
 }
 
 void AceContainerSG::SetResPaths(
@@ -1054,6 +1139,56 @@ void AceContainerSG::SetLocalStorage(NativeReference* storage, NativeReference* 
                 jsEngine->SetLocalStorage(id, storage);
             }
         },
-        TaskExecutor::TaskType::JS);
+        TaskExecutor::TaskType::JS, "ArkUI-XAceContainerSGSetLocalStorage");
+}
+
+bool AceContainerSG::MaybeRelease()
+{
+    CHECK_NULL_RETURN(taskExecutor_, true);
+    if (taskExecutor_->WillRunOnCurrentThread(TaskExecutor::TaskType::PLATFORM)) {
+        LOGI("Destroy AceContainer on PLATFORM thread.");
+        return true;
+    } else {
+        LOGI("Post Destroy AceContainer Task to PLATFORM thread.");
+        return !taskExecutor_->PostTask(
+            [this] { delete this; }, TaskExecutor::TaskType::PLATFORM, "ArkUI-XAceContainerSGMaybeRelease");
+    }
+}
+
+void AceContainerSG::SetUIWindow(int32_t instanceId, sptr<OHOS::Rosen::Window> uiWindow)
+{
+    CHECK_NULL_VOID(uiWindow);
+    auto container = AceType::DynamicCast<AceContainerSG>(AceEngine::Get().GetContainer(instanceId));
+    CHECK_NULL_VOID(container);
+    container->SetUIWindowInner(uiWindow);
+}
+
+sptr<OHOS::Rosen::Window> AceContainerSG::GetUIWindow(int32_t instanceId)
+{
+    auto container = AceType::DynamicCast<AceContainerSG>(AceEngine::Get().GetContainer(instanceId));
+    CHECK_NULL_RETURN(container, nullptr);
+    return container->GetUIWindowInner();
+}
+
+void AceContainerSG::SetUIWindowInner(sptr<OHOS::Rosen::Window> uiWindow)
+{
+    uiWindow_ = uiWindow;
+}
+
+sptr<OHOS::Rosen::Window> AceContainerSG::GetUIWindowInner() const
+{
+    return uiWindow_;
+}
+
+void AceContainerSG::InitializeSubContainer(int32_t parentContainerId)
+{
+    auto parentContainer = AceEngine::Get().GetContainer(parentContainerId);
+    CHECK_NULL_VOID(parentContainer);
+    auto taskExec = parentContainer->GetTaskExecutor();
+    taskExecutor_ = AceType::DynamicCast<TaskExecutorImpl>(std::move(taskExec));
+    auto parentSettings = parentContainer->GetSettings();
+    GetSettings().useUIAsJSThread = parentSettings.useUIAsJSThread;
+    GetSettings().usePlatformAsUIThread = parentSettings.usePlatformAsUIThread;
+    GetSettings().usingSharedRuntime = parentSettings.usingSharedRuntime;
 }
 } // namespace OHOS::Ace::Platform

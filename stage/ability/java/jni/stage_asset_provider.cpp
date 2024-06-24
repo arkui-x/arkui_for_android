@@ -435,7 +435,8 @@ bool StageAssetProvider::GetAppDataModuleAssetList(
             if (onlyChild) {
                 std::string file = path + SEPARATOR + ptr->d_name;
                 fileFullPaths.emplace_back(file);
-            } else if (ptr->d_type == DT_DIR && !GetAppDataModuleAssetList(path + "/" + ptr->d_name, fileFullPaths, false)) {
+            } else if (ptr->d_type == DT_DIR &&
+                       !GetAppDataModuleAssetList(path + "/" + ptr->d_name, fileFullPaths, false)) {
                 break;
             } else if (ptr->d_type == DT_REG) {
                 std::string file = path + SEPARATOR + ptr->d_name;
@@ -730,6 +731,54 @@ bool StageAssetProvider::IsDirectoryEmpty(const std::string& path) const
     }
     closedir(directory);
     return isEmpty;
+}
+
+std::vector<uint8_t> StageAssetProvider::GetAotBuffer(const std::string &fileName)
+{
+    LOGI("Called.");
+    std::vector<uint8_t> buffer;
+    std::string aotPath;
+    {
+        std::lock_guard<std::mutex> lock(allFilePathMutex_);
+        for (auto& path : allFilePath_) {
+            if (path.find(architecture_) != std::string::npos && path.find(fileName) != std::string::npos) {
+                aotPath = path;
+                break;
+            }
+        }
+    }
+
+    if (aotPath.empty()) {
+        auto moduleName = fileName.substr(0, fileName.find("."));
+        auto path = GetAppDataModuleDir() + SEPARATOR + moduleName;
+        std::vector<std::string> fileFullPaths;
+        GetAppDataModuleAssetList(path, fileFullPaths, false);
+        for (auto& path : fileFullPaths) {
+            if (path.find(fileName) != std::string::npos) {
+                buffer = GetBufferByAppDataPath(path);
+                break;
+            }
+        }
+    } else {
+        std::string filePath = aotPath.substr(0, aotPath.find_last_of('/'));
+        auto assetProvider = CreateAndFindAssetProvider(filePath);
+        if (assetProvider == nullptr) {
+            LOGE("AssetProvider is nullptr.");
+            return buffer;
+        }
+        auto mapping = assetProvider->GetAsMapping(fileName);
+        if (mapping == nullptr) {
+            LOGE("Mapping is nullptr.");
+            return buffer;
+        }
+        auto moduleMap = mapping->GetAsset();
+        if (moduleMap == nullptr) {
+            LOGE("ModuleMap is nullptr.");
+            return buffer;
+        }
+        buffer.assign(&moduleMap[0], &moduleMap[mapping->GetSize()]);
+    }
+    return buffer;
 }
 } // namespace Platform
 } // namespace AbilityRuntime

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,12 +22,12 @@
 #include <string>
 #include <vector>
 
-#include "jni.h" 
+#include "jni.h"
+#include "resource_manager.h"
 
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/utils/noncopyable.h"
 #include "core/common/ace_application_info.h"
-#include "resource_manager.h"
 
 namespace OHOS::Ace::Platform {
 
@@ -60,16 +60,6 @@ public:
         AceApplicationInfoImpl::GetInstance().needDebugBreakpoint_ = needDebugBreakpoint;
     }
 
-    std::shared_ptr<Global::Resource::ResourceManager> GetResourceManager()
-    {
-        return resMgr_;
-    }
-
-    void SetResourceManager(std::shared_ptr<Global::Resource::ResourceManager> resMgr)
-    {
-        resMgr_ = resMgr;
-    }
-
 private:
 
     JniEnvironment::JavaGlobalRef object_;
@@ -78,12 +68,8 @@ private:
 
     std::time_t initiateTimeStamp_;
     std::map<std::string, std::string> jsEngineParams_;
-
-    std::shared_ptr<Global::Resource::ResourceManager> resMgr_;
 };
 
-
 } // namespace OHOS::Ace::Platform
-
 
 #endif // FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_ACE_APPLICATION_INFO_IMPL_H

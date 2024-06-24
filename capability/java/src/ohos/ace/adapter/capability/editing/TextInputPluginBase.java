@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,9 @@
 package ohos.ace.adapter.capability.editing;
 
 import ohos.ace.adapter.ALog;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,9 +50,13 @@ public abstract class TextInputPluginBase {
      * @since 1
      */
     public static class Delegate implements TextInputDelegate {
+        private static Map<Integer, String> lastValueMap = new HashMap<>();
         @Override
         public void updateEditingState(int clientId, String text, int selectionStart, int selectionEnd,
             int composingStart, int composingEnd) {
+            if (text == null) {
+                return;
+            }
             try {
                 JSONObject json = new JSONObject();
                 json.put("text", text);
@@ -57,11 +64,41 @@ public abstract class TextInputPluginBase {
                 json.put("selectionEnd", selectionEnd);
                 json.put("composingStart", composingStart);
                 json.put("composingEnd", composingEnd);
+
+                String lastValue = lastValueMap.get(clientId);
+                if (lastValue != null && text.length() < lastValue.length()) {
+                    json.put("isDelete", true);
+                } else {
+                    json.put("isDelete", false);
+                    String appendText = getNewInputStr(lastValue, text, selectionEnd);
+                    if (appendText != null) {
+                        json.put("appendText", appendText);
+                    }
+                }
                 TextInputPluginBase.updateEditingState(clientId, json.toString());
             } catch (JSONException ignored) {
                 ALog.e(LOG_TAG, "failed parse editing config json");
-                return;
             }
+            lastValueMap.put(clientId, text);
+        }
+
+        private String getNewInputStr(String lastValue, String text, int selectionEnd) {
+            if (lastValue == null) {
+                return text;
+            }
+            int count = text.length() - lastValue.length();
+            int start = selectionEnd - count;
+            if (start < 0) {
+                return null;
+            }
+            if (selectionEnd > text.length()) {
+                return null;
+            }
+            return text.substring(start, selectionEnd);
+        }
+
+        public static void release() {
+            lastValueMap.clear();
         }
 
         @Override
@@ -143,6 +180,11 @@ public abstract class TextInputPluginBase {
      * Hide keyboard.
      */
     protected abstract void hideTextInput();
+
+    /**
+     * release function.
+     */
+    public abstract void release();
 
     /**
      * Set the current input text editing state, for example, text/selection.

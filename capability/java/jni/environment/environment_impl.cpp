@@ -25,8 +25,8 @@ std::string EnvironmentImpl::GetAccessibilityEnabled()
 {
     std::string result;
     if (taskExecutor_) {
-        taskExecutor_->PostSyncTask(
-            [&result] { result = EnvironmentJni::GetAccessibilityEnabled(); }, TaskExecutor::TaskType::JS);
+        taskExecutor_->PostSyncTask([&result] { result = EnvironmentJni::GetAccessibilityEnabled(); },
+            TaskExecutor::TaskType::JS, "ArkUI-XEnvironmentImplGetAccessibilityEnabled");
     }
     return result;
 }

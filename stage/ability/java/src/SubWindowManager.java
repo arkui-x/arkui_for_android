@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,15 +16,24 @@ package ohos.stage.ability.adapter;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.provider.Settings;
+import android.view.Display;
 import android.view.View;
+import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.os.Build;
+import android.graphics.Rect;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -39,6 +48,16 @@ public class SubWindowManager {
     private Activity mRootActivity;
     private Map<String, SubWindow> mSubWindowMap = new HashMap<>();
     private static SubWindowManager _sinstance;
+    private int uiOptions_ = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+    public static int uiOptionsStatic = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+    private static final int NO_HEIGHT = 0;
+    private static final int LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES = 1;
+    private static final int LOCATION_X = 0;
+    private static final int LOCATION_Y = 1;
+    private static final int LOCATION_SIZE = 2;
+    private static final int API_28 = 28;
+    private static final int API_29 = 29;
+    private static final int API_30 = 30;
 
     /*
      ** copy from native wm_common.h: enum class Orientation
@@ -78,6 +97,22 @@ public class SubWindowManager {
     public void setActivity(Activity activity) {
         Log.d(TAG, "setActivity called.");
         mRootActivity = activity;
+        if (mRootActivity != null) {
+            Window window = mRootActivity.getWindow();           
+            View decorView = window.getDecorView();
+            int option = decorView.getSystemUiVisibility();
+            uiOptions_ = uiOptions_ | option;
+            uiOptionsStatic = uiOptionsStatic | option;
+        } 
+    }
+
+    /**
+     * Release activity.
+     *
+     */
+    public void ReleaseActivity() {
+        Log.d(TAG, "setActivity called.");
+        mRootActivity = null;
     }
 
     /**
@@ -148,7 +183,7 @@ public class SubWindowManager {
      * @return the top window
      */
     public View getTopWindow() {
-        Log.d(TAG, "getWindowId called. ");
+        Log.d(TAG, "getTopWindow called. ");
         if (mRootActivity != null) {
             View rootView = mRootActivity.getWindow().getDecorView();
             View topView = rootView.findFocus();
@@ -215,13 +250,8 @@ public class SubWindowManager {
         Log.d(TAG, "resize called. name=" + name + ", width=" + width + ", height=" + height);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow != null) {
-            if (subWindow.getSubWindowView().isShowing()) {
-                subWindow.resize(width, height);
-                return true;
-            } else {
-                Log.e(TAG, "resize failed due to not shown.");
-                return false;
-            }
+            subWindow.resize(width, height);
+            return true;
         }
         Log.e(TAG, "not found SubWindow: " + name);
         return false;
@@ -239,13 +269,8 @@ public class SubWindowManager {
         Log.d(TAG, "moveWindowTo called. name=" + name + ", x=" + x + ", y=" + y);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow != null) {
-            if (subWindow.getSubWindowView().isShowing()) {
-                subWindow.moveWindowTo(x, y);
-                return true;
-            } else {
-                Log.e(TAG, "moveWindowTo failed due to not shown.");
-                return false;
-            }
+            subWindow.moveWindowTo(x, y);
+            return true;
         }
         Log.e(TAG, "not found SubWindow: " + name);
         return false;
@@ -261,14 +286,9 @@ public class SubWindowManager {
         Log.d(TAG, "destroyWindow called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow != null) {
-            if (subWindow.getSubWindowView().isShowing()) {
-                subWindow.destroyWindow();
-                mSubWindowMap.remove(name);
-                return true;
-            } else {
-                Log.e(TAG, "destroyWindow failed due to not shown.");
-                return false;
-            }
+            subWindow.destroyWindow();
+            mSubWindowMap.remove(name);
+            return true;
         }
         Log.e(TAG, "not found SubWindow: " + name);
         return false;
@@ -399,13 +419,13 @@ public class SubWindowManager {
                     orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
                     break;
                 case HORIZONTAL:
-                    orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
                     break;
                 case REVERSE_VERTICAL:
                     orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
                     break;
                 case REVERSE_HORIZONTAL:
-                    orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
                     break;
                 default:
                     Log.e(TAG, "unspecified orientation: " + orientation);
@@ -418,36 +438,119 @@ public class SubWindowManager {
         return false;
     }
 
-    /**
-     * Sets status bar and action bar status.
-     *
-     * @param hide the hide
-     * @return the status bar status
-     */
-    public boolean setStatusBarStatus(boolean hide) {
-        Log.d(TAG, "setStatusBarStatus called: hide=" + hide);
+    private void setLayoutInDisplayCutoutMode(Window window) {
+        if (window != null) {
+            WindowManager.LayoutParams layoutParams = window.getAttributes();
+            try {
+                Class<?> layoutParamsClass = Class.forName("android.view.WindowManager$LayoutParams");
+                Field displayCutoutModeField = layoutParamsClass.getDeclaredField("layoutInDisplayCutoutMode");
+                displayCutoutModeField.setAccessible(true);
+                displayCutoutModeField.setInt(layoutParams, LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES);
+                window.setAttributes(layoutParams);
+            } catch (ClassNotFoundException e) {
+                Log.e(TAG, "layoutParamsClass Class.forName failed, ClassNotFoundException.");
+            } catch (IllegalAccessException e) {
+                Log.e(TAG, "layoutParamsClass AccessException failed, IllegalAccessException.");
+            } catch (NoSuchFieldException e) {
+                Log.e(TAG, "layoutParamsClass getDeclaredField failed, NoSuchFieldException.");
+            }
+        } else {
+            Log.e(TAG, "setLayoutInDisplayCutoutMode failed.");
+            return;
+        }
+    }
 
+    /**
+     * Maintain the previous state after the application hot start.
+     *
+     */
+    public static void keepSystemUiVisibility(Activity stageActivity) {
+        if (stageActivity != null && Build.VERSION.SDK_INT < API_30) {
+            Window window = stageActivity.getWindow();
+            View decorView = window.getDecorView();
+            decorView.setSystemUiVisibility(uiOptionsStatic);
+        }
+    }
+
+    private boolean setSystemUiVisibilityInner() {
         if (mRootActivity != null) {
             Window window = mRootActivity.getWindow();
-            View decorView = window.getDecorView();
-            ActionBar actionBar = mRootActivity.getActionBar();
-            if (hide) {
-                // Hide the status bar.
-                int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-                decorView.setSystemUiVisibility(uiOptions);
-                // Remember that you should never show the action bar if the
-                // status bar is hidden, so hide that too if necessary.
-                if (actionBar != null && actionBar.isShowing()) {
-                    actionBar.hide();
-                }
-                return true;
-            } else {
-                int uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
-                decorView.setSystemUiVisibility(uiOptions);
-                return true;
+            if (Build.VERSION.SDK_INT >= API_28) {
+                setLayoutInDisplayCutoutMode(window);
             }
+            View decorView = window.getDecorView();
+            decorView.setSystemUiVisibility(this.uiOptions_);
+            uiOptionsStatic = uiOptions_;
+            return true;
+        } else {
+            return false;
         }
-        return false;
+    }
+
+    /**
+     * Set window layout to fullScreen.
+     *
+     * @param isFullScreen true or false.
+     * @return Setting successful or failed.
+     */
+    public boolean setWindowLayoutFullScreen(boolean isFullScreen) {
+        boolean result = false;
+        if (isFullScreen) {
+            this.uiOptions_ |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+        } else {
+            this.uiOptions_ &= ~View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+        }
+        result = setSystemUiVisibilityInner();
+        return result;
+    }
+
+    /**
+     * Set navigation bar status.
+     *
+     * @param status Hide or show.
+     * @return Setting successful or failed.
+     */
+    public boolean setNavigationBarStatus(boolean status) {
+        boolean result = false;
+        if (status) {
+            this.uiOptions_ |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        } else {
+            this.uiOptions_ &= ~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        }
+        result = setSystemUiVisibilityInner();
+        return result;
+    }
+    
+    /**
+     * Set navigationIndicator bar status.
+     *
+     * @param status Hide or show.
+     * @return Setting successful or failed.
+     */
+    public boolean setNavigationIndicatorStatus(boolean status) {
+        if (Build.VERSION.SDK_INT >= API_29) {
+            return setNavigationBarStatus(status);
+        } else {
+            Log.e(TAG, "Not supported by the Android version.");
+            return false;
+        }
+    }
+
+    /**
+     * Set status bar status.
+     *
+     * @param status Hide or show.
+     * @return Setting successful or failed.
+     */
+    public boolean setStatusBarStatus(boolean status) {
+        boolean result = false;
+        if (status) {
+            this.uiOptions_ |= View.SYSTEM_UI_FLAG_FULLSCREEN;
+        } else {
+            this.uiOptions_ &= ~View.SYSTEM_UI_FLAG_FULLSCREEN;
+        }
+        result = setSystemUiVisibilityInner();
+        return result;
     }
 
     /**
@@ -511,6 +614,309 @@ public class SubWindowManager {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Get Screen rotation direction.
+     *
+     * @return Orientation type.
+     */
+    public int getScreenOrientation() {
+        int result = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        if (mRootActivity == null) {
+            Log.e(TAG, "The mRootActivity is null, getScreenOrientation failed.");
+            return result;
+        }
+        WindowManager windowManager = (WindowManager) mRootActivity.getSystemService(mRootActivity.WINDOW_SERVICE);
+        if (windowManager == null) {
+            Log.e(TAG, "The windowManager is null, getScreenOrientation failed.");
+            return result;
+        }
+        Display display = windowManager.getDefaultDisplay();
+        if (display == null) {
+            Log.e(TAG, "The display is null, getScreenOrientation failed.");
+            return result;
+        }
+        int rotation = display.getRotation();
+        int orientation = mRootActivity.getResources().getConfiguration().orientation;
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_90) {
+                result = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+            } else {
+                result = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get screen display safety area.
+     *
+     * @return Safe Area.
+     */
+    public Rect getSafeArea() {
+        Rect rect = new Rect(0, 0, 0, 0);
+        if (mRootActivity != null && mRootActivity instanceof StageActivity) {
+            int instanceId = ((StageActivity) mRootActivity).getInstanceId();
+            int width = mRootActivity.getWindow().getDecorView().findViewById(instanceId).getWidth();
+            int height = mRootActivity.getWindow().getDecorView().findViewById(instanceId).getHeight();
+            int[] location = new int[LOCATION_SIZE];
+            mRootActivity.getWindow().getDecorView().findViewById(instanceId).getLocationOnScreen(location);
+            int x = location[LOCATION_X];
+            int y = location[LOCATION_Y];
+            rect.set(x, y, width, height);
+        } else {
+            Log.e(TAG, "The mRootActivity is null or of the wrong type, getSafeArea failed.");
+        }
+        return rect;
+    }
+
+    /**
+     * Get the height of the StatusBar.
+     *
+     * @return Statusbar height.
+     */
+    public int getStatusBarHeight() {
+        int result = NO_HEIGHT;
+        if (mRootActivity != null) {
+            int resourceId = mRootActivity.getResources().getIdentifier("status_bar_height", "dimen", "android");
+            if (resourceId > NO_HEIGHT) {
+                result = mRootActivity.getResources().getDimensionPixelSize(resourceId);
+            }
+        } else {
+            Log.e(TAG, "The mRootActivity is null, getStatusBarHeight failed.");
+        }
+        return result;
+    }
+
+    /**
+     * Get the height of the CutoutBar.
+     *
+     * @return CutoutBar height.
+     */
+    public int getCutoutBarHeight() {
+        if (Build.VERSION.SDK_INT >= API_28) {
+            return getStatusBarHeight();
+        } else {
+            Log.e(TAG, "Not supported by the Android version.");
+            return NO_HEIGHT;
+        }
+    }
+
+    /**
+     * Get the height of the NavigationBar.
+     *
+     * @return NavigationBar height.
+     */
+    public int getNavigationBarHeight() {
+        int result = NO_HEIGHT;
+        if (mRootActivity != null) {
+            int resourceId = mRootActivity.getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+            if (resourceId > NO_HEIGHT) {
+                result = mRootActivity.getResources().getDimensionPixelSize(resourceId);
+            }
+        } else {
+            Log.e(TAG, "The mRootActivity is null, getNavigationBarHeight failed.");
+        }
+        return result;
+    }
+
+    /**
+     * Get the height of the GestureBar.
+     *
+     * @return GestureBar height.
+     */
+    public int getNavigationIndicatorHeight() {
+        if (Build.VERSION.SDK_INT >= API_29) {
+            return getNavigationBarHeight();
+        } else {
+            Log.e(TAG, "Not supported by the Android version.");
+            return NO_HEIGHT;
+        }
+    }
+
+    /**
+     * Hide window boolean.
+     *
+     * @param name the name
+     * @return the boolean
+     */
+    public boolean hide(String name) {
+        Log.d(TAG, "hide called. name=" + name);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        if (!subWindow.getSubWindowView().isShowing()) {
+            Log.e(TAG, "not showing.");
+            return false;
+        }
+
+        subWindow.destroyWindow();
+        if (subWindow.getSubWindowView().isShowing()) {
+            Log.e(TAG, "hide failed.");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * set window focusable boolean.
+     *
+     * @param name   the name
+     * @param isFocusable  if focusable
+     * @return the boolean
+     */
+    public boolean setFocusable(String name, boolean isFocusable) {
+        Log.d(TAG, "setFocusable called. name=" + name + ", isFocusable=" + isFocusable);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        subWindow.setFocusable(isFocusable);
+        if (subWindow.getSubWindowView().isShowing()) {
+            subWindow.getSubWindowView().update();
+        }
+        return true;
+    }
+
+    /**
+     * set window touchable boolean.
+     *
+     * @param name   the name
+     * @param isTouchable  if touchable
+     * @return the boolean
+     */
+    public boolean setTouchable(String name, boolean isTouchable) {
+        Log.d(TAG, "setTouchable called. name=" + name + ", isFocusable=" + isTouchable);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        subWindow.setTouchable(isTouchable);
+        if (subWindow.getSubWindowView().isTouchable() != isTouchable) {
+            Log.e(TAG, "setTouchable to " + isTouchable + " failed.");
+            return false;
+        }
+
+        if (subWindow.getSubWindowView().isShowing()) {
+            subWindow.getSubWindowView().update();
+        }
+        return true;
+    }
+
+    /**
+     * request focus for window.
+     *
+     * @param name the name
+     * @return the boolean
+     */
+    public boolean requestFocus(String name) {
+        Log.d(TAG, "requestFocus called. name=" + name);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        return subWindow.requestFocus();
+    }
+
+    /**
+     * set window touch hot area.
+     *
+     * @param name   the name
+     * @param rectArray  list of hot area
+     * @return the boolean
+     */
+    public boolean setTouchHotArea(String name, Rect[] rectArray) {
+        Log.d(TAG, "setTouchHotArea called. name=" + name);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        subWindow.setTouchHotArea(rectArray);
+        return true;
+    }
+
+    /**
+     * Set fullScreen and hide systembar.
+     *
+     * @param status true or false.
+     * @return Setting successful or failed.
+     */
+    public boolean setFullScreen(String name, boolean status) {
+        Log.d(TAG, "setFullScreen called. name=" + name);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        subWindow.setFullScreen(status);
+        return true;
+    }
+
+    /**
+     * set window on top.
+     *
+     * @param name   the name
+     * @param status  if on top
+     */
+    public boolean setOnTop(String name, boolean status) {
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        subWindow.setOnTop(status);
+        return true;
+    }
+
+    /**
+     * Called by native to register Window Handle.
+     *
+     * @param name   the name
+     * @param windowHandle the handle of navive window
+     * @return the boolean
+     */
+    public boolean registerSubWindow(String name, long subWindowHandle) {
+        Log.d(TAG, "registerSubWindow called. name=" + name);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        subWindow.registerSubWindow(subWindowHandle);
+        return true;
+    }
+
+    /**
+     * Called by native to unregister Window Handle.
+     * 
+     * @param name   the name
+     * @return the boolean
+     */
+    public boolean unregisterSubWindow(String name) {
+        Log.d(TAG, "unRegisterSubWindow called. name=" + name);
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            Log.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+
+        subWindow.unregisterSubWindow();
+        return true;
     }
 
     private native void nativeSetupSubWindowManager();

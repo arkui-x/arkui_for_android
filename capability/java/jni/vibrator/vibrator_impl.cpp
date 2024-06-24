@@ -24,16 +24,17 @@ VibratorImpl::VibratorImpl(const RefPtr<TaskExecutor>& taskExecutor) : Vibrator(
 void VibratorImpl::Vibrate(int32_t duration)
 {
     if (taskExecutor_) {
-        taskExecutor_->PostTask([duration] { VibratorJni::Vibrate(duration); }, TaskExecutor::TaskType::PLATFORM);
+        taskExecutor_->PostTask([duration] { VibratorJni::Vibrate(duration); }, TaskExecutor::TaskType::PLATFORM,
+            "ArkUI-XVibratorImplVibrateInt");
     }
 }
 
 void VibratorImpl::Vibrate(const std::string& effectId)
 {
     if (taskExecutor_) {
-        taskExecutor_->PostTask([effectId] { VibratorJni::Vibrate(effectId); }, TaskExecutor::TaskType::PLATFORM);
+        taskExecutor_->PostTask([effectId] { VibratorJni::Vibrate(effectId); }, TaskExecutor::TaskType::PLATFORM,
+            "ArkUI-XVibratorImplVibrateString");
     }
 }
-
 
 } // namespace OHOS::Ace::Platform

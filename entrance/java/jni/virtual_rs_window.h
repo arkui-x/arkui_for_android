@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -52,7 +52,7 @@ namespace Rosen {
 class IWindowLifeCycle;
 class WindowOption;
 using NotifyNativeWinDestroyFunc = std::function<void(std::string windowName)>;
-using OnCallback = std::function<void(int64_t)>;
+using OnCallback = std::function<void(int64_t, int64_t)>;
 struct VsyncCallback {
     OnCallback onCallback;
 };
@@ -105,6 +105,7 @@ public:
         std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context, JNIEnv* env, jobject windowView);
     static std::shared_ptr<Window> CreateSubWindow(std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context,
         std::shared_ptr<OHOS::Rosen::WindowOption> option);
+    static std::shared_ptr<Window> CreateDragWindow(std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context);
 
     explicit Window(std::shared_ptr<AbilityRuntime::Platform::Context> context);
     explicit Window(std::shared_ptr<AbilityRuntime::Platform::Context> context, uint32_t windowId);
@@ -123,13 +124,18 @@ public:
     bool CreateVSyncReceiver(std::shared_ptr<AppExecFwk::EventHandler> handler);
     void RequestNextVsync(std::function<void(int64_t, void*)> callback);
 
-    virtual void FlushFrameRate(int32_t rate) {}
+    virtual void FlushFrameRate(int32_t rate, bool isAnimatorStopped, int32_t rateType) {}
     virtual void RequestVsync(const std::shared_ptr<VsyncCallback>& vsyncCallback);
+
+    virtual void SetUiDvsyncSwitch(bool dvsyncSwitch) {}
 
     void CreateSurfaceNode(void* nativeWindow);
     void NotifySurfaceChanged(int32_t width, int32_t height, float density);
     void NotifyKeyboardHeightChanged(int32_t height);
+    void NotifySizeChange(Rect rect);
     void NotifySurfaceDestroyed();
+    void NotifyTouchOutside();
+    void SubWindowHide();
 
     void WindowFocusChanged(bool hasWindowFocus);
     void Foreground();
@@ -148,11 +154,12 @@ public:
     bool ProcessBasicEvent(const std::vector<Ace::TouchEvent>& touchEvents);
     bool ProcessPointerEvent(const std::vector<uint8_t>& data);
     bool ProcessMouseEvent(const std::vector<uint8_t>& data);
-    bool ProcessKeyEvent(
-        int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp = 0, int64_t timeStampStart = 0, int32_t source = 0, int32_t deviceId = 0, int32_t metaKey = 0);
+    bool ProcessKeyEvent(int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp = 0,
+        int64_t timeStampStart = 0, int32_t source = 0, int32_t deviceId = 0, int32_t metaKey = 0);
 
     WMError SetUIContent(const std::string& contentInfo, NativeEngine* engine, napi_value storage, bool isdistributed,
-        AbilityRuntime::Platform::Ability* ability);
+        AbilityRuntime::Platform::Ability* ability, bool loadContentByName);
+
     Ace::Platform::UIContent* GetUIContent();
 
     WMError SetBackgroundColor(uint32_t color);
@@ -176,6 +183,16 @@ public:
     void SetRequestedOrientation(Orientation);
     WMError RegisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener);
     WMError UnregisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener);
+    WMError RegisterWindowChangeListener(const sptr<IWindowChangeListener>& listener);
+    WMError UnregisterWindowChangeListener(const sptr<IWindowChangeListener>& listener);
+    WMError RegisterTouchOutsideListener(const sptr<ITouchOutsideListener>& listener);
+    WMError UnregisterTouchOutsideListener(const sptr<ITouchOutsideListener>& listener);
+    WMError RegisterSurfaceNodeListener(const sptr<IWindowSurfaceNodeListener>& listener);
+    WMError UnregisterSurfaceNodeListener(const sptr<IWindowSurfaceNodeListener>& listener);
+
+    WMError SetLayoutFullScreen(bool status);
+    WMError SetSpecificBarProperty(WindowType type, const SystemBarProperty& property);
+    WMError GetAvoidAreaByType(AvoidAreaType type, AvoidArea& avoidArea);
 
     void SetRect(std::shared_ptr<WindowOption> option)
     {
@@ -272,6 +289,20 @@ public:
         return context_;
     }
 
+    float GetDensity()
+    {
+        return density_;
+    }
+
+    WMError Hide();
+    WMError SetFocusable(bool isFocusable);
+    WMError SetTouchable(bool isTouchable);
+    bool RequestFocus();
+    bool IsFocused();
+    WMError SetTouchHotAreas(const std::vector<Rect>& rects);
+    WMError SetFullScreen(bool status);
+    WMError SetOnTop(bool status);
+
 private:
     void SetWindowView(JNIEnv* env, jobject windowView);
     void SetSubWindowView(JNIEnv* env, jobject windowView);
@@ -287,12 +318,14 @@ private:
     WindowType windowType_;
     Rect rect_ = { 0, 0, 0, 0 };
     bool isForground_ = false;
+    bool isFocused_ = false;
 
     uint32_t backgroundColor_ = 0xffffffff;
     float brightness_;
     std::unordered_map<WindowType, SystemBarProperty> sysBarPropMap_ {
         { WindowType::WINDOW_TYPE_STATUS_BAR, SystemBarProperty() },
         { WindowType::WINDOW_TYPE_NAVIGATION_BAR, SystemBarProperty() },
+        { WindowType::WINDOW_TYPE_NAVIGATION_INDICATOR, SystemBarProperty() },
     };
     WindowState state_ { WindowState::STATE_INITIAL };
     static std::map<uint32_t, std::vector<std::shared_ptr<Window>>> subWindowMap_;
@@ -304,6 +337,11 @@ private:
     static void DeleteFromSubWindowMap(std::shared_ptr<Window> window);
     GraphicColorGamut GetSurfaceGamutFromColorSpace(ColorSpace colorSpace) const;
     ColorSpace GetColorSpaceFromSurfaceGamut(GraphicColorGamut colorGamut) const;
+    Rect GetTopRect(const Rect& safeAreaRect);
+    Rect GetLeftRect(const Rect& safeAreaRect);
+    Rect GetRightRect(const Rect& safeAreaRect);
+    Rect GetBottomRect(const Rect& safeAreaRect);
+    void GetCutoutRect(const Rect& safeAreaRect, AvoidArea& avoidArea);
 
     int32_t surfaceWidth_ = 0;
     int32_t surfaceHeight_ = 0;
@@ -325,6 +363,9 @@ private:
 
     static std::recursive_mutex globalMutex_;
     static std::map<uint32_t, std::vector<sptr<IWindowLifeCycle>>> lifecycleListeners_;
+    static std::map<uint32_t, std::vector<sptr<IWindowChangeListener>>> windowChangeListeners_;
+    static std::map<uint32_t, std::vector<sptr<ITouchOutsideListener>>> touchOutsideListeners_;
+    static std::map<uint32_t, std::vector<sptr<IWindowSurfaceNodeListener>>> surfaceNodeListeners_;
 
     template<typename T1, typename T2, typename Ret>
     using EnableIfSame = typename std::enable_if<std::is_same_v<T1, T2>, Ret>::type;
@@ -362,6 +403,45 @@ private:
             }
         }
         return lifecycleListeners;
+    }
+
+    template<typename T>
+    inline EnableIfSame<T, IWindowChangeListener, std::vector<sptr<IWindowChangeListener>>> GetListeners()
+    {
+        std::vector<sptr<IWindowChangeListener>> windowChangeListeners;
+        {
+            std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+            for (auto& listener : windowChangeListeners_[GetWindowId()]) {
+                windowChangeListeners.push_back(listener);
+            }
+        }
+        return windowChangeListeners;
+    }
+
+    template<typename T>
+    inline EnableIfSame<T, ITouchOutsideListener, std::vector<wptr<ITouchOutsideListener>>> GetListeners()
+    {
+        std::vector<wptr<ITouchOutsideListener>> touchOutsideListeners;
+        {
+            std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+            for (auto& listener : touchOutsideListeners_[GetWindowId()]) {
+                touchOutsideListeners.push_back(listener);
+            }
+        }
+        return touchOutsideListeners;
+    }
+
+    template<typename T>
+    inline EnableIfSame<T, IWindowSurfaceNodeListener, std::vector<wptr<IWindowSurfaceNodeListener>>> GetListeners()
+    {
+        std::vector<wptr<IWindowSurfaceNodeListener>> surfaceNodeListeners;
+        {
+            std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+            for (auto& listener : surfaceNodeListeners_[GetWindowId()]) {
+                surfaceNodeListeners.push_back(listener);
+            }
+        }
+        return surfaceNodeListeners;
     }
 
 #define CALL_LIFECYCLE_LISTENER(windowLifecycleCb)                  \
@@ -407,7 +487,6 @@ private:
             notifyNativefunc_(windowName);
         }
     }
-
     void ClearListenersById(uint32_t winId);
 
     DISALLOW_COPY_AND_MOVE(Window);

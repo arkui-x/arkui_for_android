@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,6 +37,8 @@
 #include "base/log/ace_trace.h"
 #include "base/log/event_report.h"
 #include "base/log/log.h"
+#include "base/perfmonitor/perf_monitor.h"
+#include "base/subwindow/subwindow_manager.h"
 #include "core/common/ace_engine.h"
 #include "core/common/ace_view.h"
 #include "core/common/asset_manager_impl.h"
@@ -49,9 +51,11 @@
 namespace OHOS::Ace::Platform {
 namespace {
 const std::string START_PARAMS_KEY = "__startParams";
+const std::string SUBWINDOW_PREFIX = "ARK_APP_SUBWINDOW_";
 // Device type, same as w/ java in AceView
 constexpr int32_t ORIENTATION_PORTRAIT = 1;
 constexpr int32_t ORIENTATION_LANDSCAPE = 2;
+constexpr double DPI_BASE { 160.0f };
 } // namespace
 
 using ContentFinishCallback = std::function<void()>;
@@ -108,12 +112,62 @@ public:
                     CHECK_NULL_VOID(context);
                     context->OnVirtualKeyboardAreaChange(keyboardRect);
                 },
-                TaskExecutor::TaskType::UI);
+                TaskExecutor::TaskType::UI, "ArkUI-XUicontentOnSizeChange");
         }
     }
 
 private:
     int32_t instanceId_ = -1;
+};
+
+class TouchOutsideListener : public OHOS::Rosen::ITouchOutsideListener {
+public:
+    explicit TouchOutsideListener(int32_t instanceId) : instanceId_(instanceId) {}
+    ~TouchOutsideListener() = default;
+
+    void OnTouchOutside() override
+    {
+        LOGI("window is touching outside. instance id is %{public}d", instanceId_);
+        auto container = Platform::AceContainerSG::GetContainer(instanceId_);
+        CHECK_NULL_VOID(container);
+        auto taskExecutor = container->GetTaskExecutor();
+        CHECK_NULL_VOID(taskExecutor);
+        ContainerScope scope(instanceId_);
+        taskExecutor->PostTask(
+            [instanceId = instanceId_, targetId = targetId_] {
+                SubwindowManager::GetInstance()->ClearMenuNG(instanceId, targetId, true, true);
+            },
+            TaskExecutor::TaskType::UI, "ArkUI-XUicontentOnTouchOutside");
+    }
+
+private:
+    int32_t instanceId_ = -1;
+    int32_t targetId_ = -1;
+};
+
+class WindowLifeCycleListener : public OHOS::Rosen::IWindowLifeCycle {
+public:
+    explicit WindowLifeCycleListener(int32_t instanceId) : instanceId_(instanceId) {}
+    ~WindowLifeCycleListener() = default;
+
+    void AfterBackground() override
+    {
+        LOGI("window is AfterBackground. The instance id is %{public}d", instanceId_);
+        auto container = Platform::AceContainerSG::GetContainer(instanceId_);
+        CHECK_NULL_VOID(container);
+        auto taskExecutor = container->GetTaskExecutor();
+        CHECK_NULL_VOID(taskExecutor);
+        ContainerScope scope(instanceId_);
+        taskExecutor->PostTask(
+            [instanceId = instanceId_, targetId = targetId_] {
+                SubwindowManager::GetInstance()->HidePopupNG(targetId, -1);
+            },
+            TaskExecutor::TaskType::UI, "ArkUI-XUicontentAfterBackground");
+    }
+
+private:
+    int32_t instanceId_ = -1;
+    int32_t targetId_ = -1;
 };
 
 UIContentImpl::UIContentImpl(OHOS::AbilityRuntime::Platform::Context* context, NativeEngine* runtime)
@@ -139,16 +193,27 @@ void UIContentImpl::DestroyCallback() const
     LOGI("DestroyCallback called.");
 }
 
-void UIContentImpl::Initialize(OHOS::Rosen::Window* window, const std::string& url, napi_value storage)
+void UIContentImpl::InitializeByName(OHOS::Rosen::Window* window, const std::string& name, napi_value storage)
+{
+    InitializeInner(window, name, storage, true);
+}
+
+void UIContentImpl::InitializeInner(
+    OHOS::Rosen::Window* window, const std::string& url, napi_value storage, bool isNamedRouter)
 {
     if (window) {
         CommonInitialize(window, url, storage);
     }
-    LOGI("Initialize startUrl = %{public}s", startUrl_.c_str());
+    LOGI("InitializeInner startUrl = %{public}s", startUrl_.c_str());
 
-    Platform::AceContainerSG::RunPage(
-        instanceId_, Platform::AceContainerSG::GetContainer(instanceId_)->GeneratePageId(), startUrl_, "");
-    LOGI("RunPage UIContentImpl done.");
+    Platform::AceContainerSG::RunPage(instanceId_,
+        Platform::AceContainerSG::GetContainer(instanceId_)->GeneratePageId(), startUrl_, "", isNamedRouter);
+    LOGI("InitializeInner RunPage UIContentImpl done.");
+}
+
+void UIContentImpl::Initialize(OHOS::Rosen::Window* window, const std::string& url, napi_value storage)
+{
+    InitializeInner(window, url, storage, false);
 }
 
 napi_value UIContentImpl::GetUINapiContext()
@@ -172,6 +237,11 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     window_ = window;
     startUrl_ = url;
     CHECK_NULL_VOID(window_);
+
+    if (StringUtils::StartWith(window->GetWindowName(), SUBWINDOW_PREFIX)) {
+        InitializeSubWindow();
+        return;
+    }
 
     InitOnceAceInfo();
     InitAceInfoFromResConfig();
@@ -222,7 +292,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
             if (dynamicLoadFlag) {
                 auto fileAssetProvider = AceType::MakeRefPtr<FileAssetProvider>();
                 if (fileAssetProvider->Initialize(
-                        assetProvider->GetAppDataModuleDir() + "/" + moduleName, hapAssetPaths)) {
+                    assetProvider->GetAppDataModuleDir() + "/" + moduleName, hapAssetPaths)) {
                     LOGD("Push AssetProvider to queue.");
                     assetManagerImpl->PushBack(std::move(fileAssetProvider));
                 }
@@ -281,6 +351,8 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     CHECK_NULL_VOID(container);
     AceEngine::Get().AddContainer(instanceId_, container);
     ContainerScope::Add(instanceId_);
+    container->SetWindowName(window_->GetWindowName());
+    container->SetWindowId(window_->GetWindowId());
     container->SetInstanceName(info->name);
     container->SetHostClassName(info->name);
     if (runtime_) {
@@ -332,6 +404,11 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     if (window_) {
         occupiedAreaChangeListener_ = new OccupiedAreaChangeListener(instanceId_);
         window_->RegisterOccupiedAreaChangeListener(occupiedAreaChangeListener_);
+    }
+
+    if (appInfo) {
+        AceApplicationInfo::GetInstance().SetApiTargetVersion(static_cast<int32_t>(appInfo->apiTargetVersion));
+        container->SetApiTargetVersion(appInfo->apiTargetVersion);
     }
 
     // Set sdk version in module json mode
@@ -386,7 +463,6 @@ void UIContentImpl::InitAceInfoFromResConfig()
     if (resourceManager != nullptr) {
         resourceManager->GetResConfig(*resConfig);
         auto localeInfo = resConfig->GetLocaleInfo();
-        Platform::AceApplicationInfoImpl::GetInstance().SetResourceManager(resourceManager);
         if (localeInfo != nullptr) {
             auto language = localeInfo->getLanguage();
             auto region = localeInfo->getCountry();
@@ -409,15 +485,26 @@ void UIContentImpl::InitAceInfoFromResConfig()
         } else if (resConfig->GetDirection() == OHOS::Global::Resource::Direction::DIRECTION_HORIZONTAL) {
             SystemProperties::SetDeviceOrientation(ORIENTATION_LANDSCAPE);
         }
-        SystemProperties::SetResolution(resConfig->GetScreenDensity());
         SystemProperties::SetDeviceAccess(
             resConfig->GetInputDevice() == Global::Resource::InputDevice::INPUTDEVICE_POINTINGDEVICE);
+        double density = resConfig->GetScreenDensity();
+        auto config = context->GetConfiguration();
+        if (!Positive(density) && config) {
+            auto densityDpi =
+                config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_DENSITYDPI);
+            if (!densityDpi.empty()) {
+                density = std::stoi(densityDpi) / DPI_BASE;
+                LOGI("UIContent configDensity %{public}f", density);
+            }
+        }
+        SystemProperties::SetResolution(density);
     }
 }
 
 void UIContentImpl::Foreground()
 {
     LOGI("UIContentImpl: window foreground");
+    PerfMonitor::GetPerfMonitor()->SetAppStartStatus();
     ContainerScope::UpdateRecentForeground(instanceId_);
     Platform::AceContainerSG::OnShow(instanceId_);
     // set the flag isForegroundCalled to be true
@@ -488,7 +575,7 @@ uint32_t UIContentImpl::GetBackgroundColor()
             CHECK_NULL_VOID(pipelineContext);
             bgColor = pipelineContext->GetAppBgColor().GetValue();
         },
-        TaskExecutor::TaskType::UI);
+        TaskExecutor::TaskType::UI, "ArkUI-XUIContentImplGetBackgroundColor");
 
     LOGI("UIContentImpl::GetBackgroundColor, value is %{public}u", bgColor);
     return bgColor;
@@ -509,7 +596,7 @@ void UIContentImpl::SetBackgroundColor(uint32_t color)
             CHECK_NULL_VOID(pipelineContext);
             pipelineContext->SetAppBgColor(Color(bgColor));
         },
-        TaskExecutor::TaskType::UI);
+        TaskExecutor::TaskType::UI, "ArkUI-XUIContentImplSetBackgroundColor");
 }
 
 bool UIContentImpl::ProcessBackPressed()
@@ -518,6 +605,7 @@ bool UIContentImpl::ProcessBackPressed()
     auto container = AceEngine::Get().GetContainer(instanceId_);
     CHECK_NULL_RETURN(container, false);
 
+    PerfMonitor::GetPerfMonitor()->RecordInputEvent(LAST_UP, UNKNOWN_SOURCE, 0);
     LOGI("UIContentImpl::ProcessBackPressed AceContainerSG");
     if (Platform::AceContainerSG::OnBackPressed(instanceId_)) {
         LOGI("UIContentImpl::ProcessBackPressed AceContainerSG return true");
@@ -538,7 +626,7 @@ bool UIContentImpl::ProcessBasicEvent(const std::vector<TouchEvent>& touchEvents
     return aceView->DispatchBasicEvent(touchEvents);
 }
 
-bool UIContentImpl::ProcessPointerEvent(const std::vector<uint8_t>& data)
+bool UIContentImpl::ProcessPointerEvent(const std::shared_ptr<OHOS::MMI::PointerEvent>& pointerEvent)
 {
     LOGI("UIContentImpl::ProcessPointerEvent called");
     auto container = AceEngine::Get().GetContainer(instanceId_);
@@ -547,7 +635,7 @@ bool UIContentImpl::ProcessPointerEvent(const std::vector<uint8_t>& data)
     auto aceView = static_cast<Platform::AceViewSG*>(container->GetView());
     CHECK_NULL_RETURN(aceView, false);
 
-    return aceView->DispatchTouchEvent(data);
+    return aceView->DispatchTouchEvent(pointerEvent);
 }
 
 bool UIContentImpl::ProcessMouseEvent(const std::vector<uint8_t>& data)
@@ -594,7 +682,7 @@ void UIContentImpl::UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRunti
             auto language = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_LANGUAGE);
             container->UpdateConfiguration(colorMode, direction, densityDpi, language);
         },
-        TaskExecutor::TaskType::UI);
+        TaskExecutor::TaskType::UI, "ArkUI-XUicontentUpdateConfiguration");
     LOGI("UIContentImpl: UpdateConfiguration called End");
 }
 
@@ -615,12 +703,13 @@ void UIContentImpl::UpdateViewportConfig(const ViewportConfig& config, OHOS::Ros
         pipelineContext->SetDisplayWindowRectInfo(
             Rect(Offset(config.Left(), config.Top()), Size(config.Width(), config.Height())));
     }
-    auto aceView = static_cast<Platform::AceViewSG*>(container->GetAceView());
+    auto aceView = static_cast<Platform::AceViewSG*>(container->GetAceViewEx());
     CHECK_NULL_VOID(aceView);
     Platform::AceViewSG::SetViewportMetrics(aceView, config);
     Platform::AceViewSG::SurfaceChanged(
         aceView, config.Width(), config.Height(), config.Orientation(), static_cast<WindowSizeChangeReason>(reason));
     Platform::AceViewSG::SurfacePositionChanged(aceView, config.Left(), config.Top());
+    SubwindowManager::GetInstance()->ClearToastInSubwindow();
 }
 
 // Control filtering
@@ -702,5 +791,30 @@ std::unique_ptr<UIContent> UIContent::Create(OHOS::AbilityRuntime::Platform::Con
     std::unique_ptr<UIContent> content;
     content.reset(new UIContentImpl(context, runtime));
     return content;
+}
+
+void UIContentImpl::InitializeSubWindow()
+{
+    CHECK_NULL_VOID(window_);
+    LOGI("The window name is %{public}s", window_->GetWindowName().c_str());
+
+    instanceId_ = window_->GetWindowId();
+    std::weak_ptr<OHOS::AppExecFwk::AbilityInfo> abilityInfo;
+    std::weak_ptr<OHOS::AbilityRuntime::Platform::Context> runtimeContext;
+
+    auto container = AceType::MakeRefPtr<Platform::AceContainerSG>(instanceId_, FrontendType::DECLARATIVE_JS,
+        runtimeContext, abilityInfo, std::make_unique<ContentEventCallback>([] {
+            // Sub-window ,just return.
+            LOGI("Content event callback");
+        }),
+        false, true);
+
+    AceEngine::Get().AddContainer(instanceId_, container);
+    touchOutsideListener_ = new TouchOutsideListener(instanceId_);
+    window_->RegisterTouchOutsideListener(touchOutsideListener_);
+    windowLifeCycleListener_ = new WindowLifeCycleListener(instanceId_);
+    window_->RegisterLifeCycleListener(windowLifeCycleListener_);
+    occupiedAreaChangeListener_ = new OccupiedAreaChangeListener(instanceId_);
+    window_->RegisterOccupiedAreaChangeListener(occupiedAreaChangeListener_);
 }
 } // namespace OHOS::Ace::Platform

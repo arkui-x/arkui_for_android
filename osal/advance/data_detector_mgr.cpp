@@ -29,6 +29,8 @@ bool DataDetectorMgr::IsDataDetectorSupported()
     return false;
 }
 
+void DataDetectorMgr::GetAIEntityMenu(TextDataDetectResult& textDataDetectResult) {}
+
 void DataDetectorMgr::DataDetect(const TextDataDetectInfo& info, const TextDetectResultFunc& resultFunc) {}
 
 void DataDetectorMgr::AdjustCursorPosition(

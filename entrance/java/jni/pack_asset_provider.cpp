@@ -20,8 +20,7 @@
 namespace OHOS::Ace {
 PackAssetProvider::PackAssetProvider(JNIEnv* env, jobject jassetManager, std::string dir)
     : javaAssetManager_(Ace::Platform::JniEnvironment::MakeJavaGlobalRef(
-          Ace::Platform::JniEnvironment::GetInstance().GetJniEnv(), jassetManager)),
-      dir_(std::move(dir))
+      Ace::Platform::JniEnvironment::GetInstance().GetJniEnv(), jassetManager)), dir_(std::move(dir))
 {
     manager_ = AAssetManager_fromJava(env, jassetManager);
 }

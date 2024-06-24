@@ -27,19 +27,30 @@ namespace OHOS::Ace {
 std::unique_ptr<DownloadManager> DownloadManager::instance_ = nullptr;
 std::mutex DownloadManager::mutex_;
 class DownloadManagerImpl final : public DownloadManager {
-
 public:
     bool Download(const std::string& url, std::vector<uint8_t>& dataOut) override
     {
         return Platform::DownloadManagerJni::Download(url, dataOut);
     }
 
-    bool DownloadAsync(DownloadCallback&& downloadCallback, const std::string& url, int32_t instanceId) override
+    bool Download(const std::string& url, const std::shared_ptr<DownloadResult>& result) override
     {
         return false;
     }
 
-    bool DownloadSync(DownloadCallback&& downloadCallback, const std::string& url, int32_t instanceId) override
+    bool DownloadAsync(
+        DownloadCallback&& downloadCallback, const std::string& url, int32_t instanceId, int32_t nodeId) override
+    {
+        return false;
+    }
+
+    bool DownloadSync(
+        DownloadCallback&& downloadCallback, const std::string& url, int32_t instanceId, int32_t nodeId) override
+    {
+        return false;
+    }
+
+    bool RemoveDownloadTask(const std::string& url, int32_t nodeId) override
     {
         return false;
     }
@@ -47,7 +58,6 @@ public:
     DownloadManagerImpl() = default;
 
     ~DownloadManagerImpl() = default;
-
 };
 
 DownloadManager* DownloadManager::GetInstance()

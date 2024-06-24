@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,6 +34,11 @@ static const JNINativeMethod METHODS[] = {
         reinterpret_cast<void *>(&BridgeJni::NativeInit)
     },
     {
+        "nativeUpdateCurrentInstanceId",
+        "(I)V",
+        reinterpret_cast<void *>(&BridgeJni::NativeUpdateCurrentInstanceId)
+    },
+    {
         "nativePlatformCallMethod",
         "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V",
         reinterpret_cast<void *>(&BridgeJni::PlatformCallMethod)
@@ -64,7 +69,7 @@ static const JNINativeMethod METHODS[] = {
         reinterpret_cast<void *>(&BridgeJni::PlatformSendMethodResultBinary)
     },
     {
-        "nativeplatformCallMethodBinary",
+        "nativePlatformCallMethodBinary",
         "(Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;I)V",
         reinterpret_cast<void *>(&BridgeJni::PlatformCallMethodBinary)
     }
@@ -86,7 +91,8 @@ static const char JS_CALL_METHOD_BINARY_JNI_PARAM[] = "(Ljava/lang/String;Ljava/
 static const char JS_SEND_MESSAGE_BINARY_JNI[] = "jsSendMessageBinary";
 static const char JS_SEND_MESSAGE_BINARY_JNI_PARAM[] = "(Ljava/lang/String;Ljava/nio/ByteBuffer;)V";
 static const char JS_SEND_METHOD_RESULT_BINARY_JNI[] = "jsSendMethodResultBinary";
-static const char JS_SEND_METHOD_RESULT_BINARY_JNI_PARAM[] = "(Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;ILjava/lang/String;)V";
+static const char JS_SEND_METHOD_RESULT_BINARY_JNI_PARAM[] =
+    "(Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;ILjava/lang/String;)V";
 
 // java methodID and object.
 struct {
@@ -100,37 +106,38 @@ struct {
     jmethodID JSSendMethodResultBinaryJni_;
 } g_pluginClass;
 
-std::unordered_map<jint, jobject> g_jobjects;
+std::unordered_map<jint, JniEnvironment::JavaGlobalRef> g_jobjects;
 std::mutex g_bridgeJniLock;
+static int32_t g_currentInstanceId;
 }  // namespace
 
 jobject GetJObjectByInstanceId(const int32_t instanceId)
 {
     std::lock_guard<std::mutex> lock(g_bridgeJniLock);
-    auto jobject = g_jobjects.find(instanceId);
-    if (jobject == g_jobjects.end()) {
-        LOGE("The jobject not found.");
+    auto finder = g_jobjects.find(instanceId);
+    if (finder == g_jobjects.end()) {
+        LOGE("BridgeJobject is not exist. the instanceId is %{public}d", instanceId);
         return nullptr;
     }
-    return jobject->second;
+    return finder->second.get();
 }
 
 RefPtr<TaskExecutor> BridgeJni::GetPlatformTaskExecutor(int32_t instanceId)
 {
     auto container = AceEngine::Get().GetContainer(instanceId);
     if (!container) {
-        LOGE("JNI GetPlatformTaskExecutor container is null ");
+        LOGE("JNI GetPlatformTaskExecutor container is null. the instanceId is %{public}d", instanceId);
         return nullptr;
     }
 
     auto pipelineContext = container->GetPipelineContext();
     if (!pipelineContext) {
-        LOGE("JNI GetPlatformTaskExecutor pipelineContext is null ");
+        LOGE("JNI GetPlatformTaskExecutor pipelineContext is null. the instanceId is %{public}d", instanceId);
         return nullptr;
     }
     RefPtr<TaskExecutor> taskExecutor = pipelineContext->GetTaskExecutor();
     if (!taskExecutor) {
-        LOGE("JNI GetPlatformTaskExecutor taskExecutor is null ");
+        LOGE("JNI GetPlatformTaskExecutor taskExecutor is null. the instanceId is %{public}d", instanceId);
         return nullptr;
     }
     return taskExecutor;
@@ -169,10 +176,7 @@ bool BridgeJni::Register(const std::shared_ptr<JNIEnv> &env)
 
     bool ret = env->RegisterNatives(myClass, METHODS, sizeof(METHODS) / sizeof(METHODS[0])) == 0;
     env->DeleteLocalRef(myClass);
-    if (!ret) {
-        return false;
-    }
-    return true;
+    return ret;
 }
 
 void BridgeJni::NativeInit(JNIEnv *env, jobject jobj, jint instanceId)
@@ -184,11 +188,9 @@ void BridgeJni::NativeInit(JNIEnv *env, jobject jobj, jint instanceId)
 
     auto id = static_cast<int32_t>(instanceId);
     std::lock_guard<std::mutex> lock(g_bridgeJniLock);
-    auto result = g_jobjects.try_emplace(id, env->NewGlobalRef(jobj));
-    if (!result.second) {
-        LOGE("The native jobject already exist.");
-        return;
-    }
+    g_currentInstanceId = id;
+    LOGI("BridgeJni NativeInit InstanceId is %{public}d", g_currentInstanceId);
+    g_jobjects.emplace(id, JniEnvironment::MakeJavaGlobalRef(JniEnvironment::GetInstance().GetJniEnv(), jobj));
 
     jclass cls = env->GetObjectClass(jobj);
     if (cls == nullptr) {
@@ -212,14 +214,31 @@ void BridgeJni::NativeInit(JNIEnv *env, jobject jobj, jint instanceId)
     env->DeleteLocalRef(cls);
 }
 
+void BridgeJni::NativeUpdateCurrentInstanceId(JNIEnv *env, jobject jobj, jint instanceId)
+{
+    if (!env) {
+        LOGE("NativeUpdateCurrentInstanceId JNIEnv is nullptr");
+        return;
+    }
+    std::lock_guard<std::mutex> lock(g_bridgeJniLock);
+    g_currentInstanceId = static_cast<int32_t>(instanceId);
+    LOGI("BridgeJni Update Current InstanceId is %{public}d", g_currentInstanceId);
+}
+
 void BridgeJni::JSCallMethodJni(const int32_t instanceId, const std::string& bridgeName,
     const std::string& methodName, const std::string& parameters)
 {
+    LOGD("JSCallMethodJni enter, instanceId is %{public}d, bridgeName is %{public}s, methodName is %{public}s",
+        instanceId, bridgeName.c_str(), methodName.c_str());
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
-    jobject obj = GetJObjectByInstanceId(instanceId);
-    CHECK_NULL_VOID(obj);
     CHECK_NULL_VOID(g_pluginClass.JSCallMethodJni_);
+    jobject obj = GetJObjectByInstanceId(instanceId);
+    if (obj == nullptr) {
+        LOGE("JSCallMethodJni failed instanceId is %{public}d, bridgeName is %{public}s, methodName is %{public}s",
+            instanceId, bridgeName.c_str(), methodName.c_str());
+        return;
+    }
 
     jstring jBridgeName = env->NewStringUTF(bridgeName.c_str());
     jstring jMethodName = env->NewStringUTF(methodName.c_str());
@@ -273,7 +292,7 @@ void BridgeJni::PlatformSendMethodResult(JNIEnv *env, jobject jobj,
     auto task = [bridgeName, methodName, result, instanceId] {
         BridgeManager::PlatformSendMethodResult(instanceId, bridgeName, methodName, result);
     };
-    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS);
+    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS, "ArkUI-XBridgeJniPlatformSendMethodResult");
 }
 
 void BridgeJni::PlatformCallMethod(JNIEnv *env, jobject jobj,
@@ -283,17 +302,17 @@ void BridgeJni::PlatformCallMethod(JNIEnv *env, jobject jobj,
     std::string callBridgeName;
     std::string callMethodName;
     std::string callParam;
-    auto bridgeNameStr = env->GetStringUTFChars(jBridgeName, nullptr);
+    const auto *bridgeNameStr = env->GetStringUTFChars(jBridgeName, nullptr);
     if (bridgeNameStr != nullptr) {
         callBridgeName = bridgeNameStr;
         env->ReleaseStringUTFChars(jBridgeName, bridgeNameStr);
     }
-    auto methodNameStr = env->GetStringUTFChars(jMethodName, nullptr);
+    const auto *methodNameStr = env->GetStringUTFChars(jMethodName, nullptr);
     if (methodNameStr != nullptr) {
         callMethodName = methodNameStr;
         env->ReleaseStringUTFChars(jMethodName, methodNameStr);
     }
-    auto paramStr = env->GetStringUTFChars(jParam, nullptr);
+    const auto *paramStr = env->GetStringUTFChars(jParam, nullptr);
     if (paramStr != nullptr) {
         callParam = paramStr;
         env->ReleaseStringUTFChars(jParam, paramStr);
@@ -306,13 +325,13 @@ void BridgeJni::PlatformCallMethod(JNIEnv *env, jobject jobj,
     auto taskExecutor = GetPlatformTaskExecutor(instanceId);
     ContainerScope scope(instanceId);
     if (!taskExecutor) {
-        LOGE("PlatformCallMethod taskExecutor = nullptr");
+        LOGE("PlatformCallMethod taskExecutor = nullptr, the instanceId is %{public}d", instanceId);
         return;
     }
     auto task = [callBridgeName, callMethodName, callParam, instanceId] {
         BridgeManager::PlatformCallMethod(instanceId, callBridgeName, callMethodName, callParam);
     };
-    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS);
+    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS, "ArkUI-XBridgeJniPlatformCallMethod");
 }
 
 void BridgeJni::JSSendMethodResultJni(const int32_t instanceId, const std::string& bridgeName,
@@ -320,9 +339,13 @@ void BridgeJni::JSSendMethodResultJni(const int32_t instanceId, const std::strin
 {
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
-    jobject obj = GetJObjectByInstanceId(instanceId);
-    CHECK_NULL_VOID(obj);
     CHECK_NULL_VOID(g_pluginClass.JSSendMethodResultJni_);
+    jobject obj = GetJObjectByInstanceId(instanceId);
+    if (obj == nullptr) {
+        LOGE("JSSendMethodResultJni failed instanceId is %{public}d, bridgeName is %{public}s, methodName is "
+            "%{public}s", instanceId, bridgeName.c_str(), methodName.c_str());
+        return;
+    }
 
     jstring jBridgeName = env->NewStringUTF(bridgeName.c_str());
     jstring jMethodName = env->NewStringUTF(methodName.c_str());
@@ -349,9 +372,13 @@ void BridgeJni::JSSendMessageJni(const int32_t instanceId, const std::string& br
 {
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
-    jobject obj = GetJObjectByInstanceId(instanceId);
-    CHECK_NULL_VOID(obj);
     CHECK_NULL_VOID(g_pluginClass.JSSendMessageJni_);
+    jobject obj = GetJObjectByInstanceId(instanceId);
+    if (obj == nullptr) {
+        LOGE("JSSendMessageJni failed instanceId is %{public}d, bridgeName is %{public}s",
+            instanceId, bridgeName.c_str());
+        return;
+    }
 
     jstring jBridgeName = env->NewStringUTF(bridgeName.c_str());
     jstring jData = env->NewStringUTF(data.c_str());
@@ -396,7 +423,7 @@ void BridgeJni::PlatformSendMessageResponse(JNIEnv *env, jobject jobj,
     auto task = [bridgeName, data, instanceId] {
         BridgeManager::PlatformSendMessageResponse(instanceId, bridgeName, data);
     };
-    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS);
+    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS, "ArkUI-XBridgeJniPlatformSendMessageResponse");
 }
 
 void BridgeJni::PlatformSendMessage(JNIEnv *env, jobject jobj, jstring jBridgeName, jstring jData, jint instanceId)
@@ -424,7 +451,7 @@ void BridgeJni::PlatformSendMessage(JNIEnv *env, jobject jobj, jstring jBridgeNa
     auto task = [bridgeName, data, instanceId] {
         BridgeManager::PlatformSendMessage(instanceId, bridgeName, data);
     };
-    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS);
+    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS, "ArkUI-XBridgeJniPlatformSendMessage");
 }
 
 void BridgeJni::JSSendMessageResponseJni(const int32_t instanceId,
@@ -432,9 +459,13 @@ void BridgeJni::JSSendMessageResponseJni(const int32_t instanceId,
 {
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
-    jobject obj = GetJObjectByInstanceId(instanceId);
-    CHECK_NULL_VOID(obj);
     CHECK_NULL_VOID(g_pluginClass.JSSendMessageResponseJni_);
+    jobject obj = GetJObjectByInstanceId(instanceId);
+    if (obj == nullptr) {
+        LOGE("JSSendMessageResponseJni failed instanceId is %{public}d, bridgeName is %{public}s",
+            instanceId, bridgeName.c_str());
+        return;
+    }
 
     jstring jBridgeName = env->NewStringUTF(bridgeName.c_str());
     jstring jData = env->NewStringUTF(data.c_str());
@@ -458,9 +489,13 @@ void BridgeJni::JSCancelMethodJni(const int32_t instanceId,
 {
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
-    jobject obj = GetJObjectByInstanceId(instanceId);
-    CHECK_NULL_VOID(obj);
     CHECK_NULL_VOID(g_pluginClass.JSCancelMethodJni_);
+    jobject obj = GetJObjectByInstanceId(instanceId);
+    if (obj == nullptr) {
+        LOGE("JSCancelMethodJni failed instanceId is %{public}d, bridgeName is %{public}s, methodName is %{public}s",
+            instanceId, bridgeName.c_str(), methodName.c_str());
+        return;
+    }
 
     jstring jBridgeName = env->NewStringUTF(bridgeName.c_str());
     jstring jMethodName = env->NewStringUTF(methodName.c_str());
@@ -482,11 +517,17 @@ void BridgeJni::JSCancelMethodJni(const int32_t instanceId,
 void BridgeJni::JSCallMethodBinaryJni(const int32_t instanceId, const std::string& bridgeName,
     const std::string& methodName, const std::vector<uint8_t>& data)
 {
+    LOGD("JSCallMethodBinaryJni enter, instanceId is %{public}d, bridgeName is %{public}s, methodName is "
+        "%{public}s", instanceId, bridgeName.c_str(), methodName.c_str());
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
-    jobject obj = GetJObjectByInstanceId(instanceId);
-    CHECK_NULL_VOID(obj);
     CHECK_NULL_VOID(g_pluginClass.JSCallMethodBinaryJni_);
+    jobject obj = GetJObjectByInstanceId(instanceId);
+    if (obj == nullptr) {
+        LOGE("JSCallMethodBinaryJni failed instanceId is %{public}d, bridgeName is %{public}s, methodName is "
+             "%{public}s", instanceId, bridgeName.c_str(), methodName.c_str());
+        return;
+    }
     jstring jBridgeName = env->NewStringUTF(bridgeName.c_str());
     jstring jMethodName = env->NewStringUTF(methodName.c_str());
     jobject jByteBuffer = env->NewDirectByteBuffer((void *)data.data(), data.size());
@@ -538,7 +579,7 @@ void BridgeJni::PlatformSendMethodResultBinary(JNIEnv *env, jobject jobj, jstrin
         BridgeManager::PlatformSendMethodResultBinary(instanceId, bridgeName, methodName,
             jErrorCode, errorMessage, std::move(mapping));
     };
-    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS);
+    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS, "ArkUI-XBridgeJniPlatformSendMethodResultBinary");
 }
 
 void BridgeJni::JSSendMessageBinaryJni(
@@ -546,9 +587,13 @@ void BridgeJni::JSSendMessageBinaryJni(
 {
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
-    jobject obj = GetJObjectByInstanceId(instanceId);
-    CHECK_NULL_VOID(obj);
     CHECK_NULL_VOID(g_pluginClass.JSSendMessageBinaryJni_);
+    jobject obj = GetJObjectByInstanceId(instanceId);
+    if (obj == nullptr) {
+        LOGE("JSSendMessageBinaryJni failed instanceId is %{public}d, bridgeName is %{public}s",
+            instanceId, bridgeName.c_str());
+        return;
+    }
     jstring jBridgeName = env->NewStringUTF(bridgeName.c_str());
     jobject jByteBuffer = env->NewDirectByteBuffer((void *)data.data(), data.size());
     if (jByteBuffer == nullptr) {
@@ -588,7 +633,7 @@ void BridgeJni::PlatformSendMessageBinary(JNIEnv *env, jobject jobj,
         auto mapping = std::make_unique<BufferMapping>(buffer, bufferSize);
         BridgeManager::PlatformSendMessageBinary(instanceId, bridgeName, std::move(mapping));
     };
-    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS);
+    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS, "ArkUI-XBridgeJniPlatformSendMessageBinary");
 }
 
 void BridgeJni::JSSendMethodResultBinaryJni(const int32_t instanceId, const std::string& bridgeName,
@@ -597,9 +642,13 @@ void BridgeJni::JSSendMethodResultBinaryJni(const int32_t instanceId, const std:
 {
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
-    jobject obj = GetJObjectByInstanceId(instanceId);
-    CHECK_NULL_VOID(obj);
     CHECK_NULL_VOID(g_pluginClass.JSSendMethodResultBinaryJni_);
+    jobject obj = GetJObjectByInstanceId(instanceId);
+    if (obj == nullptr) {
+        LOGE("JSSendMethodResultBinaryJni failed instanceId is %{public}d, bridgeName is %{public}s, methodName is "
+            "%{public}s", instanceId, bridgeName.c_str(), methodName.c_str());
+        return;
+    }
     jobject jByteBuffer = nullptr;
     if (result != nullptr) {
         jByteBuffer = env->NewDirectByteBuffer((void *)result->data(), result->size());
@@ -610,7 +659,6 @@ void BridgeJni::JSSendMethodResultBinaryJni(const int32_t instanceId, const std:
     jstring jBridgeName = env->NewStringUTF(bridgeName.c_str());
     jstring jMethodName = env->NewStringUTF(methodName.c_str());
     jstring jErrorMessage = env->NewStringUTF(errorMessage.c_str());
-
     if (jBridgeName == nullptr || jMethodName == nullptr || jErrorMessage == nullptr) {
         LOGE("jBridgeName or jMethodName or jErrorMessage is nullptr");
         DeleteLocalRefString(env, jBridgeName);
@@ -644,14 +692,14 @@ void BridgeJni::PlatformCallMethodBinary(JNIEnv *env, jobject jobj,
     auto taskExecutor = GetPlatformTaskExecutor(instanceId);
     ContainerScope scope(instanceId);
     if (!taskExecutor) {
-        LOGE("PlatformCallMethodBinary taskExecutor = nullptr");
+        LOGE("PlatformCallMethodBinary taskExecutor = nullptr, the instanceId is %{public}d", instanceId);
         return;
     }
     if (jBuffer == nullptr) {
         auto task = [bridgeName, methodName, instanceId] {
             BridgeManager::PlatformCallMethodBinary(instanceId, bridgeName, methodName, nullptr);
         };
-        taskExecutor->PostTask(task, TaskExecutor::TaskType::JS);
+        taskExecutor->PostTask(task, TaskExecutor::TaskType::JS, "ArkUI-XBridgeJniPlatformCallMethodBinaryIf");
     } else {
         uint8_t* bufferAddress = (unsigned char *)env->GetDirectBufferAddress(jBuffer);
         size_t bufferSize = static_cast<size_t>(env->GetDirectBufferCapacity(jBuffer));
@@ -661,7 +709,17 @@ void BridgeJni::PlatformCallMethodBinary(JNIEnv *env, jobject jobj,
             auto mapping = std::make_unique<BufferMapping>(buffer, bufferSize);
             BridgeManager::PlatformCallMethodBinary(instanceId, bridgeName, methodName, std::move(mapping));
         };
-        taskExecutor->PostTask(task, TaskExecutor::TaskType::JS);
+        taskExecutor->PostTask(task, TaskExecutor::TaskType::JS, "ArkUI-XBridgeJniPlatformCallMethodBinaryElse");
     }
+}
+
+void BridgeJni::ReleaseInstance(int32_t instanceId)
+{
+    g_jobjects.erase(instanceId);
+}
+
+int32_t BridgeJni::GetCurrentInstanceId()
+{
+    return g_currentInstanceId;
 }
 }  // namespace OHOS::Ace::Platform

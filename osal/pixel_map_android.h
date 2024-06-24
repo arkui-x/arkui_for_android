@@ -27,6 +27,7 @@ public:
     static AlphaType AlphaTypeConverter(Media::AlphaType alphaType);
     int32_t GetWidth() const override;
     int32_t GetHeight() const override;
+    bool GetPixelsVec(std::vector<uint8_t>& data) const override;
     const uint8_t* GetPixels() const override;
     PixelFormat GetPixelFormat() const override;
     AlphaType GetAlphaType() const override;
@@ -42,6 +43,8 @@ public:
     void Scale(float xAxis, float yAxis) override;
     void Scale(float xAxis, float yAxis, const AceAntiAliasingOption &option) override;
     void SavePixelMapToFile(const std::string& dst) const override;
+    RefPtr<PixelMap> GetCropPixelMap(const Rect& srcRect) override;
+    bool EncodeTlv(std::vector<uint8_t>& buff) override;
 private:
     std::shared_ptr<Media::PixelMap> pixmap_;
 };

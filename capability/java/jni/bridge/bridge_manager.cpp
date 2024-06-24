@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,12 +34,14 @@ std::shared_ptr<BridgeReceiver> BridgeManager::FindReceiver(int32_t instanceId, 
             return bridgeIter->second;
         }
     }
+    LOGE("No JsBridge found, instanceId is %{public}d bridgeName is %{public}s", instanceId, bridgeName.c_str());
     return nullptr;
 }
 
 bool BridgeManager::JSRegisterBridge(int32_t instanceId, std::shared_ptr<BridgeReceiver> callback)
 {
     if (callback == nullptr || instanceId <= 0 || callback->bridgeName_.empty()) {
+        LOGE("JSRegisterBridge failed, instanceId is %{public}d", instanceId);
         return false;
     }
 
@@ -57,7 +59,7 @@ bool BridgeManager::JSRegisterBridge(int32_t instanceId, std::shared_ptr<BridgeR
             return true;
         }
     }
-    return false;
+    return true;
 }
 
 void BridgeManager::JSUnRegisterBridge(int32_t instanceId, const std::string& bridgeName)
@@ -77,22 +79,22 @@ void BridgeManager::JSUnRegisterBridge(int32_t instanceId, const std::string& br
     }
 }
 
-void BridgeManager::JSCallMethod(int32_t instanceId, const std::string& bridgeName,
-    const std::string& methodName, const std::string& parameter)
+void BridgeManager::JSCallMethod(
+    int32_t instanceId, const std::string& bridgeName, const std::string& methodName, const std::string& parameter)
 {
     BridgeJni::JSCallMethodJni(instanceId, bridgeName, methodName, parameter);
 }
 
-void BridgeManager::JSCallMethodBinary(int32_t instanceId, const std::string& bridgeName,
-    const std::string& methodName, const std::vector<uint8_t>& data)
+void BridgeManager::JSCallMethodBinary(
+    int32_t instanceId, const std::string& bridgeName, const std::string& methodName, const std::vector<uint8_t>& data)
 {
     BridgeJni::JSCallMethodBinaryJni(instanceId, bridgeName, methodName, data);
 }
 
-void BridgeManager::JSSendMethodResult(int32_t instanceId, const std::string& bridgeName,
-    const std::string& methodName, const std::string& resultValue)
+void BridgeManager::JSSendMethodResult(
+    int32_t instanceId, const std::string& bridgeName, const std::string& methodName, const std::string& resultValue)
 {
-     BridgeJni::JSSendMethodResultJni(instanceId, bridgeName, methodName, resultValue);
+    BridgeJni::JSSendMethodResultJni(instanceId, bridgeName, methodName, resultValue);
 }
 
 void BridgeManager::JSSendMethodResultBinary(int32_t instanceId, const std::string& bridgeName,
@@ -112,7 +114,8 @@ void BridgeManager::JSSendMessage(int32_t instanceId, const std::string& bridgeN
     BridgeJni::JSSendMessageJni(instanceId, bridgeName, data);
 }
 
-void BridgeManager::JSSendMessageBinary(int32_t instanceId, const std::string& bridgeName, const std::vector<uint8_t>& data)
+void BridgeManager::JSSendMessageBinary(
+    int32_t instanceId, const std::string& bridgeName, const std::vector<uint8_t>& data)
 {
     BridgeJni::JSSendMessageBinaryJni(instanceId, bridgeName, data);
 }
@@ -122,8 +125,8 @@ void BridgeManager::JSSendMessageResponse(int32_t instanceId, const std::string&
     BridgeJni::JSSendMessageResponseJni(instanceId, bridgeName, data);
 }
 
-void BridgeManager::PlatformCallMethod(int32_t instanceId, const std::string& bridgeName,
-    const std::string& methodName, const std::string& parameter)
+void BridgeManager::PlatformCallMethod(
+    int32_t instanceId, const std::string& bridgeName, const std::string& methodName, const std::string& parameter)
 {
     auto receiver = FindReceiver(instanceId, bridgeName);
     if (receiver && receiver->callMethodCallback_) {
@@ -140,8 +143,8 @@ void BridgeManager::PlatformCallMethodBinary(int32_t instanceId, const std::stri
     }
 }
 
-void BridgeManager::PlatformSendMethodResult(int32_t instanceId, const std::string& bridgeName,
-    const std::string& methodName, const std::string& result)
+void BridgeManager::PlatformSendMethodResult(
+    int32_t instanceId, const std::string& bridgeName, const std::string& methodName, const std::string& result)
 {
     auto receiver = FindReceiver(instanceId, bridgeName);
     if (receiver && receiver->methodResultCallback_) {
@@ -176,8 +179,8 @@ void BridgeManager::PlatformSendMessageBinary(
     }
 }
 
-void BridgeManager::PlatformSendMessageResponse(int32_t instanceId,
-    const std::string& bridgeName, const std::string& data)
+void BridgeManager::PlatformSendMessageResponse(
+    int32_t instanceId, const std::string& bridgeName, const std::string& data)
 {
     auto receiver = FindReceiver(instanceId, bridgeName);
     if (receiver && receiver->sendMessageResponseCallback_) {
@@ -194,5 +197,10 @@ void BridgeManager::JSCancelMethod(int32_t instanceId, const std::string& bridge
 {
     BridgeJni::JSCancelMethodJni(instanceId, bridgeName, methodName);
     LOGE("The method was canceled: %{public}s", methodName.c_str());
+}
+
+int32_t BridgeManager::GetCurrentInstanceId()
+{
+    return BridgeJni::GetCurrentInstanceId();
 }
 } // namespace OHOS::Ace::Platform

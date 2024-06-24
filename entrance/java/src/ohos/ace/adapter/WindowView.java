@@ -19,6 +19,8 @@ import android.content.Context;
 import android.graphics.PixelFormat;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import ohos.ace.adapter.capability.platformview.AcePlatformViewPluginBase;
+import ohos.ace.adapter.capability.platformview.AcePlatformViewBase;
 import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginBase;
 import ohos.ace.adapter.capability.web.AceWebBase;
@@ -60,6 +62,9 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     private int lastMouseButtonState = 0;
     private int lastMouseActionKey = 0;
 
+    private AcePlatformViewPluginBase acePlatformViewPluginBase;
+    private AceWebPluginBase aceWebPluginBase;
+
     /**
      * Constructor of WindowView
      *
@@ -100,10 +105,24 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         nativeWindowPtr = 0L;
     }
 
+    public void setWebPlugin(AceWebPluginBase pluginBase) {
+        aceWebPluginBase = pluginBase;
+    }
+
+    public void setPlatformViewPlugin(AcePlatformViewPluginBase pluginBase) {
+        acePlatformViewPluginBase = pluginBase;
+    }
+
     private void delayNotifyIfNeeded() {
         if (nativeWindowPtr == 0L) {
             ALog.e(LOG_TAG, "delay notify, nativeWindow is invalid!");
             return;
+        }
+
+        if (delayNotifySurfaceDestroyed) {
+            ALog.i(LOG_TAG, "delay notify surfaceDestroyed");
+            nativeSurfaceDestroyed(nativeWindowPtr);
+            delayNotifySurfaceDestroyed = false;
         }
 
         if (delayNotifyCreateSurface != null) {
@@ -118,12 +137,6 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
             nativeSurfaceChanged(
                 nativeWindowPtr, surfaceWidth, surfaceHeight, getResources().getDisplayMetrics().density);
             delayNotifySurfaceChanged = false;
-        }
-
-        if (delayNotifySurfaceDestroyed) {
-            ALog.i(LOG_TAG, "delay notify surfaceDestroyed");
-            nativeSurfaceDestroyed(nativeWindowPtr);
-            delayNotifySurfaceDestroyed = false;
         }
     }
 
@@ -295,17 +308,39 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    private void setWebTouchEvent(MotionEvent event){
+        if (aceWebPluginBase == null) {
+            return;
+        }
+        Map<Long, AceWebBase> webObjectMap = aceWebPluginBase.getObjectMap();
+        if (webObjectMap != null) {
+            for (Map.Entry<Long, AceWebBase> entry : webObjectMap.entrySet()) {
+                entry.getValue().setTouchEvent(event);
+            }
+        }
+    }
+
+    private void setPlatformViewTouchEvent(MotionEvent event){
+        if (acePlatformViewPluginBase == null) {
+            return;
+        }
+        Map<Long, AcePlatformViewBase> platformViewObjectMap = acePlatformViewPluginBase.getObjectMap();
+        if (platformViewObjectMap != null) {
+            for (Map.Entry<Long, AcePlatformViewBase> entry : platformViewObjectMap.entrySet()) {
+                entry.getValue().setTouchEvent(event);
+            }
+        }
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
         if (nativeWindowPtr == 0L) {
             return super.onTouchEvent(event);
         }
+        this.setWebTouchEvent(event);
+        this.setPlatformViewTouchEvent(event);
 
-        Map<Long, AceWebBase> webObjectMap = AceWebPluginBase.getObjectMap();
-        for (Map.Entry<Long, AceWebBase> entry : webObjectMap.entrySet()) {
-            entry.getValue().setTouchEvent(event);
-        }
         try {
             int source = event.getSource();
             if (source == InputDevice.SOURCE_MOUSE) {
@@ -421,6 +456,8 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     private native void nativeSurfaceChanged(long windowPtr, int width, int height, float density);
 
     private native void nativeKeyboardHeightChanged(long windowPtr, int height);
+
+    private native void nativeWindowSizeChanged(long windowPtr, int width, int height);
 
     private native void nativeSurfaceDestroyed(long windowPtr);
 

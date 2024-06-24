@@ -144,6 +144,8 @@ public class AceWeb extends AceWebBase {
 
     private final AceWebView webView;
 
+    private final View rootView;
+
     private boolean isWebOnPage = true;
 
     private MotionEvent motionEvent;
@@ -165,10 +167,11 @@ public class AceWeb extends AceWebBase {
         }
     }
 
-    public AceWeb(long id, Context context, IAceOnResourceEvent callback) {
+    public AceWeb(long id, Context context, View view, IAceOnResourceEvent callback) {
         super(id, callback);
         this.callback = callback;
         this.context = context;
+        this.rootView = view;
         webView = new AceWebView(context);
     }
 
@@ -231,14 +234,17 @@ public class AceWeb extends AceWebBase {
         if (activity.getWindow() == null) {
             return;
         }
-        View contentView = activity.getWindow().getDecorView().findViewById(android.R.id.content);
-        android.widget.FrameLayout contentView1;
+        if (this.rootView == null) {
+            ALog.w(LOG_TAG, "addWebToSurface rooView null");
+            return;
+        }
+        View contentView = (ViewGroup) this.rootView.getParent();
+        ViewGroup contentView1;
         if (contentView instanceof FrameLayout) {
             contentView1 = (FrameLayout) contentView;
-            contentView1.addView(webView, 0, params);
-
-            int countNew = contentView1.getChildCount();
-            for (int index = 0; index < countNew; index++) {
+            int contentChildCount = contentView1.getChildCount();
+            contentView1.addView(webView, contentChildCount - 1, params);
+            for (int index = 0; index < contentChildCount; index++) {
                 View view = contentView1.getChildAt(index);
                 String viewClassName = view.getClass().getName();
                 if (viewClassName.equals("ohos.ace.adapter.WindowView")) {
@@ -247,6 +253,8 @@ public class AceWeb extends AceWebBase {
                     view.setZ(-1.f);
                 }
             }
+        } else {
+            ALog.w(LOG_TAG, "addWebToSurface error, not FrameLayout");
         }
     }
 
@@ -734,12 +742,12 @@ public class AceWeb extends AceWebBase {
 
     @Override
     public void onActivityPause() {
-        webView.onPause();
+        ALog.i(LOG_TAG, "onActivityPause enter.");
     }
 
     @Override
     public void onActivityResume() {
-        webView.onResume();
+        ALog.i(LOG_TAG, "onActivityResume enter.");
     }
 
     /**

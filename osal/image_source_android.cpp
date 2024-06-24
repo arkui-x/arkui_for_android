@@ -78,12 +78,14 @@ std::string ImageSourceAndroid::GetProperty(const std::string& key)
     return value;
 }
 
-RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap(const Size& size)
+RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap(
+    const Size& size, AIImageQuality imageQuality, bool isHdrDecoderNeed)
 {
-    return CreatePixelMap(0, size);
+    return CreatePixelMap(0, size, imageQuality);
 }
 
-RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap(uint32_t index, const Size& size)
+RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap(
+    uint32_t index, const Size& size, AIImageQuality imageQuality, bool isHdrDecoderNeed)
 {
     Media::DecodeOptions options;
     if (size.first > 0 && size.second > 0) {
@@ -120,5 +122,15 @@ ImageSource::Size ImageSourceAndroid::GetImageSize()
         return { 0, 0 };
     }
     return { info.size.width, info.size.height };
+}
+
+uint32_t ImageSourceAndroid::GetFrameCount()
+{
+    return 0;
+}
+
+std::string ImageSourceAndroid::GetEncodedFormat()
+{
+    return "";
 }
 } // namespace OHOS::Ace

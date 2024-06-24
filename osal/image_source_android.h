@@ -29,10 +29,14 @@ public:
     explicit ImageSourceAndroid(std::unique_ptr<Media::ImageSource>&& source) : imageSource_(std::move(source)) {}
 
     std::string GetProperty(const std::string& key) override;
-    RefPtr<PixelMap> CreatePixelMap(const Size& size) override;
-    RefPtr<PixelMap> CreatePixelMap(uint32_t index, const Size& size) override;
+    RefPtr<PixelMap> CreatePixelMap(
+        const Size& size, AIImageQuality imageQuality = AIImageQuality::NONE, bool isHdrDecoderNeed = false) override;
+    RefPtr<PixelMap> CreatePixelMap(uint32_t index, const Size& size,
+        AIImageQuality imageQuality = AIImageQuality::NONE, bool isHdrDecoderNeed = false) override;
     RefPtr<PixelMap> CreatePixelMap() override;
     Size GetImageSize() override;
+    uint32_t GetFrameCount() override;
+    std::string GetEncodedFormat() override;
 
 private:
     std::unique_ptr<Media::ImageSource> imageSource_;

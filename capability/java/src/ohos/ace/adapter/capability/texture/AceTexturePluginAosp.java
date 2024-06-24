@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class AceTexturePluginAosp extends AceResourcePlugin {
     private static final String LOG_TAG = "AceTexturePluginAosp";
-    private final AtomicLong nextTextureId = new AtomicLong(0L);
+    private static final AtomicLong nextTextureId = new AtomicLong(0L);
 
     private final IAceTexture textureImpl;
 
@@ -88,6 +88,7 @@ public class AceTexturePluginAosp extends AceResourcePlugin {
     public boolean release(long id) {
         if (objectMap.containsKey(id)) {
             AceTexture aceTexture = objectMap.get(id);
+            unregisterCallMethod(aceTexture.getCallMethod());
             aceTexture.release();
             objectMap.remove(id);
             return true;

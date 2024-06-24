@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -168,13 +168,23 @@ bool AceViewSG::DispatchBasicEvent(const std::vector<TouchEvent>& touchEvents)
 }
 
 
-bool AceViewSG::DispatchTouchEvent(const std::vector<uint8_t>& data)
+bool AceViewSG::DispatchTouchEvent(const std::shared_ptr<OHOS::MMI::PointerEvent>& pointerEvent)
 {
-    std::vector<TouchEvent> touchEvents;
-    ConvertTouchEvent(data, touchEvents);
-    LOGI(" ProcessTouchEvent event size%zu", touchEvents.size());
+    ProcessTouchEvent(pointerEvent);
+    ProcessDragEvent(pointerEvent);
     bool forbiddenToPlatform = false;
+    // if it is last page, let os know to quit app
+    return forbiddenToPlatform || (!IsLastPage());
+}
+
+void AceViewSG::ProcessTouchEvent(const std::shared_ptr<OHOS::MMI::PointerEvent>& pointerEvent)
+{
+    CHECK_NULL_VOID(pointerEvent);
+    std::vector<TouchEvent> touchEvents;
+    ConvertTouchEvent(pointerEvent, touchEvents);
+    LOGI(" ProcessTouchEvent event size%zu", touchEvents.size());
     for (auto& point : touchEvents) {
+        DispatchEventToPerf(point);
         if (point.type == TouchType::UNKNOWN) {
             LOGW("Unknown event");
             continue;
@@ -183,10 +193,7 @@ bool AceViewSG::DispatchTouchEvent(const std::vector<uint8_t>& data)
             touchEventCallback_(point, nullptr, nullptr);
         }
     }
-    // if it is last page, let os know to quit app
-    return forbiddenToPlatform || (!IsLastPage());
 }
-
 
 bool AceViewSG::DispatchMouseEvent(const std::vector<uint8_t>& data)
 {
@@ -197,6 +204,49 @@ bool AceViewSG::DispatchMouseEvent(const std::vector<uint8_t>& data)
     }
     // if it is last page, let os know to quit app
     return (!IsLastPage());
+}
+
+void AceViewSG::ProcessDragEvent(const std::shared_ptr<OHOS::MMI::PointerEvent>& pointerEvent,
+    const RefPtr<OHOS::Ace::NG::FrameNode>& node)
+{
+    CHECK_NULL_VOID(pointerEvent);
+    DragEventAction action;
+    PointerEvent event;
+    ConvertPointerEvent(pointerEvent, event);
+    CHECK_NULL_VOID(dragEventCallback_);
+    int32_t orgAction = pointerEvent->GetPointerAction();
+    switch (orgAction) {
+        case OHOS::MMI::PointerEvent::POINTER_ACTION_PULL_MOVE: {
+            action = DragEventAction::DRAG_EVENT_MOVE;
+            event.x = event.windowX;
+            event.y = event.windowY;
+            dragEventCallback_(event, action, node);
+            break;
+        }
+        case OHOS::MMI::PointerEvent::POINTER_ACTION_PULL_UP: {
+            action = DragEventAction::DRAG_EVENT_END;
+            event.x = event.windowX;
+            event.y = event.windowY;
+            dragEventCallback_(event, action, node);
+            break;
+        }
+        case OHOS::MMI::PointerEvent::POINTER_ACTION_PULL_IN_WINDOW: {
+            action = DragEventAction::DRAG_EVENT_START;
+            event.x = event.displayX;
+            event.y = event.displayY;
+            dragEventCallback_(event, action, node);
+            break;
+        }
+        case OHOS::MMI::PointerEvent::POINTER_ACTION_PULL_OUT_WINDOW: {
+            action = DragEventAction::DRAG_EVENT_OUT;
+            event.x = event.displayX;
+            event.y = event.displayY;
+            dragEventCallback_(event, action, node);
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 bool AceViewSG::IsLastPage() const
@@ -222,9 +272,73 @@ bool AceViewSG::DispatchKeyEvent(const KeyEventInfo& eventInfo)
     // distribute special event firstly
     // because platform receives a raw event, the special event processing is ignored
     if (keyEvents.size() > 1) {
+        DispatchEventToPerf(keyEvents.back());
         keyEventCallback_(keyEvents.back());
     }
+    DispatchEventToPerf(keyEvents.front());
     return keyEventCallback_(keyEvents.front());
+}
+
+void AceViewSG::DispatchEventToPerf(const TouchEvent& pointerEvent)
+{
+    static bool isFirstMove = false;
+    if (!PerfMonitor::GetPerfMonitor()) {
+        return;
+    }
+    int64_t inputTime = static_cast<int64_t>(
+        std::chrono::duration_cast<std::chrono::milliseconds>(pointerEvent.time.time_since_epoch()).count());
+    if (inputTime <= 0) {
+        return;
+    }
+    PerfActionType inputType = UNKNOWN_ACTION;
+    PerfSourceType sourceType = UNKNOWN_SOURCE;
+    if (pointerEvent.sourceType == SourceType::MOUSE) {
+        sourceType = PERF_MOUSE_EVENT;
+    } else if (pointerEvent.sourceType == SourceType::TOUCH) {
+        sourceType = PERF_TOUCH_EVENT;
+    } else if (pointerEvent.sourceType == SourceType::TOUCH_PAD) {
+        sourceType = PERF_TOUCH_PAD;
+    } else {
+        sourceType = UNKNOWN_SOURCE;
+    }
+    if (pointerEvent.type == TouchType::DOWN) {
+        inputType = LAST_DOWN;
+        isFirstMove = true;
+    } else if (pointerEvent.type == TouchType::UP) {
+        inputType = LAST_UP;
+        isFirstMove = false;
+    } else if (isFirstMove && pointerEvent.type == TouchType::MOVE) {
+        inputType = FIRST_MOVE;
+        isFirstMove = false;
+    }
+    PerfMonitor::GetPerfMonitor()->RecordInputEvent(inputType, sourceType, inputTime);
+}
+
+void AceViewSG::DispatchEventToPerf(const KeyEvent& keyEvent)
+{
+    if (keyEvent.code != KeyCode::KEY_VOLUME_DOWN
+        && keyEvent.code != KeyCode::KEY_VOLUME_UP
+        && keyEvent.code != KeyCode::KEY_POWER
+        && keyEvent.code != KeyCode::KEY_META_LEFT
+        && keyEvent.code != KeyCode::KEY_ESCAPE) {
+        return;
+    }
+    if (!PerfMonitor::GetPerfMonitor()) {
+        return;
+    }
+    int64_t inputTime = static_cast<int64_t>(
+        std::chrono::duration_cast<std::chrono::milliseconds>(keyEvent.timeStamp.time_since_epoch()).count());
+    if (inputTime <= 0) {
+        return;
+    }
+    PerfActionType inputType = UNKNOWN_ACTION;
+    if (keyEvent.action == KeyAction::UP) {
+        inputType = LAST_UP;
+    } else if (keyEvent.action == KeyAction::DOWN) {
+        inputType = LAST_DOWN;
+    }
+    PerfSourceType sourceType = PERF_KEY_EVENT;
+    PerfMonitor::GetPerfMonitor()->RecordInputEvent(inputType, sourceType, inputTime);
 }
 
 void AceViewSG::NotifySurfaceDestroyed() const

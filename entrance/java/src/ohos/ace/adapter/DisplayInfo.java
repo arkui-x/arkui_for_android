@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -45,7 +45,6 @@ public class DisplayInfo {
         return _sinstance;
     }
 
-    private Context mContext;
     private WindowManager mWindowManager;
 
     private DisplayInfo() {
@@ -58,8 +57,7 @@ public class DisplayInfo {
      * @param context the context
      */
     public void setContext(Context context) {
-        mContext = context;
-        mWindowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+        mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         nativeSetupDisplayInfo();
     }
 

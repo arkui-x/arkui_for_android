@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,14 +15,32 @@
 
 #include "adapter/android/entrance/java/jni/udmf/udmf_impl.h"
 
+#include <cstdint>
+#include <iostream>
 #include <memory>
 #include <unordered_map>
+#include <mutex>
+#include <string>
 
+#include "error_code.h"
 #include "js_native_api_types.h"
+#include "native_engine/native_engine.h"
+#include "summary_napi.h"
+#include "unified_data_napi.h"
 
 #include "base/utils/utils.h"
+#include "bridge/common/utils/engine_helper.h"
+#include "bridge/common/utils/utils.h"
+#include "bridge/js_frontend/engine/common/js_engine.h"
 #include "core/common/udmf/unified_data.h"
+
+const std::string UNIFIED_KEY_SCHEMA = "udmf://";
+const std::string UNIFIED_INTENTION = "drag";
 namespace OHOS::Ace {
+std::mutex UdmfClientImpl::unifiedDataLock_;
+std::map<std::string, RefPtr<UnifiedData>> UdmfClientImpl::unifiedDataMap_;
+int32_t UdmfClientImpl::groupId_ = 0;
+
 UdmfClient* UdmfClient::GetInstance()
 {
     static UdmfClientImpl instance;
@@ -31,37 +49,133 @@ UdmfClient* UdmfClient::GetInstance()
 
 RefPtr<UnifiedData> UdmfClientImpl::TransformUnifiedData(napi_value napiValue)
 {
+    auto engine = EngineHelper::GetCurrentEngine();
+    CHECK_NULL_RETURN(engine, nullptr);
+    NativeEngine* nativeEngine = engine->GetNativeEngine();
+    napi_env env = reinterpret_cast<napi_env>(nativeEngine);
+    void* native = nullptr;
+    napi_unwrap(env, napiValue, &native);
+    auto* unifiedData = reinterpret_cast<UDMF::UnifiedDataNapi*>(native);
+    CHECK_NULL_RETURN(unifiedData, nullptr);
+    CHECK_NULL_RETURN(unifiedData->value_, nullptr);
+    auto udData = AceType::MakeRefPtr<UnifiedDataImpl>();
+    udData->SetUnifiedData(unifiedData->value_);
+    return udData;
+}
+
+RefPtr<UnifiedData> UdmfClientImpl::TransformUnifiedDataForNative(void* rawData)
+{
+    return nullptr;
+}
+
+void* UdmfClientImpl::TransformUnifiedDataPtr(RefPtr<UnifiedData>& unifiedData)
+{
     return nullptr;
 }
 
 napi_value UdmfClientImpl::TransformUdmfUnifiedData(RefPtr<UnifiedData>& UnifiedData)
 {
-    return nullptr;
+    auto engine = EngineHelper::GetCurrentEngine();
+    CHECK_NULL_RETURN(engine, nullptr);
+    NativeEngine* nativeEngine = engine->GetNativeEngine();
+    napi_env env = reinterpret_cast<napi_env>(nativeEngine);
+    auto unifiedData = AceType::DynamicCast<UnifiedDataImpl>(UnifiedData)->GetUnifiedData();
+    CHECK_NULL_RETURN(unifiedData, nullptr);
+    napi_value dataVal = nullptr;
+    UDMF::UnifiedDataNapi::NewInstance(env, unifiedData, dataVal);
+    CHECK_NULL_RETURN(dataVal, nullptr);
+    return dataVal;
 }
 
 napi_value UdmfClientImpl::TransformSummary(std::map<std::string, int64_t>& summary)
 {
-    return nullptr;
+    auto engine = EngineHelper::GetCurrentEngine();
+    CHECK_NULL_RETURN(engine, nullptr);
+    NativeEngine* nativeEngine = engine->GetNativeEngine();
+    napi_env env = reinterpret_cast<napi_env>(nativeEngine);
+    std::shared_ptr<UDMF::Summary> udmfSummary = std::make_shared<UDMF::Summary>();
+    CHECK_NULL_RETURN(udmfSummary, nullptr);
+    udmfSummary->totalSize = 0;
+    for (auto element : summary) {
+        udmfSummary->totalSize += element.second;
+    }
+    udmfSummary->summary = std::move(summary);
+    napi_value dataVal = nullptr;
+    UDMF::SummaryNapi::NewInstance(env, udmfSummary, dataVal);
+    CHECK_NULL_RETURN(dataVal, nullptr);
+    return dataVal;
 }
 
 RefPtr<UnifiedData> UdmfClientImpl::CreateUnifiedData()
 {
-    return nullptr;
+    return AceType::DynamicCast<UnifiedData>(AceType::MakeRefPtr<UnifiedDataImpl>());
 }
 
 int32_t UdmfClientImpl::SetData(const RefPtr<UnifiedData>& unifiedData, std::string& key)
 {
-    return -1;
+    CHECK_NULL_RETURN(unifiedData, UDMF::E_INVALID_PARAMETERS);
+    std::lock_guard<std::mutex> lock(unifiedDataLock_);
+    std::string groupIdStr = std::to_string(getGroupId());
+    std::string* keyRef_ = (std::string*)&key;
+    *keyRef_ = UNIFIED_KEY_SCHEMA + UNIFIED_INTENTION + groupIdStr;
+    RefPtr<UnifiedData>& udRef_ = const_cast<RefPtr<UnifiedData>&>(unifiedData);
+    unifiedDataMap_[*keyRef_] = udRef_;
+    return UDMF::E_OK;
 }
 
 int32_t UdmfClientImpl::GetData(const RefPtr<UnifiedData>& unifiedData, const std::string& key)
 {
-    return -1;
+    if (key.empty()) {
+        LOGE("GetData Failed, Invalid key");
+        return UDMF::E_INVALID_PARAMETERS;
+    }
+
+    std::lock_guard<std::mutex> lock(unifiedDataLock_);
+    RefPtr<UnifiedData>& udRef = const_cast<RefPtr<UnifiedData>&>(unifiedData);
+    auto iter = unifiedDataMap_.find(key);
+    if (iter == unifiedDataMap_.end()) {
+        LOGE("GetData Failed, Data is empty");
+        return UDMF::E_NOT_FOUND;
+    }
+    udRef = iter->second;
+    unifiedDataMap_.erase(iter);
+    return UDMF::E_OK;
 }
 
 int32_t UdmfClientImpl::GetSummary(std::string& key, std::map<std::string, int64_t>& summaryMap)
 {
-    return -1;
+    if (key.empty()) {
+        LOGE("GetSummary Failed, Invalid key");
+        return UDMF::E_INVALID_PARAMETERS;
+    }
+
+    std::lock_guard<std::mutex> lock(unifiedDataLock_);
+    auto iter = unifiedDataMap_.find(key);
+    if (iter == unifiedDataMap_.end()) {
+        LOGE("GetSummary Failed, Data is empty");
+        return UDMF::E_NOT_FOUND;
+    }
+
+    RefPtr<UnifiedData>& unifiedData = iter->second;
+    UDMF::Summary summary;
+    for (const auto& record : AceType::DynamicCast<UnifiedDataImpl>(unifiedData)->GetUnifiedData()->GetRecords()) {
+        int64_t recordSize = record->GetSize();
+        auto udType = UDMF::UtdUtils::GetUtdIdFromUtdEnum(record->GetType());
+        auto it = summary.summary.find(udType);
+        if (it == summary.summary.end()) {
+            summary.summary[udType] = recordSize;
+        } else {
+            summary.summary[udType] += recordSize;
+        }
+        summary.totalSize += recordSize;
+    }
+    summaryMap = summary.summary;
+    return UDMF::E_OK;
+}
+
+bool UdmfClientImpl::GetRemoteStatus(std::string& key)
+{
+    return false;
 }
 
 void UdmfClientImpl::AddFormRecord(
@@ -118,17 +232,46 @@ int32_t UdmfClientImpl::GetVideoRecordUri(const RefPtr<UnifiedData>& unifiedData
 
 std::pair<int32_t, std::string> UdmfClientImpl::GetErrorInfo(int32_t errorCode)
 {
-    return {};
+    switch (errorCode) {
+        case UDMF::E_NOT_FOUND:
+            return { ERROR_CODE_DRAG_DATA_NOT_FOUND, "GetData failed, data not found." };
+        default:
+            return { ERROR_CODE_DRAG_DATA_ERROR, "GetData failed, data error." };
+    }
 }
 
-std::shared_ptr<UnifiedData> UnifiedDataImpl::GetUnifiedData()
+std::shared_ptr<UDMF::UnifiedData> UnifiedDataImpl::GetUnifiedData()
 {
-    return nullptr;
+    if (unifiedData_ == nullptr) {
+        unifiedData_ = std::make_shared<UDMF::UnifiedData>();
+    }
+    return unifiedData_;
 }
 
-void UnifiedDataImpl::SetUnifiedData(std::shared_ptr<UnifiedData> unifiedData)
+void UnifiedDataImpl::SetUnifiedData(std::shared_ptr<UDMF::UnifiedData> unifiedData)
+{
+    unifiedData_ = unifiedData;
+}
+
+int64_t UnifiedDataImpl::GetSize()
+{
+    CHECK_NULL_RETURN(unifiedData_, 0);
+    return unifiedData_->GetRecords().size();
+}
+
+int32_t UdmfClientImpl::getGroupId()
+{
+    return groupId_++;
+}
+void UdmfClientImpl::AddSpanStringRecord(
+    const RefPtr<UnifiedData>& unifiedData, std::vector<uint8_t>& data)
 {
     return;
+}
+
+std::vector<uint8_t> UdmfClientImpl::GetSpanStringRecord(const RefPtr<UnifiedData>& unifiedData)
+{
+    return {};
 }
 
 } // namespace OHOS::Ace

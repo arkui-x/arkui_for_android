@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,6 +21,7 @@
 #include "adapter/android/capability/java/jni/clipboard/clipboard_jni.h"
 #include "adapter/android/capability/java/jni/editing/text_input_jni.h"
 #include "adapter/android/capability/java/jni/environment/environment_jni.h"
+#include "adapter/android/capability/java/jni/font/system_font_jni.h"
 #include "adapter/android/capability/java/jni/grantresult/grant_result_jni.h"
 #include "adapter/android/capability/java/jni/storage/storage_jni.h"
 #include "adapter/android/capability/java/jni/vibrator/vibrator_jni.h"
@@ -74,6 +75,11 @@ bool JniRegistry::Register()
         return false;
     }
 
+    if (!SystemFontJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register SystemFontJni");
+        return false;
+    }
+
     if (!StorageJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register StorageJni");
         return false;
@@ -109,11 +115,6 @@ bool JniRegistry::Register()
         return false;
     }
 
-    if (!GrantResultJni::Register(jniEnv)) {
-        LOGE("JNI Initialize: failed to register GrantResultJni");
-        return false;
-    }
-
     if (!SubWindowManagerJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register GrantResultJni");
         return false;
@@ -132,4 +133,14 @@ bool JniRegistry::Register()
     return true;
 }
 
+bool JniRegistry::ReleaseInstance(int32_t instanceId)
+{
+    TextInputJni::ReleaseInstance(instanceId);
+
+    BridgeJni::ReleaseInstance(instanceId);
+
+    AcePlatformPluginJni::ReleaseInstance(instanceId);
+
+    return true;
+}
 } // namespace OHOS::Ace::Platform

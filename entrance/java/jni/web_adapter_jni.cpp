@@ -201,18 +201,20 @@ std::map<std::string, std::string> GetStringMapFromJNI(const jobject& obj, std::
     jmethodID getValueMID = env->GetMethodID(entryClass, "getValue", "()Ljava/lang/Object;");
     while (env->CallBooleanMethod(iteratorObj, hasNextMID)) {
         jobject entryObj = env->CallObjectMethod(iteratorObj, nextMID);
-        jstring jsHeaderKey = (jstring) env->CallObjectMethod(entryObj, getKeyMID);
-        if (jsHeaderKey == NULL)
+        jstring jsHeaderKey = (jstring)env->CallObjectMethod(entryObj, getKeyMID);
+        if (jsHeaderKey == NULL) {
             continue;
-        const char *cHeaderKey = env->GetStringUTFChars(jsHeaderKey, JNI_FALSE);
+        }
+        const char* cHeaderKey = env->GetStringUTFChars(jsHeaderKey, JNI_FALSE);
         std::string headerKey(cHeaderKey);
 
-        jstring jsHeaderValue = (jstring) env->CallObjectMethod(entryObj, getValueMID);
-        if (jsHeaderValue == NULL)
+        jstring jsHeaderValue = (jstring)env->CallObjectMethod(entryObj, getValueMID);
+        if (jsHeaderValue == NULL) {
             continue;
-        const char *cHeaderValue = env->GetStringUTFChars(jsHeaderValue, JNI_FALSE);
+        }
+        const char* cHeaderValue = env->GetStringUTFChars(jsHeaderValue, JNI_FALSE);
         std::string headerValue(cHeaderValue);
-        returnMap.insert({headerKey, headerValue});
+        returnMap.insert({ headerKey, headerValue });
 
         env->ReleaseStringUTFChars(jsHeaderKey, cHeaderKey);
         env->ReleaseStringUTFChars(jsHeaderValue, cHeaderValue);
@@ -1026,7 +1028,8 @@ void WebAdapterJni::NativeOnObjectEvent(JNIEnv* env, jobject clazz, jstring id, 
     WebObjectEventManager::GetInstance().OnObjectEvent(eventId, eventParam, (void *)&object);
 }
 
-bool WebAdapterJni::NativeOnObjectEventWithBoolReturn(JNIEnv* env, jobject clazz, jstring id, jstring param, jobject object)
+bool WebAdapterJni::NativeOnObjectEventWithBoolReturn(
+    JNIEnv* env, jobject clazz, jstring id, jstring param, jobject object)
 {
     if (!env) {
         LOGW("env is null");
@@ -1044,6 +1047,6 @@ bool WebAdapterJni::NativeOnObjectEventWithBoolReturn(JNIEnv* env, jobject clazz
         eventParam = paramStr;
         env->ReleaseStringUTFChars(param, paramStr);
     }
-    return WebObjectEventManager::GetInstance().OnObjectEventWithBoolReturn(eventId, eventParam, (void *)&object);
+    return WebObjectEventManager::GetInstance().OnObjectEventWithBoolReturn(eventId, eventParam, (void*)&object);
 }
 } // namespace OHOS::Ace

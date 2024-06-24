@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,7 +28,7 @@ import java.nio.ByteOrder;
  * @since 1
  */
 public class AceEventProcessorAosp {
-    private static final int PONITER_FIELD_COUNT = 10;
+    private static final int PONITER_FIELD_COUNT = 13;
     private static final int MOUSE_FIELD_COUNT = 15;
 
     private static final int BYTES_PER_FIELD = 8;
@@ -78,6 +78,19 @@ public class AceEventProcessorAosp {
         int META = 8;
     };
 
+    private interface SourceTool {
+        int UNKNOWN = 0;
+        int FINGER = 1;
+        int PEN = 2;
+        int RUBBER = 3;
+        int BRUSH = 4;
+        int PENCIL = 5;
+        int AIRBRUSH = 6;
+        int MOUSE = 7;
+        int LENS = 8;
+        int TOUCHPAD = 9;
+    };
+
     private AceEventProcessorAosp() {
     }
 
@@ -101,16 +114,9 @@ public class AceEventProcessorAosp {
         int actionMasked = event.getActionMasked();
         int actionType = actionMaskedToActionType(actionMasked);
 
-        boolean upOrDown = actionMasked == MotionEvent.ACTION_DOWN || actionMasked == MotionEvent.ACTION_POINTER_DOWN
-                || actionMasked == MotionEvent.ACTION_UP || actionMasked == MotionEvent.ACTION_POINTER_UP;
-        if (upOrDown) {
-            addEventToBuffer(event, event.getActionIndex(), actionType, packet);
-        } else {
-            for (int index = 0; index < pointerCount; index++) {
-                addEventToBuffer(event, index, actionType, packet);
-            }
+        for (int index = 0; index < pointerCount; index++) {
+            addEventToBuffer(event, index, actionType, packet);
         }
-
         // verify the size of packet.
         if (packet.position() % (PONITER_FIELD_COUNT * BYTES_PER_FIELD) != 0) {
             throw new AssertionError("Packet position is not multiple of pointer length");
@@ -123,19 +129,25 @@ public class AceEventProcessorAosp {
         if (actionType == ActionType.UNKNOWN) {
             return;
         }
-        long timeStamp = event.getEventTime() * 1000;
 
-        packet.putLong(timeStamp);
-        packet.putLong(actionType);
         packet.putLong(event.getPointerId(actionIndex));
+        packet.putLong(actionType);
         packet.putDouble(event.getX(actionIndex));
         packet.putDouble(event.getY(actionIndex));
-
+        packet.putDouble(event.getTouchMinor(actionIndex) * 2.0);
+        packet.putDouble(event.getTouchMajor(actionIndex) * 2.0);
         packet.putDouble(event.getPressure(actionIndex));
-        packet.putDouble(0.0);
-        packet.putDouble(event.getSize(actionIndex));
-        packet.putLong(eventSourceTransKeySource(event.getSource()));
         packet.putLong(event.getDeviceId());
+        packet.putLong(event.getDownTime() * 1000);
+        packet.putLong(event.getEventTime() * 1000);
+        packet.putLong(eventSourceTransKeySource(event.getSource()));
+        packet.putLong(ToolTypeTransSourceTool(event.getToolType(actionIndex)));
+        int actionPoint = 1;
+        if ((actionType == ActionType.UP || actionType == ActionType.DOWN) &&
+            actionIndex != event.getActionIndex()) {
+            actionPoint = 0;
+        }
+        packet.putLong(actionPoint);
     }
 
     /**
@@ -284,10 +296,32 @@ public class AceEventProcessorAosp {
             case InputDevice.SOURCE_TOUCHPAD: // 0x00100008
                 keySource = KeySourceType.TOUCH_PAD;
                 break;
-            default: 
+            default:
+                keySource = KeySourceType.TOUCH;
                 break; 
         }
         return keySource;
+    }
+
+    public static int ToolTypeTransSourceTool(int toolType) {
+        int sourceTool = SourceTool.UNKNOWN;
+        switch(toolType) {
+            case MotionEvent.TOOL_TYPE_ERASER:
+                sourceTool = SourceTool.UNKNOWN;
+                break;
+            case MotionEvent.TOOL_TYPE_FINGER:
+                sourceTool = SourceTool.FINGER;
+                break;
+            case MotionEvent.TOOL_TYPE_MOUSE:
+                sourceTool = SourceTool.MOUSE;
+                break;
+            case MotionEvent.TOOL_TYPE_STYLUS: 
+                sourceTool = SourceTool.PEN;
+                break;
+            default: 
+                break; 
+        }
+        return sourceTool;
     }
 
     public static int getModifierKeys(KeyEvent event) {
@@ -332,7 +366,7 @@ public class AceEventProcessorAosp {
                 actionType = MouseActionType.HOVER_EXIT;
                 break;
             case MotionEvent.ACTION_HOVER_MOVE:
-                actionType = MouseActionType.HOVER_MOVE;
+                actionType = MouseActionType.MOVE;
                 break;
             default:
                 break;

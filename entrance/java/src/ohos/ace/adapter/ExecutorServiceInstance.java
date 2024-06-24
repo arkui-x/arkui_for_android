@@ -28,10 +28,10 @@ public class ExecutorServiceInstance {
 
     private static volatile ExecutorServiceInstance INSTANCE = null;
 
-    private static ExecutorService executor = null;
+    private final ExecutorService executor;
 
     private ExecutorServiceInstance() {
-        executor = Executors.newWorkStealingPool();
+        executor = Executors.newCachedThreadPool();
     }
 
     /**
@@ -53,14 +53,11 @@ public class ExecutorServiceInstance {
     }
 
     /**
-     * get object of ExecutorService.
+     * Get object of ExecutorService.
      *
      * @return object of ExecutorService.
      */
-    public static ExecutorService getExecutorService() {
-        if (executor == null) {
-            getInstance();
-        }
+    public ExecutorService getExecutorService() {
         return executor;
     }
 }

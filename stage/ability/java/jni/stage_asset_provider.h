@@ -45,6 +45,11 @@ public:
         return assetProvider_->GetAsMapping(assetName);
     }
 
+    std::vector<std::unique_ptr<Ace::AssetMapping>> GetAsMappingFromI18n(const std::string& assetName) const override
+    {
+        return {};
+    }
+
     bool IsValid() const override
     {
         if (!assetProvider_) {
@@ -125,6 +130,7 @@ public:
     void CopyHspResourcePath(const std::string& moduleName);
     void CopyNativeLibToAppDataModuleDir(const std::string& bundleName);
     void SetNativeLibPaths(const std::string& bundleName, const std::vector<std::string>& moduleNames);
+    std::vector<uint8_t> GetAotBuffer(const std::string &fileName);
 
 private:
     bool MakeMultipleDir(const std::string& path);

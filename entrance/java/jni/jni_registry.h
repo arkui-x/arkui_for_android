@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,8 @@
 #ifndef FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_JNI_REGISTRY_H
 #define FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_JNI_REGISTRY_H
 
+#include <stdint.h>
+
 #include "base/utils/macros.h"
 
 namespace OHOS::Ace::Platform {
@@ -23,6 +25,7 @@ namespace OHOS::Ace::Platform {
 class ACE_EXPORT JniRegistry {
 public:
     static bool Register();
+    static bool ReleaseInstance(int32_t instanceId);
 };
 
 } // namespace OHOS::Ace::Platform

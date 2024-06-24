@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,7 +16,11 @@
 #ifndef FOUNDATION_ACE_ADAPTER_PREVIEW_ENTRANCE_UDMF_IMPL_H
 #define FOUNDATION_ACE_ADAPTER_PREVIEW_ENTRANCE_UDMF_IMPL_H
 
+#include <map>
 #include <memory>
+
+#include "unified_data.h"
+#include "unified_data_napi.h"
 
 #include "base/memory/ace_type.h"
 #include "core/common/udmf/udmf_client.h"
@@ -28,12 +32,15 @@ class UdmfClientImpl : public UdmfClient {
 
 public:
     RefPtr<UnifiedData> TransformUnifiedData(napi_value napiValue) override;
+    RefPtr<UnifiedData> TransformUnifiedDataForNative(void* rawData) override;
+    void* TransformUnifiedDataPtr(RefPtr<UnifiedData>& unifiedData) override;
     napi_value TransformUdmfUnifiedData(RefPtr<UnifiedData>& UnifiedData) override;
     napi_value TransformSummary(std::map<std::string, int64_t>& summary) override;
     RefPtr<UnifiedData> CreateUnifiedData() override;
     int32_t SetData(const RefPtr<UnifiedData>& unifiedData, std::string& key) override;
     int32_t GetData(const RefPtr<UnifiedData>& unifiedData, const std::string& key) override;
     int32_t GetSummary(std::string& key, std::map<std::string, int64_t>& summaryMap) override;
+    bool GetRemoteStatus(std::string& key) override;
     void AddFormRecord(
         const RefPtr<UnifiedData>& unifiedData, int32_t formId, const RequestFormInfo& cardInfo) override;
     void AddLinkRecord(
@@ -53,6 +60,15 @@ public:
     std::vector<std::string> GetPlainTextRecords(const RefPtr<UnifiedData>& unifiedData) override;
     int32_t GetVideoRecordUri(const RefPtr<UnifiedData>& unifiedData, std::string& uri) override;
     std::pair<int32_t, std::string> GetErrorInfo(int32_t errorCode) override;
+
+private:
+    static std::mutex unifiedDataLock_;
+    static std::map<std::string, RefPtr<UnifiedData>> unifiedDataMap_;
+    static int32_t groupId_;
+    int32_t getGroupId();
+    void AddSpanStringRecord(
+        const RefPtr<UnifiedData>& unifiedData, std::vector<uint8_t>& data) override;
+    std::vector<uint8_t> GetSpanStringRecord(const RefPtr<UnifiedData>& unifiedData) override;
 };
 
 class UnifiedDataImpl : public UnifiedData {
@@ -63,8 +79,11 @@ public:
     ~UnifiedDataImpl() = default;
 
     int64_t GetSize() override;
-    std::shared_ptr<UnifiedData> GetUnifiedData();
-    void SetUnifiedData(std::shared_ptr<UnifiedData> unifiedData);
+    std::shared_ptr<UDMF::UnifiedData> GetUnifiedData();
+    void SetUnifiedData(std::shared_ptr<UDMF::UnifiedData> unifiedData);
+
+private:
+    std::shared_ptr<UDMF::UnifiedData> unifiedData_;
 };
 
 } // namespace OHOS::Ace

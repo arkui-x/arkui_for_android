@@ -36,16 +36,16 @@ bool ImageAnalyzerMgr::IsImageAnalyzerSupported()
 }
 
 void ImageAnalyzerMgr::BuildNodeFunc(
-    napi_value pixelMap, ImageAnalyzerConfig* config, ImageAnalyzerInnerConfig* uiConfig, void** overlayData)
+    void* pixelMap, void* config, ImageAnalyzerInnerConfig* uiConfig, void** overlayData)
 {
 }
 
 void ImageAnalyzerMgr::UpdateImage(
-    void** overlayData, napi_value pixelMap, ImageAnalyzerConfig* config, ImageAnalyzerInnerConfig* uiConfig)
+    void** overlayData, void* pixelMap, void* config, ImageAnalyzerInnerConfig* uiConfig)
 {
 }
 
-void ImageAnalyzerMgr::UpdateConfig(void** overlayData, ImageAnalyzerConfig* config)
+void ImageAnalyzerMgr::UpdateConfig(void** overlayData, void* config)
 {
 }
 

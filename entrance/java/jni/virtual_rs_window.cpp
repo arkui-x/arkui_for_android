@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,15 +19,19 @@
 #include <memory>
 
 #include "ability_context.h"
+#include "display_info_jni.h"
 #include "foundation/appframework/arkui/uicontent/ui_content.h"
 #include "hilog.h"
+#include "mmi_event_convertor.h"
 #include "napi/native_api.h"
 #include "render_service_client/core/pipeline/rs_render_thread.h"
 #include "subwindow_manager_jni.h"
 #include "transaction/rs_interfaces.h"
 #include "window_view_adapter.h"
+#include "window_view_jni.h"
 
 #include "adapter/android/entrance/java/jni/ace_env_jni.h"
+#include "adapter/android/entrance/java/jni/interaction/interaction_impl.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/log/log.h"
 #include "base/utils/utils.h"
@@ -36,122 +40,128 @@
 using namespace OHOS::Ace::Platform;
 
 namespace OHOS::Rosen {
+namespace {
+static constexpr Rect EMPTY_RECT = {0, 0, 0, 0};
+static constexpr int32_t ORIENTATION_LANDSCAPE = 0;
+static constexpr int32_t ORIENTATION_PORTRAIT = 1;
+}  // namespace
 void DummyWindowRelease(Window* window)
 {
     window->DecStrongRef(window);
     LOGI("Rosenwindow rsWindow_Window: dummy release");
 }
 
-Ace::KeyCode KeyCodeToAceKeyCode(int keyCode) {
+Ace::KeyCode KeyCodeToAceKeyCode(int keyCode)
+{
     Ace::KeyCode aceKeyCode = Ace::KeyCode::KEY_UNKNOWN;
     const static std::map<int32_t, Ace::KeyCode> TO_OHOS_KEYCODE_MAP = {
-        {4      /* KEYCODE_BACK */,               Ace::KeyCode::KEY_ESCAPE          },
-        {7      /* KEYCODE_0 */,                  Ace::KeyCode::KEY_0               },
-        {8      /* KEYCODE_1 */,                  Ace::KeyCode::KEY_1               },
-        {9      /* KEYCODE_2 */,                  Ace::KeyCode::KEY_2               },
-        {10     /* KEYCODE_3 */,                  Ace::KeyCode::KEY_3               },
-        {11     /* KEYCODE_4 */,                  Ace::KeyCode::KEY_4               },
-        {12     /* KEYCODE_5 */,                  Ace::KeyCode::KEY_5               },
-        {13     /* KEYCODE_6 */,                  Ace::KeyCode::KEY_6               },
-        {14     /* KEYCODE_7 */,                  Ace::KeyCode::KEY_7               },
-        {15     /* KEYCODE_8 */,                  Ace::KeyCode::KEY_8               },
-        {16     /* KEYCODE_9 */,                  Ace::KeyCode::KEY_9               },
-        {19     /* KEYCODE_DPAD_UP */,            Ace::KeyCode::KEY_DPAD_UP         },
-        {20     /* KEYCODE_DPAD_DOWN */,          Ace::KeyCode::KEY_DPAD_DOWN       },
-        {21     /* KEYCODE_DPAD_LEFT */,          Ace::KeyCode::KEY_DPAD_LEFT       },
-        {22     /* KEYCODE_DPAD_RIGHT */,         Ace::KeyCode::KEY_DPAD_RIGHT      },
-        {23     /* KEYCODE_DPAD_CENTER */,        Ace::KeyCode::KEY_DPAD_CENTER     },
-        {29     /* KEYCODE_A */,                  Ace::KeyCode::KEY_A               },
-        {30     /* KEYCODE_B */,                  Ace::KeyCode::KEY_B               },
-        {31     /* KEYCODE_C */,                  Ace::KeyCode::KEY_C               },
-        {32     /* KEYCODE_D */,                  Ace::KeyCode::KEY_D               },
-        {33     /* KEYCODE_E */,                  Ace::KeyCode::KEY_E               },
-        {34     /* KEYCODE_F */,                  Ace::KeyCode::KEY_F               },
-        {35     /* KEYCODE_G */,                  Ace::KeyCode::KEY_G               },
-        {36     /* KEYCODE_H */,                  Ace::KeyCode::KEY_H               },
-        {37     /* KEYCODE_I */,                  Ace::KeyCode::KEY_I               },
-        {38     /* KEYCODE_J */,                  Ace::KeyCode::KEY_J               },
-        {39     /* KEYCODE_K */,                  Ace::KeyCode::KEY_K               },
-        {40     /* KEYCODE_L */,                  Ace::KeyCode::KEY_L               },
-        {41     /* KEYCODE_M */,                  Ace::KeyCode::KEY_M               },
-        {42     /* KEYCODE_N */,                  Ace::KeyCode::KEY_N               },
-        {43     /* KEYCODE_O */,                  Ace::KeyCode::KEY_O               },
-        {44     /* KEYCODE_P */,                  Ace::KeyCode::KEY_P               },
-        {45     /* KEYCODE_Q */,                  Ace::KeyCode::KEY_Q               },
-        {46     /* KEYCODE_R */,                  Ace::KeyCode::KEY_R               },
-        {47     /* KEYCODE_S */,                  Ace::KeyCode::KEY_S               },
-        {48     /* KEYCODE_T */,                  Ace::KeyCode::KEY_T               },
-        {49     /* KEYCODE_U */,                  Ace::KeyCode::KEY_U               },
-        {50     /* KEYCODE_V */,                  Ace::KeyCode::KEY_V               },
-        {51     /* KEYCODE_W */,                  Ace::KeyCode::KEY_W               },
-        {52     /* KEYCODE_X */,                  Ace::KeyCode::KEY_X               },
-        {53     /* KEYCODE_Y */,                  Ace::KeyCode::KEY_Y               },
-        {54     /* KEYCODE_Z */,                  Ace::KeyCode::KEY_Z               },
-        {55     /* KEYCODE_COMMA */,              Ace::KeyCode::KEY_COMMA           },
-        {56     /* KEYCODE_PERIOD */,             Ace::KeyCode::KEY_PERIOD          },
-        {57     /* KEYCODE_ALT_LEFT */,           Ace::KeyCode::KEY_ALT_LEFT        },
-        {58     /* KEYCODE_ALT_RIGHT */,          Ace::KeyCode::KEY_ALT_RIGHT       },
-        {59     /* KEYCODE_SHIFT_LEFT */,         Ace::KeyCode::KEY_SHIFT_LEFT      },
-        {60     /* KEYCODE_SHIFT_RIGHT */,        Ace::KeyCode::KEY_SHIFT_RIGHT     },
-        {61     /* KEYCODE_TAB */,                Ace::KeyCode::KEY_TAB             },
-        {62     /* KEYCODE_SPACE */,              Ace::KeyCode::KEY_SPACE           },
-        {66     /* KEYCODE_ENTER */,              Ace::KeyCode::KEY_ENTER           },
-        {67     /* KEYCODE_DEL */,                Ace::KeyCode::KEY_DEL             },
-        {68     /* KEYCODE_GRAVE */,              Ace::KeyCode::KEY_GRAVE           },
-        {69     /* KEYCODE_MINUS */,              Ace::KeyCode::KEY_MINUS           },
-        {70     /* KEYCODE_EQUALS */,             Ace::KeyCode::KEY_EQUALS          },
-        {71     /* KEYCODE_LEFT_BRACKET */,       Ace::KeyCode::KEY_LEFT_BRACKET    },
-        {72     /* KEYCODE_RIGHT_BRACKET */,      Ace::KeyCode::KEY_RIGHT_BRACKET   },
-        {73     /* KEYCODE_BACKSLASH */,          Ace::KeyCode::KEY_BACKSLASH       },
-        {74     /* KEYCODE_SEMICOLON */,          Ace::KeyCode::KEY_SEMICOLON       },
-        {75     /* KEYCODE_APOSTROPHE */,         Ace::KeyCode::KEY_APOSTROPHE      },
-        {76     /* KEYCODE_SLASH */,              Ace::KeyCode::KEY_SLASH           },
-        {82     /* KEYCODE_MENU */,               (Ace::KeyCode)2466                },
-        {84     /* KEYCODE_SEARCH */,             Ace::KeyCode::KEY_SEARCH          },
-        {92     /* KEYCODE_PAGE_UP */,            Ace::KeyCode::KEY_PAGE_UP         },
-        {93     /* KEYCODE_PAGE_DOWN */,          Ace::KeyCode::KEY_PAGE_DOWN       },
-        {111    /* KEYCODE_ESCAPE */,             Ace::KeyCode::KEY_ESCAPE          },
-        {112    /* KEYCODE_FORWARD_DEL */,        Ace::KeyCode::KEY_FORWARD_DEL     },
-        {113    /* KEYCODE_CTRL_LEFT */,          Ace::KeyCode::KEY_CTRL_LEFT       },
-        {114    /* KEYCODE_CTRL_RIGHT */,         Ace::KeyCode::KEY_CTRL_RIGHT      },
-        {115    /* KEYCODE_CAPS_LOCK */,          Ace::KeyCode::KEY_CAPS_LOCK       },
-        {116    /* KEYCODE_SCROLL_LOCK */,        Ace::KeyCode::KEY_SCROLL_LOCK     },
-        {117    /* KEYCODE_META_LEFT */,          Ace::KeyCode::KEY_META_LEFT       },
-        {118    /* KEYCODE_META_RIGHT */,         Ace::KeyCode::KEY_META_RIGHT      },
-        {120    /* KEYCODE_SYSRQ */,              Ace::KeyCode::KEY_SYSRQ           },
-        {121    /* KEYCODE_BREAK */,              Ace::KeyCode::KEY_BREAK           },
-        {122    /* KEYCODE_MOVE_HOME */,          Ace::KeyCode::KEY_MOVE_HOME       },
-        {123    /* KEYCODE_MOVE_END */,           Ace::KeyCode::KEY_MOVE_END        },
-        {124    /* KEYCODE_INSERT */,             Ace::KeyCode::KEY_INSERT          },
-        {131    /* KEYCODE_F1 */,                 Ace::KeyCode::KEY_F1              },
-        {132    /* KEYCODE_F2 */,                 Ace::KeyCode::KEY_F2              },
-        {133    /* KEYCODE_F3 */,                 Ace::KeyCode::KEY_F3              },
-        {134    /* KEYCODE_F4 */,                 Ace::KeyCode::KEY_F4              },
-        {135    /* KEYCODE_F5 */,                 Ace::KeyCode::KEY_F5              },
-        {136    /* KEYCODE_F6 */,                 Ace::KeyCode::KEY_F6              },
-        {137    /* KEYCODE_F7 */,                 Ace::KeyCode::KEY_F7              },
-        {138    /* KEYCODE_F8 */,                 Ace::KeyCode::KEY_F8              },
-        {139    /* KEYCODE_F9 */,                 Ace::KeyCode::KEY_F9              },
-        {140    /* KEYCODE_F10 */,                Ace::KeyCode::KEY_F10             },
-        {141    /* KEYCODE_F11 */,                Ace::KeyCode::KEY_F11             },
-        {142    /* KEYCODE_F12 */,                Ace::KeyCode::KEY_F12             },
-        {143    /* KEYCODE_NUM_LOCK */,           Ace::KeyCode::KEY_NUM_LOCK        },
-        {144    /* KEYCODE_NUMPAD_0 */,           Ace::KeyCode::KEY_NUMPAD_0        },
-        {145    /* KEYCODE_NUMPAD_1 */,           Ace::KeyCode::KEY_NUMPAD_1        },
-        {146    /* KEYCODE_NUMPAD_2 */,           Ace::KeyCode::KEY_NUMPAD_2        },
-        {147    /* KEYCODE_NUMPAD_3 */,           Ace::KeyCode::KEY_NUMPAD_3        },
-        {148    /* KEYCODE_NUMPAD_4 */,           Ace::KeyCode::KEY_NUMPAD_4        },
-        {149    /* KEYCODE_NUMPAD_5 */,           Ace::KeyCode::KEY_NUMPAD_5        },
-        {150    /* KEYCODE_NUMPAD_6 */,           Ace::KeyCode::KEY_NUMPAD_6        },
-        {151    /* KEYCODE_NUMPAD_7 */,           Ace::KeyCode::KEY_NUMPAD_7        },
-        {152    /* KEYCODE_NUMPAD_8 */,           Ace::KeyCode::KEY_NUMPAD_8        },
-        {153    /* KEYCODE_NUMPAD_9 */,           Ace::KeyCode::KEY_NUMPAD_9        },
-        {154    /* KEYCODE_NUMPAD_DIVIDE */,      Ace::KeyCode::KEY_NUMPAD_DIVIDE   },
-        {155    /* KEYCODE_NUMPAD_MULTIPLY */,    Ace::KeyCode::KEY_NUMPAD_MULTIPLY },
-        {156    /* KEYCODE_NUMPAD_SUBTRACT */,    Ace::KeyCode::KEY_NUMPAD_SUBTRACT },
-        {157    /* KEYCODE_NUMPAD_ADD */,         Ace::KeyCode::KEY_NUMPAD_ADD      },
-        {158    /* KEYCODE_NUMPAD_DOT */,         Ace::KeyCode::KEY_NUMPAD_DOT      },
-        {160    /* KEYCODE_NUMPAD_ENTER */,       Ace::KeyCode::KEY_NUMPAD_ENTER    },
+        { 4 /* KEYCODE_BACK */, Ace::KeyCode::KEY_ESCAPE },
+        { 7 /* KEYCODE_0 */, Ace::KeyCode::KEY_0 },
+        { 8 /* KEYCODE_1 */, Ace::KeyCode::KEY_1 },
+        { 9 /* KEYCODE_2 */, Ace::KeyCode::KEY_2 },
+        { 10 /* KEYCODE_3 */, Ace::KeyCode::KEY_3 },
+        { 11 /* KEYCODE_4 */, Ace::KeyCode::KEY_4 },
+        { 12 /* KEYCODE_5 */, Ace::KeyCode::KEY_5 },
+        { 13 /* KEYCODE_6 */, Ace::KeyCode::KEY_6 },
+        { 14 /* KEYCODE_7 */, Ace::KeyCode::KEY_7 },
+        { 15 /* KEYCODE_8 */, Ace::KeyCode::KEY_8 },
+        { 16 /* KEYCODE_9 */, Ace::KeyCode::KEY_9 },
+        { 19 /* KEYCODE_DPAD_UP */, Ace::KeyCode::KEY_DPAD_UP },
+        { 20 /* KEYCODE_DPAD_DOWN */, Ace::KeyCode::KEY_DPAD_DOWN },
+        { 21 /* KEYCODE_DPAD_LEFT */, Ace::KeyCode::KEY_DPAD_LEFT },
+        { 22 /* KEYCODE_DPAD_RIGHT */, Ace::KeyCode::KEY_DPAD_RIGHT },
+        { 23 /* KEYCODE_DPAD_CENTER */, Ace::KeyCode::KEY_DPAD_CENTER },
+        { 29 /* KEYCODE_A */, Ace::KeyCode::KEY_A },
+        { 30 /* KEYCODE_B */, Ace::KeyCode::KEY_B },
+        { 31 /* KEYCODE_C */, Ace::KeyCode::KEY_C },
+        { 32 /* KEYCODE_D */, Ace::KeyCode::KEY_D },
+        { 33 /* KEYCODE_E */, Ace::KeyCode::KEY_E },
+        { 34 /* KEYCODE_F */, Ace::KeyCode::KEY_F },
+        { 35 /* KEYCODE_G */, Ace::KeyCode::KEY_G },
+        { 36 /* KEYCODE_H */, Ace::KeyCode::KEY_H },
+        { 37 /* KEYCODE_I */, Ace::KeyCode::KEY_I },
+        { 38 /* KEYCODE_J */, Ace::KeyCode::KEY_J },
+        { 39 /* KEYCODE_K */, Ace::KeyCode::KEY_K },
+        { 40 /* KEYCODE_L */, Ace::KeyCode::KEY_L },
+        { 41 /* KEYCODE_M */, Ace::KeyCode::KEY_M },
+        { 42 /* KEYCODE_N */, Ace::KeyCode::KEY_N },
+        { 43 /* KEYCODE_O */, Ace::KeyCode::KEY_O },
+        { 44 /* KEYCODE_P */, Ace::KeyCode::KEY_P },
+        { 45 /* KEYCODE_Q */, Ace::KeyCode::KEY_Q },
+        { 46 /* KEYCODE_R */, Ace::KeyCode::KEY_R },
+        { 47 /* KEYCODE_S */, Ace::KeyCode::KEY_S },
+        { 48 /* KEYCODE_T */, Ace::KeyCode::KEY_T },
+        { 49 /* KEYCODE_U */, Ace::KeyCode::KEY_U },
+        { 50 /* KEYCODE_V */, Ace::KeyCode::KEY_V },
+        { 51 /* KEYCODE_W */, Ace::KeyCode::KEY_W },
+        { 52 /* KEYCODE_X */, Ace::KeyCode::KEY_X },
+        { 53 /* KEYCODE_Y */, Ace::KeyCode::KEY_Y },
+        { 54 /* KEYCODE_Z */, Ace::KeyCode::KEY_Z },
+        { 55 /* KEYCODE_COMMA */, Ace::KeyCode::KEY_COMMA },
+        { 56 /* KEYCODE_PERIOD */, Ace::KeyCode::KEY_PERIOD },
+        { 57 /* KEYCODE_ALT_LEFT */, Ace::KeyCode::KEY_ALT_LEFT },
+        { 58 /* KEYCODE_ALT_RIGHT */, Ace::KeyCode::KEY_ALT_RIGHT },
+        { 59 /* KEYCODE_SHIFT_LEFT */, Ace::KeyCode::KEY_SHIFT_LEFT },
+        { 60 /* KEYCODE_SHIFT_RIGHT */, Ace::KeyCode::KEY_SHIFT_RIGHT },
+        { 61 /* KEYCODE_TAB */, Ace::KeyCode::KEY_TAB },
+        { 62 /* KEYCODE_SPACE */, Ace::KeyCode::KEY_SPACE },
+        { 66 /* KEYCODE_ENTER */, Ace::KeyCode::KEY_ENTER },
+        { 67 /* KEYCODE_DEL */, Ace::KeyCode::KEY_DEL },
+        { 68 /* KEYCODE_GRAVE */, Ace::KeyCode::KEY_GRAVE },
+        { 69 /* KEYCODE_MINUS */, Ace::KeyCode::KEY_MINUS },
+        { 70 /* KEYCODE_EQUALS */, Ace::KeyCode::KEY_EQUALS },
+        { 71 /* KEYCODE_LEFT_BRACKET */, Ace::KeyCode::KEY_LEFT_BRACKET },
+        { 72 /* KEYCODE_RIGHT_BRACKET */, Ace::KeyCode::KEY_RIGHT_BRACKET },
+        { 73 /* KEYCODE_BACKSLASH */, Ace::KeyCode::KEY_BACKSLASH },
+        { 74 /* KEYCODE_SEMICOLON */, Ace::KeyCode::KEY_SEMICOLON },
+        { 75 /* KEYCODE_APOSTROPHE */, Ace::KeyCode::KEY_APOSTROPHE },
+        { 76 /* KEYCODE_SLASH */, Ace::KeyCode::KEY_SLASH },
+        { 82 /* KEYCODE_MENU */, (Ace::KeyCode)2466 },
+        { 84 /* KEYCODE_SEARCH */, Ace::KeyCode::KEY_SEARCH },
+        { 92 /* KEYCODE_PAGE_UP */, Ace::KeyCode::KEY_PAGE_UP },
+        { 93 /* KEYCODE_PAGE_DOWN */, Ace::KeyCode::KEY_PAGE_DOWN },
+        { 111 /* KEYCODE_ESCAPE */, Ace::KeyCode::KEY_ESCAPE },
+        { 112 /* KEYCODE_FORWARD_DEL */, Ace::KeyCode::KEY_FORWARD_DEL },
+        { 113 /* KEYCODE_CTRL_LEFT */, Ace::KeyCode::KEY_CTRL_LEFT },
+        { 114 /* KEYCODE_CTRL_RIGHT */, Ace::KeyCode::KEY_CTRL_RIGHT },
+        { 115 /* KEYCODE_CAPS_LOCK */, Ace::KeyCode::KEY_CAPS_LOCK },
+        { 116 /* KEYCODE_SCROLL_LOCK */, Ace::KeyCode::KEY_SCROLL_LOCK },
+        { 117 /* KEYCODE_META_LEFT */, Ace::KeyCode::KEY_META_LEFT },
+        { 118 /* KEYCODE_META_RIGHT */, Ace::KeyCode::KEY_META_RIGHT },
+        { 120 /* KEYCODE_SYSRQ */, Ace::KeyCode::KEY_SYSRQ },
+        { 121 /* KEYCODE_BREAK */, Ace::KeyCode::KEY_BREAK },
+        { 122 /* KEYCODE_MOVE_HOME */, Ace::KeyCode::KEY_MOVE_HOME },
+        { 123 /* KEYCODE_MOVE_END */, Ace::KeyCode::KEY_MOVE_END },
+        { 124 /* KEYCODE_INSERT */, Ace::KeyCode::KEY_INSERT },
+        { 131 /* KEYCODE_F1 */, Ace::KeyCode::KEY_F1 },
+        { 132 /* KEYCODE_F2 */, Ace::KeyCode::KEY_F2 },
+        { 133 /* KEYCODE_F3 */, Ace::KeyCode::KEY_F3 },
+        { 134 /* KEYCODE_F4 */, Ace::KeyCode::KEY_F4 },
+        { 135 /* KEYCODE_F5 */, Ace::KeyCode::KEY_F5 },
+        { 136 /* KEYCODE_F6 */, Ace::KeyCode::KEY_F6 },
+        { 137 /* KEYCODE_F7 */, Ace::KeyCode::KEY_F7 },
+        { 138 /* KEYCODE_F8 */, Ace::KeyCode::KEY_F8 },
+        { 139 /* KEYCODE_F9 */, Ace::KeyCode::KEY_F9 },
+        { 140 /* KEYCODE_F10 */, Ace::KeyCode::KEY_F10 },
+        { 141 /* KEYCODE_F11 */, Ace::KeyCode::KEY_F11 },
+        { 142 /* KEYCODE_F12 */, Ace::KeyCode::KEY_F12 },
+        { 143 /* KEYCODE_NUM_LOCK */, Ace::KeyCode::KEY_NUM_LOCK },
+        { 144 /* KEYCODE_NUMPAD_0 */, Ace::KeyCode::KEY_NUMPAD_0 },
+        { 145 /* KEYCODE_NUMPAD_1 */, Ace::KeyCode::KEY_NUMPAD_1 },
+        { 146 /* KEYCODE_NUMPAD_2 */, Ace::KeyCode::KEY_NUMPAD_2 },
+        { 147 /* KEYCODE_NUMPAD_3 */, Ace::KeyCode::KEY_NUMPAD_3 },
+        { 148 /* KEYCODE_NUMPAD_4 */, Ace::KeyCode::KEY_NUMPAD_4 },
+        { 149 /* KEYCODE_NUMPAD_5 */, Ace::KeyCode::KEY_NUMPAD_5 },
+        { 150 /* KEYCODE_NUMPAD_6 */, Ace::KeyCode::KEY_NUMPAD_6 },
+        { 151 /* KEYCODE_NUMPAD_7 */, Ace::KeyCode::KEY_NUMPAD_7 },
+        { 152 /* KEYCODE_NUMPAD_8 */, Ace::KeyCode::KEY_NUMPAD_8 },
+        { 153 /* KEYCODE_NUMPAD_9 */, Ace::KeyCode::KEY_NUMPAD_9 },
+        { 154 /* KEYCODE_NUMPAD_DIVIDE */, Ace::KeyCode::KEY_NUMPAD_DIVIDE },
+        { 155 /* KEYCODE_NUMPAD_MULTIPLY */, Ace::KeyCode::KEY_NUMPAD_MULTIPLY },
+        { 156 /* KEYCODE_NUMPAD_SUBTRACT */, Ace::KeyCode::KEY_NUMPAD_SUBTRACT },
+        { 157 /* KEYCODE_NUMPAD_ADD */, Ace::KeyCode::KEY_NUMPAD_ADD },
+        { 158 /* KEYCODE_NUMPAD_DOT */, Ace::KeyCode::KEY_NUMPAD_DOT },
+        { 160 /* KEYCODE_NUMPAD_ENTER */, Ace::KeyCode::KEY_NUMPAD_ENTER },
     };
     auto checkIter = TO_OHOS_KEYCODE_MAP.find(keyCode);
     if (checkIter != TO_OHOS_KEYCODE_MAP.end()) {
@@ -169,7 +179,15 @@ std::map<uint32_t, std::vector<std::shared_ptr<Window>>> Window::subWindowMap_;
 std::map<std::string, std::pair<uint32_t, std::shared_ptr<Window>>> Window::windowMap_;
 std::map<uint32_t, std::vector<sptr<IOccupiedAreaChangeListener>>> Window::occupiedAreaChangeListeners_;
 std::map<uint32_t, std::vector<sptr<IWindowLifeCycle>>> Window::lifecycleListeners_;
+std::map<uint32_t, std::vector<sptr<IWindowChangeListener>>> Window::windowChangeListeners_;
+std::map<uint32_t, std::vector<sptr<ITouchOutsideListener>>> Window::touchOutsideListeners_;
+std::map<uint32_t, std::vector<sptr<IWindowSurfaceNodeListener>>> Window::surfaceNodeListeners_;
 std::recursive_mutex Window::globalMutex_;
+std::recursive_mutex g_sysBarPropMapMutex;
+uint32_t g_KeyboardHeight = 0;
+bool g_IsFullScreen = false;
+bool g_IsStatusBarHide = false;
+bool g_IsNavigationIndicatorShow = false;
 
 Window::Window(std::shared_ptr<AbilityRuntime::Platform::Context> context, uint32_t windowId)
     : context_(context), windowId_(windowId), brightness_(SubWindowManagerJni::GetAppScreenBrightness())
@@ -281,6 +299,30 @@ std::shared_ptr<Window> Window::Create(
     return window;
 }
 
+std::shared_ptr<Window> Window::CreateDragWindow(std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context)
+{
+    LOGI("CreateDragWindow");
+    auto mainWindow = OHOS::Rosen::Window::GetTopWindow(context);
+    CHECK_NULL_RETURN(mainWindow, nullptr);
+
+    std::string windowName = mainWindow->GetWindowName() + ":Drag";
+    std::shared_ptr<OHOS::Rosen::WindowOption> option = std::make_shared<OHOS::Rosen::WindowOption>();
+    option->SetWindowType(OHOS::Rosen::WindowType::WINDOW_TYPE_APP_SUB_WINDOW);
+    option->SetWindowMode(OHOS::Rosen::WindowMode::WINDOW_MODE_FLOATING);
+    option->SetParentId(mainWindow->GetWindowId());
+    option->SetWindowName(windowName);
+
+    std::shared_ptr<OHOS::Rosen::Window> window = OHOS::Rosen::Window::CreateSubWindow(context, option);
+    CHECK_NULL_RETURN(window, nullptr);
+
+    window->SetFocusable(false);
+    window->SetTouchable(false);
+    window->SetFullScreen(true);
+    window->SetOnTop(true);
+
+    return window;
+}
+
 std::shared_ptr<Window> Window::CreateSubWindow(
     std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context, std::shared_ptr<OHOS::Rosen::WindowOption> option)
 {
@@ -288,12 +330,9 @@ std::shared_ptr<Window> Window::CreateSubWindow(
         LOGE("Window::CreateSubWindow called failed due to null option");
         return nullptr;
     }
-
     LOGI("Window::CreateSubWindow called. windowName=%s", option->GetWindowName().c_str());
-
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
     bool result = SubWindowManagerJni::CreateSubWindow(option);
-
     if (result) {
         jobject view = SubWindowManagerJni::GetContentView(option->GetWindowName());
         uint32_t windowId = SubWindowManagerJni::GetWindowId(option->GetWindowName());
@@ -310,8 +349,6 @@ std::shared_ptr<Window> Window::CreateSubWindow(
         AddToWindowMap(window);
 
         window->SetSubWindowView(env, view);
-        window->CreateSurfaceNode(view);
-        LOGI("Window::CreateSubWindow: success");
 
         return window;
     }
@@ -333,8 +370,6 @@ WMError Window::Destroy()
     }
 
     NotifyBeforeDestroy(GetWindowName());
-
-    ClearListenersById(GetWindowId());
 
     // Remove subWindows of current window from subWindowMap_
     if (subWindowMap_.count(GetWindowId()) > 0) {
@@ -375,6 +410,8 @@ WMError Window::Destroy()
     }
 
     NotifyAfterBackground();
+    ReleaseWindowView();
+    ClearListenersById(GetWindowId());
     return WMError::WM_OK;
 }
 
@@ -398,6 +435,20 @@ WMError Window::UnregisterOccupiedAreaChangeListener(const sptr<IOccupiedAreaCha
     return UnregisterListener(occupiedAreaChangeListeners_[GetWindowId()], listener);
 }
 
+WMError Window::RegisterWindowChangeListener(const sptr<IWindowChangeListener>& listener)
+{
+    LOGD("Start register");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return RegisterListener(windowChangeListeners_[GetWindowId()], listener);
+}
+
+WMError Window::UnregisterWindowChangeListener(const sptr<IWindowChangeListener>& listener)
+{
+    LOGD("Start unregister");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return UnregisterListener(windowChangeListeners_[GetWindowId()], listener);
+}
+
 std::vector<std::shared_ptr<Window>> Window::GetSubWindow(uint32_t parentId)
 {
     LOGI("Window::GetSubWindow called. parentId=%d", parentId);
@@ -409,7 +460,7 @@ std::vector<std::shared_ptr<Window>> Window::GetSubWindow(uint32_t parentId)
 
 std::shared_ptr<Window> Window::FindWindow(const std::string& name)
 {
-    LOGI("Window::GetSubWindow called. name=%s", name.c_str());
+    LOGI("Window::FindWindow called. name=%s", name.c_str());
     auto iter = windowMap_.find(name);
     if (iter == windowMap_.end()) {
         return nullptr;
@@ -470,13 +521,11 @@ WMError Window::MoveWindowTo(int32_t x, int32_t y)
         LOGI("Window::MoveWindowTo called failed due to null option");
         return WMError::WM_ERROR_INVALID_WINDOW;
     }
-
     rect_.posX_ = x;
     rect_.posY_ = y;
-
     bool result = SubWindowManagerJni::MoveWindowTo(this->GetWindowName(), x, y);
-
     if (result) {
+        NotifySizeChange(rect_);
         return WMError::WM_OK;
     } else {
         return WMError::WM_ERROR_INVALID_WINDOW;
@@ -490,14 +539,11 @@ WMError Window::ResizeWindowTo(int32_t width, int32_t height)
         LOGI("Window::ResizeWindowTo called failed due to null option");
         return WMError::WM_ERROR_INVALID_WINDOW;
     }
-
     rect_.width_ = width;
     rect_.height_ = height;
-
     bool result = SubWindowManagerJni::ResizeWindowTo(this->GetWindowName(), width, height);
-
     if (result) {
-        LOGI("Window::ResizeWindowTo: success");
+        NotifySizeChange(rect_);
         return WMError::WM_OK;
     } else {
         LOGI("Window::ResizeWindowTo: failed");
@@ -528,7 +574,6 @@ WMError Window::SetBrightness(float brightness)
 
     brightness_ = brightness;
     if (result) {
-        LOGI("Window::SetBrightness: success");
         return WMError::WM_OK;
     } else {
         LOGI("Window::SetBrightness: failed");
@@ -540,9 +585,7 @@ WMError Window::SetKeepScreenOn(bool keepScreenOn)
     LOGI("Window::SetKeepScreenOn called. keepScreenOn=%d", keepScreenOn);
 
     bool result = SubWindowManagerJni::SetKeepScreenOn(keepScreenOn);
-
     if (result) {
-        LOGI("Window::SetKeepScreenOn: success");
         return WMError::WM_OK;
     } else {
         LOGI("Window::SetKeepScreenOn: failed");
@@ -602,33 +645,27 @@ bool Window::IsKeepScreenOn()
 
 WMError Window::SetSystemBarProperty(WindowType type, const SystemBarProperty& property)
 {
-    LOGI("Window::SetSystemBarProperty called.");
-
     bool hide = !property.enable_;
     bool result = false;
 
     if (type == WindowType::WINDOW_TYPE_NAVIGATION_BAR) {
-        if (hide) {
-            result = SubWindowManagerJni::SetActionBarStatus(true);
-        } else {
-            result = SubWindowManagerJni::SetActionBarStatus(false);
-        }
-
+        result = SubWindowManagerJni::SetNavigationBarStatus(hide);
     } else if (type == WindowType::WINDOW_TYPE_STATUS_BAR) {
-        if (hide) {
-            result = SubWindowManagerJni::SetStatusBarStatus(true);
-        } else {
-            result = SubWindowManagerJni::SetStatusBarStatus(false);
+        result = SubWindowManagerJni::SetStatusBarStatus(hide);
+        if (result) {
+            g_IsStatusBarHide = hide;
         }
+    } else {
+        LOGE("The WindowType is not set to SystemBarProperty. The WindowType is %{public}d", type);
     }
 
+    std::lock_guard<std::recursive_mutex> lock(g_sysBarPropMapMutex);
     sysBarPropMap_[type] = property;
 
     if (result) {
-        LOGI("Window::SetSystemBarProperty: success");
         return WMError::WM_OK;
     } else {
-        LOGI("Window::SetSystemBarProperty: failed");
+        LOGE("Window::SetSystemBarProperty: failed. The WindowType is %{public}d", type);
         return WMError::WM_ERROR_INVALID_WINDOW;
     }
 }
@@ -636,12 +673,8 @@ WMError Window::SetSystemBarProperty(WindowType type, const SystemBarProperty& p
 void Window::SetRequestedOrientation(Orientation orientation)
 {
     LOGI("Window::SetRequestedOrientation called.");
-
     bool result = SubWindowManagerJni::RequestOrientation(orientation);
-
-    if (result) {
-        LOGI("Window::SetRequestedOrientation: success");
-    } else {
+    if (!result) {
         LOGI("Window::SetRequestedOrientation: failed");
     }
 }
@@ -676,6 +709,34 @@ WMError Window::UnregisterLifeCycleListener(const sptr<IWindowLifeCycle>& listen
     return UnregisterListener(lifecycleListeners_[GetWindowId()], listener);
 }
 
+WMError Window::RegisterTouchOutsideListener(const sptr<ITouchOutsideListener>& listener)
+{
+    LOGD("Start register TouchOutsideListener");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return RegisterListener(touchOutsideListeners_[GetWindowId()], listener);
+}
+
+WMError Window::UnregisterTouchOutsideListener(const sptr<ITouchOutsideListener>& listener)
+{
+    LOGD("Start unregister TouchOutsideListener");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return UnregisterListener(touchOutsideListeners_[GetWindowId()], listener);
+}
+
+WMError Window::RegisterSurfaceNodeListener(const sptr<IWindowSurfaceNodeListener>& listener)
+{
+    LOGI("Start register SurfaceNodeListener");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return RegisterListener(surfaceNodeListeners_[GetWindowId()], listener);
+}
+
+WMError Window::UnregisterSurfaceNodeListener(const sptr<IWindowSurfaceNodeListener>& listener)
+{
+    LOGI("Start unregister SurfaceNodeListener");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return UnregisterListener(surfaceNodeListeners_[GetWindowId()], listener);
+}
+
 template<typename T>
 WMError Window::RegisterListener(std::vector<sptr<T>>& holder, const sptr<T>& listener)
 {
@@ -699,7 +760,7 @@ WMError Window::UnregisterListener(std::vector<sptr<T>>& holder, const sptr<T>& 
         return WMError::WM_ERROR_NULLPTR;
     }
     holder.erase(std::remove_if(holder.begin(), holder.end(),
-                     [listener](sptr<T> registeredListener) { return registeredListener == listener; }),
+        [listener](sptr<T> registeredListener) { return registeredListener == listener; }),
         holder.end());
     return WMError::WM_OK;
 }
@@ -709,7 +770,7 @@ void Window::RequestVsync(const std::shared_ptr<VsyncCallback>& vsyncCallback)
     // stage model
     if (receiver_) {
         SetUpThreadInfo();
-        auto callback = [vsyncCallback](int64_t timestamp, void*) { vsyncCallback->onCallback(timestamp); };
+        auto callback = [vsyncCallback](int64_t timestamp, void*) { vsyncCallback->onCallback(timestamp, 0); };
         VSyncReceiver::FrameCallback fcb = {
             .userData_ = this,
             .callback_ = callback,
@@ -754,15 +815,25 @@ void Window::CreateSurfaceNode(void* nativeWindow)
 
     if (!uiContent_) {
         LOGW("Window Notify uiContent_ Surface Created, uiContent_ is nullptr, delay notify.");
-        delayNotifySurfaceCreated_ = true;
     } else {
         LOGI("Window Notify uiContent_ Surface Created");
         uiContent_->NotifySurfaceCreated();
+    }
+    delayNotifySurfaceCreated_ = true;
+
+    auto surfaceNodeListeners = GetListeners<IWindowSurfaceNodeListener>();
+    for (auto& listener : surfaceNodeListeners) {
+        if (listener != nullptr) {
+            listener->OnSurfaceNodeCreated();
+        }
     }
 }
 
 void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
 {
+    rect_.width_ = width;
+    rect_.height_ = height;
+    NotifySizeChange(rect_);
     if (!surfaceNode_) {
         LOGE("Window Notify Surface Changed, surfaceNode_ is nullptr!");
         return;
@@ -773,11 +844,8 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
     density_ = density;
     surfaceNode_->SetBoundsWidth(surfaceWidth_);
     surfaceNode_->SetBoundsHeight(surfaceHeight_);
-    rect_.width_ = width;
-    rect_.height_ = height;
     if (!uiContent_) {
         LOGW("Window Notify uiContent_ Surface Changed, uiContent_ is nullptr, delay notify.");
-        delayNotifySurfaceChanged_ = true;
     } else {
         Ace::ViewportConfig config;
         config.SetDensity(density_);
@@ -785,10 +853,19 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
         LOGI("Window Notify uiContent_ Surface Changed %{public}s", config.ToString().c_str());
         uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE);
     }
+    delayNotifySurfaceChanged_ = true;
+
+    auto surfaceNodeListeners = GetListeners<IWindowSurfaceNodeListener>();
+    for (auto& listener : surfaceNodeListeners) {
+        if (listener != nullptr) {
+            listener->OnSurfaceNodeChanged(width, height, density);
+        }
+    }
 }
 
 void Window::NotifyKeyboardHeightChanged(int32_t height)
 {
+    g_KeyboardHeight = height;
     auto occupiedAreaChangeListeners = GetListeners<IOccupiedAreaChangeListener>();
     for (auto& listener : occupiedAreaChangeListeners) {
         if (listener != nullptr) {
@@ -796,6 +873,31 @@ void Window::NotifyKeyboardHeightChanged(int32_t height)
             listener->OnSizeChange(rect, OccupiedAreaType::TYPE_INPUT);
         }
     }
+}
+
+void Window::NotifySizeChange(Rect rect)
+{
+    auto windowChangeListeners = GetListeners<IWindowChangeListener>();
+    for (auto& listener : windowChangeListeners) {
+        if (listener != nullptr) {
+            listener->OnSizeChange(rect);
+        }
+    }
+}
+
+void Window::NotifyTouchOutside()
+{
+    auto touchOutsideListeners = GetListeners<ITouchOutsideListener>();
+    for (auto& listener : touchOutsideListeners) {
+        if (listener != nullptr) {
+            listener->OnTouchOutside();
+        }
+    }
+}
+
+void Window::SubWindowHide()
+{
+    NotifyAfterBackground();
 }
 
 void Window::NotifySurfaceDestroyed()
@@ -809,6 +911,13 @@ void Window::NotifySurfaceDestroyed()
         LOGI("Window Notify uiContent_ Surface Destroyed");
         uiContent_->NotifySurfaceDestroyed();
     }
+
+    auto surfaceNodeListeners = GetListeners<IWindowSurfaceNodeListener>();
+    for (auto& listener : surfaceNodeListeners) {
+        if (listener != nullptr) {
+            listener->OnSurfaceNodeDestroyed();
+        }
+    }
 }
 
 void Window::WindowFocusChanged(bool hasWindowFocus)
@@ -818,10 +927,11 @@ void Window::WindowFocusChanged(bool hasWindowFocus)
         return;
     }
     if (hasWindowFocus) {
-        LOGI("Window: notify uiContent Focus");
+        LOGI("Window(%{public}s): notify uiContent Focus", GetWindowName().c_str());
         uiContent_->Focus();
         NotifyAfterActive();
         isForground_ = true;
+        isFocused_ = true;
 
         if (IsSubWindow() || subWindowMap_.count(GetWindowId()) == 0) {
             return;
@@ -833,10 +943,11 @@ void Window::WindowFocusChanged(bool hasWindowFocus)
             }
         }
     } else {
-        LOGI("Window: notify uiContent UnFocus");
+        LOGI("Window(%{public}s): notify uiContent UnFocus", GetWindowName().c_str());
         uiContent_->UnFocus();
         NotifyAfterInactive();
         isForground_ = false;
+        isFocused_ = false;
     }
 }
 
@@ -888,7 +999,16 @@ bool Window::ProcessPointerEvent(const std::vector<uint8_t>& data)
         LOGW("Window::ProcessPointerEvent uiContent_ is nullptr");
         return false;
     }
-    return uiContent_->ProcessPointerEvent(data);
+    std::shared_ptr<OHOS::MMI::PointerEvent> pointerEvent = OHOS::MMI::PointerEvent::Create();
+    CreatePointerEventFromBytes(pointerEvent, data);
+#ifdef ENABLE_DRAG_FRAMEWORK
+    Ace::DragState dragState;
+    Ace::InteractionInterface::GetInstance()->GetDragState(dragState);
+    if (dragState == Ace::DragState::START) {
+        static_cast<Ace::InteractionImpl*>(Ace::InteractionInterface::GetInstance())->UpdatePointAction(pointerEvent);
+    }
+#endif
+    return uiContent_->ProcessPointerEvent(pointerEvent);
 }
 
 bool Window::ProcessMouseEvent(const std::vector<uint8_t>& data)
@@ -900,15 +1020,16 @@ bool Window::ProcessMouseEvent(const std::vector<uint8_t>& data)
     return uiContent_->ProcessMouseEvent(data);
 }
 
-bool Window::ProcessKeyEvent(
-    int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp, int64_t timeStampStart, int32_t source, int32_t deviceId, int32_t metaKey)
+bool Window::ProcessKeyEvent(int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp,
+    int64_t timeStampStart, int32_t source, int32_t deviceId, int32_t metaKey)
 {
     if (!uiContent_) {
         LOGW("Window::ProcessKeyEvent uiContent_ is nullptr");
         return false;
     }
     Ace::KeyCode aceKeyCode = KeyCodeToAceKeyCode(keyCode);
-    return uiContent_->ProcessKeyEvent(static_cast<int32_t>(aceKeyCode), keyAction, repeatTime, timeStamp, timeStampStart, metaKey, source, deviceId);
+    return uiContent_->ProcessKeyEvent(
+        static_cast<int32_t>(aceKeyCode), keyAction, repeatTime, timeStamp, timeStampStart, metaKey, source, deviceId);
 }
 
 void Window::DelayNotifyUIContentIfNeeded()
@@ -917,33 +1038,28 @@ void Window::DelayNotifyUIContentIfNeeded()
         LOGE("Window Delay Notify uiContent_ is nullptr!");
         return;
     }
-
     if (delayNotifySurfaceCreated_) {
-        LOGI("Window Delay Notify uiContent_ Surface Created");
+        LOGD("Window Delay Notify uiContent_ Surface Created");
         uiContent_->NotifySurfaceCreated();
-        delayNotifySurfaceCreated_ = false;
     }
-
     if (delayNotifySurfaceChanged_) {
-        LOGI("Window Delay Notify uiContent_ Surface Changed wh:[%{public}d, %{public}d]", surfaceWidth_,
+        LOGD("Window Delay Notify uiContent_ Surface Changed wh:[%{public}d, %{public}d]", surfaceWidth_,
             surfaceHeight_);
         Ace::ViewportConfig config;
         config.SetDensity(density_);
         config.SetSize(surfaceWidth_, surfaceHeight_);
         config.SetOrientation(surfaceHeight_ >= surfaceWidth_ ? 0 : 1);
         uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE);
-        delayNotifySurfaceChanged_ = false;
     }
-
     if (delayNotifySurfaceDestroyed_) {
-        LOGI("Window Delay Notify uiContent_ Surface Destroyed");
+        LOGD("Window Delay Notify uiContent_ Surface Destroyed");
         uiContent_->NotifySurfaceDestroyed();
         delayNotifySurfaceDestroyed_ = false;
     }
 }
 
 WMError Window::SetUIContent(const std::string& contentInfo, NativeEngine* engine, napi_value storage,
-    bool isdistributed, AbilityRuntime::Platform::Ability* ability)
+    bool isdistributed, AbilityRuntime::Platform::Ability* ability, bool loadContentByName)
 {
     using namespace OHOS::Ace::Platform;
     (void)ability;
@@ -955,11 +1071,15 @@ WMError Window::SetUIContent(const std::string& contentInfo, NativeEngine* engin
     if (uiContent == nullptr) {
         return WMError::WM_ERROR_NULLPTR;
     }
-    uiContent->Initialize(this, contentInfo, storage);
+    if (loadContentByName) {
+        uiContent->InitializeByName(this, contentInfo, storage);
+    } else {
+        uiContent->Initialize(this, contentInfo, storage);
+    }
     // make uiContent available after Initialize/Restore
     uiContent_ = std::move(uiContent);
-    uiContent_->Foreground();
     DelayNotifyUIContentIfNeeded();
+    uiContent_->Foreground();
     return WMError::WM_OK;
 }
 
@@ -990,6 +1110,7 @@ void Window::SetSubWindowView(JNIEnv* env, jobject windowView)
     }
     windowView_ = env->NewGlobalRef(windowView);
     Ace::Platform::WindowViewJni::RegisterWindow(env, this, windowView);
+    SubWindowManagerJni::RegisterSubWindow(GetWindowName(), this);
 }
 
 void Window::ReleaseWindowView()
@@ -999,6 +1120,9 @@ void Window::ReleaseWindowView()
     }
     auto jniEnv = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
     Ace::Platform::WindowViewJni::UnRegisterWindow(jniEnv.get(), windowView_);
+    if (IsSubWindow()) {
+        SubWindowManagerJni::UnregisterSubWindow(GetWindowName());
+    }
     Ace::Platform::JniEnvironment::DeleteJavaGlobalRef(windowView_);
     windowView_ = nullptr;
 }
@@ -1020,6 +1144,265 @@ void Window::SetUpThreadInfo()
         renderTid = tid;
         bool ret = AceEnvJni::SetThreadInfo(renderTid);
         LOGI("Window::SetUpThreadInfo tid:%{public}d ret:%{public}d.", renderTid, ret);
+    }
+}
+
+WMError Window::SetLayoutFullScreen(bool status)
+{
+    if (SubWindowManagerJni::SetWindowLayoutFullScreen(status)) {
+        g_IsFullScreen = status;
+        return WMError::WM_OK;
+    } else {
+        LOGE("Window::SetLayoutFullScreen: failed");
+        return WMError::WM_ERROR_OPER_FULLSCREEN_FAILED;
+    }
+}
+
+WMError Window::SetSpecificBarProperty(WindowType type, const SystemBarProperty& property)
+{
+    bool hide = !property.enable_;
+    bool result = false;
+
+    if (type == WindowType::WINDOW_TYPE_STATUS_BAR) {
+        result = SubWindowManagerJni::SetStatusBarStatus(hide);
+        if (result) {
+            g_IsStatusBarHide = hide;
+        }
+    } else if (type == WindowType::WINDOW_TYPE_NAVIGATION_BAR) {
+        result = SubWindowManagerJni::SetNavigationBarStatus(hide);
+    } else if (type == WindowType::WINDOW_TYPE_NAVIGATION_INDICATOR) {
+        result = SubWindowManagerJni::SetNavigationIndicatorStatus(hide);
+        if (result) {
+            g_IsNavigationIndicatorShow = property.enable_;
+        }
+    } else {
+        LOGE("The WindowType is not set to SpecificBarProperty. The WindowType is %{public}d", type);
+    }
+
+    std::lock_guard<std::recursive_mutex> lock(g_sysBarPropMapMutex);
+    sysBarPropMap_[type] = property;
+
+    if (result) {
+        return WMError::WM_OK;
+    } else {
+        LOGE("Window::SetSpecificBarProperty: failed. The WindowType is %{public}d", type);
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+}
+
+Rect Window::GetTopRect(const Rect& safeAreaRect)
+{
+    auto statusBarHeight = SubWindowManagerJni::GetStatusBarHeight();
+    if (g_IsFullScreen && g_IsStatusBarHide || statusBarHeight == 0) {
+        return EMPTY_RECT;
+    }
+
+    Rect rect = EMPTY_RECT;
+    auto orientationType = SubWindowManagerJni::GetScreenOrientation();
+    if (orientationType == ORIENTATION_PORTRAIT) {
+        rect.width_ = safeAreaRect.width_;
+        rect.height_ = statusBarHeight;
+    } else if (!g_IsStatusBarHide) {
+        rect.width_ = (safeAreaRect.posX_ > 0) ? (safeAreaRect.width_ + safeAreaRect.posX_) : safeAreaRect.width_;
+        rect.height_ = statusBarHeight;
+    }
+    return rect;
+}
+
+Rect Window::GetLeftRect(const Rect& safeAreaRect)
+{
+    Rect rect = EMPTY_RECT;
+    if (safeAreaRect.posX_ > 0) {
+        rect.width_ = safeAreaRect.posX_;
+        rect.height_ = DisplayInfoJni::getDisplayHeight();
+    }
+    return rect;
+}
+
+Rect Window::GetRightRect(const Rect& safeAreaRect)
+{
+    Rect rect = EMPTY_RECT;
+    auto displayWidth = DisplayInfoJni::getDisplayWidth();
+    auto sumWidth = safeAreaRect.posX_ + safeAreaRect.width_;
+    if (sumWidth < displayWidth) {
+        rect.posX_ = sumWidth;
+        rect.width_ = displayWidth - sumWidth;
+        rect.height_ = DisplayInfoJni::getDisplayHeight();
+    }
+    return rect;
+}
+
+Rect Window::GetBottomRect(const Rect& safeAreaRect)
+{
+    if (SubWindowManagerJni::GetNavigationBarHeight() == 0) {
+        return EMPTY_RECT;
+    }
+
+    Rect rect = EMPTY_RECT;
+    auto displayHeight = DisplayInfoJni::getDisplayHeight();
+    auto sumHeight = safeAreaRect.posY_ + safeAreaRect.height_;
+    if (sumHeight < displayHeight) {
+        rect.posY_ = sumHeight;
+        rect.width_ = surfaceWidth_;
+        rect.height_ = displayHeight - sumHeight;
+    }
+    return rect;
+}
+
+void Window::GetCutoutRect(const Rect& safeAreaRect, AvoidArea& avoidArea)
+{
+    auto cutoutBarHeight = SubWindowManagerJni::GetCutoutBarHeight();
+    if (cutoutBarHeight == 0) {
+        return;
+    }
+    auto orientationType = SubWindowManagerJni::GetScreenOrientation();
+    if (orientationType == ORIENTATION_PORTRAIT) {
+        avoidArea.topRect_ = GetTopRect(safeAreaRect);
+    } else {
+        orientationType == ORIENTATION_LANDSCAPE ? avoidArea.leftRect_ = GetLeftRect(safeAreaRect)
+                                                 : avoidArea.rightRect_ = GetRightRect(safeAreaRect);
+    }
+}
+
+WMError Window::GetAvoidAreaByType(AvoidAreaType type, AvoidArea& avoidArea)
+{
+    avoidArea.topRect_ = EMPTY_RECT;
+    avoidArea.leftRect_ = EMPTY_RECT;
+    avoidArea.rightRect_ = EMPTY_RECT;
+    avoidArea.bottomRect_ = EMPTY_RECT;
+    auto WMErrorCode = WMError::WM_OK;
+    const Rect safeAreaRect = SubWindowManagerJni::GetSafeArea();
+    auto NavigationIndicatorHeight = SubWindowManagerJni::GetNavigationIndicatorHeight();
+
+    switch (type) {
+        case AvoidAreaType::TYPE_SYSTEM:
+            avoidArea.topRect_ = GetTopRect(safeAreaRect);
+            avoidArea.leftRect_ = GetLeftRect(safeAreaRect);
+            avoidArea.rightRect_ = GetRightRect(safeAreaRect);
+            avoidArea.bottomRect_ = GetBottomRect(safeAreaRect);
+            break;
+        case AvoidAreaType::TYPE_CUTOUT:
+            GetCutoutRect(safeAreaRect, avoidArea);
+            break;
+        case AvoidAreaType::TYPE_SYSTEM_GESTURE:
+            break;
+        case AvoidAreaType::TYPE_KEYBOARD:
+            if (g_KeyboardHeight > 0) {
+                avoidArea.bottomRect_.posY_ = DisplayInfoJni::getDisplayHeight() - g_KeyboardHeight;
+                avoidArea.bottomRect_.width_ = surfaceWidth_;
+                avoidArea.bottomRect_.height_ = g_KeyboardHeight;
+            }
+            break;
+        case AvoidAreaType::TYPE_NAVIGATION_INDICATOR:
+            if (g_IsNavigationIndicatorShow && NavigationIndicatorHeight > 0) {
+                avoidArea.bottomRect_ = GetBottomRect(safeAreaRect);
+            }
+            break;
+        default:
+            LOGE("Window::GetAvoidAreaByType, Set Invalid AvoidAreaByType. The type is %{public}d", type);
+            WMErrorCode = WMError::WM_ERROR_INVALID_PARAM;
+            break;
+    }
+    return WMErrorCode;
+}
+
+WMError Window::Hide()
+{
+    LOGI("Window::Hide called.");
+    if (GetWindowName().empty()) {
+        LOGI("Window::Hide called failed due to null option");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+
+    bool result = SubWindowManagerJni::Hide(GetWindowName());
+    if (result) {
+        NotifyAfterBackground();
+        return WMError::WM_OK;
+    } else {
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+}
+
+WMError Window::SetFocusable(bool isFocusable)
+{
+    LOGI("Window::SetFocusable called. isFocusable=%{public}d", isFocusable);
+    bool result = SubWindowManagerJni::SetFocusable(this->GetWindowName(), isFocusable);
+    if (result) {
+        LOGI("Window::SetFocusable: success");
+        return WMError::WM_OK;
+    } else {
+        LOGI("Window::SetFocusable: failed");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+}
+
+WMError Window::SetTouchable(bool isTouchable)
+{
+    LOGI("Window::SetTouchable called. isTouchable=%{public}d", isTouchable);
+    bool result = SubWindowManagerJni::SetTouchable(GetWindowName(), isTouchable);
+    if (result) {
+        LOGI("Window::SetTouchable: success");
+        return WMError::WM_OK;
+    } else {
+        LOGI("Window::SetTouchable: failed");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+}
+
+bool Window::RequestFocus()
+{
+    bool result = SubWindowManagerJni::RequestFocus(GetWindowName());
+    LOGI("Window::RequestFocus return %{public}d", result);
+    return result;
+}
+
+bool Window::IsFocused()
+{
+    LOGI("Window::IsFocused called(%{public}s). isFocused_=%{public}d", GetWindowName().c_str(), isFocused_);
+    return isFocused_;
+}
+
+WMError Window::SetTouchHotAreas(const std::vector<Rect>& rects)
+{
+    LOGI("Window::SetTouchHotAreas called");
+    if (rects.empty()) {
+        LOGI("rects is empty");
+        return WMError::WM_ERROR_INVALID_PARAM;
+    }
+
+    bool result = SubWindowManagerJni::SetTouchHotAreas(GetWindowName(), rects);
+    if (result) {
+        LOGI("Window::SetTouchable: success");
+        return WMError::WM_OK;
+    } else {
+        LOGI("Window::SetTouchable: failed");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+}
+
+WMError Window::SetFullScreen(bool status)
+{
+    LOGI("Window::SetFullScreen called. status=%{public}d", status);
+    bool result = SubWindowManagerJni::SetFullScreen(GetWindowName(), status);
+    if (result) {
+        LOGI("Window::SetFullScreen: success");
+        return WMError::WM_OK;
+    } else {
+        LOGI("Window::SetFullScreen: failed");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+}
+
+WMError Window::SetOnTop(bool status)
+{
+    LOGI("Window::SetOnTop called. status=%{public}d", status);
+    bool result = SubWindowManagerJni::SetOnTop(GetWindowName(), status);
+    if (result) {
+        LOGI("Window::SetOnTop: success");
+        return WMError::WM_OK;
+    } else {
+        LOGI("Window::SetOnTop: failed");
+        return WMError::WM_ERROR_INVALID_WINDOW;
     }
 }
 

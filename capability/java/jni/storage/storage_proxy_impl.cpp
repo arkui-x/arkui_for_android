@@ -20,9 +20,9 @@
 
 namespace OHOS::Ace::Platform {
 
-RefPtr<Storage> StorageProxyImpl::GetStorage(const RefPtr<TaskExecutor>& taskExecutor) const
+RefPtr<Storage> StorageProxyImpl::GetStorage() const
 {
-    return AceType::MakeRefPtr<StorageImpl>(taskExecutor);
+    return AceType::MakeRefPtr<StorageImpl>();
 }
 
 } // namespace OHOS::Ace::Platform

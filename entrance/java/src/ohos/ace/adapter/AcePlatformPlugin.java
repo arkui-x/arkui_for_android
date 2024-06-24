@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,36 +20,23 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
-import ohos.ace.adapter.capability.clipboard.ClipboardPluginAosp;
 import ohos.ace.adapter.capability.editing.TextInputPluginAosp;
-import ohos.ace.adapter.capability.environment.EnvironmentAosp;
-import ohos.ace.adapter.capability.plugin.PluginManager;
-import ohos.ace.adapter.capability.storage.PersistentStorageAosp;
+import ohos.ace.adapter.capability.surface.AceSurfacePluginAosp;
+import ohos.ace.adapter.capability.surface.IAceSurface;
 import ohos.ace.adapter.capability.texture.AceTexturePluginAosp;
 import ohos.ace.adapter.capability.texture.IAceTexture;
-import ohos.ace.adapter.capability.vibrator.VibratorPluginAosp;
 
 public class AcePlatformPlugin implements InputConnectionClient {
     private static final String LOG_TAG = "AcePlatformPlugin";
 
     private AceResourceRegister resRegister;
 
-    private ClipboardPluginAosp clipboardPlugin;
-
     private TextInputPluginAosp textInputPlugin;
-
-    private EnvironmentAosp environmentPlugin;
-
-    private PersistentStorageAosp persistentStoragePlugin;
-
-    private VibratorPluginAosp vibratorPlugin;
-
-    private PluginManager pluginManager;
 
     /**
      * Constructor of AceViewAosp
      *
-     * @param context    Application context
+     * @param context    Activity context
      * @param instanceId The id of instance
      * @param view       The view which request input
      */
@@ -58,12 +45,7 @@ public class AcePlatformPlugin implements InputConnectionClient {
 
         initResRegister(instanceId);
 
-        clipboardPlugin = new ClipboardPluginAosp(context);
         textInputPlugin = new TextInputPluginAosp(view, instanceId);
-        environmentPlugin = new EnvironmentAosp(context);
-        persistentStoragePlugin = new PersistentStorageAosp(context);
-        vibratorPlugin = new VibratorPluginAosp(context);
-        pluginManager = new PluginManager(context);
     }
 
     /**
@@ -90,9 +72,13 @@ public class AcePlatformPlugin implements InputConnectionClient {
         resRegister.setRegisterPtr(resRegisterPtr);
     }
 
-    public void releseResRegister(int instanceId) {
+    public void release() {
         if (resRegister != null) {
             resRegister.release();
+        }
+
+        if (textInputPlugin != null) {
+            textInputPlugin.release();
         }
     }
 
@@ -142,6 +128,21 @@ public class AcePlatformPlugin implements InputConnectionClient {
         addResourcePlugin(AceTexturePluginAosp.createRegister(instanceId, textureImpl));
     }
 
+    public void initSurfacePlugin(Context context, int instanceId) {
+        IAceSurface surfaceImpl = new IAceSurface() {
+            @Override
+            public long attachNaitveSurface(Object surface) {
+                ALog.i(LOG_TAG, "AttachNaitveSurface.");
+                long nativeSurfacePtr = nativeAttachSurface(surface);
+                if (nativeSurfacePtr == 0L) {
+                    ALog.e(LOG_TAG, "AttachNaitveSurface failed.");
+                }
+                return nativeSurfacePtr;
+            }
+        };
+        addResourcePlugin(AceSurfacePluginAosp.createRegister(context, surfaceImpl, instanceId));
+    }
+
     /**
      * notify activity lifecycle changed to plugin.
      *
@@ -149,6 +150,9 @@ public class AcePlatformPlugin implements InputConnectionClient {
      */
     public void notifyLifecycleChanged(Boolean isBackground) {
         resRegister.notifyLifecycleChanged(isBackground);
+        if (isBackground) {
+            textInputPlugin.hideTextInput();
+        }
     }
 
     private native long nativeInitResRegister(AceResourceRegister resRegister, int instanceId);
@@ -156,4 +160,5 @@ public class AcePlatformPlugin implements InputConnectionClient {
     private native void nativeUnregisterSurface(int instanceId, long textureId);
     private native void nativeRegisterTexture(int instanceId, long textureId, Object surfaceTexture);
     private native void nativeUnregisterTexture(int instanceId, long textureId);
+    private native long nativeAttachSurface(Object surface);
 }

@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Copyright (c) 2022-2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -27,6 +27,7 @@ common_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/keyboard/KeyboardHeightProvider.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/environment/EnvironmentBase.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/storage/PersistentStorageBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/surface/IAceSurface.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/texture/IAceTexture.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/vibrator/VibratorPluginBase.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/plugin/PluginManager.java",
@@ -36,23 +37,30 @@ common_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebBase.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebPluginBase.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/IAceWebErrorReceiveObject.java",
+
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/platformview/AcePlatformViewBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/platformview/AcePlatformViewPluginBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/platformview/IPlatformView.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/platformview/PlatformViewFactory.java",
 ]
 
 # android capability java files
 android_capability_java_files = [
-  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/clipboard/ClipboardPluginAosp.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/clipboard/ClipboardAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/InputConnectionWrapper.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputErrorTextHandler.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputFilter.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputPluginAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/environment/EnvironmentAosp.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/font/SystemFontInfo.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/font/SystemFontManager.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/grantresult/GrantResult.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/storage/PersistentStorageAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/surface/AceSurfacePluginAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/surface/AceSurfaceView.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/texture/AceTexture.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/texture/AceTexturePluginAosp.java",
-  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/vibrator/VibratorPluginAosp.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/vibrator/VibratorAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoPluginAosp.java",
 
@@ -94,6 +102,11 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/MethodData.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/ParameterHelper.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/TaskOption.java",
+
+  # platformview
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/platformview/AcePlatformViewAosp.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/platformview/AcePlatformViewPluginAosp.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/platformview/PlatformViewWrapper.java",
 ]
 
 # capability cpp files
@@ -110,6 +123,10 @@ capability_cpp_files = [
   "$ace_root/adapter/android/capability/java/jni/environment/environment_impl.cpp",
   "$ace_root/adapter/android/capability/java/jni/environment/environment_jni.cpp",
   "$ace_root/adapter/android/capability/java/jni/environment/environment_proxy_impl.cpp",
+  "$ace_root/adapter/android/capability/java/jni/font/font_platform_impl.cpp",
+  "$ace_root/adapter/android/capability/java/jni/font/font_platform_proxy_impl.cpp",
+  "$ace_root/adapter/android/capability/java/jni/font/system_font_jni.cpp",
+  "$ace_root/adapter/android/capability/java/jni/font/system_font_manager.cpp",
   "$ace_root/adapter/android/capability/java/jni/grantresult/grant_result_jni.cpp",
   "$ace_root/adapter/android/capability/java/jni/grantresult/grant_result_manager.cpp",
   "$ace_root/adapter/android/capability/java/jni/storage/storage_impl.cpp",

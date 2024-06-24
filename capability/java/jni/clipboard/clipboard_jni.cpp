@@ -181,7 +181,7 @@ bool ClipboardJni::GetData(
                     callback(result);
                 }
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XClipboardJniGetData");
     }
     return true;
 }
@@ -214,7 +214,7 @@ bool ClipboardJni::HasData(const std::function<void(const bool)>& callback, cons
                     callback(jResult);
                 }
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XClipboardJniHasData");
     }
     return true;
 }

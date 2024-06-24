@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -135,7 +135,6 @@ void ResourceAdapterImplV2::Init(const ResourceInfo& resourceInfo)
             packagePathStr_ = (IsDirExist(token) ? token : std::string());
         }
     }
-    Platform::AceApplicationInfoImpl::GetInstance().SetResourceManager(resourceManager_);
 }
 
 void ResourceAdapterImplV2::UpdateConfig(const ResourceConfiguration& config, bool themeFlag)
@@ -380,7 +379,6 @@ std::vector<uint32_t> ResourceAdapterImplV2::GetIntArray(uint32_t resId) const
 {
     std::vector<int> intVectorResult;
     {
-    
         if (resourceManager_) {
             auto state = resourceManager_->GetIntArrayById(resId, intVectorResult);
             if (state != Global::Resource::SUCCESS) {
@@ -442,7 +440,6 @@ std::string ResourceAdapterImplV2::GetMediaPath(uint32_t resId)
     CHECK_NULL_RETURN(resourceManager_, "");
     std::string mediaPath = "";
     {
-    
         auto state = resourceManager_->GetMediaById(resId, mediaPath);
         if (state != Global::Resource::SUCCESS) {
             LOGE("GetMediaPath error, id=%{public}u", resId);
@@ -457,7 +454,6 @@ std::string ResourceAdapterImplV2::GetMediaPathByName(const std::string& resName
     std::string mediaPath = "";
     auto actualResName = GetActualResourceName(resName);
     {
-    
         CHECK_NULL_RETURN(resourceManager_, "");
         auto state = resourceManager_->GetMediaByName(actualResName.c_str(), mediaPath);
         if (state != Global::Resource::SUCCESS) {
@@ -475,7 +471,6 @@ std::string ResourceAdapterImplV2::GetRawfile(const std::string& fileName)
 
 bool ResourceAdapterImplV2::GetRawFileData(const std::string& rawFile, size_t& len, std::unique_ptr<uint8_t[]>& dest)
 {
-
     auto manager = GetResourceManager();
     CHECK_NULL_RETURN(manager, false);
     auto state = manager->GetRawFileFromHap(rawFile, len, dest);
@@ -504,7 +499,6 @@ bool ResourceAdapterImplV2::GetRawFileData(const std::string& rawFile, size_t& l
 
 bool ResourceAdapterImplV2::GetMediaData(uint32_t resId, size_t& len, std::unique_ptr<uint8_t[]>& dest)
 {
-
     auto manager = GetResourceManager();
     CHECK_NULL_RETURN(manager, false);
     auto state = manager->GetMediaDataById(resId, len, dest);
@@ -518,7 +512,6 @@ bool ResourceAdapterImplV2::GetMediaData(uint32_t resId, size_t& len, std::uniqu
 bool ResourceAdapterImplV2::GetMediaData(uint32_t resId, size_t& len, std::unique_ptr<uint8_t[]>& dest,
     const std::string& bundleName, const std::string& moduleName)
 {
-
     auto manager = GetResourceManager();
     CHECK_NULL_RETURN(manager, false);
     auto state = manager->GetMediaDataById(resId, len, dest);
@@ -533,7 +526,6 @@ bool ResourceAdapterImplV2::GetMediaData(uint32_t resId, size_t& len, std::uniqu
 
 bool ResourceAdapterImplV2::GetMediaData(const std::string& resName, size_t& len, std::unique_ptr<uint8_t[]>& dest)
 {
-
     CHECK_NULL_RETURN(resourceManager_, false);
     auto state = resourceManager_->GetMediaDataByName(resName.c_str(), len, dest);
     if (state != Global::Resource::SUCCESS) {
@@ -546,7 +538,6 @@ bool ResourceAdapterImplV2::GetMediaData(const std::string& resName, size_t& len
 bool ResourceAdapterImplV2::GetMediaData(const std::string& resName, size_t& len, std::unique_ptr<uint8_t[]>& dest,
     const std::string& bundleName, const std::string& moduleName)
 {
-
     auto manager = GetResourceManager();
     CHECK_NULL_RETURN(manager, false);
     auto state = manager->GetMediaDataByName(resName.c_str(), len, dest);
@@ -562,7 +553,6 @@ bool ResourceAdapterImplV2::GetRawFileDescription(
     const std::string& rawfileName, RawfileDescription& rawfileDescription) const
 {
     OHOS::Global::Resource::ResourceManager::RawFileDescriptor descriptor;
-
     CHECK_NULL_RETURN(resourceManager_, false);
     auto state = resourceManager_->GetRawFileDescriptorFromHap(rawfileName, descriptor);
     if (state != Global::Resource::SUCCESS) {
@@ -577,7 +567,6 @@ bool ResourceAdapterImplV2::GetRawFileDescription(
 
 bool ResourceAdapterImplV2::GetMediaById(const int32_t& resId, std::string& mediaPath) const
 {
-
     CHECK_NULL_RETURN(resourceManager_, false);
     auto state = resourceManager_->GetMediaById(resId, mediaPath);
     if (state != Global::Resource::SUCCESS) {

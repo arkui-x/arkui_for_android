@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,6 +20,7 @@
 
 #include "interfaces/inner_api/ace/viewport_config.h"
 
+#include "adapter/android/entrance/java/jni/mmi_event_convertor.h"
 #include "base/memory/referenced.h"
 #include "base/utils/noncopyable.h"
 #include "core/common/ace_view.h"
@@ -32,7 +33,7 @@
 #endif
 
 namespace OHOS::Ace::Platform {
-class ACE_FORCE_EXPORT AceViewSG : public AceView, public Referenced {
+class ACE_FORCE_EXPORT AceViewSG : public AceView {
 public:
     explicit AceViewSG(int32_t id) : instanceId_(id)
     {
@@ -78,6 +79,7 @@ public:
     void RegisterCardViewPositionCallback(CardViewPositionCallBack&& callback) override {}
     void RegisterCardViewAccessibilityParamsCallback(CardViewAccessibilityParamsCallback&& callback) override {}
     void RegisterViewPositionChangeCallback(ViewPositionChangeCallback&& callback) override;
+    void RegisterTransformHintChangeCallback(TransformHintChangeCallback&& callback) override {}
     void RegisterSystemBarHeightChangeCallback(SystemBarHeightChangeCallback&& callback) override;
     void RegisterIdleCallback(IdleCallback&& callback) override {}
 
@@ -95,9 +97,16 @@ public:
     }
 #endif
     bool DispatchBasicEvent(const std::vector<TouchEvent>& touchEvents);
-    bool DispatchTouchEvent(const std::vector<uint8_t>& data);
+    bool DispatchTouchEvent(const std::shared_ptr<OHOS::MMI::PointerEvent>& pointerEvent);
     bool DispatchKeyEvent(const KeyEventInfo& eventInfo);
     bool DispatchMouseEvent(const std::vector<uint8_t>& data);
+
+    void DispatchEventToPerf(const TouchEvent& pointerEvent);
+    void DispatchEventToPerf(const KeyEvent& keyEvent);
+
+    void ProcessTouchEvent(const std::shared_ptr<OHOS::MMI::PointerEvent>& pointerEvent);
+    void ProcessDragEvent(const std::shared_ptr<OHOS::MMI::PointerEvent>& pointerEvent,
+        const RefPtr<OHOS::Ace::NG::FrameNode>& node = nullptr);
 
     void NotifySurfaceDestroyed() const;
     void NotifySurfaceChanged(int32_t width, int32_t height, WindowSizeChangeReason type);

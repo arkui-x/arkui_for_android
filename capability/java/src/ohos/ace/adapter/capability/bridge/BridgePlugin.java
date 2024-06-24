@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,9 +36,7 @@ public abstract class BridgePlugin {
 
     private final String bridgeName_;
 
-    private final Object object_ = null;
-
-    private final Context context_;
+    private Context context_ = null;
 
     private boolean isAvailable_ = false;
 
@@ -60,7 +58,7 @@ public abstract class BridgePlugin {
 
     private BridgeTaskQueueHandler intPutHandler_ = null;
 
-    private ExecutorService executorService_ = ExecutorServiceInstance.getExecutorService();
+    private ExecutorService executorService_ = ExecutorServiceInstance.getInstance().getExecutorService();
 
     /**
      * Constructor of base BridgePlugin.
@@ -250,6 +248,10 @@ public abstract class BridgePlugin {
      * @return Success or not.
      */
     public boolean unRegister(String bridgeName) {
+        if (this.bridgeManager_ == null) {
+            ALog.e(LOG_TAG, "Bridge unRegister failed, bridgeManager is null");
+            return false;
+        }
         return this.bridgeManager_.unRegisterBridgePlugin(bridgeName);
     }
 
@@ -272,6 +274,10 @@ public abstract class BridgePlugin {
     }
 
     private void callMethodInner(MethodData methodData) {
+        if (this.bridgeManager_ == null) {
+            ALog.e(LOG_TAG, "Bridge callMethodInner failed, bridgeManager is null");
+            return;
+        }
         BridgeErrorCode errorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
         if (this.bridgeType_ == BridgeType.BINARY_TYPE) {
             errorCode = this.bridgeManager_.platformCallMethodBinary(bridgeName_, methodData);
@@ -284,11 +290,13 @@ public abstract class BridgePlugin {
     }
 
     /**
-     * Call another platform's registered method.
+     * Call ArkTS registered method.
      *
      * @param methodData Method packaging structure.
      */
     public void callMethod(MethodData methodData) {
+        ALog.d(LOG_TAG,
+            "callMethod enter, bridgeName is " + bridgeName_ + ", methodName is " + methodData.getMethodName());
         if (!this.isAvailable_) {
             ALog.e(LOG_TAG, "The bridge is not available.");
             return;
@@ -302,7 +310,22 @@ public abstract class BridgePlugin {
         }
     }
 
+    /**
+     * Call ArkTS registered method
+     * 
+     * @param methodName ArkTS registered method's name
+     * @param parameters method's parameters
+     */
+    public void callMethod(String methodName,  Object... parameters) {
+        MethodData methodData = new MethodData(methodName, parameters);
+        this.callMethod(methodData);
+    }
+
     private void sendMessageInner(Object data) {
+        if (this.bridgeManager_ == null) {
+            ALog.e(LOG_TAG, "Bridge sendMessageInner failed, bridgeManager is null");
+            return;
+        }
         if (this.bridgeType_ == BridgeType.BINARY_TYPE) {
             this.bridgeManager_.platformSendMessageBinary(this.bridgeName_, data);
             return;
@@ -330,6 +353,16 @@ public abstract class BridgePlugin {
     }
 
     /**
+     * release BridgeManager object.
+     *
+     */
+    public void release() {
+        this.isAvailable_ = false;
+        this.bridgeManager_ = null;
+        this.context_ = null;
+    }
+
+    /**
      * Other platforms call methods.
      *
      * @param object Object of bridgePlugin.
@@ -338,6 +371,8 @@ public abstract class BridgePlugin {
      */
     protected Object jsCallMethod(Object object, MethodData methodData) {
         if (object != null && methodData != null) {
+            ALog.d(LOG_TAG,
+                "jsCallMethod enter, bridgeName is " + bridgeName_ + ", methodName is " + methodData.getMethodName());
             Method callMethod = initMethod(object.getClass(), methodData);
             Object[] parametersObject = methodData.getMethodParameter();
             return bridgeInvokeMethod(object, callMethod, parametersObject);
@@ -399,6 +434,10 @@ public abstract class BridgePlugin {
      * @param data Data to be sent.
      */
     protected void jsSendMessage(Object data) {
+        if (this.bridgeManager_ == null) {
+            ALog.e(LOG_TAG, "Bridge jsSendMessage failed, bridgeManager is null");
+            return;
+        }
         if (this.iMessageListener_ != null) {
             Object dataResponse = this.iMessageListener_.onMessage(data);
             this.bridgeManager_.platformSendMessageResponse(this.bridgeName_, dataResponse);
@@ -414,16 +453,6 @@ public abstract class BridgePlugin {
      * @param errorMessage Message of error.
      */
     protected void jsSendMethodResult(Object result, String methodName, int errorCode, String errorMessage) {
-        if (this.isUseTaskQueue_) {
-            this.outPutHandler_.dispatch(() -> {
-                jsSendMethodResultInner(result, methodName, errorCode, errorMessage);
-            });
-        } else {
-            jsSendMethodResultInner(result, methodName, errorCode, errorMessage);
-        }
-    }
-
-    private void jsSendMethodResultInner(Object result, String methodName, int errorCode, String errorMessage) {
         if (this.iMethodResult_ == null) {
             return;
         }

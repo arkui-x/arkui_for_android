@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,7 +19,11 @@ import android.os.Trace;
 import android.util.Log;
 
 import ohos.ace.adapter.WindowView;
-import ohos.ace.adapter.DisplayInfo;
+
+import android.content.Intent;
+
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * This class is responsible for communicating with the stage activity delegate jni.
@@ -28,6 +32,26 @@ import ohos.ace.adapter.DisplayInfo;
  */
 public class StageActivityDelegate {
     private static final String LOG_TAG = "StageActivityDelegate";
+
+    private static final List<INTENTCALLBACK> intentCallbackList = new ArrayList<>();
+
+    public interface INTENTCALLBACK {
+        void onResult(int requestCode, int resultCode, Intent intent);
+    }
+
+    public static void addIntentCallback(INTENTCALLBACK callback) {
+        if (callback != null) {
+            intentCallbackList.add(callback);
+        }
+    }
+
+    public static void triggerIntentCallback(int requestCode, int resultCode, Intent intent) {
+        if (intentCallbackList != null) {
+            for (INTENTCALLBACK callback : intentCallbackList) {
+                callback.onResult(requestCode, resultCode, intent);
+            }
+        }
+    }
 
     /**
      * Constructor.
@@ -46,7 +70,6 @@ public class StageActivityDelegate {
         Trace.beginSection("attachStageActivity");
         nativeAttachStageActivity(instanceName, object);
         SubWindowManager.getInstance().setActivity(object);
-        DisplayInfo.getInstance().setContext(object);
         Trace.endSection();
     }
 
@@ -70,6 +93,7 @@ public class StageActivityDelegate {
     public void dispatchOnDestroy(String instanceName) {
         Log.i(LOG_TAG, "dispatchOnDestroy called");
         nativeDispatchOnDestroy(instanceName);
+        SubWindowManager.getInstance().ReleaseActivity();
     }
 
     /**
@@ -135,8 +159,9 @@ public class StageActivityDelegate {
      * @param resultWantParams the data returned after the ability is destroyed.
      */
     public void dispatchOnActivityResult(
-        String instanceName, int requestCode, int resultCode, String resultWantParams) {
+        String instanceName, int requestCode, int resultCode, String resultWantParams, Intent intent) {
         Log.i(LOG_TAG, "dispatchOnActivityResult called");
+        triggerIntentCallback(requestCode, resultCode, intent);
         nativeDispatchOnAbilityResult(instanceName, requestCode, resultCode, resultWantParams);
     }
 

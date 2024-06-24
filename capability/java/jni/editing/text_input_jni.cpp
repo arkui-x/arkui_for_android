@@ -33,7 +33,8 @@ static const JNINativeMethod METHODS[] = {
     { "nativeInit", "(I)V", reinterpret_cast<void*>(TextInputJni::NativeInit) },
     { "updateEditingState", "(ILjava/lang/String;)V", reinterpret_cast<void*>(TextInputJni::UpdateEditingState) },
     { "performAction", "(II)V", reinterpret_cast<void*>(TextInputJni::PerformAction) },
-    { "updateInputFilterErrorText", "(ILjava/lang/String;)V", reinterpret_cast<void*>(TextInputJni::UpdateInputFilterErrorText) },
+    { "updateInputFilterErrorText", "(ILjava/lang/String;)V",
+        reinterpret_cast<void*>(TextInputJni::UpdateInputFilterErrorText) },
 };
 
 static const char* const METHOD_SET_CLIENT = "setTextInputClient";

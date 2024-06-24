@@ -22,18 +22,18 @@ package ohos.ace.adapter.capability.bridge;
  */
 public class MethodData {
     private String methodName_;
-    private Object[] Parameters_;
+    private Object[] parameters_;
 
     /**
      * Constructor of MethodData.
      *
      * @param methodName Name of method.
-     * @param parameter parameters of method.
+     * @param parameters parameters of method.
      * @return MethodData object.
      */
-    public MethodData(String methodName, Object[] parameter) {
+    public MethodData(String methodName, Object[] parameters) {
         this.methodName_ = methodName;
-        this.Parameters_ = parameter;
+        this.parameters_ = parameters;
     }
 
     /**
@@ -51,6 +51,6 @@ public class MethodData {
      * @return Parameter of method.
      */
     public Object[] getMethodParameter() {
-        return this.Parameters_;
+        return this.parameters_;
     }
 }

@@ -37,7 +37,8 @@ DisplayInfo::DisplayInfo()
     float scaledDensity = DisplayInfoJni::getScaledDensity();
     int dpi = DisplayInfoJni::getDensityDpi();
 
-    LOGI("DisplayInfo:: displayId=%d orentation=%d with=%d height=%d refreshRate=%.3f", displayId, orentation, width, height, refreshRate);
+    LOGI("DisplayInfo:: displayId=%d orentation=%d with=%d height=%d refreshRate=%.3f", displayId, orentation, width,
+        height, refreshRate);
 
     SetDisplayId(displayId);
     SetWidth(width);
@@ -48,7 +49,7 @@ DisplayInfo::DisplayInfo()
     SetDensityDpi(dpi);
 
     DisplayOrientation arkOrientation = DisplayOrientation::PORTRAIT;
-    switch( orentation ) {
+    switch (orentation) {
         case ROTATION_0: {
             arkOrientation = DisplayOrientation::PORTRAIT;
             break;

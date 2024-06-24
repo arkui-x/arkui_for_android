@@ -26,7 +26,7 @@ public:
     ClipboardProxyImpl() = default;
     ~ClipboardProxyImpl() = default;
 
-    RefPtr<Clipboard> GetClipboard(const RefPtr<TaskExecutor>& taskEexcutor) const override;
+    RefPtr<Clipboard> GetClipboard(const RefPtr<TaskExecutor>& taskExecutor) const override;
 private:
 
     ACE_DISALLOW_COPY_AND_MOVE(ClipboardProxyImpl);

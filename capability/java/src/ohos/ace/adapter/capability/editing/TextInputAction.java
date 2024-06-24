@@ -28,7 +28,8 @@ public enum TextInputAction {
     SEND(4),
     NEXT(5),
     DONE(6),
-    PREVIOUS(7);
+    PREVIOUS(7),
+    NEW_LINE(8);
 
     private int value = 0;
 

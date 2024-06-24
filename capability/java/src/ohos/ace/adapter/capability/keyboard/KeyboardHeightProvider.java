@@ -26,8 +26,11 @@ import android.graphics.drawable.ColorDrawable;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.PopupWindow;
+
+import ohos.ace.adapter.ALog;
 
 /**
  * Keyboard Height Provider.
@@ -203,7 +206,11 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
             parentView.post(new Runnable() {
                 @Override
                 public void run() {
-                    showAtLocation(parentView, Gravity.NO_GRAVITY, 0, 0);
+                    try {
+                        showAtLocation(parentView, Gravity.NO_GRAVITY, 0, 0);
+                    } catch (WindowManager.BadTokenException exception){
+                        ALog.e(LOG_TAG, "showAtLocation failed.");
+                    }
                 }
             });
         }

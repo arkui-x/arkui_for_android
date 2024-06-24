@@ -19,12 +19,13 @@
 
 namespace OHOS::Ace::Platform {
 
-StorageImpl::StorageImpl(const RefPtr<TaskExecutor>& taskExecutor) : Storage(taskExecutor) {}
+StorageImpl::StorageImpl() : Storage() {}
 
 void StorageImpl::SetString(const std::string& key, const std::string& value)
 {
     if (taskExecutor_) {
-        taskExecutor_->PostSyncTask([key, value] { StorageJni::Set(key, value); }, TaskExecutor::TaskType::JS);
+        taskExecutor_->PostSyncTask(
+            [key, value] { StorageJni::Set(key, value); }, TaskExecutor::TaskType::JS, "ArkUI-XStotageSetString");
     }
 }
 
@@ -32,7 +33,8 @@ std::string StorageImpl::GetString(const std::string& key)
 {
     std::string result;
     if (taskExecutor_) {
-        taskExecutor_->PostSyncTask([key, &result] { result = StorageJni::Get(key); }, TaskExecutor::TaskType::JS);
+        taskExecutor_->PostSyncTask(
+            [key, &result] { result = StorageJni::Get(key); }, TaskExecutor::TaskType::JS, "ArkUI-XStotageGetString");
     }
     return result;
 }
@@ -54,14 +56,15 @@ bool StorageImpl::GetBoolean(const std::string& key, bool& value)
 void StorageImpl::Clear()
 {
     if (taskExecutor_) {
-        taskExecutor_->PostSyncTask([] { StorageJni::Clear(); }, TaskExecutor::TaskType::JS);
+        taskExecutor_->PostSyncTask([] { StorageJni::Clear(); }, TaskExecutor::TaskType::JS, "ArkUI-XStotageClear");
     }
 }
 
 void StorageImpl::Delete(const std::string& key)
 {
     if (taskExecutor_) {
-        taskExecutor_->PostSyncTask([key] { StorageJni::Delete(key); }, TaskExecutor::TaskType::JS);
+        taskExecutor_->PostSyncTask(
+            [key] { StorageJni::Delete(key); }, TaskExecutor::TaskType::JS, "ArkUI-XStotageDelete");
     }
 }
 

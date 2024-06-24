@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (C) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,11 +13,22 @@
  * limitations under the License.
  */
 
-#include "base/subwindow/subwindow.h"
+#include "core/common/ai/image_analyzer_adapter_impl.h"
 
 namespace OHOS::Ace {
+void ImageAnalyzerAdapterImpl::SetImageAnalyzerConfig(void* config, bool isOptions) {};
 
-RefPtr<Subwindow> Subwindow::CreateSubwindow(int32_t instanceId)
+void* ImageAnalyzerAdapterImpl::GetImageAnalyzerConfig()
+{
+    return nullptr;
+}
+
+void* ImageAnalyzerAdapterImpl::ConvertPixmapNapi(const RefPtr<PixelMap>& pixelMap)
+{
+    return nullptr;
+}
+
+ImageAnalyzerAdapter* CreateImageAnalyzerAdapter()
 {
     return nullptr;
 }

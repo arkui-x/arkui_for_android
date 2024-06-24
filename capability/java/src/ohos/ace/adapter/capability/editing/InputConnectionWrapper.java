@@ -219,7 +219,11 @@ class InputConnectionWrapper extends BaseInputConnection {
             }
             case EditorInfo.IME_ACTION_DONE:
             default: {
-                action = TextInputAction.DONE;
+                if(actionCode == TextInputAction.NEW_LINE.getValue()) {
+                    action = TextInputAction.NEW_LINE;   
+                } else {
+                    action = TextInputAction.DONE;   
+                }      
                 break;
             }
         }

@@ -27,10 +27,9 @@ constexpr char UNDEFINED_PARAM[] = "undefined parameter";
 
 } // namespace
 
-// It is not used currently. Use ATrace_isEnabled instead.
-bool SystemProperties::traceEnabled_ = false;
 bool SystemProperties::isRound_ = false;
 bool SystemProperties::isDeviceAccess_ = false;
+bool SystemProperties::developerModeOn_ = false;
 int32_t SystemProperties::deviceWidth_ = 0;
 int32_t SystemProperties::deviceHeight_ = 0;
 int32_t SystemProperties::devicePhysicalWidth_ = 0;
@@ -55,10 +54,15 @@ bool SystemProperties::svgTraceEnable_ = false;
 bool SystemProperties::rosenBackendEnabled_ = true;
 bool SystemProperties::downloadByNetworkEnabled_ = false;
 bool SystemProperties::isHookModeEnabled_ = false;
+bool SystemProperties::syncDebugTraceEnable_ = false;
+bool SystemProperties::pixelRoundEnable_ = true;
+bool SystemProperties::textTraceEnable_ = false;
+bool SystemProperties::syntaxTraceEnable_ = false;
 bool SystemProperties::accessibilityEnabled_ = false;
 bool SystemProperties::windowAnimationEnabled_ = false;
 bool SystemProperties::debugBoundaryEnabled_ = false;
 bool SystemProperties::debugAutoUIEnabled_ = false;
+bool SystemProperties::debugOffsetLogEnabled_ = false;
 bool SystemProperties::extSurfaceEnabled_ = true;
 uint32_t SystemProperties::dumpFrameCount_ = 0;
 bool SystemProperties::layoutTraceEnable_ = false;
@@ -67,6 +71,22 @@ bool SystemProperties::enableScrollableItemPool_ = false;
 bool SystemProperties::navigationBlurEnabled_ = true;
 bool SystemProperties::gridCacheEnabled_ = false;
 bool SystemProperties::sideBarContainerBlurEnable_ = false;
+bool SystemProperties::acePerformanceMonitorEnable_ = false;
+bool SystemProperties::aceCommercialLogEnable_ = false;
+bool SystemProperties::imageFileCacheConvertAstc_ = false;
+int32_t SystemProperties::imageFileCacheConvertAstcThreshold_ = 2;
+bool SystemProperties::traceInputEventEnable_ = false;
+bool SystemProperties::imageFrameworkEnable_ = true;
+float SystemProperties::dragStartDampingRatio_ = 0.2f;
+float SystemProperties::dragStartPanDisThreshold_ = 10.0f;
+uint32_t SystemProperties::canvasDebugMode_ = 0;
+
+std::pair<float, float> SystemProperties::brightUpPercent_ = {};
+
+bool SystemProperties::IsOpIncEnable()
+{
+    return false;
+}
 
 void SystemProperties::InitDeviceType(DeviceType type)
 {
@@ -134,6 +154,11 @@ bool SystemProperties::GetDebugEnabled()
 #endif
 }
 
+bool SystemProperties::GetLayoutDetectEnabled()
+{
+    return false;
+}
+
 bool SystemProperties::IsSyscapExist(const char* cap)
 {
     return false;
@@ -170,11 +195,6 @@ bool SystemProperties::GetIsUseMemoryMonitor()
 }
 
 bool SystemProperties::IsFormAnimationLimited()
-{
-    return false;
-}
-
-bool SystemProperties::GetImageFrameworkEnabled()
 {
     return false;
 }
@@ -224,9 +244,19 @@ bool SystemProperties::GetGridCacheEnabled()
     return gridCacheEnabled_;
 }
 
+bool SystemProperties::GetGridIrregularLayoutEnabled()
+{
+    return false;
+}
+
 bool SystemProperties::GetSideBarContainerBlurEnable()
 {
     return sideBarContainerBlurEnable_;
+}
+
+bool SystemProperties::WaterFlowUseSegmentedLayout()
+{
+    return false;
 }
 
 float SystemProperties::GetDefaultResolution()
@@ -234,4 +264,23 @@ float SystemProperties::GetDefaultResolution()
     return 1.0f;
 }
 
+std::string SystemProperties::GetAtomicServiceBundleName()
+{
+    return UNDEFINED_PARAM;
+}
+
+float SystemProperties::GetDragStartDampingRatio()
+{
+    return dragStartDampingRatio_;
+}
+
+float SystemProperties::GetDragStartPanDistanceThreshold()
+{
+    return dragStartPanDisThreshold_;
+}
+
+bool SystemProperties::IsNeedSymbol()
+{
+    return false;
+}
 } // namespace OHOS::Ace

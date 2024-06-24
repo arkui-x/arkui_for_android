@@ -26,7 +26,7 @@ import ohos.ace.adapter.ALog;
  *
  * @since 1
  */
-public class VibratorPluginAosp extends VibratorPluginBase {
+public class VibratorAosp extends VibratorPluginBase {
     private static final String LOG_TAG = "Ace_Vibrator";
 
     private final Vibrator vibrator;
@@ -36,7 +36,7 @@ public class VibratorPluginAosp extends VibratorPluginBase {
      *
      * @param context the context of application
      */
-    public VibratorPluginAosp(Context context) {
+    public VibratorAosp(Context context) {
         if (context != null) {
             Object temp = context.getSystemService(Context.VIBRATOR_SERVICE);
             if (temp instanceof Vibrator) {

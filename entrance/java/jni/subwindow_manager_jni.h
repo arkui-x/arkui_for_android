@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -46,6 +46,24 @@ struct SubWindowManagerStruct {
     jmethodID setStatusBarStatusMethod;
     jmethodID setActionBarStatusMethod;
     jmethodID isWindowShowingMethod;
+    jmethodID setWindowLayoutFullScreenMethod;
+    jmethodID setNavigationBarStatusMethod;
+    jmethodID setNavigationIndicatorStatusMethod;
+    jmethodID getStatusBarHeightMethod;
+    jmethodID getCutoutBarHeightMethod;
+    jmethodID getNavigationBarHeightMethod;
+    jmethodID getGestureBarHeightMethod;
+    jmethodID getScreenOrientationMethod;
+    jmethodID getSafeAreaMethod;
+    jmethodID hideMethod;
+    jmethodID setFocusableMethod;
+    jmethodID setTouchableMethod;
+    jmethodID requestFocusMethod;
+    jmethodID setTouchHotAreaMethod;
+    jmethodID setFullScreenMethod;
+    jmethodID setOnTopMethod;
+    jmethodID registerSubWindowMethod;
+    jmethodID unregisterSubWindowMethod;
 };
 
 class SubWindowManagerJni {
@@ -67,10 +85,30 @@ public:
     static bool SetStatusBarStatus(bool hide);
     static bool SetActionBarStatus(bool hide);
     static bool IsWindowShowing(const std::string& name);
+    static bool SetWindowLayoutFullScreen(bool isFullScreen);
+    static bool SetNavigationBarStatus(bool hide);
+    static bool SetNavigationIndicatorStatus(bool hide);
+    static uint32_t GetStatusBarHeight();
+    static uint32_t GetCutoutBarHeight();
+    static uint32_t GetNavigationBarHeight();
+    static uint32_t GetNavigationIndicatorHeight();
+    static int32_t GetScreenOrientation();
+    static OHOS::Rosen::Rect GetSafeArea();
+    static bool Hide(const std::string& name);
+    static bool SetFocusable(const std::string& name, bool isFocusable);
+    static bool SetTouchable(const std::string& name, bool isTouchable);
+    static bool RequestFocus(const std::string& name);
+    static bool SetTouchHotAreas(const std::string& name, const std::vector<OHOS::Rosen::Rect>& rects);
+    static bool SetFullScreen(const std::string& name, bool status);
+    static bool SetOnTop(const std::string& name, bool status);
+    static bool RegisterSubWindow(const std::string& name, void* subWindow);
+    static bool UnregisterSubWindow(const std::string& name);
 
 private:
     static SubWindowManagerStruct subWindowManagerStruct_;
     static void SetupSubWindowManager(JNIEnv* env, jobject obj);
+    static void OnWindowTouchOutside(JNIEnv* env, jobject obj, jlong window);
+    static void OnSubWindowHide(JNIEnv* env, jobject obj, jlong window);
     ACE_DISALLOW_COPY_AND_MOVE(SubWindowManagerJni);
 };
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -45,6 +45,7 @@ public:
     std::unique_ptr<NativeEngine> nativeEngine_;
     // UI content lifecycles
     void Initialize(OHOS::Rosen::Window* window, const std::string& url, napi_value storage) override;
+    void InitializeByName(OHOS::Rosen::Window* window, const std::string& name, napi_value storage) override;
     napi_value GetUINapiContext() override;
     void Foreground() override;
     void Background() override;
@@ -57,7 +58,7 @@ public:
     // UI content event process
     bool ProcessBackPressed() override;
     bool ProcessBasicEvent(const std::vector<TouchEvent>& touchEvents) override;
-    bool ProcessPointerEvent(const std::vector<uint8_t>& data) override;
+    bool ProcessPointerEvent(const std::shared_ptr<OHOS::MMI::PointerEvent>& pointerEvent) override;
     bool ProcessMouseEvent(const std::vector<uint8_t>& data) override;
     bool ProcessKeyEvent(int32_t keyCode, int32_t keyAction, int32_t repeatTime, int64_t timeStamp = 0,
         int64_t timeStampStart = 0, int32_t metaKey = 0, int32_t sourceDevice = 0, int32_t deviceId = 0,
@@ -85,8 +86,10 @@ public:
     void NotifyMemoryLevel(int32_t level) override;
 
 private:
+    void InitializeInner(
+        OHOS::Rosen::Window* window, const std::string& url, napi_value storage, bool isNamedRouter);
     void CommonInitialize(OHOS::Rosen::Window* window, const std::string& url, napi_value storage);
-
+    void InitializeSubWindow();
     void DestroyCallback() const;
 
     void InitOnceAceInfo();
@@ -99,6 +102,8 @@ private:
     std::string startUrl_;
     int32_t instanceId_ = -1;
     OHOS::Rosen::IOccupiedAreaChangeListener* occupiedAreaChangeListener_ = nullptr;
+    OHOS::Rosen::ITouchOutsideListener* touchOutsideListener_ = nullptr;
+    OHOS::Rosen::IWindowLifeCycle* windowLifeCycleListener_ = nullptr;
 };
 } // namespace OHOS::Ace::Platform
 #endif // FOUNDATION_ACE_ADAPTER_ANDROID_STAGE_UI_CONTENT_IMPL_H

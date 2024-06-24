@@ -27,25 +27,36 @@ class TextInputClientHandler : public Singleton<TextInputClientHandler> {
     DECLARE_SINGLETON(TextInputClientHandler);
 
 public:
-    void SetCurrentConnection(const RefPtr<TextInputConnection>& currentConnection)
+    void SetCurrentConnection(int32_t instanceId, const RefPtr<TextInputConnection>& currentConnection)
     {
-        currentConnection_ = currentConnection;
+        currentConnection ? currentConnection_[instanceId] = currentConnection : currentConnection_.erase(instanceId);
     }
 
-    bool ConnectionIsCurrent(const TextInputConnection* connection) const
+    bool ConnectionIsCurrent(int32_t instanceId, const TextInputConnection* connection) const
     {
         // RefPtr has already overload operator == with raw pointer.
-        return currentConnection_ == connection;
+        auto it = currentConnection_.find(instanceId);
+        return ((it != currentConnection_.end()) && (it->second == connection));
+    }
+
+    TextInputConnection* GetConnectionByClientId(const int32_t clientId) const
+    {
+        for (auto it : currentConnection_) {
+            if (it.second->GetClientId() == clientId) {
+                return AceType::RawPtr(it.second);
+            }
+        }
+        return nullptr;
     }
 
     void UpdateEditingValue(
-        const int32_t clientId, const std::shared_ptr<TextEditingValue>& value, bool needFireChangeEvent = true);
+        const int32_t clientId, const std::shared_ptr<TextEditingValue>& value, bool needFireChangeEvent = true) const;
     void PerformAction(const int32_t clientId, const TextInputAction action);
     void UpdateInputFilterErrorText(const int32_t clientId, const std::string& errorText);
 
 private:
     // All operations must be called on Ace UI thread.
-    RefPtr<TextInputConnection> currentConnection_;
+    std::map<int32_t, RefPtr<TextInputConnection>> currentConnection_;
 };
 
 } // namespace OHOS::Ace::Platform

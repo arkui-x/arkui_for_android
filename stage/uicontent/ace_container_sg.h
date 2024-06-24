@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -46,7 +46,7 @@ public:
     AceContainerSG(int32_t instanceId, FrontendType type,
         std::weak_ptr<OHOS::AbilityRuntime::Platform::Context> runtimeContext,
         std::weak_ptr<OHOS::AppExecFwk::AbilityInfo> abilityInfo, std::unique_ptr<PlatformEventCallback> callback,
-        bool useCurrentEventRunner = false);
+        bool useCurrentEventRunner = false, bool isSubContainer = false);
 
     ~AceContainerSG() override = default;
 
@@ -138,7 +138,16 @@ public:
         return static_cast<void*>(aceView_);
     }
 
-    AceView* GetAceView() const
+    RefPtr<AceView> GetAceView() const
+    {
+        RefPtr<AceView> ref_aceView_;
+        if (aceView_ != nullptr) {
+            ref_aceView_ = aceView_;
+        }
+        return ref_aceView_;
+    }
+
+    AceView* GetAceViewEx() const
     {
         return aceView_;
     }
@@ -173,6 +182,41 @@ public:
     void SetColorScheme(ColorScheme colorScheme)
     {
         colorScheme_ = colorScheme;
+    }
+
+    void SetWindowName(const std::string& name)
+    {
+        windowName_ = name;
+    }
+
+    std::string& GetWindowName()
+    {
+        return windowName_;
+    }
+
+    void* GetSharedRuntime() override
+    {
+        return sharedRuntime_;
+    }
+
+    void SetParentId(int32_t parentId)
+    {
+        parentId_ = parentId;
+    }
+
+    int32_t GetParentId() const
+    {
+        return parentId_;
+    }
+
+    void SetIsSubContainer(bool isSubContainer)
+    {
+        isSubContainer_ = isSubContainer;
+    }
+
+    bool IsSubContainer() const override
+    {
+        return isSubContainer_;
     }
 
     void Dispatch(
@@ -241,9 +285,14 @@ public:
     static void OnActive(int32_t instanceId);
     static void OnInactive(int32_t instanceId);
     static bool OnBackPressed(int32_t instanceId);
-    static bool RunPage(int32_t instanceId, int32_t pageId, const std::string& content, const std::string& params);
+    static bool RunPage(int32_t instanceId, int32_t pageId, const std::string& content,
+        const std::string& params, bool isNamedRouter = false);
     static void SetView(AceView* view, double density,
         int32_t width, int32_t height, OHOS::Rosen::Window* rsWindow);
+
+    static void SetUIWindow(int32_t instanceId, sptr<OHOS::Rosen::Window> uiWindow);
+    static sptr<OHOS::Rosen::Window> GetUIWindow(int32_t instanceId);
+    void InitializeSubContainer(int32_t parentContainerId);
 
     int32_t GeneratePageId()
     {
@@ -255,6 +304,21 @@ public:
         return resourceInfo_.GetHapPath();
     }
 
+    void SetHapPath(const std::string& hapPath)
+    {
+        resourceInfo_.SetHapPath(hapPath);
+    }
+
+    std::string GetPackagePathStr() const
+    {
+        return resourceInfo_.GetPackagePath();
+    }
+
+    void SetPackagePathStr(const std::string& packagePath)
+    {
+        resourceInfo_.SetPackagePath(packagePath);
+    }
+
     void SetResPaths(const std::vector<std::string>& hapPath, const std::string& path, const ColorMode& colorMode);
 
     bool WindowIsShow() const override
@@ -263,6 +327,7 @@ public:
     }
 
 private:
+    virtual bool MaybeRelease() override;
     void InitializeFrontend();
     void InitializeCallback();
     void InitPiplineContext(std::unique_ptr<Window> window, double density, int32_t width, int32_t height);
@@ -272,6 +337,9 @@ private:
     void SetGetViewScaleCallback();
     void InitThemeManager();
     void SetupRootElement();
+
+    void SetUIWindowInner(sptr<OHOS::Rosen::Window> uiWindow);
+    sptr<OHOS::Rosen::Window> GetUIWindowInner() const;
 
     AceView* aceView_ { nullptr };
     RefPtr<TaskExecutor> taskExecutor_;
@@ -307,6 +375,11 @@ private:
 
     mutable std::mutex frontendMutex_;
     mutable std::mutex pipelineMutex_;
+
+    int32_t parentId_ = 0;
+    sptr<OHOS::Rosen::Window> uiWindow_ = nullptr;
+    std::string windowName_;
+    bool isSubContainer_ = false;
 
     ACE_DISALLOW_COPY_AND_MOVE(AceContainerSG);
 };

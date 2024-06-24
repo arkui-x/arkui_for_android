@@ -61,10 +61,8 @@ void AceApplicationInfoImpl::Initialize(JNIEnv* env, jobject info)
         EventReport::SendAppStartException(AppStartExcepType::JNI_CLASS_ERR);
         return;
     }
-
     getLocaleFallback_ =
         env->GetMethodID(objClass, "getLocaleFallback", "(Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;");
-
     if (getLocaleFallback_ == nullptr) {
         LOGE("fail to get the method getLocaleFallback id");
         EventReport::SendAppStartException(AppStartExcepType::JNI_CLASS_ERR);
@@ -108,7 +106,6 @@ void AceApplicationInfoImpl::ChangeLocale(const std::string& language, const std
 
     jstring jLanguage = env->NewStringUTF(language.c_str());
     jstring jCountryOrRegion = env->NewStringUTF(countryOrRegion.c_str());
-
     if (jLanguage != nullptr && jCountryOrRegion != nullptr && object_ != nullptr && changeLocale_ != nullptr) {
         env->CallVoidMethod(object_.get(), changeLocale_, jLanguage, jCountryOrRegion);
         if (env->ExceptionCheck()) {

@@ -321,7 +321,7 @@ static void DumpAccessibilityPropertyNG(const RefPtr<NG::FrameNode>& frameNode)
     DumpLog::GetInstance().AddDesc("support action: ", actionForDump);
 }
 
-void AccessibilityManagerImpl::DumpTree(int32_t depth, int64_t nodeID)
+void AccessibilityManagerImpl::DumpTree(int32_t depth, int64_t nodeID, bool isDumpSimplify)
 {
     DumpLog::GetInstance().Print("Dump Accessiability Tree:");
     auto pipeline = context_.Upgrade();
@@ -339,7 +339,7 @@ void AccessibilityManagerImpl::DumpTree(int32_t depth, int64_t nodeID)
 }
 
 static void GetChildFromNode(const RefPtr<NG::UINode>& uiNode, std::vector<int32_t>& children, int32_t pageId,
-     OHOS::Ace::Platform::ComponentInfo& parentComponent)
+    OHOS::Ace::Platform::ComponentInfo& parentComponent)
 {
     if (AceType::InstanceOf<NG::FrameNode>(uiNode)) {
         if (uiNode->GetTag() == "stage") {
@@ -387,7 +387,7 @@ static OHOS::Ace::Platform::ComponentInfo SetComponentInfo(const RefPtr<NG::Fram
 }
 
 void GetComponents(OHOS::Ace::Platform::ComponentInfo& parentComponent, const RefPtr<NG::FrameNode>& parent,
-     NodeId nodeID, int32_t pageId)
+    NodeId nodeID, int32_t pageId)
 {
     auto node = GetInspectorById(parent, nodeID);
     if (!node) {
@@ -470,7 +470,7 @@ void AccessibilityManagerImpl::DumpHandleEvent(const std::vector<std::string>& p
                 CHECK_NULL_VOID(accessibilityManager);
                 accessibilityManager->ExecuteActionNG(nodeId, action, pipeline);
             },
-            TaskExecutor::TaskType::UI);
+            TaskExecutor::TaskType::UI, "ArkUI-XAccessibilityManagerImplDumpHandleEvent");
         return;
     }
 }

@@ -73,12 +73,16 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     private Context context;
 
+    private final IAceSurface surfaceImpl;
+
     private int surfaceLeft = 0;
     private int surfaceTop = 0;
     private int surfaceWidth = 0;
     private int surfaceHeight = 0;
 
     private boolean viewAdded = false;
+
+    private int instanceId = 0;
 
     /**
      * constructor of AceSurfaceView
@@ -87,19 +91,31 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
      * @param id        id of surface
      * @param callback  resource callback
      * @param initParam initialization parameters
+     * @param surfaceImpl the callback of ace surface
+     * @param instanceId the id of the instance
      */
-    public AceSurfaceView(Context context, long id, IAceOnResourceEvent callback, Map<String, String> initParam) {
+    public AceSurfaceView(Context context, long id, IAceOnResourceEvent callback, Map<String, String> initParam,
+        IAceSurface surfaceImpl, int instanceId) {
         super(context);
         this.id = id;
+        this.surfaceImpl = surfaceImpl;
         this.callback = callback;
         this.callMethodMap = new HashMap<String, IAceOnCallResourceMethod>();
         this.context = context;
+        this.instanceId = instanceId;
         getHolder().addCallback(this);
 
         addOnLayoutChangeListener(this);
 
-        IAceOnCallResourceMethod callSetSurfaceSize = new IAceOnCallResourceMethod() {
+        initCallMethodMap();
 
+        FrameLayout.LayoutParams layoutParams = buildLayoutParams(0, 0, 0, 0);
+        Activity activity = (Activity) context;
+        activity.addContentView(this, layoutParams);
+    }
+
+    private void initCallMethodMap() {
+        IAceOnCallResourceMethod callSetSurfaceSize = new IAceOnCallResourceMethod() {
             /**
              * Set the size of the texture
              *
@@ -113,15 +129,27 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
         this.callMethodMap.put("surface@" + id + METHOD + PARAM_EQUALS + "setSurfaceBounds" + PARAM_BEGIN,
                 callSetSurfaceSize);
-        
+
         IAceOnCallResourceMethod callSetIsFullScreen = (param) -> setIsFullScreen(param);
 
         this.callMethodMap.put("surface@" + id + METHOD + PARAM_EQUALS + "setIsFullScreen" + PARAM_BEGIN,
                 callSetIsFullScreen);
 
-        FrameLayout.LayoutParams layoutParams = buildLayoutParams(0, 0, 0, 0);
-        Activity activity = (Activity) context;
-        activity.addContentView(this, layoutParams);
+        IAceOnCallResourceMethod callAttachNativeWindow = new IAceOnCallResourceMethod() {
+
+            /**
+             * Attach native window
+             *
+             * @param param params
+             * @return result of attach native window.
+             */
+            public String onCall(Map<String, String> param) {
+                return attachNativeWindow(param);
+            }
+        };
+
+        this.callMethodMap.put("surface@" + id + METHOD + PARAM_EQUALS + "attachNativeWindow" + PARAM_BEGIN,
+            callAttachNativeWindow);
     }
 
     /**
@@ -203,6 +231,24 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     }
 
     /**
+     * Attach the native window.
+     *
+     * @param params params
+     * @return result of attach the native window.
+     */
+    private String attachNativeWindow(Map<String, String> params) {
+        ALog.i(LOG_TAG, "attachNativeWindow called.");
+        if (surface == null) {
+            ALog.e(LOG_TAG, "NumberFormatException, attachNativeWindow failed");
+            return FALSE;
+        }
+        long nativeWindow = surfaceImpl.attachNaitveSurface(surface);
+        ALog.i(LOG_TAG, "Surface attach:" + nativeWindow);
+        String param = "nativeWindow=" + nativeWindow;
+        return param;
+    }
+
+    /**
      * Get the surface.
      *
      * @return Surface
@@ -239,7 +285,7 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         ALog.i(LOG_TAG, "Surface Created");
         surface = holder.getSurface();
         callback.onEvent(SURFACE_FLAG + id + EVENT + PARAM_EQUALS + "onCreate" + PARAM_BEGIN, "");
-        AceSurfaceHolder.addSurface(id, surface);
+        AceSurfaceHolder.addSurface(instanceId, id, surface);
     }
 
     @Override
@@ -253,13 +299,12 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     public void surfaceDestroyed(SurfaceHolder holder) {
         ALog.i(LOG_TAG, "Surface Destroyed");
         surface = null;
-        AceSurfaceHolder.removeSurface(id);
+        AceSurfaceHolder.removeSurface(instanceId, id);
     }
 
     @Override
     public void onLayoutChange(View view, int left, int top, int right, int bottom,
     int oldLeft, int oldTop, int oldRight, int oldBottom) {
-        ALog.i(LOG_TAG, "onLayoutChange: left:" + left + " top:" + top + " right:" + right + " bottom:" + bottom);
         if (left != oldLeft || top != oldTop || right != oldRight || bottom != oldBottom) {
             int width = right - left;
             int height = bottom - top;
