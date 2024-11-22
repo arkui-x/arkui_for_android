@@ -1,0 +1,193 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("//foundation/arkui/ace_engine/ace_config.gni")
+import(
+    "//foundation/arkui/ace_engine/adapter/android/capability/java/capability.gni")
+
+template("ace_android_jni_source_set") {
+  forward_variables_from(invoker, "*")
+
+  ohos_source_set(target_name) {
+    defines += invoker.defines
+    configs = [ "$ace_root:ace_config" ]
+
+    sources = [
+      "$ace_root/adapter/android/entrance/java/jni/ace_platform_plugin_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/window_view_jni.cpp",
+    ]
+
+    include_dirs =
+        [ "//foundation/graphic/graphic_surface/interfaces/inner_api/surface" ]
+
+    deps = [ "$ace_root/frameworks/core/components/theme:build_theme_code" ]
+
+    if (ace_use_new_skia) {
+      deps += [ "$ace_flutter_engine_root:flutter_for_ng" ]
+    } else {
+      deps += [
+        "$ace_flutter_engine_root:third_party_flutter_engine_$platform",
+        "$ace_flutter_engine_root/skia:ace_skia_$platform",
+      ]
+    }
+
+    if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
+      deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client_static" ]
+      deps += [ "//foundation/arkui/napi:ace_napi" ]
+    }
+  }
+}
+
+# build platform sources
+template("ace_common_jni_source_set") {
+  forward_variables_from(invoker, "*")
+
+  ohos_source_set(target_name) {
+    defines += invoker.defines
+    configs = [
+      "$ace_root:ace_config",
+      "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/kits/native/ability:abilitykit_native_config",
+      "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/inner_api/hilog:ability_cross_platform_hilog_config",
+      "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/kits/native/appkit:appkit_native_config",
+      "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/inner_api/jsruntime:jsruntime_config",
+    ]
+
+    sources = [
+      "$ace_root/adapter/android/entrance/java/jni/ace_application_info_impl.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/ace_env_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/ace_resource_register.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/display_info.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/display_info_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/download_manager.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/download_manager_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/dump_helper_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/foldable_window_android.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/html/html_to_span.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/interaction/interaction_impl.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/java_event_callback.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/jni_app_mode_config.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/jni_environment.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/jni_load.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/jni_registry.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/mmi_event_convertor.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/pack_asset_provider.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/subwindow_manager_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/timepicker/timepicker_haptic_factory.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/touch_event.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/touch_event_convertor.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/udmf/udmf_impl.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/vibrator/vibrator_impl.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/web_adapter_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/xcollie/xcollieInterface_impl.cpp",
+    ]
+
+    include_dirs = [
+      "//base/global/resource_management/interfaces/inner_api/include",
+      "//foundation/appframework/window_manager/interfaces/innerkits/wm",
+      "//foundation/appframework/window_manager/interfaces/innerkits/dm",
+      "//foundation/appframework/window_manager/dm/include",
+      "//foundation/appframework/window_manager/utils/include",
+      "//foundation/graphic/graphic_surface/interfaces/inner_api/surface",
+      "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/inner_api/base",
+      "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
+    ]
+
+    if (defined(config.use_curl_download) && config.use_curl_download) {
+      sources -=
+          [ "$ace_root/adapter/android/entrance/java/jni/download_manager.cpp" ]
+    }
+
+    sources += capability_cpp_files
+
+    if (target_cpu == "arm64") {
+      defines += [ "_ARM64_" ]
+    }
+
+    if (target_os == "ios") {
+      defines += [ "IOS_PLATFORM" ]
+    } else if (target_os == "android") {
+      defines += [ "ANDROID_PLATFORM" ]
+    }
+
+    if (is_arkui_x) {
+      defines += [ "CROSS_PLATFORM" ]
+    }
+
+    deps = [
+      ":ace_android_jni_$platform",
+      "//foundation/appframework/arkui/uicontent:ace_uicontent_interface",
+      "//foundation/distributeddatamgr/udmf/adapter:arkui_x_udmf_data_napi",
+    ]
+
+    if (ace_use_new_skia) {
+      deps += [ "$ace_flutter_engine_root:flutter_for_ng" ]
+    } else {
+      deps += [
+        "$ace_flutter_engine_root:third_party_flutter_engine_$platform",
+        "$ace_flutter_engine_root/skia:ace_skia_$platform",
+      ]
+    }
+
+    if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
+      deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client_static" ]
+      include_dirs +=
+          [ "//foundation/graphic/graphic_2d/rosen/modules/2d_graphics/src" ]
+      sources += [
+        "$ace_root/adapter/android/entrance/java/jni/virtual_rs_window.cpp",
+      ]
+      deps += [ "//foundation/arkui/napi:ace_napi" ]
+    }
+
+    deps += [ "//foundation/multimodalinput/input/frameworks/proxy:libmmi-client-crossplatform" ]
+
+    if (defined(config.enable_drag_framework) && config.enable_drag_framework) {
+      deps += [ "//base/msdp/device_status/services/interaction/drag:interaction_client_crossplatform" ]
+      defines += [ "OHOS_BUILD_ENABLE_ARKUI_X" ]
+    }
+  }
+}
+
+foreach(item, ace_platforms) {
+  platform = item.name
+  if (platform == "android") {
+    ace_android_jni_source_set("ace_android_jni_" + item.name) {
+      if (!ace_use_new_skia) {
+        platform = item.name
+      }
+      defines = []
+      config = {
+      }
+
+      if (defined(item.config)) {
+        config = item.config
+      }
+      if (defined(config.defines)) {
+        defines = config.defines
+      }
+    }
+    ace_common_jni_source_set("ace_common_jni_" + item.name) {
+      platform = item.name
+      defines = []
+      config = {
+      }
+
+      if (defined(item.config)) {
+        config = item.config
+      }
+      if (defined(config.defines)) {
+        defines = config.defines
+      }
+    }
+  }
+}

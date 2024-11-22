@@ -1,0 +1,9 @@
+{
+  global:
+    extern "C++" {
+      vtable?for?OHOS::DataShare::DataSharePredicates;
+      OHOS::DataShare::DataSharePredicates::*;
+    };
+  local:
+    *;
+};
