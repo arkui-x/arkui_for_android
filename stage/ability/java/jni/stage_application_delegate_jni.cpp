@@ -55,7 +55,7 @@ bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
         },
         {
             .name = "nativeLaunchApplication",
-            .signature = "()V",
+            .signature = "(Z)V",
             .fnPtr = reinterpret_cast<void*>(&LaunchApplication),
         },
         {
@@ -171,10 +171,10 @@ void StageApplicationDelegateJni::SetAssetsFileRelativePath(JNIEnv* env, jclass 
     }
 }
 
-void StageApplicationDelegateJni::LaunchApplication(JNIEnv* env, jclass clazz)
+void StageApplicationDelegateJni::LaunchApplication(JNIEnv* env, jclass clazz, jboolean isCopyNativeLibs)
 {
     LOGI("Launch application");
-    AppMain::GetInstance()->LaunchApplication();
+    AppMain::GetInstance()->LaunchApplication(isCopyNativeLibs);
 }
 
 void StageApplicationDelegateJni::SetCacheDir(JNIEnv* env, jclass myclass, jstring str)
