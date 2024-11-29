@@ -306,7 +306,7 @@ public class BridgeManager {
     public void jsCallMethod(String bridgeName, String methodName, String parameters) {
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
         if (bridgePlugin == null) {
-            ALog.e(LOG_TAG, "jsCallMethod bridgeName is not found");
+            ALog.e(LOG_TAG, "jsCallMethod bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
         if (bridgePlugin.isUseTaskQueue()) {
@@ -370,7 +370,7 @@ public class BridgeManager {
     public void platformSendMethodResult(String bridgeName, String methodName, String result) {
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
         if (bridgePlugin == null) {
-            ALog.e(LOG_TAG, "platformSendMethodResult bridgeName is not found.");
+            ALog.e(LOG_TAG, "platformSendMethodResult bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
         nativePlatformSendMethodResult(bridgeName, methodName, result, this.instanceId_);
@@ -387,7 +387,7 @@ public class BridgeManager {
         BridgeErrorCode bridgeErrorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
         if (bridgePlugin == null) {
-            ALog.e(LOG_TAG, "platformCallMethod bridgeName is not found.");
+            ALog.e(LOG_TAG, "platformCallMethod bridgePlugin Not found, bridgeName is " + bridgeName);
             bridgeErrorCode = BridgeErrorCode.BRIDGE_NAME_ERROR;
             return bridgeErrorCode;
         }
@@ -420,7 +420,7 @@ public class BridgeManager {
     public void jsSendMethodResult(String bridgeName, String methodName, String result) {
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
         if (bridgePlugin == null) {
-            ALog.e(LOG_TAG, "jsSendMethodResult bridgeName is not found.");
+            ALog.e(LOG_TAG, "jsSendMethodResult bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
         if (bridgePlugin.isUseTaskQueue()) {
@@ -460,7 +460,7 @@ public class BridgeManager {
     private void platformSendMessageResponseErrorInfo(String bridgeName, BridgeErrorCode bridgeErrorCode) {
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
         if (bridgePlugin == null) {
-            ALog.e(LOG_TAG, "platformSendMessageResponseErrorInfo bridgeName is not found.");
+            ALog.e(LOG_TAG, "platformSendMessageResponseErrorInfo bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
         try {
@@ -523,7 +523,7 @@ public class BridgeManager {
         BridgeErrorCode bridgeErrorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
         if (bridgePlugin == null) {
-            ALog.e(LOG_TAG, "platformSendMessageResponse bridgeName is not found.");
+            ALog.e(LOG_TAG, "platformSendMessageResponse bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
         try {
@@ -574,7 +574,7 @@ public class BridgeManager {
     public void platformSendMessage(String bridgeName, Object data) {
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
         if (bridgePlugin == null) {
-            ALog.e(LOG_TAG, "platformSendMessage bridgeName is not found.");
+            ALog.e(LOG_TAG, "platformSendMessage bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
         try {
@@ -621,7 +621,7 @@ public class BridgeManager {
     public void jsSendMessageResponse(String bridgeName, String data) {
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
         if (bridgePlugin == null) {
-            ALog.e(LOG_TAG, "jsSendMessageResponse bridgeName is not found.");
+            ALog.e(LOG_TAG, "jsSendMessageResponse bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
         if (bridgePlugin.isUseTaskQueue()) {
@@ -657,7 +657,7 @@ public class BridgeManager {
     public void jsCancelMethod(String bridgeName, String methodName) {
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
         if (bridgePlugin == null) {
-            ALog.e(LOG_TAG, "jsSendMessageResponse bridgeName is not found.");
+            ALog.e(LOG_TAG, "jsSendMessageResponse bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
         bridgePlugin.jsCancelMethod(methodName);
@@ -672,7 +672,7 @@ public class BridgeManager {
     public void platformSendMessageBinary(String bridgeName, Object data) {
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
         if (bridgePlugin == null) {
-            ALog.e(LOG_TAG, "platformSendMessageBinary bridgeName is not found.");
+            ALog.e(LOG_TAG, "platformSendMessageBinary bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
         if (bridgeBinaryCodec_ == null) {
@@ -699,7 +699,7 @@ public class BridgeManager {
     public void jsCallMethodBinary(String bridgeName, String methodName, ByteBuffer bufferData) {
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
         if (bridgePlugin == null) {
-            ALog.e(LOG_TAG, "jsCallMethodBinary bridgeName is not found.");
+            ALog.e(LOG_TAG, "jsCallMethodBinary bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
         if (bridgePlugin.isUseTaskQueue()) {
@@ -761,7 +761,7 @@ public class BridgeManager {
     public void jsSendMessageBinary(String bridgeName, ByteBuffer bufferData) {
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
         if (bridgePlugin == null) {
-            ALog.e(LOG_TAG, "jsSendMessageBinary bridgeName is not found.");
+            ALog.e(LOG_TAG, "jsSendMessageBinary bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
         if (bridgePlugin.getBridgeType() != BridgeType.BINARY_TYPE) {
@@ -798,7 +798,7 @@ public class BridgeManager {
         BridgeErrorCode errorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
         if (bridgePlugin == null) {
-            ALog.e(LOG_TAG, "platformCallMethodBinary bridgeName is not found.");
+            ALog.e(LOG_TAG, "platformCallMethodBinary bridgePlugin Not found, bridgeName is " + bridgeName);
             errorCode = BridgeErrorCode.BRIDGE_NAME_ERROR;
         }
         if (bridgePlugin.getBridgeType() != BridgeType.BINARY_TYPE) {
@@ -842,7 +842,7 @@ public class BridgeManager {
     int errorCode, String errorMessage) {
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
         if (bridgePlugin == null) {
-            ALog.e(LOG_TAG, "jsSendMethodResultBinary bridgeName is not found.");
+            ALog.e(LOG_TAG, "jsSendMethodResultBinary bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
         if (bridgePlugin.isUseTaskQueue()) {
@@ -872,11 +872,20 @@ public class BridgeManager {
         Object resultObj = bridgeBinaryCodec_.decodeData(result);
         bridgePlugin.jsSendMethodResult(resultObj, methodName, errorCode, errorMessage);
     }
+
     /**
      * Init BridgeManager jni.
      *
+     * @param instanceId The instanceId.
      */
     public native void nativeInit(int instanceId);
+
+    /**
+     * Update the current instanceId in jni.
+     *
+     * @param instanceId The current instanceId.
+     */
+    public native void nativeUpdateCurrentInstanceId(int instanceId);
     private native void nativePlatformCallMethod(String bridgeName,
         String methodName, String parameters, int instanceId);
     private native void nativePlatformSendMessageResponse(String bridgeName, String data, int instanceId);

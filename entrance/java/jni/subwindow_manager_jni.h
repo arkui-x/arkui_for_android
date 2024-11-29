@@ -88,7 +88,7 @@ public:
     static bool SetNavigationBarStatus(bool hide);
     static bool SetNavigationIndicatorStatus(bool hide);
     static uint32_t GetStatusBarHeight();
-    static uint32_t getCutoutBarHeight();
+    static uint32_t GetCutoutBarHeight();
     static uint32_t GetNavigationBarHeight();
     static uint32_t GetNavigationIndicatorHeight();
     static int32_t GetScreenOrientation();

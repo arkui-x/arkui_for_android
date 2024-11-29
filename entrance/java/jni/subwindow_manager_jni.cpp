@@ -530,11 +530,11 @@ uint32_t SubWindowManagerJni::GetStatusBarHeight()
     return static_cast<uint32_t>(statusBarHeight);
 }
 
-uint32_t SubWindowManagerJni::getCutoutBarHeight()
+uint32_t SubWindowManagerJni::GetCutoutBarHeight()
 {
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
     if (env == nullptr) {
-        LOGE("SubWindowManagerJni::getCutoutBarHeight: env is NULL");
+        LOGE("SubWindowManagerJni::GetCutoutBarHeight: env is NULL");
         return ERROR_ENV;
     }
     jint statusBarWidth = env->CallIntMethod(

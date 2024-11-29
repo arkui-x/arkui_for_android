@@ -178,6 +178,9 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     @Override
     protected void onRestart() {
         Log.i(LOG_TAG, "StageActivity onRestart called");
+        if (this.bridgeManager != null) {
+            this.bridgeManager.nativeUpdateCurrentInstanceId(instanceId);
+        }
         super.onRestart();
     }
 

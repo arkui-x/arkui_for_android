@@ -181,6 +181,8 @@ std::map<uint32_t, std::vector<sptr<ITouchOutsideListener>>> Window::touchOutsid
 std::recursive_mutex Window::globalMutex_;
 std::recursive_mutex g_sysBarPropMapMutex;
 uint32_t g_KeyboardHeight = 0;
+bool g_IsFullScreen = false;
+bool g_IsStatusBarHide = false;
 bool g_IsNavigationIndicatorShow = false;
 
 Window::Window(std::shared_ptr<AbilityRuntime::Platform::Context> context, uint32_t windowId)
@@ -632,6 +634,9 @@ WMError Window::SetSystemBarProperty(WindowType type, const SystemBarProperty& p
         result = SubWindowManagerJni::SetNavigationBarStatus(hide);
     } else if (type == WindowType::WINDOW_TYPE_STATUS_BAR) {
         result = SubWindowManagerJni::SetStatusBarStatus(hide);
+        if (result) {
+            g_IsStatusBarHide = hide;
+        }
     } else {
         LOGE("The WindowType is not set to SystemBarProperty. The WindowType is %{public}d", type);
     }
@@ -784,6 +789,7 @@ void Window::CreateSurfaceNode(void* nativeWindow)
         LOGI("Window Notify uiContent_ Surface Created");
         uiContent_->NotifySurfaceCreated();
     }
+    delayNotifySurfaceCreated_ = true;
 }
 
 void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
@@ -811,6 +817,7 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
         LOGI("Window Notify uiContent_ Surface Changed %{public}s", config.ToString().c_str());
         uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE);
     }
+    delayNotifySurfaceChanged_ = true;
 }
 
 void Window::NotifyKeyboardHeightChanged(int32_t height)
@@ -971,18 +978,19 @@ void Window::DelayNotifyUIContentIfNeeded()
         LOGE("Window Delay Notify uiContent_ is nullptr!");
         return;
     }
-
-    LOGD("Window Delay Notify uiContent_ Surface Created");
-    uiContent_->NotifySurfaceCreated();
-
-    LOGD("Window Delay Notify uiContent_ Surface Changed wh:[%{public}d, %{public}d]", surfaceWidth_,
-        surfaceHeight_);
-    Ace::ViewportConfig config;
-    config.SetDensity(density_);
-    config.SetSize(surfaceWidth_, surfaceHeight_);
-    config.SetOrientation(surfaceHeight_ >= surfaceWidth_ ? 0 : 1);
-    uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE);
-
+    if (delayNotifySurfaceCreated_) {
+        LOGD("Window Delay Notify uiContent_ Surface Created");
+        uiContent_->NotifySurfaceCreated();
+    }
+    if (delayNotifySurfaceChanged_) {
+        LOGD("Window Delay Notify uiContent_ Surface Changed wh:[%{public}d, %{public}d]", surfaceWidth_,
+            surfaceHeight_);
+        Ace::ViewportConfig config;
+        config.SetDensity(density_);
+        config.SetSize(surfaceWidth_, surfaceHeight_);
+        config.SetOrientation(surfaceHeight_ >= surfaceWidth_ ? 0 : 1);
+        uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE);
+    }
     if (delayNotifySurfaceDestroyed_) {
         LOGD("Window Delay Notify uiContent_ Surface Destroyed");
         uiContent_->NotifySurfaceDestroyed();
@@ -1082,6 +1090,7 @@ void Window::SetUpThreadInfo()
 WMError Window::SetLayoutFullScreen(bool status)
 {
     if (SubWindowManagerJni::SetWindowLayoutFullScreen(status)) {
+        g_IsFullScreen = status;
         return WMError::WM_OK;
     } else {
         LOGE("Window::SetLayoutFullScreen: failed");
@@ -1096,6 +1105,9 @@ WMError Window::SetSpecificBarProperty(WindowType type, const SystemBarProperty&
 
     if (type == WindowType::WINDOW_TYPE_STATUS_BAR) {
         result = SubWindowManagerJni::SetStatusBarStatus(hide);
+        if (result) {
+            g_IsStatusBarHide = hide;
+        }
     } else if (type == WindowType::WINDOW_TYPE_NAVIGATION_BAR) {
         result = SubWindowManagerJni::SetNavigationBarStatus(hide);
     } else if (type == WindowType::WINDOW_TYPE_NAVIGATION_INDICATOR) {
@@ -1118,38 +1130,40 @@ WMError Window::SetSpecificBarProperty(WindowType type, const SystemBarProperty&
     }
 }
 
-Rect Window::getTopRect(const Rect& SafeAreaRect)
+Rect Window::GetTopRect(const Rect& safeAreaRect)
 {
-    Rect rect = EMPTY_RECT;
-    auto displayWidth = DisplayInfoJni::getDisplayWidth();
     auto statusBarHeight = SubWindowManagerJni::GetStatusBarHeight();
-    auto navBarHeight = SubWindowManagerJni::GetNavigationBarHeight();
-    auto sumHeight = SafeAreaRect.posY_ + SafeAreaRect.height_ + statusBarHeight + navBarHeight;
-    if (SafeAreaRect.posY_ > 0) {
-        rect.width_ = displayWidth;
-        rect.height_ = SafeAreaRect.posY_;
-    } else if (sumHeight == DisplayInfoJni::getDisplayHeight()) {
-        rect.width_ = displayWidth;
+    if (g_IsFullScreen && g_IsStatusBarHide || statusBarHeight == 0) {
+        return EMPTY_RECT;
+    }
+
+    Rect rect = EMPTY_RECT;
+    auto orientationType = SubWindowManagerJni::GetScreenOrientation();
+    if (orientationType == ORIENTATION_PORTRAIT) {
+        rect.width_ = safeAreaRect.width_;
+        rect.height_ = statusBarHeight;
+    } else if (!g_IsStatusBarHide) {
+        rect.width_ = (safeAreaRect.posX_ > 0) ? (safeAreaRect.width_ + safeAreaRect.posX_) : safeAreaRect.width_;
         rect.height_ = statusBarHeight;
     }
     return rect;
 }
 
-Rect Window::getLeftRect(const Rect& SafeAreaRect)
+Rect Window::GetLeftRect(const Rect& safeAreaRect)
 {
     Rect rect = EMPTY_RECT;
-    if (SafeAreaRect.posX_ > 0) {
-        rect.width_ = SafeAreaRect.posX_;
+    if (safeAreaRect.posX_ > 0) {
+        rect.width_ = safeAreaRect.posX_;
         rect.height_ = DisplayInfoJni::getDisplayHeight();
     }
     return rect;
 }
 
-Rect Window::getRightRect(const Rect& SafeAreaRect)
+Rect Window::GetRightRect(const Rect& safeAreaRect)
 {
     Rect rect = EMPTY_RECT;
     auto displayWidth = DisplayInfoJni::getDisplayWidth();
-    auto sumWidth = SafeAreaRect.posX_ + SafeAreaRect.width_;
+    auto sumWidth = safeAreaRect.posX_ + safeAreaRect.width_;
     if (sumWidth < displayWidth) {
         rect.posX_ = sumWidth;
         rect.width_ = displayWidth - sumWidth;
@@ -1158,11 +1172,15 @@ Rect Window::getRightRect(const Rect& SafeAreaRect)
     return rect;
 }
 
-Rect Window::getBottomRect(const Rect& SafeAreaRect)
+Rect Window::GetBottomRect(const Rect& safeAreaRect)
 {
+    if (SubWindowManagerJni::GetNavigationBarHeight() == 0) {
+        return EMPTY_RECT;
+    }
+
     Rect rect = EMPTY_RECT;
     auto displayHeight = DisplayInfoJni::getDisplayHeight();
-    auto sumHeight = SafeAreaRect.posY_ + SafeAreaRect.height_;
+    auto sumHeight = safeAreaRect.posY_ + safeAreaRect.height_;
     if (sumHeight < displayHeight) {
         rect.posY_ = sumHeight;
         rect.width_ = surfaceWidth_;
@@ -1171,18 +1189,18 @@ Rect Window::getBottomRect(const Rect& SafeAreaRect)
     return rect;
 }
 
-void Window::getCutoutRect(const Rect& SafeAreaRect, AvoidArea& avoidArea)
+void Window::GetCutoutRect(const Rect& safeAreaRect, AvoidArea& avoidArea)
 {
-    auto cutoutBarHeight = SubWindowManagerJni::getCutoutBarHeight();
+    auto cutoutBarHeight = SubWindowManagerJni::GetCutoutBarHeight();
     if (cutoutBarHeight == 0) {
         return;
     }
     auto orientationType = SubWindowManagerJni::GetScreenOrientation();
     if (orientationType == ORIENTATION_PORTRAIT) {
-        avoidArea.topRect_ = getTopRect(SafeAreaRect);
+        avoidArea.topRect_ = GetTopRect(safeAreaRect);
     } else {
-        orientationType == ORIENTATION_LANDSCAPE ? avoidArea.leftRect_ = getLeftRect(SafeAreaRect)
-                                                 : avoidArea.rightRect_ = getRightRect(SafeAreaRect);
+        orientationType == ORIENTATION_LANDSCAPE ? avoidArea.leftRect_ = GetLeftRect(safeAreaRect)
+                                                 : avoidArea.rightRect_ = GetRightRect(safeAreaRect);
     }
 }
 
@@ -1193,18 +1211,18 @@ WMError Window::GetAvoidAreaByType(AvoidAreaType type, AvoidArea& avoidArea)
     avoidArea.rightRect_ = EMPTY_RECT;
     avoidArea.bottomRect_ = EMPTY_RECT;
     auto WMErrorCode = WMError::WM_OK;
-    const Rect SafeAreaRect = SubWindowManagerJni::GetSafeArea();
+    const Rect safeAreaRect = SubWindowManagerJni::GetSafeArea();
     auto NavigationIndicatorHeight = SubWindowManagerJni::GetNavigationIndicatorHeight();
 
     switch (type) {
         case AvoidAreaType::TYPE_SYSTEM:
-            avoidArea.topRect_ = getTopRect(SafeAreaRect);
-            avoidArea.leftRect_ = getLeftRect(SafeAreaRect);
-            avoidArea.rightRect_ = getRightRect(SafeAreaRect);
-            avoidArea.bottomRect_ = getBottomRect(SafeAreaRect);
+            avoidArea.topRect_ = GetTopRect(safeAreaRect);
+            avoidArea.leftRect_ = GetLeftRect(safeAreaRect);
+            avoidArea.rightRect_ = GetRightRect(safeAreaRect);
+            avoidArea.bottomRect_ = GetBottomRect(safeAreaRect);
             break;
         case AvoidAreaType::TYPE_CUTOUT:
-            getCutoutRect(SafeAreaRect, avoidArea);
+            GetCutoutRect(safeAreaRect, avoidArea);
             break;
         case AvoidAreaType::TYPE_SYSTEM_GESTURE:
             break;
@@ -1217,7 +1235,7 @@ WMError Window::GetAvoidAreaByType(AvoidAreaType type, AvoidArea& avoidArea)
             break;
         case AvoidAreaType::TYPE_NAVIGATION_INDICATOR:
             if (g_IsNavigationIndicatorShow && NavigationIndicatorHeight > 0) {
-                avoidArea.bottomRect_ = getBottomRect(SafeAreaRect);
+                avoidArea.bottomRect_ = GetBottomRect(safeAreaRect);
             }
             break;
         default:

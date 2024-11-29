@@ -326,11 +326,11 @@ private:
     static void DeleteFromSubWindowMap(std::shared_ptr<Window> window);
     GraphicColorGamut GetSurfaceGamutFromColorSpace(ColorSpace colorSpace) const;
     ColorSpace GetColorSpaceFromSurfaceGamut(GraphicColorGamut colorGamut) const;
-    Rect getTopRect(const Rect& SafeAreaRect);
-    Rect getLeftRect(const Rect& SafeAreaRect);
-    Rect getRightRect(const Rect& SafeAreaRect);
-    Rect getBottomRect(const Rect& SafeAreaRect);
-    void getCutoutRect(const Rect& SafeAreaRect, AvoidArea& avoidArea);
+    Rect GetTopRect(const Rect& safeAreaRect);
+    Rect GetLeftRect(const Rect& safeAreaRect);
+    Rect GetRightRect(const Rect& safeAreaRect);
+    Rect GetBottomRect(const Rect& safeAreaRect);
+    void GetCutoutRect(const Rect& safeAreaRect, AvoidArea& avoidArea);
 
     int32_t surfaceWidth_ = 0;
     int32_t surfaceHeight_ = 0;
@@ -342,6 +342,9 @@ private:
     std::unique_ptr<OHOS::Ace::Platform::UIContent> uiContent_;
 
     std::shared_ptr<VSyncReceiver> receiver_ = nullptr;
+
+    bool delayNotifySurfaceCreated_ = false;
+    bool delayNotifySurfaceChanged_ = false;
     bool delayNotifySurfaceDestroyed_ = false;
     NotifyNativeWinDestroyFunc notifyNativefunc_;
     static std::map<uint32_t, std::vector<sptr<IOccupiedAreaChangeListener>>> occupiedAreaChangeListeners_;
