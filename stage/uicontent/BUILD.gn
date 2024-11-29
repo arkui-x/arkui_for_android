@@ -38,6 +38,7 @@ template("ace_uicontent_android_source_set") {
       "//third_party/flutter/engine",
       "//foundation/appframework/arkui/uicontent",
       "//third_party/zlib",
+      "//foundation/arkui/ace_engine/adapter/android/osal/mock",
     ]
 
     if (is_arkui_x) {

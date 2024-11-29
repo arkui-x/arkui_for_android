@@ -28,6 +28,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Trace;
 import android.util.Log;
+import android.view.View;
 
 import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.AcePlatformPlugin;
@@ -40,13 +41,14 @@ import ohos.ace.adapter.capability.platformview.IPlatformView;
 import ohos.ace.adapter.capability.platformview.PlatformViewFactory;
 import ohos.ace.adapter.capability.platformview.AcePlatformViewPluginAosp;
 import ohos.ace.adapter.WindowView;
-
+import ohos.ace.adapter.WindowViewAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginBase;
 import ohos.ace.adapter.capability.bridge.BridgeManager;
 import ohos.ace.adapter.capability.grantresult.GrantResult;
 import ohos.ace.adapter.capability.keyboard.KeyboardHeightObserver;
 import ohos.ace.adapter.capability.keyboard.KeyboardHeightProvider;
-
+import android.view.View;
+import android.content.res.Configuration;
 /**
  * A base class for the Ability Cross-platform Environment of the stage model to
  * run on Android.
@@ -124,7 +126,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         activityDelegate.attachStageActivity(getInstanceName(), this);
         getIntentToCreateDelegator(intent);
         Trace.beginSection("createWindowView");
-        windowView = new WindowView(this);
+        windowView = new WindowViewAosp(this, instanceId);
         Trace.endSection();
         windowView.setId(instanceId);
         initPlatformPlugin(this, instanceId, windowView);
@@ -546,5 +548,14 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             return;
         }
         platformViewPluginAosp.registerPlatformViewFactory(platformViewFactory);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE
+            || newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            sendOrderedBroadcast(new Intent(WindowViewAosp.ARKUI_ORIENTAION_ACTION), null);
+        }
     }
 }

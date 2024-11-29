@@ -40,9 +40,11 @@ const std::unordered_map<TouchType, int32_t> TOUCH_TYPE_MAP = {
     { TouchType::PULL_IN_WINDOW, MMI::PointerEvent::POINTER_ACTION_PULL_IN_WINDOW },
     { TouchType::PULL_OUT_WINDOW, MMI::PointerEvent::POINTER_ACTION_PULL_OUT_WINDOW },
 };
+
+const size_t DATA_ALIGNAS = 8;
 } // namespace
 
-struct alignas(8) AceActionData {
+struct alignas(DATA_ALIGNAS) AceActionData {
     enum class ActionType : int64_t {
         UNKNOWN = -1,
         CANCEL = 0,
@@ -52,6 +54,9 @@ struct alignas(8) AceActionData {
         DOWN,
         MOVE,
         UP,
+        HOVER_ENTER,
+        HOVER_MOVE,
+        HOVER_EXIT,
     };
 
     int64_t pointerId_ { -1 };
@@ -69,13 +74,54 @@ struct alignas(8) AceActionData {
     int8_t actionPoint = 0;
 };
 
-void ConvertTouchEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent, std::vector<TouchEvent>& events);
+struct alignas(DATA_ALIGNAS) AceMouseData {
+    enum class Action : int64_t {
+        NONE,
+        PRESS,
+        RELEASE,
+        MOVE,
+        HOVER_ENTER,
+        HOVER_MOVE,
+        HOVER_EXIT,
+    };
+
+    enum class ActionButton : int64_t {
+        NONE_BUTTON = 0,
+        LEFT_BUTTON = 1,
+        RIGHT_BUTTON = 2,
+        MIDDLE_BUTTON = 4,
+        BACK_BUTTON = 8,
+        FORWARD_BUTTON = 16,
+    };
+
+    double physicalX;
+    double physicalY;
+    double physicalZ;
+    double deltaX;
+    double deltaY;
+    double deltaZ;
+    double scrollDeltaX;
+    double scrollDeltaY;
+    double scrollDeltaZ;
+    Action action;
+    ActionButton actionButton;
+    int64_t pressedButtons;
+    int64_t timeStamp;
+    int64_t deviceId;
+    int64_t deviceType;
+};
+
 void ConvertPointerEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent, PointerEvent& event);
-void CreatePointerEventFromBytes(std::shared_ptr<MMI::PointerEvent>& pointerEvent, const std::vector<uint8_t>& data);
+TouchEvent ConvertTouchEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent);
+void CreatePointerEventsFromBytes(
+    std::vector<std::shared_ptr<MMI::PointerEvent>>& pointerEvent, const std::vector<uint8_t>& data);
 void SetTouchEventType(int32_t orgAction, TouchEvent& event);
 void UpdateTouchEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent, TouchEvent& touchEvent);
 TouchPoint ConvertTouchPoint(const MMI::PointerEvent::PointerItem& pointerItem);
 void SetPointerEventAction(AceActionData::ActionType actionType, std::shared_ptr<MMI::PointerEvent>& pointerEvent);
 void SetPointerItemPressed(AceActionData::ActionType actionType, MMI::PointerEvent::PointerItem& pointerItem);
+void ConvertMouseEvent(const std::vector<uint8_t>& data, MouseEvent& events);
+void SetMouseEventAction(AceMouseData::Action action, MouseEvent& event);
+void SetMouseEventActionButton(AceMouseData::ActionButton actionButton, MouseEvent& event);
 } // namespace OHOS::Ace::Platform
 #endif // FOUNDATION_ACE_ADAPTER_OHOS_ENTRANCE_MMI_EVENT_CONVERTOR_H

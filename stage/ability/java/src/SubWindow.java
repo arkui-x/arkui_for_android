@@ -27,6 +27,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
 import ohos.ace.adapter.WindowView;
+import ohos.ace.adapter.WindowViewAosp;
 import ohos.ace.adapter.AcePlatformPlugin;
 import java.util.Arrays;
 
@@ -57,6 +58,11 @@ public class SubWindow {
         }
 
         public void shutdown() {
+            View cView = getContentView();
+            if (cView != null && cView instanceof WindowViewAosp) {
+                ((WindowViewAosp)cView).destroyAosp();
+                cView = null;
+            }
             super.dismiss();
         }
     }
@@ -141,7 +147,7 @@ public class SubWindow {
         subWindowView.setFocusable(isFocusable);
         subWindowView.setTouchable(true);
 
-        WindowView windowView = new WindowView(rootActivity);
+        WindowView windowView = new WindowViewAosp(rootActivity, windowId);
         AcePlatformPlugin platformPlugin = new AcePlatformPlugin(rootActivity, windowId, windowView);
         if (platformPlugin != null) {
             windowView.setInputConnectionClient(platformPlugin);

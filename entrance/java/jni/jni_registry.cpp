@@ -23,17 +23,18 @@
 #include "adapter/android/capability/java/jni/environment/environment_jni.h"
 #include "adapter/android/capability/java/jni/font/system_font_jni.h"
 #include "adapter/android/capability/java/jni/grantresult/grant_result_jni.h"
+#include "adapter/android/capability/java/jni/plugin/plugin_manager_jni.h"
 #include "adapter/android/capability/java/jni/storage/storage_jni.h"
 #include "adapter/android/capability/java/jni/vibrator/vibrator_jni.h"
-#include "adapter/android/capability/java/jni/plugin/plugin_manager_jni.h"
 #include "adapter/android/entrance/java/jni/ace_platform_plugin_jni.h"
+#include "adapter/android/entrance/java/jni/display_info_jni.h"
 #include "adapter/android/entrance/java/jni/download_manager_jni.h"
 #include "adapter/android/entrance/java/jni/dump_helper_jni.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
-#include "adapter/android/entrance/java/jni/window_view_jni.h"
+#include "adapter/android/entrance/java/jni/js_accessibility_manager_jni.h"
 #include "adapter/android/entrance/java/jni/subwindow_manager_jni.h"
-#include "adapter/android/entrance/java/jni/display_info_jni.h"
 #include "adapter/android/entrance/java/jni/web_adapter_jni.h"
+#include "adapter/android/entrance/java/jni/window_view_jni.h"
 #include "base/log/log.h"
 
 namespace OHOS::Ace::Platform {
@@ -127,6 +128,11 @@ bool JniRegistry::Register()
 
     if (!WebAdapterJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register WebAdapterJni");
+        return false;
+    }
+
+    if (!JsAccessibilityManagerJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register JsAccessibilityManagerJni");
         return false;
     }
 

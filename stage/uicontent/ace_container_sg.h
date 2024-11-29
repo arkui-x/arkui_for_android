@@ -273,7 +273,8 @@ public:
         aceView_->SetFirstUpDating(time);
     }
 
-    void AttachView(std::unique_ptr<Window> window, AceView* view, double density, int32_t width, int32_t height);
+    void AttachView(std::unique_ptr<Window> window, AceView* view, double density, int32_t width, int32_t height,
+        uint32_t windowId);
 
     // For stage mode
     static void DestroyContainer(int32_t instanceId, const std::function<void()>& destroyCallback = nullptr);
@@ -330,7 +331,8 @@ private:
     virtual bool MaybeRelease() override;
     void InitializeFrontend();
     void InitializeCallback();
-    void InitPiplineContext(std::unique_ptr<Window> window, double density, int32_t width, int32_t height);
+    void InitPiplineContext(std::unique_ptr<Window> window, double density, int32_t width, int32_t height,
+        uint32_t windowId);
     void InitializeEventHandler();
     void InitializeFinishEventHandler(int32_t instanceId);
     void InitializeStatusBarEventHandler(int32_t instanceId);

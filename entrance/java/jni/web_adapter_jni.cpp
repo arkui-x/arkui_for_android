@@ -202,16 +202,14 @@ std::map<std::string, std::string> GetStringMapFromJNI(const jobject& obj, std::
     while (env->CallBooleanMethod(iteratorObj, hasNextMID)) {
         jobject entryObj = env->CallObjectMethod(iteratorObj, nextMID);
         jstring jsHeaderKey = (jstring)env->CallObjectMethod(entryObj, getKeyMID);
-        if (jsHeaderKey == NULL) {
+        if (jsHeaderKey == NULL)
             continue;
-        }
         const char* cHeaderKey = env->GetStringUTFChars(jsHeaderKey, JNI_FALSE);
         std::string headerKey(cHeaderKey);
 
         jstring jsHeaderValue = (jstring)env->CallObjectMethod(entryObj, getValueMID);
-        if (jsHeaderValue == NULL) {
+        if (jsHeaderValue == NULL)
             continue;
-        }
         const char* cHeaderValue = env->GetStringUTFChars(jsHeaderValue, JNI_FALSE);
         std::string headerValue(cHeaderValue);
         returnMap.insert({ headerKey, headerValue });

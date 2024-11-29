@@ -15,6 +15,7 @@
 
 #include "mmi_event_convertor.h"
 
+#include "adapter/android/entrance/java/jni/interaction/interaction_impl.h"
 #include "base/log/log.h"
 #include "base/utils/time_util.h"
 #include "base/utils/utils.h"
@@ -64,40 +65,42 @@ void UpdateTouchEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent, To
     touchEvent.CovertId();
 }
 
-void ConvertTouchEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent, std::vector<TouchEvent>& events)
+TouchEvent ConvertTouchEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent)
 {
-    auto items = pointerEvent->GetAllPointerItems();
-    for (auto& item : items) {
-        auto touchPoint = ConvertTouchPoint(item);
-        if (actionPointMap[item.GetPointerId()] == ACTION_POINT) {
-            std::chrono::microseconds microseconds(pointerEvent->GetActionTime());
-            TimeStamp time(microseconds);
-            TouchEvent event;
-            event.SetId(touchPoint.id)
-                .SetX(touchPoint.x)
-                .SetY(touchPoint.y)
-                .SetScreenX(touchPoint.screenX)
-                .SetScreenY(touchPoint.screenY)
-                .SetType(TouchType::UNKNOWN)
-                .SetPullType(TouchType::UNKNOWN)
-                .SetTime(time)
-                .SetSize(touchPoint.size)
-                .SetForce(touchPoint.force)
-                .SetTiltX(touchPoint.tiltX)
-                .SetTiltY(touchPoint.tiltY)
-                .SetDeviceId(pointerEvent->GetDeviceId())
-                .SetTargetDisplayId(pointerEvent->GetTargetDisplayId())
-                .SetSourceType(static_cast<SourceType>(pointerEvent->GetSourceType()))
-                .SetSourceTool(touchPoint.sourceTool)
-                .SetTouchEventId(pointerEvent->GetId());
-            event.pointerEvent = pointerEvent;
-            event.originalId = item.GetOriginPointerId();
-            int32_t orgAction = pointerEvent->GetPointerAction();
-            SetTouchEventType(orgAction, event);
-            UpdateTouchEvent(pointerEvent, event);
-            events.emplace_back(event);
-        }
+    int32_t pointerID = pointerEvent->GetPointerId();
+    MMI::PointerEvent::PointerItem item;
+    bool ret = pointerEvent->GetPointerItem(pointerID, item);
+    if (!ret) {
+        LOGE("get pointer item failed.");
+        return TouchEvent();
     }
+    auto touchPoint = ConvertTouchPoint(item);
+    std::chrono::microseconds microseconds(pointerEvent->GetActionTime());
+    TimeStamp time(microseconds);
+    TouchEvent event;
+    event.SetId(touchPoint.id)
+        .SetX(touchPoint.x)
+        .SetY(touchPoint.y)
+        .SetScreenX(touchPoint.screenX)
+        .SetScreenY(touchPoint.screenY)
+        .SetType(TouchType::UNKNOWN)
+        .SetPullType(TouchType::UNKNOWN)
+        .SetTime(time)
+        .SetSize(touchPoint.size)
+        .SetForce(touchPoint.force)
+        .SetTiltX(touchPoint.tiltX)
+        .SetTiltY(touchPoint.tiltY)
+        .SetDeviceId(pointerEvent->GetDeviceId())
+        .SetTargetDisplayId(pointerEvent->GetTargetDisplayId())
+        .SetSourceType(static_cast<SourceType>(pointerEvent->GetSourceType()))
+        .SetSourceTool(touchPoint.sourceTool)
+        .SetTouchEventId(pointerEvent->GetId());
+    event.pointerEvent = pointerEvent;
+    event.originalId = item.GetOriginPointerId();
+    int32_t orgAction = pointerEvent->GetPointerAction();
+    SetTouchEventType(orgAction, event);
+    UpdateTouchEvent(pointerEvent, event);
+    return event;
 }
 
 void SetTouchEventType(int32_t orgAction, TouchEvent& event)
@@ -152,6 +155,14 @@ void SetTouchEventType(int32_t orgAction, TouchEvent& event)
 
 void ConvertPointerEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent, PointerEvent& event)
 {
+#ifdef ENABLE_DRAG_FRAMEWORK
+    Ace::DragState dragState;
+    Ace::InteractionInterface::GetInstance()->GetDragState(dragState);
+    auto Impl = static_cast<Ace::InteractionImpl*>(Ace::InteractionInterface::GetInstance());
+    if (dragState == Ace::DragState::START && Impl->GetPointerId() == pointerEvent->GetPointerId()) {
+        Impl->UpdatePointAction(pointerEvent);
+    }
+#endif
     event.rawPointerEvent = pointerEvent;
     event.pointerId = pointerEvent->GetPointerId();
     MMI::PointerEvent::PointerItem pointerItem;
@@ -170,21 +181,19 @@ void ConvertPointerEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent,
     event.targetWindowId = pointerItem.GetTargetWindowId();
 }
 
-void CreatePointerEventFromBytes(std::shared_ptr<MMI::PointerEvent>& pointerEvent, const std::vector<uint8_t>& data)
+void CreatePointerEventsFromBytes(
+    std::vector<std::shared_ptr<MMI::PointerEvent>>& pointerEvents, const std::vector<uint8_t>& data)
 {
     const auto* origin = reinterpret_cast<const AceActionData*>(data.data());
     size_t size = data.size() / sizeof(AceActionData);
     auto current = const_cast<AceActionData*>(origin);
     auto end = current + size;
-    pointerEvent->SetDeviceId(static_cast<int32_t>(current->deviceId_));
-    pointerEvent->SetSourceType(static_cast<int32_t>(current->sourceType_));
-    pointerEvent->SetActionTime(current->actionTime_);
-    pointerEvent->SetTargetDisplayId(0);
-    SetPointerEventAction(current->actionType, pointerEvent);
+    auto deviceId = static_cast<int32_t>(current->deviceId_);
+    auto sourceType = static_cast<int32_t>(current->sourceType_);
+    auto actionTime = current->actionTime_;
+    auto actionType = current->actionType;
+    std::vector<OHOS::MMI::PointerEvent::PointerItem> items;
     while (current < end) {
-        if (current == origin) {
-            pointerEvent->SetPointerId(current->pointerId_);
-        }
         OHOS::MMI::PointerEvent::PointerItem pointerItem;
         pointerItem.SetPointerId(static_cast<int32_t>(current->pointerId_));
         pointerItem.SetDownTime(current->downTime_);
@@ -198,9 +207,27 @@ void CreatePointerEventFromBytes(std::shared_ptr<MMI::PointerEvent>& pointerEven
         pointerItem.SetToolType(static_cast<int32_t>(current->toolType_));
         pointerItem.SetOriginPointerId(static_cast<int32_t>(current->pointerId_));
         SetPointerItemPressed(current->actionType, pointerItem);
-        pointerEvent->AddPointerItem(pointerItem);
         actionPointMap[current->pointerId_] = current->actionPoint;
         current++;
+        items.emplace_back(pointerItem);
+    }
+
+    for (int i = 0; i < items.size(); i++) {
+        int32_t pointerId = items[i].GetPointerId();
+        if (actionPointMap[pointerId] != ACTION_POINT) {
+            continue;
+        }
+        auto pointerEvent = OHOS::MMI::PointerEvent::Create();
+        pointerEvent->SetPointerId(pointerId);
+        pointerEvent->SetDeviceId(deviceId);
+        pointerEvent->SetSourceType(sourceType);
+        pointerEvent->SetActionTime(actionTime);
+        pointerEvent->SetTargetDisplayId(0);
+        SetPointerEventAction(actionType, pointerEvent);
+        for (auto& item : items) {
+            pointerEvent->AddPointerItem(item);
+        }
+        pointerEvents.emplace_back(pointerEvent);
     }
 }
 
@@ -209,6 +236,16 @@ void SetPointerEventAction(AceActionData::ActionType actionType, std::shared_ptr
     switch (actionType) {
         case AceActionData::ActionType::CANCEL:
             pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_CANCEL);
+            return;
+        case AceActionData::ActionType::HOVER_ENTER:
+            pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_HOVER_ENTER);
+            return;
+        case AceActionData::ActionType::HOVER_MOVE:
+            pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_HOVER_MOVE);
+            return;
+        case AceActionData::ActionType::HOVER_EXIT:
+            pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_HOVER_EXIT);
+            return;
         case AceActionData::ActionType::DOWN:
             pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_DOWN);
             return;
@@ -240,6 +277,83 @@ void SetPointerItemPressed(AceActionData::ActionType actionType, MMI::PointerEve
             return;
         default:
             return;
+    }
+}
+
+void ConvertMouseEvent(const std::vector<uint8_t>& data, MouseEvent& events)
+{
+    const auto* mouseActionData = reinterpret_cast<const AceMouseData*>(data.data());
+    if (!mouseActionData) {
+        return;
+    }
+    std::chrono::microseconds micros(mouseActionData->timeStamp);
+    TimeStamp time(micros);
+    events.x = mouseActionData->physicalX;
+    events.y = mouseActionData->physicalY;
+    events.z = mouseActionData->physicalZ;
+    events.deltaX = mouseActionData->deltaX;
+    events.deltaY = mouseActionData->deltaY;
+    events.deltaZ = mouseActionData->deltaZ;
+    events.scrollX = mouseActionData->scrollDeltaX;
+    events.scrollY = mouseActionData->scrollDeltaY;
+    events.scrollZ = mouseActionData->scrollDeltaZ;
+    events.screenX = mouseActionData->physicalX;
+    events.screenY = mouseActionData->physicalY;
+    SetMouseEventAction(mouseActionData->action, events);
+    SetMouseEventActionButton(mouseActionData->actionButton, events);
+    events.pressedButtons = static_cast<int32_t>(mouseActionData->pressedButtons);
+    events.time = time;
+    events.deviceId = mouseActionData->deviceId;
+    events.sourceType = static_cast<SourceType>(mouseActionData->deviceType);
+}
+
+void SetMouseEventAction(AceMouseData::Action action, MouseEvent& events)
+{
+    switch (action) {
+        case AceMouseData::Action::PRESS:
+            events.action = MouseAction::PRESS;
+            break;
+        case AceMouseData::Action::RELEASE:
+            events.action = MouseAction::RELEASE;
+            break;
+        case AceMouseData::Action::MOVE:
+            events.action = MouseAction::MOVE;
+            break;
+        case AceMouseData::Action::HOVER_ENTER:
+            events.action = MouseAction::HOVER_ENTER;
+            break;
+        case AceMouseData::Action::HOVER_MOVE:
+            events.action = MouseAction::HOVER_MOVE;
+            break;
+        case AceMouseData::Action::HOVER_EXIT:
+            events.action = MouseAction::HOVER_EXIT;
+            break;
+        default:
+            events.action = MouseAction::NONE;
+            break;
+    }
+}
+void SetMouseEventActionButton(AceMouseData::ActionButton actionButton, MouseEvent& events)
+{
+    switch (actionButton) {
+        case AceMouseData::ActionButton::LEFT_BUTTON:
+            events.button = MouseButton::LEFT_BUTTON;
+            break;
+        case AceMouseData::ActionButton::RIGHT_BUTTON:
+            events.button = MouseButton::RIGHT_BUTTON;
+            break;
+        case AceMouseData::ActionButton::MIDDLE_BUTTON:
+            events.button = MouseButton::MIDDLE_BUTTON;
+            break;
+        case AceMouseData::ActionButton::BACK_BUTTON:
+            events.button = MouseButton::BACK_BUTTON;
+            break;
+        case AceMouseData::ActionButton::FORWARD_BUTTON:
+            events.button = MouseButton::FORWARD_BUTTON;
+            break;
+        default:
+            events.button = MouseButton::NONE_BUTTON;
+            break;
     }
 }
 } // namespace OHOS::Ace::Platform

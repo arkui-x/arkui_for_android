@@ -34,6 +34,8 @@ public:
     int32_t GetRowStride() const override;
     int32_t GetRowBytes() const override;
     int32_t GetByteCount() const override;
+    AllocatorType GetAllocatorType() const override;
+    bool IsHdr() const override;
     void* GetPixelManager() const override;
     void* GetRawPixelMapPtr() const override;
     std::string GetId() override;

@@ -61,6 +61,7 @@ void AceApplicationInfoImpl::Initialize(JNIEnv* env, jobject info)
         EventReport::SendAppStartException(AppStartExcepType::JNI_CLASS_ERR);
         return;
     }
+
     getLocaleFallback_ =
         env->GetMethodID(objClass, "getLocaleFallback", "(Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;");
     if (getLocaleFallback_ == nullptr) {

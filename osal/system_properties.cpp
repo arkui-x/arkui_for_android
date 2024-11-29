@@ -60,25 +60,27 @@ bool SystemProperties::textTraceEnable_ = false;
 bool SystemProperties::syntaxTraceEnable_ = false;
 bool SystemProperties::accessibilityEnabled_ = false;
 bool SystemProperties::windowAnimationEnabled_ = false;
-bool SystemProperties::debugBoundaryEnabled_ = false;
+std::atomic<bool> SystemProperties::debugBoundaryEnabled_(false);
 bool SystemProperties::debugAutoUIEnabled_ = false;
 bool SystemProperties::debugOffsetLogEnabled_ = false;
 bool SystemProperties::extSurfaceEnabled_ = true;
 uint32_t SystemProperties::dumpFrameCount_ = 0;
-bool SystemProperties::layoutTraceEnable_ = false;
+std::atomic<bool> SystemProperties::layoutTraceEnable_(false);
 bool SystemProperties::buildTraceEnable_ = false;
 bool SystemProperties::enableScrollableItemPool_ = false;
 bool SystemProperties::navigationBlurEnabled_ = true;
 bool SystemProperties::gridCacheEnabled_ = false;
 bool SystemProperties::sideBarContainerBlurEnable_ = false;
-bool SystemProperties::acePerformanceMonitorEnable_ = false;
+std::atomic<bool> SystemProperties::acePerformanceMonitorEnable_(false);
 bool SystemProperties::aceCommercialLogEnable_ = false;
 bool SystemProperties::imageFileCacheConvertAstc_ = false;
 int32_t SystemProperties::imageFileCacheConvertAstcThreshold_ = 2;
-bool SystemProperties::traceInputEventEnable_ = false;
+std::atomic<bool> SystemProperties::traceInputEventEnable_(false);
 bool SystemProperties::imageFrameworkEnable_ = true;
+float SystemProperties::pageCount_ = 0.0f;
 float SystemProperties::dragStartDampingRatio_ = 0.2f;
 float SystemProperties::dragStartPanDisThreshold_ = 10.0f;
+bool SystemProperties::accessTraceEnable_ = true;
 uint32_t SystemProperties::canvasDebugMode_ = 0;
 
 std::pair<float, float> SystemProperties::brightUpPercent_ = {};
@@ -239,6 +241,11 @@ bool SystemProperties::GetNavigationBlurEnabled()
     return navigationBlurEnabled_;
 }
 
+bool SystemProperties::GetCacheNavigationNodeEnable()
+{
+    return false;
+}
+
 bool SystemProperties::GetGridCacheEnabled()
 {
     return gridCacheEnabled_;
@@ -277,6 +284,36 @@ float SystemProperties::GetDragStartDampingRatio()
 float SystemProperties::GetDragStartPanDistanceThreshold()
 {
     return dragStartPanDisThreshold_;
+}
+
+bool SystemProperties::IsSmallFoldProduct()
+{
+    return false;
+}
+
+std::string SystemProperties::GetWebDebugRenderMode()
+{
+    return UNDEFINED_PARAM;
+}
+
+std::string SystemProperties::GetDebugInspectorId()
+{
+    return UNDEFINED_PARAM;
+}
+
+double SystemProperties::GetSrollableVelocityScale()
+{
+    return 0.0;
+}
+
+double SystemProperties::GetSrollableFriction()
+{
+    return 0.0;
+}
+
+bool SystemProperties::IsNeedResampleTouchPoints()
+{
+    return false;
 }
 
 bool SystemProperties::IsNeedSymbol()

@@ -14,9 +14,10 @@
  */
 
 #include "display_info_jni.h"
+
+#include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/log/log.h"
 #include "base/utils/utils.h"
-#include "adapter/android/entrance/java/jni/jni_environment.h"
 
 namespace OHOS::Ace::Platform {
 

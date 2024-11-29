@@ -332,6 +332,34 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    public boolean onHoverEventAosp(MotionEvent event) {
+        if (nativeWindowPtr == 0L) {
+            return super.onTouchEvent(event);
+        }
+        this.setWebTouchEvent(event);
+        this.setPlatformViewTouchEvent(event);
+
+        try {
+            int source = event.getSource();
+            if (source == InputDevice.SOURCE_MOUSE) {
+                lastMouseX = event.getX(event.getActionIndex());
+                lastMouseY = event.getY(event.getActionIndex());
+                int actionMasked = event.getActionMasked();
+                int buttonState = event.getButtonState();
+
+                int actionKey = getActionKey(actionMasked, buttonState);
+                ByteBuffer mousePacket = AceEventProcessorAosp.processMouseEvent(event, actionKey, lastMouseX, lastMouseY);
+                nativeDispatchMouseDataPacket(nativeWindowPtr, mousePacket, mousePacket.position());
+            }
+            ByteBuffer packet = AceEventProcessorAosp.processHoverTouchEvent(event);
+            nativeDispatchPointerDataPacket(nativeWindowPtr, packet, packet.position());
+            return true;
+        } catch (AssertionError error) {
+            ALog.e(LOG_TAG, "process touch event failed: " + error.getMessage());
+            return false;
+        }
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 

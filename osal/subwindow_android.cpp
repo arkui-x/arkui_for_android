@@ -32,7 +32,14 @@ const std::string SUBWINDOW_PREFIX = "ARK_APP_SUBWINDOW_";
 int32_t SubwindowAndroid::id_ = 0;
 RefPtr<Subwindow> Subwindow::CreateSubwindow(int32_t instanceId)
 {
-    return AceType::MakeRefPtr<SubwindowAndroid>(instanceId);
+    auto subWindow = AceType::MakeRefPtr<SubwindowAndroid>(instanceId);
+    CHECK_NULL_RETURN(subWindow, nullptr);
+    auto ret = subWindow->InitContainer();
+    if (!ret) {
+        TAG_LOGW(AceLogTag::ACE_SUB_WINDOW, "InitContainer failed, container id %{public}d", instanceId);
+        return nullptr;
+    }
+    return subWindow;
 }
 
 SubwindowAndroid::SubwindowAndroid(int32_t instanceId) : windowId_(id_), parentContainerId_(instanceId)
@@ -41,13 +48,13 @@ SubwindowAndroid::SubwindowAndroid(int32_t instanceId) : windowId_(id_), parentC
     id_++;
 }
 
-void SubwindowAndroid::InitContainer()
+bool SubwindowAndroid::InitContainer()
 {
     LOGI("Init container enter");
     auto parentContainer = Platform::AceContainerSG::GetContainer(parentContainerId_);
-    CHECK_NULL_VOID(parentContainer);
+    CHECK_NULL_RETURN(parentContainer, false);
     InitSubwindow(parentContainer);
-    CHECK_NULL_VOID(window_);
+    CHECK_NULL_RETURN(window_, false);
 
     std::string url = "";
     window_->SetUIContent(
@@ -57,37 +64,36 @@ void SubwindowAndroid::InitContainer()
     SubwindowManager::GetInstance()->AddParentContainerId(childContainerId_, parentContainerId_);
 
     if (!InitSubContainer(parentContainer)) {
-        SetIsRosenWindowCreate(false);
-        return;
+        return false;
     }
     // create ace view
     auto* aceView = Platform::AceViewSG::CreateView(childContainerId_);
     Platform::AceViewSG::SurfaceCreated(aceView, window_.get());
 
     sptr<Rosen::Display> defaultDisplay = Rosen::DisplayManager::GetInstance().GetDefaultDisplaySync();
-    CHECK_NULL_VOID(defaultDisplay);
+    CHECK_NULL_RETURN(defaultDisplay, false);
     sptr<Rosen::DisplayInfo> defaultDisplayInfo = defaultDisplay->GetDisplayInfo();
-    CHECK_NULL_VOID(defaultDisplayInfo);
+    CHECK_NULL_RETURN(defaultDisplayInfo, false);
     int32_t width = defaultDisplayInfo->GetWidth();
     int32_t height = defaultDisplayInfo->GetHeight();
     auto parentPipeline = parentContainer->GetPipelineContext();
-    CHECK_NULL_VOID(parentPipeline);
+    CHECK_NULL_RETURN(parentPipeline, false);
     auto density = parentPipeline->GetDensity();
     LOGI(
         "UIContent Initialize: width: %{public}d, height: %{public}d, density: %{public}lf", width, height, density);
 
     // set view
     ViewportConfig config;
-    SetIsRosenWindowCreate(true);
     Platform::AceContainerSG::SetView(aceView, density, width, height, window_.get());
     Platform::AceViewSG::SurfaceChanged(aceView, width, height, config.Orientation());
 
     auto subPipelineContextNG = AceType::DynamicCast<NG::PipelineContext>(
         Platform::AceContainerSG::GetContainer(childContainerId_)->GetPipelineContext());
-    CHECK_NULL_VOID(subPipelineContextNG);
+    CHECK_NULL_RETURN(subPipelineContextNG, false);
     subPipelineContextNG->SetParentPipeline(parentContainer->GetPipelineContext());
     subPipelineContextNG->SetupSubRootElement();
     subPipelineContextNG->SetMinPlatformVersion(parentPipeline->GetMinPlatformVersion());
+    return true;
 }
 
 void SubwindowAndroid::InitSubwindow(const RefPtr<Platform::AceContainerSG>& parentContainer)
@@ -505,7 +511,8 @@ void SubwindowAndroid::ClearMenuNG(int32_t targetId, bool inWindow, bool showAni
     }
 }
 
-void SubwindowAndroid::UpdateHideMenuOffsetNG(const NG::OffsetF& offset, float menuScale, bool isRedragStart)
+void SubwindowAndroid::UpdateHideMenuOffsetNG(
+    const NG::OffsetF& offset, float menuScale, bool isRedragStart, int32_t menuWrapperId)
 {
     ContainerScope scope(childContainerId_);
     auto pipelineContext = NG::PipelineContext::GetCurrentContext();
@@ -604,7 +611,7 @@ void SubwindowAndroid::CloseCustomDialogNG(int32_t dialogId)
     return overlay->CloseCustomDialog(dialogId);
 }
 
-void SubwindowAndroid::ShowToast(const NG::ToastInfo& toastInfo)
+void SubwindowAndroid::ShowToast(const NG::ToastInfo& toastInfo, std::function<void(int32_t)>&& callback)
 {
     CHECK_NULL_VOID(window_);
     SubwindowManager::GetInstance()->SetCurrentSubwindow(AceType::Claim(this));
@@ -626,7 +633,7 @@ void SubwindowAndroid::ShowToast(const NG::ToastInfo& toastInfo)
         window_->SetTouchable(false);
         window_->SetFullScreen(true);
     }
-    delegate->ShowToast(toastInfo);
+    delegate->ShowToast(toastInfo, std::move(callback));
 }
 
 void SubwindowAndroid::ClearToast()
@@ -646,6 +653,11 @@ void SubwindowAndroid::ClearToast()
     overlayManager->ClearToast();
     context->FlushPipelineImmediately();
     HideWindow();
+}
+
+void SubwindowAndroid::SetRect(const NG::RectF& rect)
+{
+    windowRect_ = rect;
 }
 
 NG::RectF SubwindowAndroid::GetRect()
@@ -669,15 +681,6 @@ Rect SubwindowAndroid::GetUIExtensionHostWindowRect() const
 {
     Rect rect;
     return rect;
-}
-
-bool SubwindowAndroid::CheckHostWindowStatus() const
-{
-    auto parentContainer = Platform::AceContainerSG::GetContainer(parentContainerId_);
-    CHECK_NULL_RETURN(parentContainer, false);
-    auto parentWindow = parentContainer->GetUIWindow(parentContainerId_);
-    CHECK_NULL_RETURN(parentWindow, false);
-    return true;
 }
 
 void SubwindowAndroid::RequestFocus()

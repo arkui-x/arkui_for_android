@@ -124,6 +124,16 @@ int32_t PixelMapAndroid::GetByteCount() const
     return pixmap_->GetByteCount();
 }
 
+AllocatorType PixelMapAndroid::GetAllocatorType() const
+{
+    return AllocatorType::DEFAULT;
+}
+
+bool PixelMapAndroid::IsHdr() const
+{
+    return false;
+}
+
 void* PixelMapAndroid::GetPixelManager() const
 {
     Media::InitializationOptions opts;

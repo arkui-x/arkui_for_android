@@ -31,7 +31,6 @@
 #include "window_view_jni.h"
 
 #include "adapter/android/entrance/java/jni/ace_env_jni.h"
-#include "adapter/android/entrance/java/jni/interaction/interaction_impl.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/log/log.h"
 #include "base/utils/utils.h"
@@ -330,7 +329,9 @@ std::shared_ptr<Window> Window::CreateSubWindow(
         LOGE("Window::CreateSubWindow called failed due to null option");
         return nullptr;
     }
+
     LOGI("Window::CreateSubWindow called. windowName=%s", option->GetWindowName().c_str());
+
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
     bool result = SubWindowManagerJni::CreateSubWindow(option);
     if (result) {
@@ -521,8 +522,10 @@ WMError Window::MoveWindowTo(int32_t x, int32_t y)
         LOGI("Window::MoveWindowTo called failed due to null option");
         return WMError::WM_ERROR_INVALID_WINDOW;
     }
+
     rect_.posX_ = x;
     rect_.posY_ = y;
+
     bool result = SubWindowManagerJni::MoveWindowTo(this->GetWindowName(), x, y);
     if (result) {
         NotifySizeChange(rect_);
@@ -539,6 +542,7 @@ WMError Window::ResizeWindowTo(int32_t width, int32_t height)
         LOGI("Window::ResizeWindowTo called failed due to null option");
         return WMError::WM_ERROR_INVALID_WINDOW;
     }
+
     rect_.width_ = width;
     rect_.height_ = height;
     bool result = SubWindowManagerJni::ResizeWindowTo(this->GetWindowName(), width, height);
@@ -673,6 +677,7 @@ WMError Window::SetSystemBarProperty(WindowType type, const SystemBarProperty& p
 void Window::SetRequestedOrientation(Orientation orientation)
 {
     LOGI("Window::SetRequestedOrientation called.");
+
     bool result = SubWindowManagerJni::RequestOrientation(orientation);
     if (!result) {
         LOGI("Window::SetRequestedOrientation: failed");
@@ -760,7 +765,7 @@ WMError Window::UnregisterListener(std::vector<sptr<T>>& holder, const sptr<T>& 
         return WMError::WM_ERROR_NULLPTR;
     }
     holder.erase(std::remove_if(holder.begin(), holder.end(),
-        [listener](sptr<T> registeredListener) { return registeredListener == listener; }),
+                     [listener](sptr<T> registeredListener) { return registeredListener == listener; }),
         holder.end());
     return WMError::WM_OK;
 }
@@ -999,16 +1004,13 @@ bool Window::ProcessPointerEvent(const std::vector<uint8_t>& data)
         LOGW("Window::ProcessPointerEvent uiContent_ is nullptr");
         return false;
     }
-    std::shared_ptr<OHOS::MMI::PointerEvent> pointerEvent = OHOS::MMI::PointerEvent::Create();
-    CreatePointerEventFromBytes(pointerEvent, data);
-#ifdef ENABLE_DRAG_FRAMEWORK
-    Ace::DragState dragState;
-    Ace::InteractionInterface::GetInstance()->GetDragState(dragState);
-    if (dragState == Ace::DragState::START) {
-        static_cast<Ace::InteractionImpl*>(Ace::InteractionInterface::GetInstance())->UpdatePointAction(pointerEvent);
+    std::vector<std::shared_ptr<MMI::PointerEvent>> pointerEvents;
+    CreatePointerEventsFromBytes(pointerEvents, data);
+    bool result = true;
+    for (auto& pointerEvent : pointerEvents) {
+        result &= uiContent_->ProcessPointerEvent(pointerEvent);
     }
-#endif
-    return uiContent_->ProcessPointerEvent(pointerEvent);
+    return result;
 }
 
 bool Window::ProcessMouseEvent(const std::vector<uint8_t>& data)

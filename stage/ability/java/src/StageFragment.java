@@ -88,6 +88,8 @@ public class StageFragment extends Fragment {
 
     private PluginContext pluginContext = null;
 
+    private boolean isToResume;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.i(LOG_TAG, "OnCreate called, instance name:" + getInstanceName());
@@ -98,6 +100,7 @@ public class StageFragment extends Fragment {
         fragmentDelegate.attachStageFragment(getInstanceName(), this);
         Trace.beginSection("createWindowView");
         windowView = new WindowView(this.getActivity());
+        windowView.setId(instanceId);
         Trace.endSection();
 
         fragmentDelegate.setWindowView(getInstanceName(), windowView);
@@ -133,6 +136,12 @@ public class StageFragment extends Fragment {
     public void onResume() {
         Log.i(LOG_TAG, "OnResume called, instance name:" + getInstanceName());
         super.onResume();
+        if(isHidden()){
+            Log.i(LOG_TAG, "OnResume called, isHidden");
+            isToResume = true;
+            return;
+        }
+        isToResume = false;
         Trace.beginSection("StageFragment::onResume");
         fragmentDelegate.dispatchOnForeground(getInstanceName());
         windowView.foreground();
@@ -140,6 +149,23 @@ public class StageFragment extends Fragment {
             platformPlugin.notifyLifecycleChanged(false);
         }
         Trace.endSection();
+    }
+
+    @Override
+    public void onHiddenChanged(boolean isHidden){
+        super.onHiddenChanged(isHidden);
+        Log.i(LOG_TAG, "onHiddenChanged called, isHidden:" + isHidden);
+        if (!isHidden && isToResume) {
+            isToResume = false;
+
+            Trace.beginSection("StageFragment::onHiddenChanged");
+            fragmentDelegate.dispatchOnForeground(getInstanceName());
+            windowView.foreground();
+            if (platformPlugin != null) {
+                platformPlugin.notifyLifecycleChanged(false);
+            }
+            Trace.endSection();
+        }
     }
 
     @Override

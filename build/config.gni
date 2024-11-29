@@ -15,6 +15,7 @@ defines = [
   "ANDROID_PLATFORM",
   "NG_BUILD",
   "SK_BUILD_FOR_ANDROID",
+  "CROSS_PLATFORM",
 ]
 
 js_engines = []
@@ -27,7 +28,7 @@ js_engines += [ ark_engine ]
 build_for_android = true
 
 use_build_in_js_engine = true
-accessibility_support = false
+accessibility_support = true
 rich_components_support = true
 advance_components_support = true
 form_components_support = false
@@ -45,7 +46,7 @@ web_components_support = true
 render_extract_support = true
 platform_view_support = true
 use_platform_font = true
-enable_drag_framework = false
+enable_drag_framework = true
 
 cflags_cc = [
   "-std=c++17",

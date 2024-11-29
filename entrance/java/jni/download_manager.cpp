@@ -50,6 +50,18 @@ public:
         return false;
     }
 
+    bool DownloadAsyncWithPreload(
+        DownloadCallback&& downloadCallback, const std::string& url, int32_t instanceId, int32_t nodeId) override
+    {
+        return false;
+    }
+
+    bool DownloadSyncWithPreload(
+        DownloadCallback&& downloadCallback, const std::string& url, int32_t instanceId, int32_t nodeId) override
+    {
+        return false;
+    }
+
     bool RemoveDownloadTask(const std::string& url, int32_t nodeId) override
     {
         return false;

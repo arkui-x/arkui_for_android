@@ -237,7 +237,8 @@ void AceContainerSG::InitializeFrontend()
     LOGI("InitializeFrontend finished.");
 }
 
-void AceContainerSG::InitPiplineContext(std::unique_ptr<Window> window, double density, int32_t width, int32_t height)
+void AceContainerSG::InitPiplineContext(std::unique_ptr<Window> window, double density, int32_t width, int32_t height,
+    uint32_t windowId)
 {
     LOGI("init piplinecontext start.");
     ACE_DCHECK(aceView_ && window && taskExecutor_ && assetManager_ && resRegister_ && frontend_);
@@ -250,6 +251,7 @@ void AceContainerSG::InitPiplineContext(std::unique_ptr<Window> window, double d
     pipelineContext_->SetTextFieldManager(AceType::MakeRefPtr<NG::TextFieldManagerNG>());
     pipelineContext_->SetIsRightToLeft(AceApplicationInfo::GetInstance().IsRightToLeft());
     pipelineContext_->SetMessageBridge(messageBridge_);
+    pipelineContext_->SetWindowId(windowId);
     pipelineContext_->SetWindowModal(windowModal_);
     pipelineContext_->SetDrawDelegate(aceView_->GetDrawDelegate());
     pipelineContext_->SetFontScale(resourceInfo_.GetResourceConfiguration().GetFontRatio());
@@ -587,12 +589,12 @@ void AceContainerSG::SetView(
     rsWindow->CreateVSyncReceiver(eventHandler);
     auto window = std::make_unique<NG::RosenWindow>(rsWindow, container->GetTaskExecutor(), view->GetInstanceId());
     AceContainerSG::SetUIWindow(view->GetInstanceId(), rsWindow);
-    container->AttachView(std::move(window), view, density, width, height);
+    container->AttachView(std::move(window), view, density, width, height, rsWindow->GetWindowId());
 #endif
 }
 
 void AceContainerSG::AttachView(
-    std::unique_ptr<Window> window, AceView* view, double density, int32_t width, int32_t height)
+    std::unique_ptr<Window> window, AceView* view, double density, int32_t width, int32_t height, uint32_t windowId)
 {
     aceView_ = view;
     auto instanceId = aceView_->GetInstanceId();
@@ -631,7 +633,7 @@ void AceContainerSG::AttachView(
     aceViewSG->SetPlatformResRegister(resResgister);
     resRegister_ = aceView_->GetPlatformResRegister();
 
-    InitPiplineContext(std::move(window), density, width, height);
+    InitPiplineContext(std::move(window), density, width, height, windowId);
     if (resRegister_) {
         resRegister_->SetPipelineContext(pipelineContext_);
     }
@@ -779,7 +781,6 @@ void AceContainerSG::InitThemeManager()
             auto themeManager = AceType::MakeRefPtr<ThemeManagerImpl>();
             pipelineContext->SetThemeManager(themeManager);
             themeManager->InitResource(resourceInfo);
-            themeManager->LoadSystemTheme(resourceInfo.GetThemeId());
             themeManager->SetColorScheme(colorScheme);
             themeManager->LoadResourceThemes();
             aceView->SetBackgroundColor(themeManager->GetBackgroundColor());
@@ -1094,7 +1095,7 @@ bool AceContainerSG::RunPage(
     CHECK_NULL_RETURN(front, false);
     LOGI("RunPage content=[%{private}s]", content.c_str());
     if (isNamedRouter) {
-        front->RunPageByNamedRouter(content);
+        front->RunPageByNamedRouter(content, params);
     } else {
         front->RunPage(content, params);
     }

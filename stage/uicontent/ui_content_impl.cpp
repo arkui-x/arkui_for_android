@@ -28,8 +28,8 @@
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
 #include "adapter/android/entrance/java/jni/pack_asset_provider.h"
-#include "adapter/android/osal/accessibility_manager_impl.h"
 #include "adapter/android/osal/file_asset_provider.h"
+#include "adapter/android/osal/js_accessibility_manager.h"
 #include "adapter/android/osal/page_url_checker_android.h"
 #include "adapter/android/stage/uicontent/ace_container_sg.h"
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
@@ -292,7 +292,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
             if (dynamicLoadFlag) {
                 auto fileAssetProvider = AceType::MakeRefPtr<FileAssetProvider>();
                 if (fileAssetProvider->Initialize(
-                    assetProvider->GetAppDataModuleDir() + "/" + moduleName, hapAssetPaths)) {
+                        assetProvider->GetAppDataModuleDir() + "/" + moduleName, hapAssetPaths)) {
                     LOGD("Push AssetProvider to queue.");
                     assetManagerImpl->PushBack(std::move(fileAssetProvider));
                 }
@@ -724,7 +724,7 @@ bool UIContentImpl::GetAllComponents(NodeId nodeID, OHOS::Ace::Platform::Compone
             auto accessibilityNodeManager =
                 AceType::DynamicCast<OHOS::Ace::Framework::AccessibilityNodeManager>(accessibilityManager);
             auto accessibilityManagerImpl =
-                AceType::DynamicCast<OHOS::Ace::Framework::AccessibilityManagerImpl>(accessibilityNodeManager);
+                AceType::DynamicCast<OHOS::Ace::Framework::JsAccessibilityManager>(accessibilityNodeManager);
             auto ret = accessibilityManagerImpl->GetAllComponents(nodeID, components);
             LOGI("UIContentImpl::GetAllComponents ret = %d", ret);
             return ret;

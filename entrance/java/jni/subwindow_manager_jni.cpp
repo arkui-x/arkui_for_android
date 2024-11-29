@@ -23,7 +23,7 @@
 namespace OHOS::Ace::Platform {
 namespace {
 static constexpr uint32_t ERROR_ENV = 0;
-}  // namespace
+} // namespace
 
 SubWindowManagerStruct SubWindowManagerJni::subWindowManagerStruct_;
 
@@ -76,6 +76,7 @@ bool SubWindowManagerJni::Register(const std::shared_ptr<JNIEnv>& env)
 void SubWindowManagerJni::SetupSubWindowManager(JNIEnv* env, jobject obj)
 {
     LOGI("SubWindowManagerJni::SetupDisplayInfo called");
+
     jclass clazz = env->GetObjectClass(obj);
     subWindowManagerStruct_.object = env->NewGlobalRef(obj);
     subWindowManagerStruct_.clazz = (jclass)env->NewGlobalRef(clazz);
@@ -89,6 +90,7 @@ void SubWindowManagerJni::SetupSubWindowManager(JNIEnv* env, jobject obj)
     subWindowManagerStruct_.destroyWindowMethod = env->GetMethodID(clazz, "destroyWindow", "(Ljava/lang/String;)Z");
     subWindowManagerStruct_.getWindowIdMethod = env->GetMethodID(clazz, "getWindowId", "(Ljava/lang/String;)I");
     subWindowManagerStruct_.getTopWindowMethod = env->GetMethodID(clazz, "getTopWindow", "()Landroid/view/View;");
+
     subWindowManagerStruct_.setBackgroundColorMethod = env->GetMethodID(clazz, "setBackgroundColor", "(I)Z");
     subWindowManagerStruct_.setAppScreenBrightnessMethod = env->GetMethodID(clazz, "setAppScreenBrightness", "(F)Z");
     subWindowManagerStruct_.getAppScreenBrightnessMethod = env->GetMethodID(clazz, "getAppScreenBrightness", "()F");
@@ -110,18 +112,13 @@ void SubWindowManagerJni::SetupSubWindowManager(JNIEnv* env, jobject obj)
     subWindowManagerStruct_.getScreenOrientationMethod = env->GetMethodID(clazz, "getScreenOrientation", "()I");
     subWindowManagerStruct_.getSafeAreaMethod = env->GetMethodID(clazz, "getSafeArea", "()Landroid/graphics/Rect;");
     subWindowManagerStruct_.hideMethod = env->GetMethodID(clazz, "hide", "(Ljava/lang/String;)Z");
-    subWindowManagerStruct_.setFocusableMethod =
-        env->GetMethodID(clazz, "setFocusable", "(Ljava/lang/String;Z)Z");
-    subWindowManagerStruct_.setTouchableMethod =
-        env->GetMethodID(clazz, "setTouchable", "(Ljava/lang/String;Z)Z");
-    subWindowManagerStruct_.requestFocusMethod =
-        env->GetMethodID(clazz, "requestFocus", "(Ljava/lang/String;)Z");
+    subWindowManagerStruct_.setFocusableMethod = env->GetMethodID(clazz, "setFocusable", "(Ljava/lang/String;Z)Z");
+    subWindowManagerStruct_.setTouchableMethod = env->GetMethodID(clazz, "setTouchable", "(Ljava/lang/String;Z)Z");
+    subWindowManagerStruct_.requestFocusMethod = env->GetMethodID(clazz, "requestFocus", "(Ljava/lang/String;)Z");
     subWindowManagerStruct_.setTouchHotAreaMethod =
         env->GetMethodID(clazz, "setTouchHotArea", "(Ljava/lang/String;[Landroid/graphics/Rect;)Z");
-    subWindowManagerStruct_.setFullScreenMethod =
-        env->GetMethodID(clazz, "setFullScreen", "(Ljava/lang/String;Z)Z");
-    subWindowManagerStruct_.setOnTopMethod =
-        env->GetMethodID(clazz, "setOnTop", "(Ljava/lang/String;Z)Z");
+    subWindowManagerStruct_.setFullScreenMethod = env->GetMethodID(clazz, "setFullScreen", "(Ljava/lang/String;Z)Z");
+    subWindowManagerStruct_.setOnTopMethod = env->GetMethodID(clazz, "setOnTop", "(Ljava/lang/String;Z)Z");
     subWindowManagerStruct_.registerSubWindowMethod =
         env->GetMethodID(clazz, "registerSubWindow", "(Ljava/lang/String;J)Z");
     subWindowManagerStruct_.unregisterSubWindowMethod =
@@ -308,6 +305,7 @@ bool SubWindowManagerJni::SetBackgroundColor(uint32_t color)
         LOGE("SubWindowManagerJni::setBackgroundColor: env is NULL");
         return false;
     }
+
     jboolean ret = env->CallBooleanMethod(
         subWindowManagerStruct_.object, subWindowManagerStruct_.setBackgroundColorMethod, (int)color);
     if (ret == JNI_TRUE) {
@@ -326,6 +324,7 @@ bool SubWindowManagerJni::SetAppScreenBrightness(float brightness)
         LOGE("SubWindowManagerJni::setAppScreenBrightness: env is NULL");
         return false;
     }
+
     jboolean ret = env->CallBooleanMethod(
         subWindowManagerStruct_.object, subWindowManagerStruct_.setAppScreenBrightnessMethod, brightness);
     if (ret == JNI_TRUE) {
@@ -357,6 +356,7 @@ bool SubWindowManagerJni::SetKeepScreenOn(bool keepScreenOn)
         LOGE("SubWindowManagerJni::setKeepScreenOn: env is NULL");
         return false;
     }
+
     jboolean ret = env->CallBooleanMethod(subWindowManagerStruct_.object, subWindowManagerStruct_.setKeepScreenOnMethod,
         keepScreenOn ? JNI_TRUE : JNI_FALSE);
     if (ret == JNI_TRUE) {
@@ -375,6 +375,7 @@ bool SubWindowManagerJni::IsKeepScreenOn()
         LOGE("SubWindowManagerJni::isKeepScreenOn: env is NULL");
         return false;
     }
+
     jboolean ret = env->CallBooleanMethod(subWindowManagerStruct_.object, subWindowManagerStruct_.isKeepScreenOnMethod);
     if (ret == JNI_TRUE) {
         LOGI("SubWindowManagerJni::isKeepScreenOn: true");
@@ -392,6 +393,7 @@ bool SubWindowManagerJni::RequestOrientation(Rosen::Orientation orientation)
         LOGE("SubWindowManagerJni::requestOrentation: env is NULL");
         return false;
     }
+
     jboolean ret = env->CallBooleanMethod(
         subWindowManagerStruct_.object, subWindowManagerStruct_.requestOrientationMethod, (int)orientation);
     if (ret == JNI_TRUE) {
@@ -458,6 +460,7 @@ bool SubWindowManagerJni::SetStatusBarStatus(bool hide)
         LOGE("SubWindowManagerJni::setStatusBarStatus: env is NULL");
         return false;
     }
+
     jboolean result = env->CallBooleanMethod(
         subWindowManagerStruct_.object, subWindowManagerStruct_.setStatusBarStatusMethod, hide ? JNI_TRUE : JNI_FALSE);
     bool conversionResult = static_cast<bool>(result);
@@ -472,6 +475,7 @@ bool SubWindowManagerJni::SetActionBarStatus(bool hide)
         LOGE("SubWindowManagerJni::setActionBarStatus: env is NULL");
         return false;
     }
+
     jboolean ret = env->CallBooleanMethod(
         subWindowManagerStruct_.object, subWindowManagerStruct_.setActionBarStatusMethod, hide ? JNI_TRUE : JNI_FALSE);
     if (ret == JNI_TRUE) {
@@ -511,8 +515,8 @@ uint32_t SubWindowManagerJni::GetStatusBarHeight()
         LOGE("SubWindowManagerJni::GetStatusBarHeight: env is NULL");
         return ERROR_ENV;
     }
-    jint statusBarHeight = env->CallIntMethod(
-        subWindowManagerStruct_.object, subWindowManagerStruct_.getStatusBarHeightMethod);
+    jint statusBarHeight =
+        env->CallIntMethod(subWindowManagerStruct_.object, subWindowManagerStruct_.getStatusBarHeightMethod);
     return static_cast<uint32_t>(statusBarHeight);
 }
 
@@ -523,8 +527,8 @@ uint32_t SubWindowManagerJni::GetCutoutBarHeight()
         LOGE("SubWindowManagerJni::GetCutoutBarHeight: env is NULL");
         return ERROR_ENV;
     }
-    jint statusBarWidth = env->CallIntMethod(
-        subWindowManagerStruct_.object, subWindowManagerStruct_.getCutoutBarHeightMethod);
+    jint statusBarWidth =
+        env->CallIntMethod(subWindowManagerStruct_.object, subWindowManagerStruct_.getCutoutBarHeightMethod);
     return static_cast<uint32_t>(statusBarWidth);
 }
 
@@ -535,8 +539,8 @@ uint32_t SubWindowManagerJni::GetNavigationBarHeight()
         LOGE("SubWindowManagerJni::GetNavigationBarHeight: env is NULL");
         return ERROR_ENV;
     }
-    jint navigationBarHeight = env->CallIntMethod(
-        subWindowManagerStruct_.object, subWindowManagerStruct_.getNavigationBarHeightMethod);
+    jint navigationBarHeight =
+        env->CallIntMethod(subWindowManagerStruct_.object, subWindowManagerStruct_.getNavigationBarHeightMethod);
     return static_cast<uint32_t>(navigationBarHeight);
 }
 
@@ -547,8 +551,8 @@ uint32_t SubWindowManagerJni::GetNavigationIndicatorHeight()
         LOGE("SubWindowManagerJni::GetNavigationIndicatorHeight: env is NULL");
         return ERROR_ENV;
     }
-    jint navigationBarWidth = env->CallIntMethod(
-        subWindowManagerStruct_.object, subWindowManagerStruct_.getGestureBarHeightMethod);
+    jint navigationBarWidth =
+        env->CallIntMethod(subWindowManagerStruct_.object, subWindowManagerStruct_.getGestureBarHeightMethod);
     return static_cast<uint32_t>(navigationBarWidth);
 }
 
@@ -559,15 +563,15 @@ int32_t SubWindowManagerJni::GetScreenOrientation()
         LOGE("SubWindowManagerJni::GetScreenOrientation: env is NULL");
         return ERROR_ENV;
     }
-    jint orientationType = env->CallIntMethod(
-        subWindowManagerStruct_.object, subWindowManagerStruct_.getScreenOrientationMethod);
+    jint orientationType =
+        env->CallIntMethod(subWindowManagerStruct_.object, subWindowManagerStruct_.getScreenOrientationMethod);
     return static_cast<int32_t>(orientationType);
 }
 
 OHOS::Rosen::Rect SubWindowManagerJni::GetSafeArea()
 {
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
-    OHOS::Rosen::Rect rect = {0, 0, 0, 0};
+    OHOS::Rosen::Rect rect = { 0, 0, 0, 0 };
     if (env == nullptr) {
         LOGE("SubWindowManagerJni::GetSafeArea: env is NULL");
         return rect;
@@ -583,7 +587,7 @@ OHOS::Rosen::Rect SubWindowManagerJni::GetSafeArea()
     int y = env->GetIntField(javaRect, yField);
     int width = env->GetIntField(javaRect, widthField);
     int height = env->GetIntField(javaRect, heightField);
-    rect = {x, y, width, height};
+    rect = { x, y, width, height };
     return rect;
 }
 
@@ -659,8 +663,8 @@ bool SubWindowManagerJni::RequestFocus(const std::string& name)
     }
 
     jstring windowName = env->NewStringUTF(name.c_str());
-    jboolean ret = env->CallBooleanMethod(
-        subWindowManagerStruct_.object, subWindowManagerStruct_.requestFocusMethod, windowName);
+    jboolean ret =
+        env->CallBooleanMethod(subWindowManagerStruct_.object, subWindowManagerStruct_.requestFocusMethod, windowName);
     env->DeleteLocalRef(windowName);
     if (ret == JNI_TRUE) {
         LOGI("SubWindowManagerJni::RequestFocus: success");
@@ -685,8 +689,8 @@ bool SubWindowManagerJni::SetTouchHotAreas(const std::string& name, const std::v
     jobjectArray javaRectArray = env->NewObjectArray(size, rectClass, nullptr);
     jmethodID rectConstructorID = env->GetMethodID(rectClass, "<init>", "(IIII)V");
     for (int i = 0; i < size; i++) {
-        jobject javaRectObj = env->NewObject(rectClass, rectConstructorID,
-            rects[i].posX_, rects[i].posY_, rects[i].posX_ + rects[i].width_, rects[i].posY_ + rects[i].height_);
+        jobject javaRectObj = env->NewObject(rectClass, rectConstructorID, rects[i].posX_, rects[i].posY_,
+            rects[i].posX_ + rects[i].width_, rects[i].posY_ + rects[i].height_);
         env->SetObjectArrayElement(javaRectArray, i, javaRectObj);
     }
 

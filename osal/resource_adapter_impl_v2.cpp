@@ -553,6 +553,7 @@ bool ResourceAdapterImplV2::GetRawFileDescription(
     const std::string& rawfileName, RawfileDescription& rawfileDescription) const
 {
     OHOS::Global::Resource::ResourceManager::RawFileDescriptor descriptor;
+
     CHECK_NULL_RETURN(resourceManager_, false);
     auto state = resourceManager_->GetRawFileDescriptorFromHap(rawfileName, descriptor);
     if (state != Global::Resource::SUCCESS) {

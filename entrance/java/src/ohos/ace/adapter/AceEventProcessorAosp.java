@@ -30,7 +30,8 @@ import java.nio.ByteOrder;
 public class AceEventProcessorAosp {
     private static final int PONITER_FIELD_COUNT = 13;
     private static final int MOUSE_FIELD_COUNT = 15;
-
+    private static final double TOUCH_ATCION_MULTI = 2.0D;
+    private static final long TOUCH_EVENT_TIMEUNIT = 1000L;
     private static final int BYTES_PER_FIELD = 8;
 
     private interface ActionType {
@@ -42,6 +43,9 @@ public class AceEventProcessorAosp {
         int DOWN = 4;
         int MOVE = 5;
         int UP = 6;
+        int HOVER_ENTER = 7;
+        int HOVER_MOVE = 8;
+        int HOVER_EXIT = 9;
     }
 
     private interface MouseActionType {
@@ -125,6 +129,56 @@ public class AceEventProcessorAosp {
         return packet;
     }
 
+    public static ByteBuffer processHoverTouchEvent(MotionEvent event) {
+        if (event == null) {
+            throw new AssertionError("event is null");
+        }
+
+        int pointerCount = event.getPointerCount();
+
+        // Prepare data packet.
+        ByteBuffer packet = ByteBuffer.allocateDirect(pointerCount * PONITER_FIELD_COUNT * BYTES_PER_FIELD);
+        packet.order(ByteOrder.LITTLE_ENDIAN);
+
+        int actionMasked = event.getActionMasked();
+        int actionType = actionMaskToHoverActionType(actionMasked);
+
+        for (int index = 0; index < pointerCount; index++) {
+            addHoverEventToBuffer(event, index, actionType, packet);
+        }
+
+        // verify the size of packet.
+        if (packet.position() % (PONITER_FIELD_COUNT * BYTES_PER_FIELD) != 0) {
+            throw new AssertionError("Packet position is not multiple of pointer length");
+        }
+
+        return packet;
+    }
+
+    private static void addHoverEventToBuffer(MotionEvent event, int actionIndex, int actionType, ByteBuffer packet) {
+        if (actionType == ActionType.UNKNOWN) {
+            return;
+        }
+
+        packet.putLong(event.getPointerId(actionIndex));
+        packet.putLong(actionType);
+        packet.putDouble(event.getX(actionIndex));
+        packet.putDouble(event.getY(actionIndex));
+        packet.putDouble(event.getTouchMinor(actionIndex) * TOUCH_ATCION_MULTI);
+        packet.putDouble(event.getTouchMajor(actionIndex) * TOUCH_ATCION_MULTI);
+        packet.putDouble(event.getPressure(actionIndex));
+        packet.putLong(event.getDeviceId());
+        packet.putLong(event.getDownTime() * TOUCH_EVENT_TIMEUNIT);
+        packet.putLong(event.getEventTime() * TOUCH_EVENT_TIMEUNIT);
+        packet.putLong(eventSourceTransKeySource(event.getSource()));
+        packet.putLong(ToolTypeTransSourceTool(event.getToolType(actionIndex)));
+        int actionPoint = 1;
+        if ((actionType == ActionType.UP || actionType == ActionType.DOWN) &&
+            actionIndex != event.getActionIndex()) {
+            actionPoint = 0;
+        }
+        packet.putLong(actionPoint);
+    }
     private static void addEventToBuffer(MotionEvent event, int actionIndex, int actionType, ByteBuffer packet) {
         if (actionType == ActionType.UNKNOWN) {
             return;
@@ -368,6 +422,24 @@ public class AceEventProcessorAosp {
             case MotionEvent.ACTION_HOVER_MOVE:
                 actionType = MouseActionType.MOVE;
                 break;
+            default:
+                break;
+        }
+        return actionType;
+    }
+
+    private static int actionMaskToHoverActionType(int actionMasked) {
+        int actionType = ActionType.UNKNOWN;
+        switch (actionMasked) {
+            case MotionEvent.ACTION_HOVER_MOVE:
+                actionType = ActionType.HOVER_MOVE;
+                break;
+            case MotionEvent.ACTION_HOVER_ENTER:
+                actionType = ActionType.HOVER_ENTER;
+                break;
+            case MotionEvent.ACTION_HOVER_EXIT:
+                actionType = ActionType.HOVER_EXIT;
+                break;                
             default:
                 break;
         }

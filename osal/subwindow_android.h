@@ -38,11 +38,13 @@ public:
     explicit SubwindowAndroid(int32_t instanceId);
     ~SubwindowAndroid() = default;
 
-    void InitContainer() override;
+    bool InitContainer() override;
 
     void ResizeWindow() override;
 
     NG::RectF GetRect() override;
+
+    void SetRect(const NG::RectF& rect) override;
 
     void ShowMenu(const RefPtr<Component>& newComponent) override {}
 
@@ -65,7 +67,8 @@ public:
 
     void HideMenuNG(bool showPreviewAnimation, bool startDrag) override;
 
-    void UpdateHideMenuOffsetNG(const NG::OffsetF& offset, float menuScale, bool isRedragStart) override;
+    void UpdateHideMenuOffsetNG(
+        const NG::OffsetF& offset, float menuScale, bool isRedragStart, int32_t menuWrapperId = -1) override;
 
     void ContextMenuSwitchDragPreviewAnimationtNG(const RefPtr<NG::FrameNode>& dragPreviewNode,
         const NG::OffsetF& offset) override {};
@@ -119,13 +122,24 @@ public:
 
     bool Close() override {}
 
+    bool IsToastSubWindow() override
+    {
+        return false;
+    }
+
+    void DestroyWindow() override {}
+
+    void ResizeDialogSubwindow() override {}
+
     void SetHotAreas(const std::vector<Rect>& rects, int32_t overlayId) override;
 
     void DeleteHotAreas(int32_t overlayId) override;
 
     void ClearToast() override;
 
-    void ShowToast(const NG::ToastInfo& toastInfo) override;
+    void ShowToast(const NG::ToastInfo& toastInfo, std::function<void(int32_t)>&& callback) override;
+
+    void CloseToast(const int32_t toastId, std::function<void(int32_t)>&& callback) override {}
 
     void ShowDialog(const std::string& title, const std::string& message, const std::vector<ButtonInfo>& buttons,
         bool autoCancel, std::function<void(int32_t, int32_t)>&& callback,
@@ -166,7 +180,19 @@ public:
 
     Rect GetUIExtensionHostWindowRect() const override;
 
-    bool CheckHostWindowStatus() const override;
+    bool IsFreeMultiWindow() const override
+    {
+        return false;
+    }
+
+    void OnFreeMultiWindowSwitch(bool enable) override {}
+    
+    int32_t RegisterFreeMultiWindowSwitchCallback(std::function<void(bool)>&& callback) override
+    {
+        return 0;
+    }
+
+    void UnRegisterFreeMultiWindowSwitchCallback(int32_t callbackId) override {}
 
     bool IsFocused() override;
 
@@ -213,6 +239,7 @@ private:
     sptr<OHOS::Rosen::Window> parentWindow_ = nullptr;
     std::unordered_map<int32_t, std::vector<Rosen::Rect>> hotAreasMap_;
     std::unordered_map<int32_t, std::vector<Rosen::Rect>> popupHotAreasMap_;
+    NG::RectF windowRect_;
 };
 
 } // namespace OHOS::Ace
