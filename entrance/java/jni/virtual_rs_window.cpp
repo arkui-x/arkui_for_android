@@ -375,6 +375,7 @@ WMError Window::Destroy()
     }
 
     NotifyAfterBackground();
+    ReleaseWindowView();
     return WMError::WM_OK;
 }
 

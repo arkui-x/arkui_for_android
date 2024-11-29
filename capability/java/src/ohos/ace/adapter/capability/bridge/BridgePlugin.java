@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,9 +36,7 @@ public abstract class BridgePlugin {
 
     private final String bridgeName_;
 
-    private final Object object_ = null;
-
-    private final Context context_;
+    private Context context_ = null;
 
     private boolean isAvailable_ = false;
 
@@ -250,6 +248,10 @@ public abstract class BridgePlugin {
      * @return Success or not.
      */
     public boolean unRegister(String bridgeName) {
+        if (this.bridgeManager_ == null) {
+            ALog.e(LOG_TAG, "Bridge unRegister failed, bridgeManager is null");
+            return false;
+        }
         return this.bridgeManager_.unRegisterBridgePlugin(bridgeName);
     }
 
@@ -272,6 +274,10 @@ public abstract class BridgePlugin {
     }
 
     private void callMethodInner(MethodData methodData) {
+        if (this.bridgeManager_ == null) {
+            ALog.e(LOG_TAG, "Bridge callMethodInner failed, bridgeManager is null");
+            return;
+        }
         BridgeErrorCode errorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
         if (this.bridgeType_ == BridgeType.BINARY_TYPE) {
             errorCode = this.bridgeManager_.platformCallMethodBinary(bridgeName_, methodData);
@@ -303,6 +309,10 @@ public abstract class BridgePlugin {
     }
 
     private void sendMessageInner(Object data) {
+        if (this.bridgeManager_ == null) {
+            ALog.e(LOG_TAG, "Bridge sendMessageInner failed, bridgeManager is null");
+            return;
+        }
         if (this.bridgeType_ == BridgeType.BINARY_TYPE) {
             this.bridgeManager_.platformSendMessageBinary(this.bridgeName_, data);
             return;
@@ -327,6 +337,16 @@ public abstract class BridgePlugin {
         } else {
             sendMessageInner(data);
         }
+    }
+
+    /**
+     * release BridgeManager object.
+     *
+     */
+    public void release() {
+        this.isAvailable_ = false;
+        this.bridgeManager_ = null;
+        this.context_ = null;
     }
 
     /**
@@ -399,6 +419,10 @@ public abstract class BridgePlugin {
      * @param data Data to be sent.
      */
     protected void jsSendMessage(Object data) {
+        if (this.bridgeManager_ == null) {
+            ALog.e(LOG_TAG, "Bridge jsSendMessage failed, bridgeManager is null");
+            return;
+        }
         if (this.iMessageListener_ != null) {
             Object dataResponse = this.iMessageListener_.onMessage(data);
             this.bridgeManager_.platformSendMessageResponse(this.bridgeName_, dataResponse);

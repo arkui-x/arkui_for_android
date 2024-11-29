@@ -26,8 +26,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.os.Trace;
+import android.util.Log;
 
 import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.AcePlatformPlugin;
@@ -171,6 +171,9 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     @Override
     protected void onRestart() {
         Log.i(LOG_TAG, "StageActivity onRestart called");
+        if (this.bridgeManager != null) {
+            this.bridgeManager.nativeUpdateCurrentInstanceId(instanceId);
+        }
         super.onRestart();
     }
 
@@ -188,16 +191,17 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     @Override
     protected void onDestroy() {
         Log.i(LOG_TAG, "StageActivity onDestroy called");
-        super.onDestroy();
         activityDelegate.dispatchOnDestroy(getInstanceName());
         windowView.destroy();
         arkUIXPluginRegistry.unRegistryAllPlugins();
         keyboardHeightProvider.close();
         BridgeManager.unRegisterBridgeManager(instanceId);
         if (platformPlugin != null) {
-            platformPlugin.releseResRegister(instanceId);
-            Log.i(LOG_TAG, "StageActivity onDestroy releseResRegister called");
+            platformPlugin.release();
+            Log.i(LOG_TAG, "StageActivity onDestroy platformPlugin release called");
         }
+        super.onDestroy();
+        Log.i(LOG_TAG, "StageActivity onDestroy end");
     }
 
     @Override
@@ -494,9 +498,9 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     }
 
     /**
-     * Get the BridgeManager of StageActivity.
+     * Get the PluginContext of StageActivity.
      *
-     * @return The BridgeManager.
+     * @return The PluginContext.
      */
     public PluginContext getPluginContext() {
         if (this.pluginContext == null) {

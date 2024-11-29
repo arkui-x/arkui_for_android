@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,9 +17,9 @@
 
 #include <numeric>
 
-#include "adapter/android/capability/java/jni/editing/text_input_jni.h"
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/ace_platform_plugin_jni.h"
+#include "adapter/android/entrance/java/jni/jni_registry.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
 #include "base/i18n/localization.h"
@@ -974,8 +974,7 @@ void AceContainerSG::DestroyContainer(int32_t instanceId, const std::function<vo
     container->DestroyView(); // Stop all threads(ui,gpu,io) for current ability.
     auto removeContainerTask = [instanceId, destroyCallback] {
         LOGI("Remove on Platform thread...");
-        TextInputJni::ReleaseInstance(instanceId);
-        AcePlatformPluginJni::ReleaseInstance(instanceId);
+        JniRegistry::ReleaseInstance(instanceId);
         EngineHelper::RemoveEngine(instanceId);
         AceEngine::Get().RemoveContainer(instanceId);
         if (destroyCallback) {
@@ -1055,5 +1054,17 @@ void AceContainerSG::SetLocalStorage(NativeReference* storage, NativeReference* 
             }
         },
         TaskExecutor::TaskType::JS);
+}
+
+bool AceContainerSG::MaybeRelease()
+{
+    CHECK_NULL_RETURN(taskExecutor_, true);
+    if (taskExecutor_->WillRunOnCurrentThread(TaskExecutor::TaskType::PLATFORM)) {
+        LOGI("Destroy AceContainer on PLATFORM thread.");
+        return true;
+    } else {
+        LOGI("Post Destroy AceContainer Task to PLATFORM thread.");
+        return !taskExecutor_->PostTask([this] { delete this; }, TaskExecutor::TaskType::PLATFORM);
+    }
 }
 } // namespace OHOS::Ace::Platform

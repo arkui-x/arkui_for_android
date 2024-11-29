@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,6 +36,7 @@ public:
     static RefPtr<TaskExecutor> GetPlatformTaskExecutor(const int32_t instanceId);
     static bool Register(const std::shared_ptr<JNIEnv> &env);
     static void NativeInit(JNIEnv *env, jobject jobj, jint instanceId);
+    static void NativeUpdateCurrentInstanceId(JNIEnv *env, jobject jobj, jint instanceId);
     static void JSCallMethodJni(const int32_t instanceId, const std::string& bridgeName,
         const std::string& methodName, const std::string& parameters);
     static void PlatformSendMethodResult(JNIEnv *env, jobject jobj,
@@ -66,6 +67,9 @@ public:
     static void JSSendMethodResultBinaryJni(const int32_t instanceId, const std::string& bridgeName,
         const std::string& methodName, const int32_t errorCode, const std::string& errorMessage,
         std::unique_ptr<std::vector<uint8_t>> result);
+
+    static void ReleaseInstance(int32_t instanceId);
+    static int32_t GetCurrentInstanceId();
 };
 }  // namespace OHOS::Ace::Platform
 #endif  // FOUNDATION_ACE_ADAPTER_CAPABILITY_JAVA_JNI_BRIDGE_ACE_BRIDGE_JNI_H

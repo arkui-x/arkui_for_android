@@ -195,4 +195,9 @@ void BridgeManager::JSCancelMethod(int32_t instanceId, const std::string& bridge
     BridgeJni::JSCancelMethodJni(instanceId, bridgeName, methodName);
     LOGE("The method was canceled: %{public}s", methodName.c_str());
 }
+
+int32_t BridgeManager::GetCurrentInstanceId()
+{
+    return BridgeJni::GetCurrentInstanceId();
+}
 } // namespace OHOS::Ace::Platform

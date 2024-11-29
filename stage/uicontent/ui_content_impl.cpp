@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -52,6 +52,7 @@ const std::string START_PARAMS_KEY = "__startParams";
 // Device type, same as w/ java in AceView
 constexpr int32_t ORIENTATION_PORTRAIT = 1;
 constexpr int32_t ORIENTATION_LANDSCAPE = 2;
+constexpr double DPI_BASE { 160.0f };
 } // namespace
 
 using ContentFinishCallback = std::function<void()>;
@@ -386,7 +387,6 @@ void UIContentImpl::InitAceInfoFromResConfig()
     if (resourceManager != nullptr) {
         resourceManager->GetResConfig(*resConfig);
         auto localeInfo = resConfig->GetLocaleInfo();
-        Platform::AceApplicationInfoImpl::GetInstance().SetResourceManager(resourceManager);
         if (localeInfo != nullptr) {
             auto language = localeInfo->getLanguage();
             auto region = localeInfo->getCountry();
@@ -409,9 +409,19 @@ void UIContentImpl::InitAceInfoFromResConfig()
         } else if (resConfig->GetDirection() == OHOS::Global::Resource::Direction::DIRECTION_HORIZONTAL) {
             SystemProperties::SetDeviceOrientation(ORIENTATION_LANDSCAPE);
         }
-        SystemProperties::SetResolution(resConfig->GetScreenDensity());
         SystemProperties::SetDeviceAccess(
             resConfig->GetInputDevice() == Global::Resource::InputDevice::INPUTDEVICE_POINTINGDEVICE);
+        double density = resConfig->GetScreenDensity();
+        auto config = context->GetConfiguration();
+        if (!Positive(density) && config) {
+            auto densityDpi =
+                config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_DENSITYDPI);
+            if (!densityDpi.empty()) {
+                density = std::stoi(densityDpi) / DPI_BASE;
+                LOGI("UIContent configDensity %{public}f", density);
+            }
+        }
+        SystemProperties::SetResolution(density);
     }
 }
 
