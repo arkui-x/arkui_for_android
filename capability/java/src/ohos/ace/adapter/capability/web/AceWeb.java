@@ -352,9 +352,10 @@ public class AceWeb extends AceWebBase {
         webSettings.setLoadsImagesAutomatically(true);
         webSettings.setDefaultTextEncodingName("utf-8");
         webSettings.setDomStorageEnabled(true);
+        webSettings.setAllowContentAccess(false);
 
         webSettings.setAllowFileAccessFromFileURLs(true);
-        WebView.setWebContentsDebuggingEnabled(true);
+        WebView.setWebContentsDebuggingEnabled(false);
     }
 
     /**

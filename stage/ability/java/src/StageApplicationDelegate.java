@@ -110,6 +110,8 @@ public class StageApplicationDelegate {
 
     private static final int DEFAULT_VERSION_CODE = -1;
 
+    private static boolean isCopyNativeLibs = false;
+
     /**
      * Constructor.
      */
@@ -379,6 +381,8 @@ public class StageApplicationDelegate {
             return;
         }
 
+        isCopyNativeLibs = true;
+
         Log.i(LOG_TAG, "Start copying resources.");
         AssetManager assets = stageApplication.getAssets();
         String moduleResourcesDirectory = "";
@@ -611,7 +615,8 @@ public class StageApplicationDelegate {
      * Launch application.
      */
     public void launchApplication() {
-        nativeLaunchApplication();
+        Log.i(LOG_TAG, "isCopyNativeLibs is " + isCopyNativeLibs);
+        nativeLaunchApplication(isCopyNativeLibs);
     }
 
     /**
@@ -796,7 +801,7 @@ public class StageApplicationDelegate {
 
     private native void nativeSetPackageName(String hapPath);
 
-    private native void nativeLaunchApplication();
+    private native void nativeLaunchApplication(boolean isCopyNativeLibs);
 
     private native void nativeSetAssetsFileRelativePath(String path);
 
