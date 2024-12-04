@@ -78,6 +78,8 @@ public:
 
     int32_t UnRegisterCoordinationListener() override;
 
+    int32_t SetDraggableState(bool state) override;
+
     int32_t UpdatePointAction(const std::shared_ptr<MMI::PointerEvent>& pointerEvent);
     
     int32_t GetPointerId()

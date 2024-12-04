@@ -79,13 +79,13 @@ std::string ImageSourceAndroid::GetProperty(const std::string& key)
 }
 
 RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap(
-    const Size& size, AIImageQuality imageQuality, bool isHdrDecoderNeed)
+    const Size& size, AIImageQuality imageQuality, bool isHdrDecoderNeed, PixelFormat photoDecodeFormat)
 {
     return CreatePixelMap(0, size, imageQuality);
 }
 
 RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap(
-    uint32_t index, const Size& size, AIImageQuality imageQuality, bool isHdrDecoderNeed)
+    uint32_t index, const Size& size, AIImageQuality imageQuality, bool isHdrDecoderNeed, PixelFormat photoDecodeFormat)
 {
     Media::DecodeOptions options;
     if (size.first > 0 && size.second > 0) {

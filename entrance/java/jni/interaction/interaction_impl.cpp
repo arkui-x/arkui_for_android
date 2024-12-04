@@ -216,6 +216,11 @@ int32_t InteractionImpl::UnRegisterCoordinationListener()
     return -1;
 }
 
+int32_t InteractionImpl::SetDraggableState(bool state)
+{
+    return -1;
+}
+
 #ifdef ENABLE_DRAG_FRAMEWORK
 Msdp::DeviceStatus::DragCursorStyle TranslateDragCursorStyle(OHOS::Ace::DragCursorStyleCore style)
 {

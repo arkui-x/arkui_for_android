@@ -153,7 +153,7 @@ void SetTouchEventType(int32_t orgAction, TouchEvent& event)
     }
 }
 
-void ConvertPointerEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent, PointerEvent& event)
+void ConvertPointerEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent, DragPointerEvent& event)
 {
 #ifdef ENABLE_DRAG_FRAMEWORK
     Ace::DragState dragState;

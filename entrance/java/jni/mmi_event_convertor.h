@@ -111,7 +111,7 @@ struct alignas(DATA_ALIGNAS) AceMouseData {
     int64_t deviceType;
 };
 
-void ConvertPointerEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent, PointerEvent& event);
+void ConvertPointerEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent, DragPointerEvent& event);
 TouchEvent ConvertTouchEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent);
 void CreatePointerEventsFromBytes(
     std::vector<std::shared_ptr<MMI::PointerEvent>>& pointerEvent, const std::vector<uint8_t>& data);
