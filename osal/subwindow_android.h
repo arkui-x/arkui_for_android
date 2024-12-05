@@ -131,6 +131,11 @@ public:
 
     void ResizeDialogSubwindow() override {}
 
+    uint64_t GetDisplayId() override
+    {
+        return 0;
+    }
+
     void SetHotAreas(const std::vector<Rect>& rects, int32_t overlayId) override;
 
     void DeleteHotAreas(int32_t overlayId) override;
