@@ -54,6 +54,9 @@ enum class AndroidEventType : int32_t {
     TYPE_ASSIST_READING_CONTEXT = 1 << 24,
     TYPE_SPEECH_STATE_CHANGE = 1 << 25,
     TYPE_VIEW_TARGETED_BY_SCROLL = 1 << 26,
+    //add extra
+    TYPE_PAGE_OPEN = 2049,
+    TYPE_PAGE_CLOSE = 2050,
 };
 
 enum class AndroidActionType : int32_t {
@@ -108,5 +111,6 @@ AndroidMovementGranularity TextMoveUnitConvertAndroid(OHOS::Accessibility::TextM
 AndroidActionType AceActionConvertAndroid(AceAction aceAction);
 AceAction AndroidConvertAceAction(AndroidActionType action);
 AndroidActionType ActionTypeConvertAndroid(OHOS::Accessibility::ActionType actionType);
+bool IsComponentInArray(const std::string& componentType);
 } // namespace OHOS::Ace::Framework
 #endif // ACCESSIBILITY_TYPE_CONVERTOR_H
