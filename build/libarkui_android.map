@@ -507,6 +507,7 @@
       OHOS::Ace::NG::RenderContext::*;
       OHOS::Ace::Recorder::EventRecorder::*;
       OHOS::Ace::Recorder::EventParamsBuilder::*;
+      OHOS::MMI::KeyEvent::*;
     };
   local:
     *;
