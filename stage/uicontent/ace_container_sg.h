@@ -339,6 +339,7 @@ private:
     void SetGetViewScaleCallback();
     void InitThemeManager();
     void SetupRootElement();
+    std::string GetOldLanguageTag() const;
 
     void SetUIWindowInner(sptr<OHOS::Rosen::Window> uiWindow);
     sptr<OHOS::Rosen::Window> GetUIWindowInner() const;
