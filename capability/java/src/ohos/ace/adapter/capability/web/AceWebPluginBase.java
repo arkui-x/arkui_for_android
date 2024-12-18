@@ -38,6 +38,11 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
 
     protected native void nativeInit();
 
+    /**
+     * webview static method registration.
+     */
+    protected native void nativeInitStatic();
+
     protected native void nativeInitWebDataBase();
 
     protected native static void onReceiveValue(String value, long asyncCallbackInfoId);
@@ -82,6 +87,16 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
             hasInit = true;
         }
         richTextInit = false;
+    }
+
+    /**
+     * This is called to add an static resource object to map.
+     *
+     * @param id web id
+     * @param web web object
+     */
+    public void addResourceStatic(long id, AceWebBase web) {
+        nativeInitStatic();
     }
 
     /**
@@ -242,6 +257,35 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * scroll down the content of the Webview by half the size of the viewport or jump to the bottom of the page,
+     * controlled by the value parameter.
+     *
+     * @param id id of object
+     * @param value whether scroll to the bottom of the page.
+     */
+    public void pageDown(long id, boolean value) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.pageDown(value);
+        }
+    }
+
+    /**
+     * using the 'POST' method to load a URL with postData
+     *
+     * @param id id of object
+     * @param url URL that needs to be loaded
+     * @param postData Use the 'POST' method to transfer data.
+     *        This request must be encoded using 'application/x-www-form-urlencoded'.
+     */
+    public void postUrl(long id, String url, byte[] postData) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.postUrl(url, postData);
+        }
+    }
+    
     public void backOrForward(long id, int steps) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -304,11 +348,63 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * enlarge the webview with the specified ID.
+     *
+     * @param id id of object
+     */
+    public void zoomIn(long id) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.zoomIn();
+        }
+    }
+
+    /**
+     * shrink the webview of the specified ID.
+     *
+     * @param id id of object
+     */
+    public void zoomOut(long id) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.zoomOut();
+        }
+    }
+
     public void stop(long id) {
         if (objectMap.containsKey(id)) {
             Map<String, String> defaultParam = new HashMap<String, String>();
             AceWebBase webBase = objectMap.get(id);
             webBase.stopLoading(defaultParam);
+        }
+    }
+
+    /**
+     * Retrieve the original URL based on the given ID
+     *
+     * @param id id of object
+     * @return originalUrl of web
+     */
+    public String getOriginalUrl(long id) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.getOriginalUrl();
+        }
+        return "";
+    }
+
+    /**
+     * scroll the content of the Webview up by half the size of the viewport or jump to the top of the page,
+     * controlled by the value parameter.
+     *
+     * @param id id of object
+     * @param value whether scroll to the top of the page.
+     */
+    public void pageUp(long id, boolean value) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.pageUp(value);
         }
     }
 

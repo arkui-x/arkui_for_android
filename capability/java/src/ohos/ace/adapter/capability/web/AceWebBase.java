@@ -749,6 +749,36 @@ public abstract class AceWebBase {
     public abstract String zoom(Map<String, String> params);
 
     /**
+     * Performs a zoomIn operation in this WebView.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String zoomIn();
+
+    /**
+     * Performs a zoomOut operation in this WebView.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String zoomOut();
+
+    /**
+     * Performs a getOriginalUrl operation in this WebView.
+     *
+     * @return result of call.
+     */
+    public abstract String getOriginalUrl();
+
+    /**
+     * Performs a pageUp operation in this WebView.
+     *
+     * @param top is boolean.
+     */
+    public abstract void pageUp(boolean top);
+
+    /**
      * touch down.
      *
      * @param params is param map.
@@ -788,6 +818,12 @@ public abstract class AceWebBase {
      */
     public abstract String updateLayout(Map<String, String> params);
 
+    /**
+     * zoomAccess.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
     public abstract String zoomAccess(Map<String, String> params);
 
     public abstract String javascriptAccess(Map<String, String> params);
@@ -839,4 +875,29 @@ public abstract class AceWebBase {
     public abstract int postMessageEvent(String portHandle, String webMessageData);
 
     public abstract int onWebMessagePortEvent(long id, String portHandle);
+
+    /**
+     * setWebDebuggingAccess.
+     *
+     * @param webDebuggingAccess is param boolean.
+     * @return result of call.
+     */
+    public abstract void setWebDebuggingAccess(boolean webDebuggingAccess);
+
+    /**
+     * pageDown.
+     *
+     * @param bottom is param boolean.
+     * @return result of call.
+     */
+    public abstract String pageDown(boolean bottom);
+
+    /**
+     * postUrl.
+     *
+     * @param url is param String.
+     * @param postData is param byte[].
+     * @return result of call.
+     */
+    public abstract String postUrl(String url, byte[] postData);
 }
