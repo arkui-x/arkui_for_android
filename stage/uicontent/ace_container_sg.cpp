@@ -654,6 +654,18 @@ void AceContainerSG::AttachView(
     }
 }
 
+std::string AceContainerSG::GetOldLanguageTag() const
+{
+    const std::string& oldLanguage = AceApplicationInfo::GetInstance().GetLanguage();
+    const std::string& oldCountry = AceApplicationInfo::GetInstance().GetCountryOrRegion();
+
+    std::stringstream ss;
+    ss << oldLanguage << "_" << oldCountry;
+    std::string oldLanguageTag = ss.str();
+    oldLanguageTag.reserve(oldLanguage.size() + oldCountry.size() + 1);
+    return oldLanguageTag;
+}
+
 void AceContainerSG::UpdateConfiguration(const std::string& colorMode, const std::string& direction,
     const std::string& densityDpi, const std::string& languageTag)
 {
@@ -714,7 +726,9 @@ void AceContainerSG::UpdateConfiguration(const std::string& colorMode, const std
         LOGI("language:%{public}s, script:%{public}s, region:%{public}s", language.c_str(), script.c_str(),
             region.c_str());
         if (!language.empty() || !script.empty() || !region.empty()) {
-            configurationChange.languageUpdate = true;
+            if (languageTag != GetOldLanguageTag()) {
+                configurationChange.languageUpdate = true;
+            }
             AceApplicationInfo::GetInstance().SetLocale(language, region, script, "");
         }
     }
