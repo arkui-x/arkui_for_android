@@ -434,6 +434,7 @@
       OHOS::Ace::NG::FocusHub::*;
       OHOS::Ace::NG::InputEventHub::*;
       OHOS::Ace::NG::InputEventActuator::*;
+      OHOS::Ace::LifeCycleCheckable::~LifeCycleCheckable*;
       
       OHOS::AppExecFwk::EventHandler::*;
       OHOS::AppExecFwk::EventRunner::*;
