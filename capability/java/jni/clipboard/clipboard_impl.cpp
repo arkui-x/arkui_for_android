@@ -24,13 +24,15 @@ void ClipboardImpl::AddPixelMapRecord(const RefPtr<PasteDataMix>& pasteData, con
 void ClipboardImpl::AddImageRecord(const RefPtr<PasteDataMix>& pasteData, const std::string& uri) {}
 void ClipboardImpl::AddTextRecord(const RefPtr<PasteDataMix>& pasteData, const std::string& selectedStr) {}
 void ClipboardImpl::AddSpanStringRecord(const RefPtr<PasteDataMix>& pasteData, std::vector<uint8_t>& data) {}
+void ClipboardImpl::AddMultiTypeRecord(
+    const RefPtr<PasteDataMix>& pasteData, const RefPtr<MultiTypeRecordMix>& multiTypeRecord) {}
 void ClipboardImpl::SetData(const RefPtr<PasteDataMix>& pasteData, CopyOptions copyOption) {}
 void ClipboardImpl::GetData(const std::function<void(const std::string&, bool isLastRecord)>& textCallback,
     const std::function<void(const RefPtr<PixelMap>&, bool isLastRecord)>& pixelMapCallback,
     const std::function<void(const std::string&, bool isLastRecord)>& urlCallback, bool syncMode)
 {}
 void ClipboardImpl::GetSpanStringData(
-    const std::function<void(std::vector<uint8_t>&, const std::string&)>& callback, bool syncMode)
+    const std::function<void(std::vector<std::vector<uint8_t>>&, const std::string&, bool&)>& callback, bool syncMode)
 {}
 
 RefPtr<PasteDataMix> ClipboardImpl::CreatePasteDataMix()

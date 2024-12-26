@@ -13,15 +13,15 @@
  * limitations under the License.
  */
 
-#include "frameworks/core/interfaces/native/node/touch_event_convertor.h"
+#include "core/components_ng/pattern/text/span/span_string.h"
+#include "core/text/html_utils.h"
 
-namespace OHOS::Ace::NG {
-TouchEvent ConvertToTouchEvent(const std::shared_ptr<MMI::PointerEvent>& srcPointerEvent)
+namespace OHOS::Ace {
+
+// Currently not completed
+std::string HtmlUtils::ToHtml(const SpanString* str)
 {
-    return {};
+    return "";
 }
 
-void ConvertToMouseEvent(MouseEvent& mouseEvent, const std::shared_ptr<MMI::PointerEvent>& srcPointerEvent) {}
-
-void ConvertToAxisEvent(AxisEvent& event, const std::shared_ptr<MMI::PointerEvent>& srcPointerEvent) {}
-}
+} // namespace OHOS::Ace

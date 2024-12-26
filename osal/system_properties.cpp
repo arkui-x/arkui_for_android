@@ -77,6 +77,7 @@ bool SystemProperties::imageFileCacheConvertAstc_ = false;
 int32_t SystemProperties::imageFileCacheConvertAstcThreshold_ = 2;
 bool SystemProperties::traceInputEventEnable_ = false;
 bool SystemProperties::imageFrameworkEnable_ = true;
+float SystemProperties::pageCount_ = 1.0f;
 float SystemProperties::dragStartDampingRatio_ = 0.2f;
 float SystemProperties::dragStartPanDisThreshold_ = 10.0f;
 uint32_t SystemProperties::canvasDebugMode_ = 0;
@@ -274,7 +275,7 @@ float SystemProperties::GetDragStartPanDistanceThreshold()
     return dragStartPanDisThreshold_;
 }
 
-bool SystemProperties::IsNeedSymbol()
+bool SystemProperties::IsSmallFoldProduct()
 {
     return false;
 }

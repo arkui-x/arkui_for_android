@@ -50,12 +50,15 @@ public:
     void AddImageRecord(const RefPtr<PasteDataMix>& pasteData, const std::string& uri) override;
     void AddTextRecord(const RefPtr<PasteDataMix>& pasteData, const std::string& selectedStr) override;
     void AddSpanStringRecord(const RefPtr<PasteDataMix>& pasteData, std::vector<uint8_t>& data) override;
+    void AddMultiTypeRecord(
+        const RefPtr<PasteDataMix>& pasteData, const RefPtr<MultiTypeRecordMix>& multiTypeRecord) override;
     void SetData(const RefPtr<PasteDataMix>& pasteData, CopyOptions copyOption) override;
     void GetData(const std::function<void(const std::string&, bool isLastRecord)>& textCallback,
         const std::function<void(const RefPtr<PixelMap>&, bool isLastRecord)>& pixelMapCallback,
         const std::function<void(const std::string&, bool isLastRecord)>& urlCallback, bool syncMode = false) override;
     void GetSpanStringData(
-        const std::function<void(std::vector<uint8_t>&, const std::string&)>& callback, bool syncMode = false) override;
+        const std::function<void(std::vector<std::vector<uint8_t>>&, const std::string&, bool&)>& callback,
+        bool syncMode = false) override;
     RefPtr<PasteDataMix> CreatePasteDataMix() override;
 
 private:
