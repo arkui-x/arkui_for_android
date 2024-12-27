@@ -65,7 +65,8 @@ public:
 
     void HideMenuNG(bool showPreviewAnimation, bool startDrag) override;
 
-    void UpdateHideMenuOffsetNG(const NG::OffsetF& offset, float menuScale, bool isRedragStart) override;
+    void UpdateHideMenuOffsetNG(
+        const NG::OffsetF& offset, float menuScale, bool isRedragStart, int32_t menuWrapperId = -1) override;
 
     void ContextMenuSwitchDragPreviewAnimationtNG(const RefPtr<NG::FrameNode>& dragPreviewNode,
         const NG::OffsetF& offset) override {};
@@ -167,6 +168,20 @@ public:
     Rect GetUIExtensionHostWindowRect() const override;
 
     bool CheckHostWindowStatus() const override;
+
+    bool IsFreeMultiWindow() const override
+    {
+        return false;
+    }
+
+    void OnFreeMultiWindowSwitch(bool enable) override {}
+    
+    int32_t RegisterFreeMultiWindowSwitchCallback(std::function<void(bool)>&& callback) override
+    {
+        return 0;
+    }
+
+    void UnRegisterFreeMultiWindowSwitchCallback(int32_t callbackId) override {}
 
     bool IsFocused() override;
 

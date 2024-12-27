@@ -74,6 +74,7 @@ template("ace_common_jni_source_set") {
       "$ace_root/adapter/android/entrance/java/jni/dump_helper_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/foldable_window_android.cpp",
       "$ace_root/adapter/android/entrance/java/jni/html/html_to_span.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/html/span_to_html.cpp",
       "$ace_root/adapter/android/entrance/java/jni/interaction/interaction_impl.cpp",
       "$ace_root/adapter/android/entrance/java/jni/java_event_callback.cpp",
       "$ace_root/adapter/android/entrance/java/jni/jni_app_mode_config.cpp",
@@ -87,7 +88,7 @@ template("ace_common_jni_source_set") {
       "$ace_root/adapter/android/entrance/java/jni/touch_event.cpp",
       "$ace_root/adapter/android/entrance/java/jni/touch_event_convertor.cpp",
       "$ace_root/adapter/android/entrance/java/jni/udmf/udmf_impl.cpp",
-      "$ace_root/adapter/android/entrance/java/jni/vibrator/vibrator_impl.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/vibrator/vibrator_utils.cpp",
       "$ace_root/adapter/android/entrance/java/jni/web_adapter_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/xcollie/xcollieInterface_impl.cpp",
     ]

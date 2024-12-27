@@ -64,6 +64,8 @@ void EventReport::ReportJankFrameApp(JankInfo& info) {}
 
 void EventReport::ReportJankFrameFiltered(JankInfo& info) {}
 
+void EventReport::ReportJankFrameUnFiltered(JankInfo& info) {}
+
 void EventReport::ReportDoubleClickTitle(int32_t stateChange) {}
 
 void EventReport::ReportClickTitleMaximizeMenu(int32_t maxMenuItem, int32_t stateChange) {}
@@ -76,4 +78,6 @@ void EventReport::ReportFunctionTimeout(const std::string& functionName, int64_t
 
 void EventReport::ReportPageShowMsg(const std::string& pageUrl, const std::string& bundleName,
                                     const std::string& pageName) {}
+
+void EventReport::ReportDragInfo(const DragInfo& dragInfo) {}
 } // namespace OHOS::Ace

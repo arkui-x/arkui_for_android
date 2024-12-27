@@ -505,7 +505,8 @@ void SubwindowAndroid::ClearMenuNG(int32_t targetId, bool inWindow, bool showAni
     }
 }
 
-void SubwindowAndroid::UpdateHideMenuOffsetNG(const NG::OffsetF& offset, float menuScale, bool isRedragStart)
+void SubwindowAndroid::UpdateHideMenuOffsetNG(
+    const NG::OffsetF& offset, float menuScale, bool isRedragStart, int32_t menuWrapperId)
 {
     ContainerScope scope(childContainerId_);
     auto pipelineContext = NG::PipelineContext::GetCurrentContext();

@@ -1094,7 +1094,7 @@ bool AceContainerSG::RunPage(
     CHECK_NULL_RETURN(front, false);
     LOGI("RunPage content=[%{private}s]", content.c_str());
     if (isNamedRouter) {
-        front->RunPageByNamedRouter(content);
+        front->RunPageByNamedRouter(content, params);
     } else {
         front->RunPage(content, params);
     }
