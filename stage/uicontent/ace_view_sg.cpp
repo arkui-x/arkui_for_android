@@ -170,8 +170,8 @@ bool AceViewSG::DispatchBasicEvent(const std::vector<TouchEvent>& touchEvents)
 
 bool AceViewSG::DispatchTouchEvent(const std::shared_ptr<OHOS::MMI::PointerEvent>& pointerEvent)
 {
-    ProcessTouchEvent(pointerEvent);
     ProcessDragEvent(pointerEvent);
+    ProcessTouchEvent(pointerEvent);
     bool forbiddenToPlatform = false;
     // if it is last page, let os know to quit app
     return forbiddenToPlatform || (!IsLastPage());
@@ -180,17 +180,11 @@ bool AceViewSG::DispatchTouchEvent(const std::shared_ptr<OHOS::MMI::PointerEvent
 void AceViewSG::ProcessTouchEvent(const std::shared_ptr<OHOS::MMI::PointerEvent>& pointerEvent)
 {
     CHECK_NULL_VOID(pointerEvent);
-    std::vector<TouchEvent> touchEvents;
-    ConvertTouchEvent(pointerEvent, touchEvents);
-    LOGI(" ProcessTouchEvent event size%zu", touchEvents.size());
-    for (auto& point : touchEvents) {
-        DispatchEventToPerf(point);
-        if (point.type == TouchType::UNKNOWN) {
-            LOGW("Unknown event");
-            continue;
-        }
+    TouchEvent touchPoint = ConvertTouchEvent(pointerEvent);
+    DispatchEventToPerf(touchPoint);
+    if (touchPoint.type != TouchType::UNKNOWN) {
         if (touchEventCallback_) {
-            touchEventCallback_(point, nullptr, nullptr);
+            touchEventCallback_(touchPoint, nullptr, nullptr);
         }
     }
 }

@@ -39,7 +39,9 @@ OHOS::Ace::DragBehavior TranslateDragBehavior(Msdp::DeviceStatus::DragBehavior d
 #endif
 
 bool g_dragging = false;
-OHOS::Ace::DragCursorStyleCore g_style = OHOS::Ace::DragCursorStyleCore::DEFAULT;
+#ifdef ENABLE_DRAG_FRAMEWORK
+std::function<void(const OHOS::Ace::DragNotifyMsg&)> callback_;
+#endif
 
 InteractionInterface* InteractionInterface::GetInstance()
 {
@@ -78,6 +80,8 @@ int32_t InteractionImpl::SetMouseDragMonitorState(bool state)
 int32_t InteractionImpl::StartDrag(
     const DragDataCore& dragData, std::function<void(const OHOS::Ace::DragNotifyMsg&)> callback)
 {
+#ifdef ENABLE_DRAG_FRAMEWORK
+    callback_ = callback;
     RegisterDragWindow();
     SetSVGFilePath();
     std::shared_ptr<OHOS::Rosen::Window> window = GetDragWindow();
@@ -85,12 +89,12 @@ int32_t InteractionImpl::StartDrag(
     window->RegisterSurfaceNodeListener(surfaceNodeListener_);
     window->ShowWindow();
     g_dragging = true;
+#endif
     return 0;
 }
 
 int32_t InteractionImpl::UpdateDragStyle(OHOS::Ace::DragCursorStyleCore style, const int32_t eventId)
 {
-    g_style = style;
 #ifdef ENABLE_DRAG_FRAMEWORK
     return InteractionManager::GetInstance()->UpdateDragStyle(TranslateDragCursorStyle(style));
 #endif
@@ -115,6 +119,11 @@ int32_t InteractionImpl::StopDrag(DragDropRet result)
         result.mainWindow, TranslateDragBehavior(result.dragBehavior) };
     int32_t ret = InteractionManager::GetInstance()->StopDrag(dragDropResult);
     g_dragging = false;
+    OHOS::Ace::DragNotifyMsg msg { 0, 0, InteractionManager::GetInstance()->GetDragTargetPid(),
+            TranslateDragResult(dragDropResult.result), TranslateDragBehavior(dragDropResult.dragBehavior) };
+    if (callback_) {
+        callback_(msg);
+    }
     return ret;
 #endif
     return -1;
@@ -194,9 +203,6 @@ int32_t InteractionImpl::GetDragState(DragState& dragState) const
 
 int32_t InteractionImpl::AddPrivilege()
 {
-#ifdef ENABLE_DRAG_FRAMEWORK
-    return InteractionManager::GetInstance()->AddPrivilege();
-#endif
     return -1;
 }
 
@@ -348,7 +354,6 @@ void SurfaceNodeListener::OnSurfaceNodeChanged(int32_t width, int32_t height, fl
             }
         }
         InteractionManager::GetInstance()->StartDrag(msdpDragData);
-        InteractionManager::GetInstance()->UpdateDragStyle(TranslateDragCursorStyle(g_style));
         g_dragging = false;
     }
 #endif

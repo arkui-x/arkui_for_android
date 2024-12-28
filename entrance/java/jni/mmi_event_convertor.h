@@ -69,9 +69,10 @@ struct alignas(8) AceActionData {
     int8_t actionPoint = 0;
 };
 
-void ConvertTouchEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent, std::vector<TouchEvent>& events);
 void ConvertPointerEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent, PointerEvent& event);
-void CreatePointerEventFromBytes(std::shared_ptr<MMI::PointerEvent>& pointerEvent, const std::vector<uint8_t>& data);
+TouchEvent ConvertTouchEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent);
+void CreatePointerEventsFromBytes(
+    std::vector<std::shared_ptr<MMI::PointerEvent>>& pointerEvent, const std::vector<uint8_t>& data);
 void SetTouchEventType(int32_t orgAction, TouchEvent& event);
 void UpdateTouchEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent, TouchEvent& touchEvent);
 TouchPoint ConvertTouchPoint(const MMI::PointerEvent::PointerItem& pointerItem);
