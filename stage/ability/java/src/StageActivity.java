@@ -30,6 +30,18 @@ import android.os.Trace;
 import android.util.Log;
 import android.view.View;
 
+import java.util.List;
+import java.util.Set;
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import android.content.ClipData;
+import android.net.Uri;
+
+import org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.AcePlatformPlugin;
 import ohos.ace.adapter.ArkUIXPluginRegistry;
@@ -66,7 +78,33 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     private static final String TEST_PARAMS = "test";
 
+    private static final int WANT_PARAMS_TYPE = 10;
+
+    private static final String PHOTO_VIDEO_TYPE = "image/*;video/*";
+
+    private static final String FILE_ALL_TYPE = "*/*";
+
+    private static final String PHOTO_PICKER = "com.ohos.photos";
+
+    private static final String FILE_PICKER = "com.ohos.filepicker";
+
+    private static final String MULTIPLE = "multipleselect";
+
+    private static final String PHOTO_URI_KEY = "select-item-list";
+
+    private static final String FILE_URI_KEY = "ability.params.stream";
+
+    private static boolean isForResult = true;
+
+    private static final int RESULTCODE_OK = 0;
+
+    private static final int RESULTCODE_ERROR = 1;
+
+    private static final int RESULT_OK = -1;
+
     private static boolean isFrist = false;
+
+    private int requestCode = 0;
 
     private int instanceId = InstanceIdGenerator.getAndIncrement();
 
@@ -229,6 +267,25 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (!FILE_PICKER.equals(bundleName) && !PHOTO_PICKER.equals(bundleName)) {
+            handleNonPickerActivityResult(requestCode, resultCode, intent);
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, intent);
+        if (intent == null) {
+            return;
+        }
+        List<String> uriList = extractUriList(intent);
+        if (uriList.isEmpty()) {
+            Log.w(LOG_TAG, "No data or clip data found in the intent");
+            return;
+        }
+        String resultWantParams = buildResultJson(uriList);
+        activityDelegate.dispatchOnActivityResult(getInstanceName(), requestCode,
+            resultCode == RESULT_OK ? RESULTCODE_OK : RESULTCODE_ERROR, resultWantParams, intent);
+    }
+    
+    private void handleNonPickerActivityResult(int requestCode, int resultCode, Intent intent) {
         Log.i(LOG_TAG, "onActivityResult called");
         super.onActivityResult(requestCode, resultCode, intent);
         String resultWantParams = "";
@@ -239,6 +296,42 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             }
         }
         activityDelegate.dispatchOnActivityResult(getInstanceName(), requestCode, resultCode, resultWantParams, intent);
+    }
+
+    private List<String> extractUriList(Intent intent) {
+        List<String> uriList = new ArrayList<>();
+        Uri data = intent.getData();
+        if (data != null) {
+            uriList.add(data.toString());
+        }
+        ClipData clipData = intent.getClipData();
+        if (clipData != null) {
+            for (int i = 0; i < clipData.getItemCount(); i++) {
+                Uri uri = clipData.getItemAt(i).getUri();
+                if (uri != null) {
+                    uriList.add(uri.toString());
+                }
+            }
+        }
+        return uriList;
+    }
+
+    private String buildResultJson(List<String> uriList) {
+        JSONObject resultJson = new JSONObject();
+        try {
+            JSONArray valueArray = new JSONArray();
+            for (String uriStr : uriList) {
+                valueArray.put(uriStr);
+            }
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("key", PHOTO_PICKER.equals(bundleName) ? PHOTO_URI_KEY : FILE_URI_KEY);
+            jsonObject.put("type", WANT_PARAMS_TYPE);
+            jsonObject.put("value", valueArray.toString());
+            resultJson.put(WANT_PARAMS, new JSONArray(Arrays.asList(jsonObject)));
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "Error creating JSON object: " + e.getMessage());
+        }
+        return resultJson.toString();
     }
 
     /**
@@ -357,6 +450,62 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     }
 
     /**
+     * Start a new activity.
+     *
+     * @param bundleName   the package name.
+     * @param activityName the activity name.
+     * @param type         the file or photo type.
+     * @param params       the want params.
+     * @return Returns ERR_OK on success, others on failure.
+     */
+    public int startActivity(String bundleName, String activityName, String type, String params) {
+        isForResult = false;
+        String value = "";
+        try {
+            JSONArray paramsArray = new JSONObject(params).getJSONArray("params");
+            for (int i = 0; i < paramsArray.length(); i++) {
+                JSONObject param = paramsArray.getJSONObject(i);
+                if ("uri".equals(param.getString("key"))) {
+                    value = param.getString("value");
+                    break;
+                }
+            }
+            return createPicker(bundleName, type, value);
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "json parse error: " + e.getMessage());
+            return ERR_INVALID_PARAMETERS;
+        }
+    }
+
+    private int createPicker(String bundleName, String type, String value) {
+        Intent intent = null;
+        try {
+            if (PHOTO_PICKER.equals(bundleName)) {
+                intent = new Intent(Intent.ACTION_PICK);
+                intent.setType(!type.isEmpty() ? type : PHOTO_VIDEO_TYPE);
+            } else if (FILE_PICKER.equals(bundleName)) {
+                intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType(!type.isEmpty() ? type : FILE_ALL_TYPE);
+            } else {
+                return ERR_INVALID_PARAMETERS;
+            }
+            if (MULTIPLE.equals(value)) {
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+            }
+            if (isForResult) {
+                this.startActivityForResult(intent, requestCode);
+            } else {
+                this.startActivity(intent);
+            }
+            return ERR_OK;
+        } catch (ActivityNotFoundException e) {
+            Log.e(LOG_TAG, "Activity not found: " + e.getMessage());
+            return ERR_INVALID_PARAMETERS;
+        }
+    }
+
+    /**
      * Start a new activity for which you would like a result when it finished.
      *
      * @param bundleName   the package name.
@@ -387,6 +536,38 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             error = ERR_INVALID_PARAMETERS;
         }
         return error;
+    }
+
+    /**
+     * Start a new activity for which you would like a result when it finished.
+     *
+     * @param bundleName   the package name.
+     * @param activityName the activity name.
+     * @param type         the file or photo type.
+     * @param params       the want params.
+     * @param requestCode  If >= 0, this code will be returned in onActivityResult() when the activity exits.
+     * @return Returns ERR_OK on success, others on failure.
+     */
+    public int startActivityForResult(String bundleName, String activityName, String type,
+                                      String params, int requestCode) {
+        this.requestCode = requestCode;
+        this.bundleName = bundleName;
+        this.isForResult = true;
+        String value = "";
+        try {
+            JSONArray paramsArray = new JSONObject(params).getJSONArray("params");
+            for (int i = 0; i < paramsArray.length(); i++) {
+                JSONObject param = paramsArray.getJSONObject(i);
+                if ("uri".equals(param.getString("key"))) {
+                    value = param.getString("value");
+                    break;
+                }
+            }
+            return createPicker(bundleName, type, value);
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "json parse error: " + e.getMessage());
+            return ERR_INVALID_PARAMETERS;
+        }
     }
 
     /**
