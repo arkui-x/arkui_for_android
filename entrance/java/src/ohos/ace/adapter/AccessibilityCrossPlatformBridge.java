@@ -18,28 +18,29 @@ import android.content.ContentResolver;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.ArrayMap;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
+import ohos.ace.adapter.AccessibilityCrossPlatformBridge.ArkUiAccessibilityNodeInfo;
 
 import java.lang.Class;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.Arrays;
+import java.util.Queue;
 import java.util.stream.Collectors;
+import java.util.function.Predicate;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,22 +49,9 @@ import org.json.JSONArray;
 public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider {
     private static final String TAG = "ArkUIAccessbilityProvider";
     private static FocusedNode currentFocusNode = null;
-    private final AccessibilityManager accessibilityManager;
-    private final ContentResolver contentResolver;
-    private View arkuiRootAccessibilityView = null;
     private static final int ROOT_NODE_ID = 0;
     private static final int UNDEFINED_ACCESSIBILITY_ID = -1;
     private static final int INVALID_PARENT_ID = -2100000;
-    private long jsAccessibilityStateObserverPtr = 0L;
-    private int windowId = 0;
-    private List<Integer> currentPageNodeIds = new ArrayList<>();
-    private ArrayMap<Integer, ArkUiAccessibilityNodeInfo> arkUiframeNodes = new ArrayMap<>();
-    private int inputFocusNodeId = -1;
-    private int accessFocusNodeId = -1;
-    private List<FocusedNode> arkUiAccFocusRouteNodes = new ArrayList<>();
-	private boolean isMenuFocus = false;
-    private boolean isStateChanged = true;
-    private boolean disabledDelay = false;
     private static final int ANDROID_API_28 = 28;
     private static final int ANDROID_API_24 = 24;
     private static final int ANDROID_API_35 = 35;
@@ -93,19 +81,113 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
     private static final String ACE_COMPONENT_CHECKBOX = "CheckBox";
     private static final String ACE_COMPONENT_BUTTON = "Button";
     private static final String ACE_COMPONENT_GRIDITEM = "GridItem";
-    private class TextMoveUnit {
-        public static final int STEP_INVALID = 0x0000;
-        public static final int STEP_CHARACTER = 0x0001;
-        public static final int STEP_WORD = 0x0002;
-        public static final int STEP_LINE = 0x0004;
-        public static final int STEP_PARAGRAPH = 0x0008;
-        public static final int STEP_PAGE = 0x0010;
-    }
+    private static final String KEY_ACCESSIBILITY_TEXT = "AccessibilityText";
+    private static final String KEY_DESCRIPTION_INFO = "DescriptionInfo";
+    private static final String KEY_COMPONENT_TYPE = "ComponentType";
+    private static final int TYPE_PAGE_OPEN = 2049;
+    private static final int TYPE_PAGE_CLOSE = 2050;
+    private static final int EVENT_DELAY_TIME = 1000;
 
-    private class ScrollType {
-        public static final int SCROLL_DEFAULT = -1;
-        public static final int SCROLL_HALF = 0;
-        public static final int SCROLL_FULL = 1;
+    private final AccessibilityManager accessibilityManager;
+    private final ContentResolver contentResolver;
+    private View arkuiRootAccessibilityView = null;
+    private long jsAccessibilityStateObserverPtr = 0L;
+    private int windowId = 0;
+    private List<Integer> currentPageNodeIds = new ArrayList<>();
+    private Map<Integer, ArkUiAccessibilityNodeInfo> arkUiframeNodes = new LinkedHashMap<>();
+    private int inputFocusNodeId = -1;
+    private int accessFocusNodeId = -1;
+    private List<FocusedNode> arkUiAccFocusRouteNodes = new ArrayList<>();
+    private boolean isMenuFocus = false;
+    private boolean isStateChanged = true;
+    private boolean disabledDelay = false;
+    Runnable updateNodeIds = () -> {
+        if (!isTouchExplorationEnabled()) {
+            return;
+        }
+
+        int[] intArray = nativeGetTreeIdArray(this.windowId);
+        if (intArray == null || intArray.length <= 0) {
+            return;
+        }
+
+        updateAccessibilityNodeInfod(intArray);
+    };
+
+    private final AccessibilityManager.AccessibilityStateChangeListener stateChangeListener = (isEnable) -> {
+        onChanged(isEnable);
+        isStateChanged = false;
+    };
+
+    private final AccessibilityManager.TouchExplorationStateChangeListener touchExplorationStateChangeListener = (
+            isEnable) -> {
+        if (isStateChanged) {
+            onChanged(isEnable);
+        }
+
+        if (isEnable && isAccessibilityEnabled()) {
+            arkUiAccFocusRouteNodes.clear();
+            if (arkuiRootAccessibilityView != null) {
+                arkuiRootAccessibilityView.removeCallbacks(updateNodeIds);
+                isMenuFocus = false;
+                inputFocusNodeId = -1;
+                arkuiRootAccessibilityView.post(updateNodeIds);
+            }
+        }
+
+        if (!isEnable) {
+            isStateChanged = true;
+        }
+
+        if (isAccessibilityEnabled()) {
+            nativeTouchExplorationStateChange(true, this.windowId);
+        }
+    };
+
+    /**
+     * Represents an accessibility node information class, used to encapsulate
+     * AccessibilityNodeInfo object and its related properties.
+     */
+    public static class ArkUiAccessibilityNodeInfo {
+        private int nodeId = -1;
+        private int[] childIds = new int[0];
+        private String componentType = "";
+        private boolean isDirty = true;
+        private AccessibilityNodeInfo nodeInfo = null;
+
+        private ArkUiAccessibilityNodeInfo() {
+        }
+
+        /**
+         * Creates and returns an ArkUiAccessibilityNodeInfo object.
+         *
+         * @param nodeInfo The AccessibilityNodeInfo object used to initialize the
+         *                 ArkUiAccessibilityNodeInfo
+         * @param nodeId   The unique identifier for the node
+         * @return The initialized ArkUiAccessibilityNodeInfo object
+         */
+        public static ArkUiAccessibilityNodeInfo obtain(AccessibilityNodeInfo nodeInfo, int nodeId) {
+            ArkUiAccessibilityNodeInfo info = new ArkUiAccessibilityNodeInfo();
+            info.nodeInfo = AccessibilityNodeInfo.obtain(nodeInfo);
+            info.nodeId = nodeId;
+            return info;
+        }
+
+        public void init(String jsonStr) {
+            if (!jsonStr.isEmpty()) {
+                try {
+                    JSONObject jsonObject = new JSONObject(jsonStr);
+                    componentType = jsonObject.getString(KEY_COMPONENT_TYPE);
+                    JSONArray jsonChildIDArray = new JSONArray(jsonObject.getString("childIDs"));
+                    childIds = new int[jsonChildIDArray.length()];
+                    for (int index = 0; index < jsonChildIDArray.length(); index++) {
+                        childIds[index] = jsonChildIDArray.getInt(index);
+                    }
+                } catch (JSONException e) {
+                    Log.e(TAG, "createAccessibilityNodeInfo failed; err is " + e.getMessage());
+                }
+            }
+        }
     }
 
     private static class FocusedNode {
@@ -133,182 +215,20 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         }
     }
 
-    private static class ArkUiAccessibilityNodeInfo {
-        public int nodeId = -1;
-        public String componentResourceId = "";
-        public String bundleName = "";
-        public String componentType = "";
-        public boolean isFocusable;
-        public boolean isFocused;
-        public boolean hasAccessibilityFocus;
-        public boolean isPassword;
-        public boolean isEditable;
-        public int selectedBegin;
-        public int selectedEnd;
-        public int liveRegion;
-        public int[] actionList = new int[0];
-        public int textMoveStep;
-        public int textLengthLimit;
-        public int parentNodeId;
-        public Rect boundsInScreen;
-        public boolean isVisible;
-        public boolean isEnabled;
-        public boolean isClickable;
-        public boolean isLongClickable;
-        public boolean isScrollable;
-        public int girdInfoRows;
-        public int girdInfoColumns;
-        public int itemCounts;
-        public int gridItemRowIndex;
-        public boolean gridItemIsSelected;
-        public int gridItemRowSpan;
-        public int gridItemColumnIndex;
-        public int gridItemColumnSpan;
-        public boolean gridItemIsHeading;
-        public String content = "";
-        public String hint = "";
-        public String descriptionInfo = "";
-        public String setTooltipText = "";
-        public boolean isCheckable;
-        public boolean isChecked;
-        public boolean isSelected;
-        public int[] childIds = new int[0];
-
-        private ArkUiAccessibilityNodeInfo(int nodeId) {
-            this.nodeId = nodeId;
-        }
-
-        public static ArkUiAccessibilityNodeInfo obtain(int nodeId) {
-            return new ArkUiAccessibilityNodeInfo(nodeId);
-        }
-
-        public void init(String jsonStr) {
-            if (!jsonStr.isEmpty()) {
-                try {
-                    JSONObject jsonObject = new JSONObject(jsonStr);
-                    this.componentResourceId = jsonObject.getString("ComponentResourceId");
-                    this.bundleName = jsonObject.getString("BundleName");
-                    this.componentType = jsonObject.getString("ComponentType");
-                    this.isFocusable = jsonObject.getBoolean("IsFocusable");
-                    this.isFocused = jsonObject.getBoolean("IsFocused");
-                    this.hasAccessibilityFocus = jsonObject.getBoolean("HasAccessibilityFocus");
-                    this.isPassword = jsonObject.getBoolean("IsPassword");
-                    this.isEditable = jsonObject.getBoolean("IsEditable");
-                    this.selectedBegin = jsonObject.getInt("SelectedBegin");
-                    this.selectedEnd = jsonObject.getInt("SelectedEnd");
-                    this.liveRegion = jsonObject.getInt("LiveRegion");
-                    this.textMoveStep = jsonObject.getInt("TextMoveStep");
-                    JSONArray jsonArray = new JSONArray(jsonObject.getString("ActionList"));
-                    if (jsonArray.length() > 0) {
-                        this.actionList = new int[jsonArray.length()];
-                        for (int index = 0; index < jsonArray.length(); index++) {
-                            actionList[index] = jsonArray.getInt(index);
-                        }
-                    }
-                    this.textLengthLimit = jsonObject.getInt("TextLengthLimit");
-                    this.parentNodeId = jsonObject.getInt("ParentNodeId");
-                    this.boundsInScreen = new Rect();
-                    this.boundsInScreen.left = jsonObject.getInt("RectInScreen_leftTopX");
-                    this.boundsInScreen.top = jsonObject.getInt("RectInScreen_leftTopY");
-                    this.boundsInScreen.right = jsonObject.getInt("RectInScreen_rightBottomX");
-                    this.boundsInScreen.bottom = jsonObject.getInt("RectInScreen_rightBottomY");
-                    this.isVisible = jsonObject.getBoolean("IsVisible");
-                    this.isEnabled = jsonObject.getBoolean("IsEnabled");
-                    this.isClickable = jsonObject.getBoolean("IsClickable");
-                    this.isLongClickable = jsonObject.getBoolean("IsLongClickable");
-                    this.isScrollable = jsonObject.getBoolean("IsScrollable");
-                    this.girdInfoRows = jsonObject.getInt("GirdInfoRows");
-                    this.girdInfoColumns = jsonObject.getInt("GirdInfoColumns");
-                    this.itemCounts = jsonObject.getInt("ItemCounts");
-                    this.gridItemRowIndex = jsonObject.getInt("GridItemRowIndex");
-                    this.gridItemRowSpan = jsonObject.getInt("GridItemRowSpan");
-                    this.gridItemColumnIndex = jsonObject.getInt("GridItemColumnIndex");
-                    this.gridItemColumnSpan = jsonObject.getInt("GridItemColumnSpan");
-                    this.gridItemIsHeading = jsonObject.getBoolean("GridItemIsHeading");
-                    this.gridItemIsSelected = jsonObject.getBoolean("GridItemIsSelected");
-                    this.content = jsonObject.getString("Content");
-                    this.hint = jsonObject.getString("Hint");
-                    this.descriptionInfo = jsonObject.getString("DescriptionInfo");
-                    this.isCheckable = jsonObject.getBoolean("IsCheckable");
-                    this.isChecked = jsonObject.getBoolean("IsChecked");
-                    this.isSelected = jsonObject.getBoolean("IsSelected");
-                    JSONArray jsonChildIDArray = new JSONArray(jsonObject.getString("childIDs"));
-                    if (jsonChildIDArray.length() > 0) {
-                        this.childIds = new int[jsonChildIDArray.length()];
-                        for (int index = 0; index < jsonChildIDArray.length(); index++) {
-                            childIds[index] = jsonChildIDArray.getInt(index);
-                        }
-                    }
-                } catch (JSONException e) {
-                    Log.e(TAG, "createAccessibilityNodeInfo failed; err is ", e);
-                    return;
-                }
-            }
-        }
+    private class TextMoveUnit {
+        public static final int STEP_INVALID = 0x0000;
+        public static final int STEP_CHARACTER = 0x0001;
+        public static final int STEP_WORD = 0x0002;
+        public static final int STEP_LINE = 0x0004;
+        public static final int STEP_PARAGRAPH = 0x0008;
+        public static final int STEP_PAGE = 0x0010;
     }
 
-    Runnable updateNodeIds = () -> {
-        if (!isTouchExplorationEnabled()) {
-            return;
-        }
-
-        int[] intArray = nativeGetTreeIdArray(this.windowId);
-        if (intArray == null || intArray.length <= 0) {
-            return;
-        }
-
-        updateAccessibilityNodeInfod(intArray);
-    };
-
-    private final AccessibilityManager.AccessibilityStateChangeListener stateChangeListener = (isEnable) -> {
-        onChanged(isEnable);
-        isStateChanged = false;
-    };
-
-    private final AccessibilityManager.TouchExplorationStateChangeListener
-        touchExplorationStateChangeListener = (isEnable) -> {
-            if (isStateChanged) {
-                onChanged(isEnable);
-            }
-
-            if (isEnable && isAccessibilityEnabled()) {
-                arkUiAccFocusRouteNodes.clear();
-                if (arkuiRootAccessibilityView != null) {
-                    arkuiRootAccessibilityView.removeCallbacks(updateNodeIds);
-                    isMenuFocus = false;
-                    inputFocusNodeId = -1;
-                    arkuiRootAccessibilityView.post(updateNodeIds);
-                }
-            }
-
-            if (!isEnable) {
-                isStateChanged = true;
-            }
-
-            if (isAccessibilityEnabled()) {
-                nativeTouchExplorationStateChange(true, this.windowId);
-            }
-    };
-
-        private void onChanged(boolean isEnable) {
-            disabledDelay = false;
-            if (isEnable && isAccessibilityEnabled()) {
-                accessibilityStateChanged(true);
-                if (currentFocusNode != null) {
-                    currentFocusNode = null;
-                }
-            } else {
-                disabledDelay = true;
-                if (currentFocusNode != null) {
-                    int[] args = { currentFocusNode.nodeId, AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS,
-                            currentFocusNode.windowId };
-                    nativePerformAction(args, "{}");
-                    currentFocusNode = null;
-                }
-                disabledDelay = false;
-                accessibilityStateChanged(false);
-            }
-        }
+    private class ScrollType {
+        public static final int SCROLL_DEFAULT = -1;
+        public static final int SCROLL_HALF = 0;
+        public static final int SCROLL_FULL = 1;
+    }
 
     public AccessibilityCrossPlatformBridge(AccessibilityManager accessibilityManager, ContentResolver contentResolver,
             View arkuiRootAccessibilityView, int windowId) {
@@ -319,6 +239,26 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         this.accessibilityManager.addAccessibilityStateChangeListener(stateChangeListener);
         this.windowId = windowId;
         nativeSetupJsAccessibilityManager(this.windowId);
+    }
+
+    private void onChanged(boolean isEnable) {
+        disabledDelay = false;
+        if (isEnable && isAccessibilityEnabled()) {
+            accessibilityStateChanged(true);
+            if (currentFocusNode != null) {
+                currentFocusNode = null;
+            }
+        } else {
+            disabledDelay = true;
+            if (currentFocusNode != null) {
+                int[] args = { currentFocusNode.nodeId, AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS,
+                        currentFocusNode.windowId };
+                nativePerformAction(args, "{}");
+                currentFocusNode = null;
+            }
+            disabledDelay = false;
+            accessibilityStateChanged(false);
+        }
     }
 
     public void release() {
@@ -357,19 +297,25 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         int parentId = parent.nodeId;
         int childCount = parent.childIds.length;
 
-        if (childCount > 0) {
-            Iterator it = arkUiframeNodes.keySet().iterator();
-            boolean isFind = false;
-            while (it.hasNext()) {
-                int key = (int) it.next();
-                if (!isFind && key != parentId) {
-                    continue;
-                } else {
-                    isFind = true;
-                }
-                ArkUiAccessibilityNodeInfo temp = arkUiframeNodes.get(key);
-                if (!temp.content.isEmpty() || !temp.descriptionInfo.isEmpty()) {
-                    childInfo = temp;
+        if (childCount <= 0) {
+            return null;
+        }
+        Iterator it = arkUiframeNodes.keySet().iterator();
+        boolean isFind = false;
+        while (it.hasNext()) {
+            int key = (int) it.next();
+            if (!isFind && key != parentId) {
+                continue;
+            } else {
+                isFind = true;
+            }
+            ArkUiAccessibilityNodeInfo arkNodeInfo = arkUiframeNodes.get(key);
+            if (arkNodeInfo != null && arkNodeInfo.nodeInfo != null) {
+                CharSequence contentText = arkNodeInfo.nodeInfo.getText();
+                CharSequence contentDescriptionText = arkNodeInfo.nodeInfo.getContentDescription();
+                if ((contentText != null && !contentText.toString().isEmpty()) ||
+                        (contentDescriptionText != null && !contentDescriptionText.toString().isEmpty())) {
+                    childInfo = arkNodeInfo;
                     break;
                 }
             }
@@ -377,11 +323,44 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         return childInfo;
     }
 
+    ArkUiAccessibilityNodeInfo findNodeInfo(ArkUiAccessibilityNodeInfo parent,
+            Predicate<ArkUiAccessibilityNodeInfo> condition) {
+        if (parent == null) {
+            return null;
+        }
+        Queue<ArkUiAccessibilityNodeInfo> queue = new LinkedList<>();
+        queue.add(parent);
+
+        while (!queue.isEmpty()) {
+            ArkUiAccessibilityNodeInfo currentNode = queue.poll();
+
+            if (condition.test(currentNode)) {
+                return currentNode;
+            }
+
+            for (int childID : currentNode.childIds) {
+                ArkUiAccessibilityNodeInfo child = arkUiframeNodes.get(childID);
+                if (child != null) {
+                    queue.add(child);
+                }
+            }
+        }
+        return null;
+    }
+
+    ArkUiAccessibilityNodeInfo findMenuChildAccessNodeInfo(ArkUiAccessibilityNodeInfo parent) {
+        return findNodeInfo(parent, node -> !node.nodeInfo.getText().toString().isEmpty() ||
+                !node.nodeInfo.getContentDescription().toString().isEmpty());
+    }
+
+    ArkUiAccessibilityNodeInfo findMenuFocusAccessNodeInfo(ArkUiAccessibilityNodeInfo parent) {
+        return findNodeInfo(parent, node -> node.nodeInfo.isAccessibilityFocused());
+    }
+
     synchronized public void updateAccessibilityNodeInfod(int[] ids) {
         if (ids == null || ids.length <= 0 || !isTouchExplorationEnabled()) {
             return;
         }
-
         currentPageNodeIds.clear();
         currentPageNodeIds.addAll(Arrays.stream(ids).boxed().collect(Collectors.toList()));
         arkUiframeNodes.clear();
@@ -390,11 +369,10 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
                 createAccessibilityNodeInfo(currentPageNodeIds.get(i), true);
             }
         }
-
-        if (performPopup()) {
+        sendWindowContentChangeEvent(currentPageNodeIds.get(0));
+        if (!isMenuFocus && performPopup()) {
             return;
         }
-
         if (!isMenuFocus) {
             int lastFocusRoute = getAccFocusRouteAndReset();
             if (lastFocusRoute > -1) {
@@ -402,7 +380,16 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
                 return;
             }
         }
-
+        if (isMenuFocus) {
+            ArkUiAccessibilityNodeInfo childInfo = findMenuFocusAccessNodeInfo(arkUiframeNodes.get(inputFocusNodeId));
+            if (childInfo == null) {
+                childInfo = findMenuChildAccessNodeInfo(arkUiframeNodes.get(inputFocusNodeId));
+            }
+            if (childInfo != null) {
+                performAction(childInfo.nodeId, AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, new Bundle());
+                return;
+            }
+        }
         if (inputFocusNodeId > 0 && currentPageNodeIds.contains(inputFocusNodeId)) {
             ArkUiAccessibilityNodeInfo childInfo = findChildAccessNodeInfo(arkUiframeNodes.get(inputFocusNodeId));
             if (childInfo == null) {
@@ -416,21 +403,21 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
             }
             return;
         }
-
-        if (!arkUiframeNodes.values().stream().anyMatch(info -> info.hasAccessibilityFocus)) {
-            arkUiframeNodes.entrySet().stream().filter(entry -> !entry.getValue().content.isEmpty() 
-                || !entry.getValue().descriptionInfo.isEmpty())
-                .findFirst()
-                .ifPresent(entry -> performAction(entry.getKey(), AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS,
-                 new Bundle()));
-        }
+        handleDefaultFocus();
     }
 
-    private boolean performPopup() {
-        if (isMenuFocus) {
-            return false;
+    private void handleDefaultFocus() {
+        if (!arkUiframeNodes.values().stream().anyMatch(info -> info.nodeInfo.isAccessibilityFocused())) {
+            arkUiframeNodes.entrySet().stream()
+                    .filter(entry -> !entry.getValue().nodeInfo.getText().toString().isEmpty()
+                            || !entry.getValue().nodeInfo.getContentDescription().toString().isEmpty())
+                    .findFirst()
+                    .ifPresent(entry -> performAction(entry.getKey(), AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS,
+                            new Bundle()));
         }
-        
+    }
+    
+    private boolean performPopup() {
         if (arkUiframeNodes.values().stream().anyMatch(info -> ACE_COMPONENT_POPUP.equals(info.componentType))) {
             arkUiframeNodes.entrySet().stream().filter(entry -> ACE_COMPONENT_POPUP
                     .equals(entry.getValue().componentType))
@@ -457,7 +444,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
 
     AccessibilityNodeInfo createAccessibilityNodeInfo(int virtualViewId, boolean isNew) {
         AccessibilityNodeInfo result = null;
-        if (virtualViewId == View.NO_ID) {
+        if (virtualViewId == View.NO_ID && arkuiRootAccessibilityView != null) {
             result = AccessibilityNodeInfo.obtain(arkuiRootAccessibilityView);
             arkuiRootAccessibilityView.onInitializeAccessibilityNodeInfo(result);
             result.setImportantForAccessibility(true);
@@ -467,21 +454,39 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
                 result.setImportantForAccessibility(false);
             }
             if (isNew) {
-                arkUiframeNodes.put(rootId, ArkUiAccessibilityNodeInfo.obtain(rootId));
+                arkUiframeNodes.put(rootId, ArkUiAccessibilityNodeInfo.obtain(result, rootId));
             }
             return result;
         }
-
-        String jsonStr = nativeCreateAccessibilityNodeInfo(virtualViewId, this.windowId);
-        if (isNew) {
-            ArkUiAccessibilityNodeInfo arkuiInfo = ArkUiAccessibilityNodeInfo.obtain(virtualViewId);
-            arkuiInfo.init(jsonStr);
-            arkUiframeNodes.put(virtualViewId, arkuiInfo);
-            arkUiframeNodes.setValueAt(currentPageNodeIds.indexOf(virtualViewId), arkuiInfo);
-            return result;
+        boolean isDirtyNode = true;
+        if (!isNew && arkUiframeNodes.containsKey(virtualViewId)) {
+            isDirtyNode = arkUiframeNodes.get(virtualViewId).isDirty;
+            if (!arkUiframeNodes.get(virtualViewId).isDirty) {
+                return AccessibilityNodeInfo.obtain(arkUiframeNodes.get(virtualViewId).nodeInfo);
+            }
         }
 
-        return ConvertJsonToNodeInfo(jsonStr);
+        String jsonStr = nativeCreateAccessibilityNodeInfo(virtualViewId, this.windowId);
+        result = ConvertJsonToNodeInfo(jsonStr);
+        if (result == null) {
+            Log.e(TAG, "Failed to convert JSON to NodeInfo for virtualViewId: " + virtualViewId + ", windowId: "
+                    + this.windowId + ", JSON: " + jsonStr);
+            return result;
+        }
+        if (isNew) {
+            ArkUiAccessibilityNodeInfo arkuiInfo = ArkUiAccessibilityNodeInfo.obtain(result, virtualViewId);
+            arkuiInfo.init(jsonStr);
+            arkuiInfo.isDirty = false;
+            arkUiframeNodes.put(virtualViewId, arkuiInfo);
+        } else {
+            if (isDirtyNode && arkUiframeNodes.containsKey(virtualViewId)) {
+                ArkUiAccessibilityNodeInfo arkuiInfo = ArkUiAccessibilityNodeInfo.obtain(result, virtualViewId);
+                arkuiInfo.init(jsonStr);
+                arkuiInfo.isDirty = false;
+                arkUiframeNodes.replace(virtualViewId, arkuiInfo);
+            }
+        }
+        return result;
     }
 
     private Rect getBoundsInScreen(Rect bounds) {
@@ -509,7 +514,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
                 result.setImportantForAccessibility(jsonObject.getBoolean("ImportantForAccessibility"));
                 result.setViewIdResourceName(jsonObject.getString("ComponentResourceId"));
                 result.setPackageName(jsonObject.getString("BundleName"));
-                result.setClassName(getClassNameString(jsonObject.getString("ComponentType")));
+                result.setClassName(getClassNameString(jsonObject.getString(KEY_COMPONENT_TYPE)));
                 result.setFocusable(jsonObject.getBoolean("IsFocusable"));
                 result.setFocused(jsonObject.getBoolean("IsFocused"));
                 result.setAccessibilityFocused(jsonObject.getBoolean("HasAccessibilityFocus"));
@@ -529,16 +534,20 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
                 setCollection(result, jsonObject);
                 result.setText(jsonObject.getString("Content"));
                 result.setHintText(jsonObject.getString("Hint"));
-                result.setContentDescription(jsonObject.getString("DescriptionInfo"));
-                if (!setTooltipTextAndText(result, jsonObject)) {
-                    return null;
-                }
+                result.setContentDescription(jsonObject.getString(KEY_ACCESSIBILITY_TEXT).isEmpty()
+                        ? jsonObject.getString(KEY_DESCRIPTION_INFO)
+                        : jsonObject.getString(KEY_ACCESSIBILITY_TEXT) + "\n"
+                                + jsonObject.getString(KEY_DESCRIPTION_INFO));
                 result.setCheckable(jsonObject.getBoolean("IsCheckable"));
                 result.setChecked(jsonObject.getBoolean("IsChecked"));
                 result.setSelected(jsonObject.getBoolean("IsSelected"));
                 setChildren(result, jsonObject);
+                if (!setTooltipTextAndText(result, jsonObject)) {
+                    Log.e(TAG, "!setTooltipTextAndText, jsonStr: " + jsonStr);
+                    return null;
+                }
             } catch (JSONException e) {
-                Log.e(TAG, "createAccessibilityNodeInfo failed; err is ", e);
+                Log.e(TAG, "createAccessibilityNodeInfo failed; err is " + e.getMessage());
                 return null;
             }
         }
@@ -586,7 +595,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
                                 false));
             }
         }
-        if (ACE_COMPONENT_GRIDITEM.equals(jsonObject.getString("ComponentType"))) {
+        if (ACE_COMPONENT_GRIDITEM.equals(jsonObject.getString(KEY_COMPONENT_TYPE))) {
             result.setCollectionItemInfo(AccessibilityNodeInfo.CollectionItemInfo.obtain(
                     jsonObject.getInt("GridItemRowIndex"),
                     jsonObject.getInt("GridItemRowSpan"),
@@ -760,7 +769,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
                 setScrollAmountArg(arguments, jsonObject);
                 jsonString = jsonObject.toString();
             } catch (JSONException e) {
-                Log.e(TAG, "performAction failed; err is ", e);
+                Log.e(TAG, "performAction failed; err is " + e.getMessage());
                 return false;
             }
         }
@@ -884,89 +893,148 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         }
     }
 
+    private int getChildItemCount(int parentId) {
+        int childCount = arkUiframeNodes.get(parentId).childIds.length;
+        for (int i = 0; i < arkUiframeNodes.get(parentId).childIds.length; i++) {
+            int childRescuCount = getChildItemCount(arkUiframeNodes.get(parentId).childIds[i]);
+            childCount += childRescuCount;
+        }
+        return childCount;
+    }
+
     public boolean onSendAccessibilityEvent(int nodeId, int accessibilityEvent, String arg) {
         AccessibilityEvent event = obtainAccessibilityEvent(nodeId, accessibilityEvent);
         String componentType = "";
         int pageID = -1;
-        if (!arg.isEmpty()) {
-            try {
-                JSONObject jsonObject = new JSONObject(arg);
-                event.setAction(jsonObject.getInt("actionType"));
-                event.setContentChangeTypes(jsonObject.getInt("contentChangeType"));
-                event.setMovementGranularity(jsonObject.getInt("TextMoveStep"));
-                event.setAddedCount(jsonObject.getInt("InputType"));
-                event.setBeforeText(jsonObject.getString("beforeText"));
-                event.setChecked(jsonObject.getBoolean("IsChecked"));
-                event.setClassName(getClassNameString(jsonObject.getString("ComponentType")));
-                componentType = jsonObject.getString("ComponentType");
-                event.setContentDescription(jsonObject.getString("DescriptionInfo"));
-                event.setEnabled(jsonObject.getBoolean("IsEnabled"));
-                event.setFromIndex(jsonObject.getInt("currentIndex"));
-                event.setItemCount(jsonObject.getInt("itemCounts"));
-                event.setCurrentItemIndex(jsonObject.getInt("currentIndex"));
-                event.setPassword(jsonObject.getBoolean("IsPassword"));
-                event.setScrollable(jsonObject.getBoolean("IsScrollable"));
-
-                if (arkUiframeNodes.containsKey(nodeId)) {
-                    if (arkUiframeNodes.get(nodeId).isVisible != jsonObject.getBoolean("IsVisible")) {
-                        sendWindowContentChangeEvent(nodeId);
-                    }
-                }
-                pageID = jsonObject.getInt("PageId");
-            } catch (JSONException e) {
-                Log.e(TAG, "onSendAccessibilityEvent failed; err is ", e);
-                return false;
-            }
+        if (arg.isEmpty()) {
+            return false;
         }
-
-        performEvent(nodeId, accessibilityEvent, componentType, pageID);
-        return sendAccessibilityEvent(event);
+        try {
+            JSONObject jsonObject = new JSONObject(arg);
+            convertJsonToEvent(event, jsonObject);
+            componentType = jsonObject.getString(KEY_COMPONENT_TYPE);
+            if (arkUiframeNodes.containsKey(nodeId)) {
+                int chilIdCount = arkUiframeNodes.get(nodeId).childIds.length;
+                if (arkUiframeNodes.get(nodeId).nodeInfo.isVisibleToUser() != jsonObject.getBoolean("IsVisible")) {
+                    sendWindowContentChangeEvent(nodeId);
+                }
+                arkUiframeNodes.get(nodeId).isDirty = true;
+                if (accessibilityEvent == AccessibilityEvent.TYPE_VIEW_SCROLLED && chilIdCount > 0) {
+                    int childCount = getChildItemCount(nodeId) + 1;
+                    int index = currentPageNodeIds.indexOf(nodeId);
+                    int indexEnd = childCount + index;
+                    if (indexEnd > currentPageNodeIds.size()) {
+                        indexEnd = currentPageNodeIds.size();
+                    }
+                    for (int i = index; i < indexEnd; i++) {
+                        arkUiframeNodes.get(currentPageNodeIds.get(i)).isDirty = true;
+                    }
+                    sendWindowContentChangeEvent(nodeId);
+                }
+            }
+            pageID = jsonObject.getInt("PageId");
+        } catch (JSONException e) {
+            Log.e(TAG, "onSendAccessibilityEvent failed; err is " + e.getMessage());
+            return false;
+        }
+        boolean[] isDrop = {false};
+        performEvent(nodeId, accessibilityEvent, componentType, pageID, isDrop);
+        if (accessibilityEvent == TYPE_PAGE_OPEN || accessibilityEvent == TYPE_PAGE_CLOSE) {
+            event.setEventType(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        }
+        if (isDrop[0]) {
+            return true;
+        } else {
+            return sendAccessibilityEvent(event);
+        }
     }
 
-    private void performEvent(int nodeId, int accessibilityEvent, String componentType, int pageID) {
+    private void convertJsonToEvent(AccessibilityEvent event, JSONObject jsonObject) {
+        try {
+            event.setAction(jsonObject.getInt("actionType"));
+            event.setContentChangeTypes(jsonObject.getInt("contentChangeType"));
+            event.setMovementGranularity(jsonObject.getInt("TextMoveStep"));
+            event.setAddedCount(jsonObject.getInt("InputType"));
+            event.setBeforeText(jsonObject.getString("beforeText"));
+            event.setChecked(jsonObject.getBoolean("IsChecked"));
+            event.setClassName(getClassNameString(jsonObject.getString(KEY_COMPONENT_TYPE)));
+            event.setContentDescription(jsonObject.getString(KEY_DESCRIPTION_INFO));
+            event.setEnabled(jsonObject.getBoolean("IsEnabled"));
+            event.setFromIndex(jsonObject.getInt("currentIndex"));
+            event.setItemCount(jsonObject.getInt("itemCounts"));
+            event.setCurrentItemIndex(jsonObject.getInt("currentIndex"));
+            event.setPassword(jsonObject.getBoolean("IsPassword"));
+            event.setScrollable(jsonObject.getBoolean("IsScrollable"));
+        } catch (JSONException e) {
+            Log.e(TAG, "ConvertJsonToEvent failed; err is " + e.getMessage());
+        }
+    }
+
+    private void performEvent(int nodeId, int accessibilityEvent, String componentType, int pageID, boolean[] isDrop) {
         if (accessibilityEvent == AccessibilityEvent.TYPE_VIEW_FOCUSED) {
-            if (arkuiRootAccessibilityView != null) {
-                 if (ACE_COMPONENT_PAGE.equals(componentType) ||
-                    ACE_COMPONENT_POPUP.equals(componentType)) {
-                    arkuiRootAccessibilityView.removeCallbacks(updateNodeIds);
-                    isMenuFocus = false;
-                    inputFocusNodeId = nodeId;
-                    arkuiRootAccessibilityView.post(updateNodeIds);
-                } else if (ACE_COMPONENT_MENU.equals(componentType) ||
-                    ACE_COMPONENT_DIALOG.equals(componentType)) {
-					arkuiRootAccessibilityView.removeCallbacks(updateNodeIds);
-                    isMenuFocus = true;
-                    inputFocusNodeId = nodeId;
-                    arkuiRootAccessibilityView.post(updateNodeIds);
-                }
-            }
+            performUpdateNodeId(nodeId, accessibilityEvent, componentType, false, isDrop);
         }
         if (accessibilityEvent == AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED) {
             accessFocusNodeId = nodeId;
             addAccFocusRoute(nodeId, pageID);
-        } else if (accessibilityEvent == AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED) {
+        }
+        if (accessibilityEvent == AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED) {
             accessFocusNodeId = -1;
         }
         if (accessibilityEvent == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
                 || accessibilityEvent == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             inputFocusNodeId = -1;
             accessFocusNodeId = -1;
-            if (arkuiRootAccessibilityView != null) {
-                if (ACE_COMPONENT_PAGE.equals(componentType) ||
-                   ACE_COMPONENT_POPUP.equals(componentType) ||
-                   ACE_COMPONENT_DIALOG.equals(componentType)) {
-                   arkuiRootAccessibilityView.removeCallbacks(updateNodeIds);
-                   isMenuFocus = false;
-                   inputFocusNodeId = nodeId;
-                   arkuiRootAccessibilityView.postDelayed(updateNodeIds,1000);
-               } else if (ACE_COMPONENT_MENU.equals(componentType) ||
-                   ACE_COMPONENT_DIALOG.equals(componentType)) {
-                   arkuiRootAccessibilityView.removeCallbacks(updateNodeIds);
-                   isMenuFocus = true;
-                   inputFocusNodeId = nodeId;
-                   arkuiRootAccessibilityView.postDelayed(updateNodeIds,1000);
-               }
-           }
+            performUpdateNodeId(nodeId, accessibilityEvent, componentType, true, isDrop);
+        }
+
+        if (accessibilityEvent == TYPE_PAGE_OPEN) {
+            inputFocusNodeId = -1;
+            accessFocusNodeId = -1;
+            performUpdateNodeId(nodeId, accessibilityEvent, componentType, false, isDrop);
+        }
+
+        if (accessibilityEvent == TYPE_PAGE_CLOSE) {
+            if (accessFocusNodeId >= 0) {
+                performAction(accessFocusNodeId,
+                        AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS, new Bundle());
+            }
+            inputFocusNodeId = -1;
+            accessFocusNodeId = -1;
+            performUpdateNodeId(nodeId, accessibilityEvent, componentType, false, isDrop);
+        }
+    }
+
+    private void performUpdateNodeId(int nodeId, int eventType, String componentType, boolean isDelay,
+            boolean[] isDrop) {
+        if (arkuiRootAccessibilityView == null) {
+            return;
+        }
+        if (ACE_COMPONENT_PAGE.equals(componentType) ||
+                ACE_COMPONENT_POPUP.equals(componentType) ||
+                ACE_COMPONENT_DIALOG.equals(componentType)) {
+            arkuiRootAccessibilityView.removeCallbacks(updateNodeIds);
+            isMenuFocus = false;
+            inputFocusNodeId = nodeId;
+            if (isDelay) {
+                arkuiRootAccessibilityView.postDelayed(updateNodeIds, EVENT_DELAY_TIME);
+            } else {
+                arkuiRootAccessibilityView.post(updateNodeIds);
+            }
+        } else if (ACE_COMPONENT_MENU.equals(componentType)) {
+            arkuiRootAccessibilityView.removeCallbacks(updateNodeIds);
+            if (eventType == TYPE_PAGE_CLOSE) {
+                isMenuFocus = false;
+            } else {
+                isMenuFocus = true;
+                isDrop[0] = true;
+            }
+            inputFocusNodeId = nodeId;
+            if (isDelay) {
+                arkuiRootAccessibilityView.postDelayed(updateNodeIds, EVENT_DELAY_TIME);
+            } else {
+                arkuiRootAccessibilityView.post(updateNodeIds);
+            }
         }
     }
 
@@ -1023,7 +1091,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
             if (arkUiframeNodes.containsKey(currentNode.nodeId)) {
                 routeFocusedNode = currentNode;
                 routeFocusedIndex = index;
-                if (arkUiframeNodes.get(routeFocusedNode.nodeId).isFocusable) {
+                if (arkUiframeNodes.get(routeFocusedNode.nodeId).nodeInfo.isFocusable()) {
                     ret = routeFocusedNode.nodeId;
                 }
                 break;

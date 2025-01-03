@@ -734,9 +734,10 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE
-            || newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            sendOrderedBroadcast(new Intent(WindowViewAosp.ARKUI_ORIENTAION_ACTION), null);
+
+        if ((newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE
+                || newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) && windowView != null) {
+            windowView.setWindowOrientation(true);
         }
     }
 }
