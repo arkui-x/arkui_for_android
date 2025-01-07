@@ -79,6 +79,14 @@ public:
     int32_t UnRegisterCoordinationListener() override;
 
     int32_t UpdatePointAction(const std::shared_ptr<MMI::PointerEvent>& pointerEvent);
+    
+    int32_t GetPointerId()
+    {
+        if (surfaceNodeListener_ == nullptr) {
+            return -1;
+        }
+        return surfaceNodeListener_->dragData.pointerId;
+    }
 private:
     std::shared_ptr<OHOS::Rosen::Window> GetDragWindow();
     void RegisterDragWindow();

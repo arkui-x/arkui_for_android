@@ -31,7 +31,6 @@
 #include "window_view_jni.h"
 
 #include "adapter/android/entrance/java/jni/ace_env_jni.h"
-#include "adapter/android/entrance/java/jni/interaction/interaction_impl.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/log/log.h"
 #include "base/utils/utils.h"
@@ -999,16 +998,13 @@ bool Window::ProcessPointerEvent(const std::vector<uint8_t>& data)
         LOGW("Window::ProcessPointerEvent uiContent_ is nullptr");
         return false;
     }
-    std::shared_ptr<OHOS::MMI::PointerEvent> pointerEvent = OHOS::MMI::PointerEvent::Create();
-    CreatePointerEventFromBytes(pointerEvent, data);
-#ifdef ENABLE_DRAG_FRAMEWORK
-    Ace::DragState dragState;
-    Ace::InteractionInterface::GetInstance()->GetDragState(dragState);
-    if (dragState == Ace::DragState::START) {
-        static_cast<Ace::InteractionImpl*>(Ace::InteractionInterface::GetInstance())->UpdatePointAction(pointerEvent);
+    std::vector<std::shared_ptr<MMI::PointerEvent>> pointerEvents;
+    CreatePointerEventsFromBytes(pointerEvents, data);
+    bool result = true;
+    for (auto& pointerEvent : pointerEvents) {
+        result &= uiContent_->ProcessPointerEvent(pointerEvent);
     }
-#endif
-    return uiContent_->ProcessPointerEvent(pointerEvent);
+    return result;
 }
 
 bool Window::ProcessMouseEvent(const std::vector<uint8_t>& data)
