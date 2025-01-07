@@ -53,6 +53,7 @@ bool SystemProperties::unZipHap_ = true;
 bool SystemProperties::svgTraceEnable_ = false;
 bool SystemProperties::rosenBackendEnabled_ = true;
 bool SystemProperties::downloadByNetworkEnabled_ = false;
+bool SystemProperties::recycleImageEnabled_ = false;
 bool SystemProperties::isHookModeEnabled_ = false;
 bool SystemProperties::syncDebugTraceEnable_ = false;
 bool SystemProperties::pixelRoundEnable_ = true;
