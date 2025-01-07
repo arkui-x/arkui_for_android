@@ -54,6 +54,8 @@
       "OHOS::Ace::NG::PipelineContext::GetCurrentContext()";
       OHOS::Ace::NG::ViewAbstract::*;
       OHOS::Ace::NG::ViewStackProcessor::*;
+      OHOS::Ace::NG::UINode::*;
+      OHOS::Ace::NG::OverlayManager::*;
       OHOS::Ace::Platform::AceApplicationInfoImpl::*;
       OHOS::Ace::PipelineBase::*;
       OHOS::Ace::Scheduler::*;
@@ -464,6 +466,9 @@
       "OHOS::AbilityRuntime::CreateJsError(napi_env__*, int, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::AbilityRuntime::BindNativeFunction(napi_env__*, napi_value__*, char const*, char const*, napi_value__* (*)(napi_env__*, napi_callback_info__*))";
       HiLogIsLoggable;
+      HiLogSetAppMinLogLevel;
+      HcfCreateCmsGenerator;
+      HcfCmsGeneratorSpiCreate;
       OHOS::HiviewDFX::HiLog::*;
       OHOS::Media::ImageSource::*;
       OHOS::Ace::SubwindowManager::*;
