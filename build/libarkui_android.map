@@ -515,6 +515,20 @@
       OHOS::Ace::Recorder::EventRecorder::*;
       OHOS::Ace::Recorder::EventParamsBuilder::*;
       OHOS::MMI::KeyEvent::*;
+      vtable?for?OHOS::Rosen::LinearInterpolator;
+      VTT?for?OHOS::Rosen::LinearInterpolator;
+      OHOS::Rosen::RSSystemProperties::*;
+      OHOS::Rosen::RSCommandFactory::*;
+      OHOS::Rosen::RSNodeGetAnimationsValueFraction::*;
+      OHOS::Rosen::RSInterpolator::*;
+      OHOS::Ace::UdmfClient::*;
+      OHOS::Ace::NG::DragDropFuncWrapper::*;
+      OHOS::Ace::InteractionInterface::*;
+      OHOS::Msdp::DeviceStatus::InteractionManager::*;
+      OHOS::Ace::PixelMap::*;
+      panda::JSValueRef::*;
+      panda::ObjectRef::*;
+      "NapiValueToLocalValue(napi_value__*)";
     };
   local:
     *;

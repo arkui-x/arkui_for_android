@@ -83,16 +83,55 @@ public class AceEventProcessorAosp {
     };
 
     private interface SourceTool {
-        int UNKNOWN = 0;
-        int FINGER = 1;
-        int PEN = 2;
-        int RUBBER = 3;
-        int BRUSH = 4;
-        int PENCIL = 5;
-        int AIRBRUSH = 6;
-        int MOUSE = 7;
-        int LENS = 8;
-        int TOUCHPAD = 9;
+        /**
+         * unknow
+         */
+        int UNKNOWN = -1;
+
+        /**
+         * finger
+         */
+        int FINGER = 0;
+
+        /**
+         * pen
+         */
+        int PEN = 1;
+
+        /**
+         * rubber
+         */
+        int RUBBER = 2;
+
+        /**
+         * brush
+         */
+        int BRUSH = 3;
+
+        /**
+         * pencil
+         */
+        int PENCIL = 4;
+
+        /**
+         * airbrush
+         */
+        int AIRBRUSH = 5;
+
+        /**
+         * mouse
+         */
+        int MOUSE = 6;
+
+        /**
+         * lens
+         */
+        int LENS = 7;
+
+        /**
+         * touchpad
+         */
+        int TOUCHPAD = 8;
     };
 
     private AceEventProcessorAosp() {
