@@ -56,6 +56,7 @@ import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.AppModeConfig;
 import ohos.ace.adapter.LoggerAosp;
+import ohos.ace.adapter.ILogger;
 
 import org.json.JSONObject;
 
@@ -116,6 +117,10 @@ public class StageApplicationDelegate {
     private AcePlatformCapability platformCapability = null;
 
     private static boolean isCopyNativeLibs = false;
+
+    private static final int LOG_MIN = 0;
+
+    private static final int LOG_MAX = 4;
 
     /**
      * Constructor.
@@ -827,6 +832,38 @@ public class StageApplicationDelegate {
         }
     }
 
+    /**
+     * Set log interface.
+     *
+     * @param logger the log interface.
+     */
+    public void setLogInterface(ILogger logger) {
+        try {
+            ALog.setLogger(logger);
+            nativeSetLogger(logger);
+        } catch (UnsatisfiedLinkError e) {
+            Log.e(LOG_TAG, "logInterface: JNI is not registered.");
+        }
+    }
+
+    /**
+     * Set log level.
+     *
+     * @param logLevel the log level.
+     */
+    public void setLogLevel(int logLevel) {
+        try {
+            if (logLevel < LOG_MIN || logLevel > LOG_MAX) {
+                Log.e(LOG_TAG, "logLevel is invalid.");
+                return;
+            }
+            ALog.setLoggerLevel(logLevel);
+            nativeSetLogLevel(logLevel);
+        } catch (UnsatisfiedLinkError e) {
+            Log.e(LOG_TAG, "logInterface: JNI is not registered.");
+        }
+    }
+
     private native void nativeSetAssetManager(Object assetManager);
 
     private native void nativeSetHapPath(String hapPath);
@@ -854,4 +891,8 @@ public class StageApplicationDelegate {
     private native void nativeSetLocale(String language, String country, String script);
 
     private native void nativeAttachStageApplicationDelegate(StageApplicationDelegate object);
+
+    private native void nativeSetLogLevel(int level);
+
+    private native void nativeSetLogger(Object logger);
 }
