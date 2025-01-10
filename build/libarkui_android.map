@@ -82,6 +82,9 @@
       OHOS::Ace::ShadowTheme::*;
       OHOS::Ace::PerfMonitor::*;
       WorkerManager::*;
+      "NapiErrorManager::GetInstance()";
+      "NapiErrorManager::NotifyUncaughtException(napi_env__*, napi_value__*, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, unsigned int)";
+      "NapiErrorManager::NotifyUnhandledRejection(napi_env__*, napi_value__**, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, unsigned int)";
 
       virtual?thunk?to?OHOS::Ace::Animator::~Animator??;
 
