@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,22 +19,30 @@ import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import ohos.ace.adapter.capability.web.IAceWebErrorReceiveObject;
 
-public class AceWebErrorReceiveObject implements IAceWebErrorReceiveObject {
+/**
+ * Represents an object that extends AceWebResourceRequestObject to handle web
+ * resource loading errors.
+ * This class implements IAceWebErrorReceiveObject and is designed to manage and
+ * manipulate web resource requests and their corresponding error states.
+ *
+ * @since 2023-12-13
+ */
+public class AceWebErrorReceiveObject extends AceWebResourceRequestObject implements IAceWebErrorReceiveObject {
     private static final String LOG_TAG = "AceWebErrorReceiveObject";
 
     private WebResourceError error;
-    private WebResourceRequest request;
 
+    /**
+     * Constructs an AceWebErrorReceiveObject with the specified WebResourceError
+     * and WebResourceRequest.
+     *
+     * @param error   The WebResourceError associated with this object, representing
+     *                the loading error.
+     * @param request The WebResourceRequest associated with this object.
+     */
     public AceWebErrorReceiveObject(WebResourceError error, WebResourceRequest request) {
+        super(request);
         this.error = error;
-        this.request = request;
-    }
-
-    public String getRequestUrl() {
-        if (this.request.getUrl() != null) {
-            return this.request.getUrl().toString();
-        }
-        return "";
     }
 
     public String getErrorInfo() {
