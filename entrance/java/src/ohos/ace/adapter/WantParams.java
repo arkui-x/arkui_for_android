@@ -36,32 +36,39 @@ public class WantParams {
     private static final String WANT_PARAMS_KEY = "key";
     private static final String WANT_PARAMS_TYPE = "type";
     private static final String WANT_PARAMS_VALUE = "value";
+    private static final int VALUE_TYPE_BOOLEAN = 1;
+    private static final int VALUE_TYPE_INT = 5;
+    private static final int VALUE_TYPE_DOUBLE = 9;
+    private static final int VALUE_TYPE_STRING = 10;
+    private static final int VALUE_TYPE_WANT_PARAMS_ARRAY = 24;
+    private static final int VALUE_TYPE_WANT_PARAMS = 101;
+    private static final int VALUE_TYPE_ARRAY = 102;
     private final Map<String, WantValue> wantParamsMap;
 
     /**
      * Inner class to hold the value and type of a parameter.
      */
     private static class WantValue {
+        /**
+         * The type of the value, represented as an integer constant.
+         */
         public int type;
+
+        /**
+         * The actual value, which can be of any object type.
+         */
         public Object value;
 
+        /**
+         * Constructs a new WantValue object with the specified type and value.
+         *
+         * @param type  the type of the value, represented as an integer constant
+         * @param value the actual value, which can be of any object type
+         */
         public WantValue(int type, Object value) {
             this.type = type;
             this.value = value;
         }
-    }
-
-    /**
-     * Inner class to define constant values for different types of parameters.
-     */
-    private static class WantValueType {
-        public static final int VALUE_TYPE_BOOLEAN = 1;
-        public static final int VALUE_TYPE_INT = 5;
-        public static final int VALUE_TYPE_DOUBLE = 9;
-        public static final int VALUE_TYPE_STRING = 10;
-        public static final int VALUE_TYPE_WANT_PARAMS_ARRAY = 24;
-        public static final int VALUE_TYPE_WANT_PARAMS = 101;
-        public static final int VALUE_TYPE_ARRAY = 102;
     }
 
     /**
@@ -77,10 +84,15 @@ public class WantParams {
      * @param wantParamsStr the JSON string to initialize from
      * @throws JSONException if the JSON string is malformed
      */
-    public WantParams(String wantParamsStr) throws JSONException {
+    public WantParams(String wantParamsStr) {
         wantParamsMap = new HashMap<>();
-        JSONObject wantObject = new JSONObject(wantParamsStr);
-        parseWantParams(wantObject, WANT_PARAMS_PARAMS);
+        try {
+            JSONObject wantObject = new JSONObject(wantParamsStr);
+            parseWantParams(wantObject, WANT_PARAMS_PARAMS);
+        } catch (JSONException jsonException) {
+            Log.e(LOG_TAG, "WantParams parse error.");
+            jsonException.printStackTrace();
+        }
     }
 
     /**
@@ -99,32 +111,32 @@ public class WantParams {
                 return false;
             }
             int typeId = jsonElement.getInt(WANT_PARAMS_TYPE);
-            String want_key = jsonElement.getString(WANT_PARAMS_KEY);
+            String wantKey = jsonElement.getString(WANT_PARAMS_KEY);
             WantValue wantValue = null;
             switch (typeId) {
-                case WantValueType.VALUE_TYPE_BOOLEAN:
+                case VALUE_TYPE_BOOLEAN:
                     wantValue = new WantValue(typeId, jsonElement.getBoolean(WANT_PARAMS_VALUE));
-                    this.wantParamsMap.put(want_key, wantValue);
+                    this.wantParamsMap.put(wantKey, wantValue);
                     break;
-                case WantValueType.VALUE_TYPE_INT:
+                case VALUE_TYPE_INT:
                     wantValue = new WantValue(typeId, jsonElement.getInt(WANT_PARAMS_VALUE));
-                    this.wantParamsMap.put(want_key, wantValue);
+                    this.wantParamsMap.put(wantKey, wantValue);
                     break;
-                case WantValueType.VALUE_TYPE_DOUBLE:
+                case VALUE_TYPE_DOUBLE:
                     wantValue = new WantValue(typeId, jsonElement.getDouble(WANT_PARAMS_VALUE));
-                    this.wantParamsMap.put(want_key, wantValue);
+                    this.wantParamsMap.put(wantKey, wantValue);
                     break;
-                case WantValueType.VALUE_TYPE_STRING:
+                case VALUE_TYPE_STRING:
                     wantValue = new WantValue(typeId, jsonElement.getString(WANT_PARAMS_VALUE));
-                    this.wantParamsMap.put(want_key, wantValue);
+                    this.wantParamsMap.put(wantKey, wantValue);
                     break;
-                case WantValueType.VALUE_TYPE_WANT_PARAMS:
+                case VALUE_TYPE_WANT_PARAMS:
                     WantParams localWantParams = new WantParams();
                     localWantParams.parse(jsonElement.getJSONArray(WANT_PARAMS_VALUE));
                     wantValue = new WantValue(typeId, localWantParams);
-                    this.wantParamsMap.put(want_key, wantValue);
+                    this.wantParamsMap.put(wantKey, wantValue);
                     break;
-                case WantValueType.VALUE_TYPE_ARRAY:
+                case VALUE_TYPE_ARRAY:
                     parseWantArray(jsonElement);
                     break;
                 default:
@@ -143,11 +155,11 @@ public class WantParams {
      */
     private void parseWantArray(JSONObject jsonElement) throws JSONException {
         JSONArray localJsonArray = jsonElement.getJSONArray(WANT_PARAMS_VALUE);
-        String want_key = jsonElement.getString(WANT_PARAMS_KEY);
+        String wantKey = jsonElement.getString(WANT_PARAMS_KEY);
         WantValue wantValue = null;
         if (localJsonArray.length() < 1) {
-            wantValue = new WantValue(WantValueType.VALUE_TYPE_ARRAY, new Object());
-            this.wantParamsMap.put(want_key, wantValue);
+            wantValue = new WantValue(VALUE_TYPE_ARRAY, new Object());
+            this.wantParamsMap.put(wantKey, wantValue);
             return;
         }
         if (localJsonArray.get(0) instanceof Integer) {
@@ -155,25 +167,25 @@ public class WantParams {
             for (int j = 0; j < localJsonArray.length(); j++) {
                 convertArray[j] = localJsonArray.getInt(j);
             }
-            wantValue = new WantValue(WantValueType.VALUE_TYPE_ARRAY, convertArray);
+            wantValue = new WantValue(VALUE_TYPE_ARRAY, convertArray);
         } else if (localJsonArray.get(0) instanceof Boolean) {
             boolean[] convertArray = new boolean[localJsonArray.length()];
             for (int j = 0; j < localJsonArray.length(); j++) {
                 convertArray[j] = localJsonArray.getBoolean(j);
             }
-            wantValue = new WantValue(WantValueType.VALUE_TYPE_ARRAY, convertArray);
+            wantValue = new WantValue(VALUE_TYPE_ARRAY, convertArray);
         } else if (localJsonArray.get(0) instanceof Double) {
             double[] convertArray = new double[localJsonArray.length()];
             for (int j = 0; j < localJsonArray.length(); j++) {
                 convertArray[j] = localJsonArray.getDouble(j);
             }
-            wantValue = new WantValue(WantValueType.VALUE_TYPE_ARRAY, convertArray);
+            wantValue = new WantValue(VALUE_TYPE_ARRAY, convertArray);
         } else if (localJsonArray.get(0) instanceof String) {
             String[] convertArray = new String[localJsonArray.length()];
             for (int j = 0; j < localJsonArray.length(); j++) {
                 convertArray[j] = localJsonArray.getString(j);
             }
-            wantValue = new WantValue(WantValueType.VALUE_TYPE_ARRAY, convertArray);
+            wantValue = new WantValue(VALUE_TYPE_ARRAY, convertArray);
         } else if (localJsonArray.get(0) instanceof JSONObject) {
             WantParams[] convertArray = new WantParams[localJsonArray.length()];
             WantParams wantParams;
@@ -182,11 +194,12 @@ public class WantParams {
                 wantParams.parseWantParams(localJsonArray.getJSONObject(j), WANT_PARAMS_VALUE);
                 convertArray[j] = wantParams;
             }
-            wantValue = new WantValue(WantValueType.VALUE_TYPE_WANT_PARAMS_ARRAY, convertArray);
+            wantValue = new WantValue(VALUE_TYPE_WANT_PARAMS_ARRAY, convertArray);
         } else {
             Log.e(LOG_TAG, "Not supported data type");
+            return;
         }
-        this.wantParamsMap.put(want_key, wantValue);
+        this.wantParamsMap.put(wantKey, wantValue);
     }
 
     /**
@@ -200,9 +213,11 @@ public class WantParams {
         if (!wantObject.has(wantKay)) {
             return;
         }
-        JSONArray wantArray = (JSONArray) wantObject.get(wantKay);
-        if (!parse(wantArray)) {
-            Log.e(LOG_TAG, "WantParams data format error.");
+        if (wantObject.get(wantKay) instanceof JSONArray) {
+            JSONArray wantArray = (JSONArray) wantObject.get(wantKay);
+            if (!parse(wantArray)) {
+                Log.e(LOG_TAG, "WantParams data format error.");
+            }
         }
     }
 
@@ -214,7 +229,7 @@ public class WantParams {
      * @return this instance for method chaining
      */
     public WantParams addValue(String key, boolean value) {
-        innerAddValue(key, value, WantValueType.VALUE_TYPE_BOOLEAN);
+        innerAddValue(key, value, VALUE_TYPE_BOOLEAN);
         return this;
     }
 
@@ -228,10 +243,9 @@ public class WantParams {
      */
 
     private void innerAddValue(String key, Object value, int type) {
-        if (key == null || key.isEmpty()) {
-            return;
+        if (key != null && !key.isEmpty()) {
+            wantParamsMap.put(key, new WantValue(type, value));
         }
-        wantParamsMap.put(key, new WantValue(type, value));
     }
 
     /**
@@ -242,7 +256,7 @@ public class WantParams {
      * @return this instance for method chaining
      */
     public WantParams addValue(String key, int value) {
-        innerAddValue(key, value, WantValueType.VALUE_TYPE_INT);
+        innerAddValue(key, value, VALUE_TYPE_INT);
         return this;
     }
 
@@ -254,7 +268,7 @@ public class WantParams {
      * @return this instance for method chaining
      */
     public WantParams addValue(String key, float value) {
-        innerAddValue(key, value, WantValueType.VALUE_TYPE_DOUBLE);
+        innerAddValue(key, value, VALUE_TYPE_DOUBLE);
         return this;
     }
 
@@ -266,7 +280,7 @@ public class WantParams {
      * @return this instance for method chaining
      */
     public WantParams addValue(String key, double value) {
-        innerAddValue(key, value, WantValueType.VALUE_TYPE_DOUBLE);
+        innerAddValue(key, value, VALUE_TYPE_DOUBLE);
         return this;
     }
 
@@ -278,7 +292,7 @@ public class WantParams {
      * @return this instance for method chaining
      */
     public WantParams addValue(String key, String value) {
-        innerAddValue(key, value, WantValueType.VALUE_TYPE_STRING);
+        innerAddValue(key, value, VALUE_TYPE_STRING);
         return this;
     }
 
@@ -347,13 +361,11 @@ public class WantParams {
      *
      * @param key   the key for the value
      * @param value the array of Object values to add
-     * @return
      */
     private void innerAddArrayValue(String key, Object value) {
-        if (key == null || key.isEmpty() || value == null) {
-            return;
+        if (key != null && !key.isEmpty() && value != null) {
+            this.wantParamsMap.put(key, new WantValue(VALUE_TYPE_ARRAY, value));
         }
-        this.wantParamsMap.put(key, new WantValue(WantValueType.VALUE_TYPE_ARRAY, value));
     }
 
     /**
@@ -364,7 +376,7 @@ public class WantParams {
      * @return this instance for method chaining
      */
     public WantParams addValue(String key, WantParams value) {
-        innerAddValue(key, value, WantValueType.VALUE_TYPE_WANT_PARAMS);
+        innerAddValue(key, value, VALUE_TYPE_WANT_PARAMS);
         return this;
     }
 
@@ -376,10 +388,9 @@ public class WantParams {
      * @return this instance for method chaining
      */
     public WantParams addValue(String key, WantParams[] value) {
-        if (key == null || key.isEmpty() || value == null || value.length == 0) {
-            return this;
+        if (key != null && !key.isEmpty() && value != null && value.length != 0) {
+            this.wantParamsMap.put(key, new WantValue(VALUE_TYPE_WANT_PARAMS_ARRAY, value));
         }
-        this.wantParamsMap.put(key, new WantValue(WantValueType.VALUE_TYPE_WANT_PARAMS_ARRAY, value));
         return this;
     }
 
@@ -390,10 +401,7 @@ public class WantParams {
      * @return the value associated with the key, or null if not found
      */
     public Object getValue(String key) {
-        if (key == null || key.isEmpty()) {
-            return null;
-        }
-        if (this.wantParamsMap.containsKey(key)) {
+        if (key != null && !key.isEmpty() && this.wantParamsMap.containsKey(key)) {
             return Objects.requireNonNull(this.wantParamsMap.get(key)).value;
         }
         return null;
@@ -410,18 +418,22 @@ public class WantParams {
         String valueStr;
         for (Map.Entry<String, WantValue> entry : wantParamsMap.entrySet()) {
             int typeId = entry.getValue().type;
-            if (typeId == WantValueType.VALUE_TYPE_ARRAY) {
+            if (typeId == VALUE_TYPE_ARRAY) {
                 try {
                     valueStr = new JSONArray(entry.getValue().value).toString();
                 } catch (JSONException jsonException) {
                     Log.e(LOG_TAG, "WantParams array toString failed.");
                     continue;
                 }
-            } else if (typeId == WantValueType.VALUE_TYPE_WANT_PARAMS) {
-                valueStr = ((WantParams) entry.getValue().value).innerToWantParamsString();
-            } else if (typeId == WantValueType.VALUE_TYPE_WANT_PARAMS_ARRAY) {
+            } else if (typeId == VALUE_TYPE_WANT_PARAMS) {
+                if (entry.getValue().value instanceof WantParams) {
+                    valueStr = ((WantParams) entry.getValue().value).innerToWantParamsString();
+                } else {
+                    continue;
+                }
+            } else if (typeId == VALUE_TYPE_WANT_PARAMS_ARRAY) {
                 valueStr = wantArrayToString(entry);
-            } else if (typeId == WantValueType.VALUE_TYPE_STRING) {
+            } else if (typeId == VALUE_TYPE_STRING) {
                 valueStr = "\"" + entry.getValue().value.toString().replace("\\", "\\\\").replace("\n", "\\n")
                         .replace("\t", "\\t").replace("\r", "\\r").replace("\b", "\\b").replace("\f", "\\f")
                         .replace("\"", "\\\"") + "\"";
@@ -432,7 +444,7 @@ public class WantParams {
             wantParamsString.append(entry.getKey());
             wantParamsString.append("\",\"" + WANT_PARAMS_TYPE + "\":");
             wantParamsString.append(
-                    typeId == WantValueType.VALUE_TYPE_WANT_PARAMS_ARRAY ? WantValueType.VALUE_TYPE_ARRAY : typeId);
+                    typeId == VALUE_TYPE_WANT_PARAMS_ARRAY ? VALUE_TYPE_ARRAY : typeId);
             wantParamsString.append(",\"" + WANT_PARAMS_VALUE + "\":");
             wantParamsString.append(valueStr);
             wantParamsString.append("},");
@@ -456,7 +468,7 @@ public class WantParams {
         for (WantParams wantElement : wantArray) {
             wantArrayString.append(
                     "{\"" + WANT_PARAMS_KEY + "\":\"" + WANT_PARAMS_PARAMS + "\",\"" + WANT_PARAMS_TYPE + "\":");
-            wantArrayString.append(WantValueType.VALUE_TYPE_WANT_PARAMS);
+            wantArrayString.append(VALUE_TYPE_WANT_PARAMS);
             wantArrayString.append(",\"" + WANT_PARAMS_VALUE + "\":");
             wantArrayString.append(wantElement.innerToWantParamsString());
             wantArrayString.append("},");
