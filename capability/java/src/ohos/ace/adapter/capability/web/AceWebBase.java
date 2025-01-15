@@ -401,8 +401,26 @@ public abstract class AceWebBase {
      *
      * @param obj the jni object.
      */
-    public void fireRefreshHistory(String url) {
-        callback.onEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS + "onRefreshAccessedHistory" + PARAM_BEGIN, url);
+    public void fireRefreshHistory(Object obj) {
+        this.nativeOnObjectEvent(makeEventHash("onRefreshAccessedHistory"), "onRefreshAccessedHistory", obj);
+    }
+
+    /**
+     * This is called to Full ScreenEnter.
+     *
+     * @param obj the jni object.
+     */
+    public void fireFullScreenEnter(Object obj) {
+        this.nativeOnObjectEvent(makeEventHash("onFullScreenEnter"), "onFullScreenEnter", obj);
+    }
+
+    /**
+     * This is called to rnative Full ScreenExit.
+     *
+     * @param obj the jni object.
+     */
+    public void fireFullScreenExit(Object obj) {
+        this.nativeOnObjectEvent(makeEventHash("onFullScreenExit"), "onFullScreenExit", obj);
     }
 
     /**
@@ -621,6 +639,15 @@ public abstract class AceWebBase {
      */
     public void fireRouterPush(String url) {
         callback.onEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS + "routerPush" + PARAM_BEGIN, url);
+    }
+
+    /**
+     * This is called to fire beforeUnload event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public boolean fireJsBeforeUnload(Object obj) {
+        return this.nativeOnObjectEventWithBoolReturn(makeEventHash("onBeforeUnload"), "onBeforeUnload", obj);
     }
 
     /**
