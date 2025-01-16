@@ -518,6 +518,22 @@
       OHOS::Ace::Recorder::EventRecorder::*;
       OHOS::Ace::Recorder::EventParamsBuilder::*;
       OHOS::MMI::KeyEvent::*;
+      "panda::os::thread::GetCurrentThreadId()";
+      "panda::GetStacktrace()";
+      "panda::PrintStack(std::__ndk1::vector<unsigned long, std::__ndk1::allocator<unsigned long> > const&, std::__ndk1::basic_ostream<char, std::__ndk1::char_traits<char> >&)";
+      "panda::time::GetCurrentTimeInMillis(bool)";
+      panda::Logger::logger;
+      "panda::Logger::Message::~Message()";
+      panda::panda_file::*;
+      "panda::utf::Mutf8Size(unsigned char const*)";
+      "panda::utf::ConvertRegionMUtf8ToUtf16(unsigned char const*, unsigned short*, unsigned long, unsigned long, unsigned long)";
+      "panda::os::unix::memory::futex::Mutex::Mutex()";
+      "panda::os::unix::memory::futex::Mutex::Lock()";
+      "panda::os::unix::memory::futex::Mutex::Unlock()";
+      "panda::os::mem::MmapDeleter(std::byte*, unsigned long)";
+      "panda::PrintStack(std::__ndk1::vector<unsigned int, std::__ndk1::allocator<unsigned int> > const&, std::__ndk1::basic_ostream<char, std::__ndk1::char_traits<char> >&)";
+      "panda::utf::ConvertRegionMUtf8ToUtf16(unsigned char const*, unsigned short*, unsigned int, unsigned int, unsigned int)";
+      "panda::os::mem::MmapDeleter(std::byte*, unsigned int)";
     };
   local:
     *;
