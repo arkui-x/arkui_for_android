@@ -129,6 +129,8 @@ public:
 
     virtual void SetUiDvsyncSwitch(bool dvsyncSwitch) {}
 
+    virtual void FlushLayoutSize(int32_t width, int32_t height) {}
+
     void CreateSurfaceNode(void* nativeWindow);
     void NotifySurfaceChanged(int32_t width, int32_t height, float density);
     void NotifyKeyboardHeightChanged(int32_t height);
