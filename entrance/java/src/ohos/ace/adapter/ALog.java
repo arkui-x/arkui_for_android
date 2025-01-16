@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,8 @@
 
 package ohos.ace.adapter;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * Log Wrapper for specific platform
  *
@@ -22,6 +24,8 @@ package ohos.ace.adapter;
  */
 public class ALog {
     private static ILogger logger;
+    private static final ReentrantLock loggerLock = new ReentrantLock();
+    private static int logLevel = 0;
 
     private ALog() {
         /* Do nothing */
@@ -33,9 +37,21 @@ public class ALog {
      * @param log
      */
     public static void setLogger(ILogger log) {
-        if (logger == null) {
-            logger = log;
+        if (log == null) {
+            return;
         }
+        loggerLock.lock();
+        logger = log;
+        loggerLock.unlock();
+    }
+
+    /**
+     * Set the Logger level.
+     *
+     * @param level log level
+     */
+    public static void setLoggerLevel(int level) {
+        logLevel = level;
     }
 
     /**
@@ -54,7 +70,7 @@ public class ALog {
      * @param msg message to print
      */
     public static void d(String tag, String msg) {
-        if (logger == null) {
+        if (logger == null || logLevel > ILogger.LOG_DEBUG) {
             return;
         }
         logger.d(tag, msg);
@@ -67,7 +83,7 @@ public class ALog {
      * @param msg message to print
      */
     public static void i(String tag, String msg) {
-        if (logger == null) {
+        if (logger == null || logLevel > ILogger.LOG_INFO) {
             return;
         }
         logger.i(tag, msg);
@@ -80,7 +96,7 @@ public class ALog {
      * @param msg message to print
      */
     public static void w(String tag, String msg) {
-        if (logger == null) {
+        if (logger == null || logLevel > ILogger.LOG_WARN) {
             return;
         }
         logger.w(tag, msg);
@@ -93,7 +109,7 @@ public class ALog {
      * @param msg message to print
      */
     public static void e(String tag, String msg) {
-        if (logger == null) {
+        if (logger == null || logLevel > ILogger.LOG_ERROR) {
             return;
         }
         logger.e(tag, msg);

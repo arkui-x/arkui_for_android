@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Copyright (c) 2022-2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -82,6 +82,7 @@ template("ace_common_jni_source_set") {
       "$ace_root/adapter/android/entrance/java/jni/jni_load.cpp",
       "$ace_root/adapter/android/entrance/java/jni/jni_registry.cpp",
       "$ace_root/adapter/android/entrance/java/jni/js_accessibility_manager_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/log_interface_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/mmi_event_convertor.cpp",
       "$ace_root/adapter/android/entrance/java/jni/pack_asset_provider.cpp",
       "$ace_root/adapter/android/entrance/java/jni/picker/picker_haptic_factory.cpp",
