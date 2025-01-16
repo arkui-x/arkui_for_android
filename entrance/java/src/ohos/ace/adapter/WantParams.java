@@ -43,33 +43,8 @@ public class WantParams {
     private static final int VALUE_TYPE_WANT_PARAMS_ARRAY = 24;
     private static final int VALUE_TYPE_WANT_PARAMS = 101;
     private static final int VALUE_TYPE_ARRAY = 102;
+
     private final Map<String, WantValue> wantParamsMap;
-
-    /**
-     * Inner class to hold the value and type of a parameter.
-     */
-    private static class WantValue {
-        /**
-         * The type of the value, represented as an integer constant.
-         */
-        public int type;
-
-        /**
-         * The actual value, which can be of any object type.
-         */
-        public Object value;
-
-        /**
-         * Constructs a new WantValue object with the specified type and value.
-         *
-         * @param type  the type of the value, represented as an integer constant
-         * @param value the actual value, which can be of any object type
-         */
-        public WantValue(int type, Object value) {
-            this.type = type;
-            this.value = value;
-        }
-    }
 
     /**
      * Default constructor initializes the WantParams.
@@ -92,6 +67,31 @@ public class WantParams {
         } catch (JSONException jsonException) {
             Log.e(LOG_TAG, "WantParams parse error.");
             jsonException.printStackTrace();
+        }
+    }
+
+    /**
+     * Inner class to hold the value and type of a parameter.
+     */
+    private static class WantValue {
+        /**
+         * The type of the value, represented as an integer constant.
+         */
+        public int type;
+        /**
+         * The actual value, which can be of any object type.
+         */
+        public Object value;
+
+        /**
+         * Constructs a new WantValue object with the specified type and value.
+         *
+         * @param type  the type of the value, represented as an integer constant
+         * @param value the actual value, which can be of any object type
+         */
+        public WantValue(int type, Object value) {
+            this.type = type;
+            this.value = value;
         }
     }
 
@@ -239,9 +239,7 @@ public class WantParams {
      * @param key   the key for the value
      * @param value the Object value to add
      * @param type  the type
-     * @return
      */
-
     private void innerAddValue(String key, Object value, int type) {
         if (key != null && !key.isEmpty()) {
             wantParamsMap.put(key, new WantValue(type, value));
@@ -381,20 +379,6 @@ public class WantParams {
     }
 
     /**
-     * Adds an array of WantParams objects to the WantParams.
-     *
-     * @param key   the key for the value
-     * @param value the array of WantParams objects to add
-     * @return this instance for method chaining
-     */
-    public WantParams addValue(String key, WantParams[] value) {
-        if (key != null && !key.isEmpty() && value != null && value.length != 0) {
-            this.wantParamsMap.put(key, new WantValue(VALUE_TYPE_WANT_PARAMS_ARRAY, value));
-        }
-        return this;
-    }
-
-    /**
      * Retrieves a value from the WantParams.
      *
      * @param key the key for the value
@@ -405,6 +389,40 @@ public class WantParams {
             return Objects.requireNonNull(this.wantParamsMap.get(key)).value;
         }
         return null;
+    }
+
+    private String replaceSpecialChars(String value) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            switch (c) {
+                case '\\':
+                    sb.append("\\\\");
+                    break;
+                case '\n':
+                    sb.append("\\n");
+                    break;
+                case '\t':
+                    sb.append("\\t");
+                    break;
+                case '\r':
+                    sb.append("\\r");
+                    break;
+                case '\b':
+                    sb.append("\\b");
+                    break;
+                case '\f':
+                    sb.append("\\f");
+                    break;
+                case '\"':
+                    sb.append("\\\"");
+                    break;
+                default:
+                    sb.append(c);
+                    break;
+            }
+        }
+        return sb.toString();
     }
 
     /**
@@ -434,9 +452,7 @@ public class WantParams {
             } else if (typeId == VALUE_TYPE_WANT_PARAMS_ARRAY) {
                 valueStr = wantArrayToString(entry);
             } else if (typeId == VALUE_TYPE_STRING) {
-                valueStr = "\"" + entry.getValue().value.toString().replace("\\", "\\\\").replace("\n", "\\n")
-                        .replace("\t", "\\t").replace("\r", "\\r").replace("\b", "\\b").replace("\f", "\\f")
-                        .replace("\"", "\\\"") + "\"";
+                valueStr = "\"" + replaceSpecialChars(entry.getValue().value.toString()) + "\"";
             } else {
                 valueStr = entry.getValue().value.toString();
             }
