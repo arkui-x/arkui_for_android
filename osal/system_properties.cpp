@@ -89,6 +89,8 @@ uint32_t SystemProperties::canvasDebugMode_ = 0;
 
 std::pair<float, float> SystemProperties::brightUpPercent_ = {};
 
+bool SystemProperties::taskPriorityAdjustmentEnable_ = false;
+
 bool SystemProperties::IsOpIncEnable()
 {
     return false;

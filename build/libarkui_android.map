@@ -67,6 +67,7 @@
       "OHOS::Ace::SystemProperties::colorMode_";
       "OHOS::Ace::SystemProperties::GetDebugEnabled()";
       "OHOS::Ace::SystemProperties::GetResourceDecoupling()";
+      "OHOS::Ace::SystemProperties::taskPriorityAdjustmentEnable_";
       OHOS::Ace::V2::PATTERN_LOCK_ETS_TAG;
       OHOS::Ace::V2::QRCODE_ETS_TAG;
       OHOS::Ace::V2::RELATIVE_CONTAINER_ETS_TAG;
@@ -104,6 +105,11 @@
       vtable?for?OHOS::Ace::NG::LayoutProperty;
       vtable?for?OHOS::Ace::NG::TouchEventActuator;
       vtable?for?OHOS::Ace::ResourceWrapper;
+
+      vtable?for?OHOS::NetStack::Socks5::Socks5ProxyResponse;
+      vtable?for?OHOS::NetStack::Socks5::Socks5MethodRequest;
+      vtable?for?OHOS::NetStack::Socks5::Socks5NoneMethod;
+      vtable?for?OHOS::NetStack::Socks5::Socks5UdpHeader;
 
       VTT?for?OHOS::Ace::Animator;
       VTT?for?OHOS::Ace::Container;
