@@ -1208,6 +1208,12 @@ public class AceWeb extends AceWebBase {
         return NO_ERROR;
     }
 
+    /**
+     * Send message to HTML5.
+     *
+     * @param portHandle Message port handle.
+     * @param webMessageData The webMessageData is a message sent to H5.
+     */
     @Override
     public int postMessageEventExt(String portHandle, String webMessageData) {
         if (webMessagePorts.isEmpty() || portHandle == null) {
@@ -1376,7 +1382,10 @@ public class AceWeb extends AceWebBase {
             }
             HttpURLConnection connection = null;
             try {
-                connection = (HttpURLConnection) new URL(object.getUrl()).openConnection();
+                Object httpConnection = new URL(object.getUrl()).openConnection();
+                if (httpConnection != null && httpConnection instanceof HttpURLConnection) {
+                    connection = (HttpURLConnection) httpConnection;
+                }
                 if (connection != null) {
                     connection.setRequestMethod("HEAD");
                     object.setMethod("GET");
@@ -1670,6 +1679,12 @@ public class AceWeb extends AceWebBase {
         }
     }
 
+    /**
+     * Monitor messages sent by H5
+     *
+     * @param id Wevbiew id.
+     * @param portHandle Message port handle.
+     */
     @Override
     public int onWebMessagePortEventExt(long id, String portHandle) {
         if (webMessagePorts.isEmpty() || portHandle == null) {

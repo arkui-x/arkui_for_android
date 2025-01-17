@@ -840,6 +840,12 @@ public abstract class AceWebBase {
 
     public abstract int postMessageEvent(String portHandle, String webMessageData);
 
+    /**
+     * Send message to HTML5.
+     *
+     * @param portHandle Message port handle.
+     * @param webMessageData The webMessageData is a message sent to H5.
+     */
     public abstract int postMessageEventExt(String portHandle, String webMessageData);
 
     public abstract int onWebMessagePortEvent(long id, String portHandle);
@@ -869,5 +875,11 @@ public abstract class AceWebBase {
      */
     public abstract void cancel(long id, String guid);
 
+    /**
+     * Monitor messages sent by H5
+     *
+     * @param id Wevbiew id.
+     * @param portHandle Message port handle.
+     */
     public abstract int onWebMessagePortEventExt(long id, String portHandle);
 }

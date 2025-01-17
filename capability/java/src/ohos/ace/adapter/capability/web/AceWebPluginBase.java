@@ -429,6 +429,13 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         return CAN_NOT_POST_MESSAGE;
     }
 
+    /**
+     * Send message to HTML5.
+     *
+     * @param id Wevbiew id.
+     * @param portHandle Message port handle.
+     * @param webMessage The Message is a message sent to H5.
+     */
     public int postMessageEventExt(long id, String portHandle, String webMessage) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -485,6 +492,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * Monitor messages sent by H5
+     *
+     * @param id Wevbiew id.
+     * @param portHandle Message port handle.
+     */
     public int onWebMessagePortEventExt(long id, String portHandle) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
