@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,19 +17,23 @@ package ohos.ace.adapter.capability.web;
 
 import android.webkit.WebResourceRequest;
 
-public class AceWebOverrideUrlObject {
+/**
+ * Represents an object that extends AceWebResourceRequestObject to handle URL
+ * override functionality.
+ * This class is designed to manage and manipulate web resource requests with
+ * additional features.
+ *
+ * @since 2024-5-31
+ */
+public class AceWebOverrideUrlObject extends AceWebResourceRequestObject {
     private static final String LOG_TAG = "AceWebOverrideUrlObject";
 
-    private WebResourceRequest request;
-
+    /**
+     * Constructs an AceWebOverrideUrlObject with the specified WebResourceRequest.
+     *
+     * @param request The WebResourceRequest associated with this object.
+     */
     public AceWebOverrideUrlObject(WebResourceRequest request) {
-        this.request = request;
-    }
-
-    public String getRequestUrl() {
-        if (this.request.getUrl() != null) {
-            return this.request.getUrl().toString();
-        }
-        return "";
+        super(request);
     }
 }
