@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -39,10 +39,51 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
     protected native void nativeInit();
 
     protected native void nativeInitWebDataBase();
+    
+    /**
+     * Native init webview download item methods.
+     */
+    protected native void nativeInitWebDownloadItem();
 
     protected native static void onReceiveValue(String value, long asyncCallbackInfoId);
 
+    protected native static void onReceiveRunJavaScriptExtValue(String value, long asyncCallbackInfoId);
+
     protected native static void onMessage(long webId, String portHandle, String result);
+
+    /**
+     * Callback before start a download task.
+     *
+     * @param id Webview id.
+     * @param object The object of download process data.
+     */
+    protected native static void onBeforeDownloadObject(long id, Object object);
+
+    /**
+     * Callback during the download process.
+     *
+     * @param id Webview id.
+     * @param object The object of download process data.
+     */
+    protected native static void onDownloadUpdatedObject(long id, Object object);
+
+    /**
+     * Callback when the download failed.
+     *
+     * @param id Webview id.
+     * @param object The object of download process data.
+     */
+    protected native static void onDownloadFailedObject(long id, Object object);
+
+    /**
+     * Callback when the download finished.
+     *
+     * @param id Webview id.
+     * @param object The object of download process data.
+     */
+    protected native static void onDownloadFinishObject(long id, Object object);
+
+    protected native static void onMessageEventExt(long webId, String portHandle, String result);
 
     private static boolean hasInit = false;
 
@@ -79,6 +120,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         if (!hasInit && !richTextInit) {
             nativeInit();
             nativeInitWebDataBase();
+            nativeInitWebDownloadItem();
             hasInit = true;
         }
         richTextInit = false;
@@ -224,6 +266,13 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
             webBase.evaluateJavascript(script, asyncCallbackInfoId);
+        }
+    }
+
+    public void evaluateJavascriptExt(long id, String script, long asyncCallbackInfoId) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.evaluateJavascriptExt(script, asyncCallbackInfoId);
         }
     }
 
@@ -380,10 +429,66 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         return CAN_NOT_POST_MESSAGE;
     }
 
+    public int postMessageEventExt(long id, String portHandle, String webMessage) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.postMessageEventExt(portHandle, webMessage);
+        }
+        return CAN_NOT_POST_MESSAGE;
+    }
+
     public int onWebMessagePortEvent(long id, String portHandle) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
             return webBase.onWebMessagePortEvent(id, portHandle);
+        }
+        return CAN_NOT_REGISTER_MESSAGE_EVENT;
+    }
+
+    /**
+     * Start a download task with url.
+     *
+     * @param id Wevbiew id.
+     * @param url The url of the download task.
+     */
+    public void startDownload(long id, String url) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.startDownload(id, url);
+        }
+    }
+
+    /**
+     * Change task download path.
+     *
+     * @param id Wevbiew id.
+     * @param guid The unique identifier of the download task.
+     * @param path The path of the download task.
+     */
+    public void start(long id, String guid, String path) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.start(id, guid, path);
+        }
+    }
+
+    /**
+     * Cancel download task.
+     *
+     * @param id Wevbiew id.
+     * @param guid The unique identifier of the download task.
+     */
+    public void cancel(long id, String guid) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.cancel(id, guid);
+        }
+    }
+
+    public int onWebMessagePortEventExt(long id, String portHandle) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.onWebMessagePortEventExt(id, portHandle);
         }
         return CAN_NOT_REGISTER_MESSAGE_EVENT;
     }
