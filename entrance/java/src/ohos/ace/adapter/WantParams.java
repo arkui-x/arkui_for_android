@@ -78,6 +78,7 @@ public class WantParams {
          * The type of the value, represented as an integer constant.
          */
         public int type;
+
         /**
          * The actual value, which can be of any object type.
          */
