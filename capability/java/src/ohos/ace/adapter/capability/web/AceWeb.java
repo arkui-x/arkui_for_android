@@ -17,7 +17,6 @@ package ohos.ace.adapter.capability.web;
 
 import android.app.Activity;
 import android.app.DownloadManager;
-import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -152,7 +151,7 @@ public class AceWeb extends AceWebBase {
 
     private static final int WEB_DOWNLOAD_TIMER_DELAY = 500;
 
-    private static final long WEB_DOWNLOAD_SPEED_RATE = 2;
+    private static final long WEB_DOWNLOAD_SPEED_RATE = 2L;
 
     private static final int CAN_NOT_POST_MESSAGE = 17100010;
 
@@ -171,6 +170,8 @@ public class AceWeb extends AceWebBase {
     private static final int WEB_DOWNLOAD_INTERRUPTED = 3;
 
     private static final int WEB_DOWNLOAD_DEPANDING = 4;
+
+    private static final Object WEB_LOCK = new Object();
 
     private static String currentPageUrl;
 
@@ -198,8 +199,6 @@ public class AceWeb extends AceWebBase {
 
     private ExecutorService downloadExecutor_;
 
-    private static final Object webLock_ = new Object();
-
     private List<WebMessagePort> webMessagePorts = new ArrayList<WebMessagePort>();
 
     private WebviewBroadcastReceive webviewBroadcastReceive_;
@@ -208,7 +207,7 @@ public class AceWeb extends AceWebBase {
 
     private HashMap<Long, String> webDownloadItemIdMap_ = new HashMap<Long, String>();
 
-    private HashMap<String, AceWebDownloadItemObject> webDownloadItemMap_ = 
+    private HashMap<String, AceWebDownloadItemObject> webDownloadItemMap_ =
         new HashMap<String, AceWebDownloadItemObject>();
 
     public class AceWebView extends WebView {
@@ -1085,7 +1084,7 @@ public class AceWeb extends AceWebBase {
         this.webView.evaluateJavascript(script, new ValueCallback<String>() {
             @Override
             public void onReceiveValue(String value) {
-                if (value.equals("null") || value == null) {
+                if (value == null || value.equals("null")) {
                     value = "This type not support, only string is supported";
                 }
                 AceWebPluginBase.onReceiveRunJavaScriptExtValue(value, asyncCallbackInfoId);
@@ -1277,7 +1276,7 @@ public class AceWeb extends AceWebBase {
             ALog.e(LOG_TAG, "can't create webdownload data");
             return;
         }
-        synchronized (webLock_) {
+        synchronized (WEB_LOCK) {
             webDownloadItemMap_.put(guid, object);
         }
         try {
@@ -1298,7 +1297,7 @@ public class AceWeb extends AceWebBase {
     @Override
     public void start(long id, String guid, String path) {
         AceWebDownloadItemObject object;
-        synchronized (webLock_) {
+        synchronized (WEB_LOCK) {
             object = webDownloadItemMap_.get(guid);
             if (object == null) {
                 ALog.e(LOG_TAG, "can't find webdownload data");
@@ -1338,7 +1337,7 @@ public class AceWeb extends AceWebBase {
      */
     @Override
     public void cancel(long id, String guid) {
-        synchronized (webLock_) {
+        synchronized (WEB_LOCK) {
             AceWebDownloadItemObject object = webDownloadItemMap_.get(guid);
             if (object == null) {
                 ALog.e(LOG_TAG, "download failed, start aceWebDownloadItemObject is null");
@@ -1363,16 +1362,18 @@ public class AceWeb extends AceWebBase {
      */
     class WebDownloadHeadRunnable implements Runnable {
         private final String guid_;
+
         public WebDownloadHeadRunnable(String guid) {
             this.guid_ = guid;
         }
+
         /**
          * Execute runnable to get download head data.
          */
         @Override
         public void run() {
             AceWebDownloadItemObject object;
-            synchronized (webLock_) {
+            synchronized (WEB_LOCK) {
                 object = webDownloadItemMap_.get(this.guid_);
                 if (object == null) {
                     clearAllDownloadDataByGuid(this.guid_, -1, object.getFullPath());
@@ -1386,18 +1387,20 @@ public class AceWeb extends AceWebBase {
                 if (httpConnection != null && httpConnection instanceof HttpURLConnection) {
                     connection = (HttpURLConnection) httpConnection;
                 }
-                if (connection != null) {
-                    connection.setRequestMethod("HEAD");
-                    object.setMethod("GET");
-                    int responseCode = connection.getResponseCode();
-                    if (responseCode == HttpURLConnection.HTTP_OK) {
-                        long fileSize = connection.getContentLength();
-                        String mimeType = connection.getContentType();
-                        object.setTotalBytes(fileSize == -1 ? 0 : fileSize);
-                        object.setMimeType(mimeType == null ? "" : mimeType);
-                    }
-                    connection.disconnect();
+                if (connection == null) {
+                    sendWebviewDownloadBroadcastByKey(WEB_DOWNLOAD_START_EVENT, this.guid_);
+                    return;
                 }
+                connection.setRequestMethod("HEAD");
+                object.setMethod("GET");
+                int responseCode = connection.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    long fileSize = connection.getContentLength();
+                    String mimeType = connection.getContentType();
+                    object.setTotalBytes(fileSize == -1 ? 0 : fileSize);
+                    object.setMimeType(mimeType == null ? "" : mimeType);
+                }
+                connection.disconnect();
                 sendWebviewDownloadBroadcastByKey(WEB_DOWNLOAD_START_EVENT, this.guid_);
             } catch (ProtocolException e) {
                 sendWebviewDownloadFailedBroadcast(object.getGuid(), 0);
@@ -1433,7 +1436,7 @@ public class AceWeb extends AceWebBase {
                 if (totalBytes != -1) {
                     object.setTotalBytes(totalBytes);
                 }
-            } catch(IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 ALog.e(LOG_TAG, "query failed," + e);
             }
         }
@@ -1441,7 +1444,7 @@ public class AceWeb extends AceWebBase {
     }
 
     private void startDownloadUpdateTimer() {
-        synchronized (webLock_) {
+        synchronized (WEB_LOCK) {
             if (webDownloadUpdateTimer_ != null) {
                 return;
             }
@@ -1450,7 +1453,7 @@ public class AceWeb extends AceWebBase {
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                synchronized (webLock_) {
+                synchronized (WEB_LOCK) {
                     if (webDownloadItemMap_.isEmpty()) {
                         stopDownloadUpdateTimer();
                     }
@@ -1491,7 +1494,7 @@ public class AceWeb extends AceWebBase {
     }
 
     private void stopDownloadUpdateTimer() {
-        synchronized (webLock_) {
+        synchronized (WEB_LOCK) {
             if (webDownloadUpdateTimer_ != null && webDownloadItemMap_.isEmpty()) {
                 webDownloadUpdateTimer_.cancel();
                 webDownloadUpdateTimer_ = null;
@@ -1522,7 +1525,7 @@ public class AceWeb extends AceWebBase {
     }
 
     private void onWebviewDownloadFailedInMain(String guid, int err) {
-        synchronized (webLock_) {
+        synchronized (WEB_LOCK) {
             AceWebDownloadItemObject object = webDownloadItemMap_.get(guid);
             if (object != null) {
                 updateDownloadDataWithState(object, WEB_DOWNLOAD_INTERRUPTED, err);
@@ -1535,7 +1538,7 @@ public class AceWeb extends AceWebBase {
     private void actionWebviewDownloadStart(Intent intent) {
         String guid = intent.getStringExtra("guid");
         AceWebDownloadItemObject object;
-        synchronized (webLock_) {
+        synchronized (WEB_LOCK) {
             object = webDownloadItemMap_.get(guid);
             if (object != null) {
                 AceWebPluginBase.onBeforeDownloadObject(object.getWebId(), object);
@@ -1545,7 +1548,7 @@ public class AceWeb extends AceWebBase {
 
     private void actionWebviewDownloadUpdate(Intent intent) {
         String guid = intent.getStringExtra("guid");
-        synchronized (webLock_) {
+        synchronized (WEB_LOCK) {
             AceWebDownloadItemObject object = webDownloadItemMap_.get(guid);
             if (object != null) {
                 AceWebPluginBase.onDownloadUpdatedObject(object.getWebId(), object);
@@ -1561,7 +1564,7 @@ public class AceWeb extends AceWebBase {
 
     private void actionWebviewDownloadComplete(Intent intent) {
         Long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-        synchronized (webLock_) {
+        synchronized (WEB_LOCK) {
             String guid = webDownloadItemIdMap_.get(downloadId);
             AceWebDownloadItemObject object;
             object = webDownloadItemMap_.get(guid);
@@ -1600,7 +1603,7 @@ public class AceWeb extends AceWebBase {
                 actionWebviewDownloadFailed(intent);
             } else if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(strAction)) {
                 actionWebviewDownloadComplete(intent);
-            } 
+            }
         }
     };
 
@@ -1646,7 +1649,7 @@ public class AceWeb extends AceWebBase {
     }
 
     private void setDownloadPath(String path, AceWebDownloadItemObject object) {
-        if (object.getFullPath() != "") {
+        if (!object.getFullPath().equals("")) {
             return;
         }
         String finalPath = "";
@@ -1671,7 +1674,7 @@ public class AceWeb extends AceWebBase {
     }
 
     private void clearAllDownloadDataByGuid(String guid, long downloadId, String path) {
-        synchronized (webLock_) {
+        synchronized (WEB_LOCK) {
             webDownloadItemMap_.remove(guid);
             webDownloadItemIdMap_.remove(downloadId);
             AceWebDownloadHelperObject.removeFilePathFromList(path);

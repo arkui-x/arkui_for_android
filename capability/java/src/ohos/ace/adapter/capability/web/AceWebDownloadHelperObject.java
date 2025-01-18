@@ -41,7 +41,7 @@ public class AceWebDownloadHelperObject {
 
     private static int incrementId_ = 0;
     private static List<String> webDownloadFilePathList_ = new ArrayList<>();
-    private static final Object webToolLock_ = new Object();
+    private static final Object WEB_TOOL_LOCK = new Object();
 
     /**
      * Remove existed path from list.
@@ -49,7 +49,7 @@ public class AceWebDownloadHelperObject {
      * @param path Download path.
      */
     public static void removeFilePathFromList(String path) {
-        synchronized (webToolLock_) {
+        synchronized (WEB_TOOL_LOCK) {
             webDownloadFilePathList_.remove(path);
         }
     }
@@ -60,7 +60,7 @@ public class AceWebDownloadHelperObject {
      * @param path Download path.
      */
     public static void addFilePathToList(String path) {
-        synchronized (webToolLock_) {
+        synchronized (WEB_TOOL_LOCK) {
             webDownloadFilePathList_.add(path);
         }
     }

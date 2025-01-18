@@ -47,6 +47,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
 
     protected native static void onReceiveValue(String value, long asyncCallbackInfoId);
 
+    /**
+     * Native method to handle the received JavaScript execution result.
+     *
+     * @param value The result value from the JavaScript execution.
+     * @param asyncCallbackInfoId The ID of the asynchronous callback information.
+     */
     protected native static void onReceiveRunJavaScriptExtValue(String value, long asyncCallbackInfoId);
 
     protected native static void onMessage(long webId, String portHandle, String result);
@@ -83,6 +89,13 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      */
     protected native static void onDownloadFinishObject(long id, Object object);
 
+    /**
+     * Handles the message event extension.
+     *
+     * @param webId Webview id.
+     * @param portHandle The handle of the port through which the message is received.
+     * @param result The result of the message event.
+     */
     protected native static void onMessageEventExt(long webId, String portHandle, String result);
 
     private static boolean hasInit = false;
@@ -269,6 +282,13 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * Evaluates the given JavaScript code in the context of the web view identified by the specified ID.
+     *
+     * @param id webId.
+     * @param script The JavaScript code to be evaluated.
+     * @param asyncCallbackInfoId The identifier for the asynchronous callback information.
+     */
     public void evaluateJavascriptExt(long id, String script, long asyncCallbackInfoId) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -435,6 +455,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param id Wevbiew id.
      * @param portHandle Message port handle.
      * @param webMessage The Message is a message sent to H5.
+     * @return The result of the message event.
      */
     public int postMessageEventExt(long id, String portHandle, String webMessage) {
         if (objectMap.containsKey(id)) {

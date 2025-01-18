@@ -808,6 +808,12 @@ public abstract class AceWebBase {
 
     public abstract void evaluateJavascript(String script, long asyncCallbackInfoId);
 
+    /**
+     * Evaluates the given JavaScript code in the context of the current page.
+     *
+     * @param script The JavaScript code to be evaluated.
+     * @param asyncCallbackInfoId The ID of the asynchronous callback information.
+     */
     public abstract void evaluateJavascriptExt(String script, long asyncCallbackInfoId);
 
     public abstract WebBackForwardList getBackForwardEntries();

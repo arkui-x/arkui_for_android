@@ -21,13 +21,13 @@ package ohos.ace.adapter.capability.web;
  * @since 2025-01-16
  */
 public class AceWebDownloadItemObject {
-    private long id_ = 0;
+    private long id_ = 0L;
     private String guid_ = "";
-    private long downloadId_ = -1;
-    private long lastBytes_ = 0;
-    private long receivedBytes_ = 0;
-    private long totalSize_ = 0;
-    private long currentSpeed_ = 0;
+    private long downloadId_ = -1L;
+    private long lastBytes_ = 0L;
+    private long receivedBytes_ = 0L;
+    private long totalSize_ = 0L;
+    private long currentSpeed_ = 0L;
     private int state_ = 0;
     private int errCode_ = 0;
     private int percentComplete_ = 0;
@@ -179,7 +179,7 @@ public class AceWebDownloadItemObject {
      * @param err Download error code.
      */
     public synchronized void setLastErrorCode(int err) {
-        this.errCode_  = err;
+        this.errCode_ = err;
     }
 
     /**
@@ -302,7 +302,7 @@ public class AceWebDownloadItemObject {
     /**
      * Set download last recevied bytes.
      *
-     * @param realPath Download last receveid bytes.
+     * @param lastBytes Download last receveid bytes.
      */
     public synchronized void setLastBytes(long lastBytes) {
         this.lastBytes_ = lastBytes;
