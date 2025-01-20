@@ -32,7 +32,15 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class AceWebPluginBase extends AceResourcePlugin {
     private static final String LOG_TAG = "AceWebPluginBase";
 
+    private static final int CAN_NOT_POST_MESSAGE = 17100010;
+
+    private static final int CAN_NOT_REGISTER_MESSAGE_EVENT = 17100006;
+
     private static Map<Long, AceWebBase> objectMap;
+
+    private static boolean hasInit = false;
+
+    protected static boolean richTextInit = false;
 
     private final AtomicLong nextWebId = new AtomicLong(0L);
 
@@ -97,14 +105,6 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param result The result of the message event.
      */
     protected native static void onMessageEventExt(long webId, String portHandle, String result);
-
-    private static boolean hasInit = false;
-
-    protected static boolean richTextInit = false;
-    
-    private static final int CAN_NOT_POST_MESSAGE = 17100010;
-
-    private static final int CAN_NOT_REGISTER_MESSAGE_EVENT = 17100006;
 
     public AceWebPluginBase() {
         // plugin name is web, version is 1.0.
@@ -518,6 +518,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      *
      * @param id Wevbiew id.
      * @param portHandle Message port handle.
+     * @return The result of the message event.
      */
     public int onWebMessagePortEventExt(long id, String portHandle) {
         if (objectMap.containsKey(id)) {

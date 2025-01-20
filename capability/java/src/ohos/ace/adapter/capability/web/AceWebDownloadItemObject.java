@@ -194,7 +194,7 @@ public class AceWebDownloadItemObject {
     /**
      * Set download request method.
      *
-     * @param err Download request method.
+     * @param method Download request method.
      */
     public synchronized void setMethod(String method) {
         this.method_ = method;

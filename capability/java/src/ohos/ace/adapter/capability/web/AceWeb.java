@@ -1084,7 +1084,7 @@ public class AceWeb extends AceWebBase {
         this.webView.evaluateJavascript(script, new ValueCallback<String>() {
             @Override
             public void onReceiveValue(String value) {
-                if (value == null || value.equals("null")) {
+                if (value.equals("null")) {
                     value = "This type not support, only string is supported";
                 }
                 AceWebPluginBase.onReceiveRunJavaScriptExtValue(value, asyncCallbackInfoId);
@@ -1649,7 +1649,8 @@ public class AceWeb extends AceWebBase {
     }
 
     private void setDownloadPath(String path, AceWebDownloadItemObject object) {
-        if (!object.getFullPath().equals("")) {
+        String fullPath = object.getFullPath();
+        if (!fullPath.equals("")) {
             return;
         }
         String finalPath = "";
