@@ -120,6 +120,9 @@ public class AceWeb extends AceWebBase {
     private static final String NTC_MEDIA_PLAY_GESTURE_ACCESS = "mediaPlayGestureAccess";
     private static final String WEB_MESSAGE_PORT_ONE = "port1";
     private static final String WEB_MESSAGE_PORT_TWO = "port2";
+    private static final String ONE_STRING = "1";
+    private static final String WEB_WEBVIEW_DB = "webview.db";
+    private static final String WEB_WEBVIEW_CACHE = "webviewCache.db";
 
     private static final int NO_ERROR = 0;
 
@@ -160,6 +163,8 @@ public class AceWeb extends AceWebBase {
     private boolean isWebOnPage = true;
 
     private boolean isZoomAccess = true;
+    
+    private boolean isIncognitoMode = false;
 
     private MotionEvent motionEvent;
 
@@ -533,6 +538,32 @@ public class AceWeb extends AceWebBase {
 
         webSettings.setAllowFileAccessFromFileURLs(true);
         WebView.setWebContentsDebuggingEnabled(false);
+    }
+
+    /**
+     * Set stealth mode.
+     *
+     * @param incognitoModeValue The incoming stealth mode value.
+     */
+    public void setIncognitoMode(String incognitoModeValue) {
+        final WebSettings webSettings = webView.getSettings();
+        if (ONE_STRING.equals(incognitoModeValue)) {
+            CookieManager.getInstance().removeAllCookies(null);
+            CookieManager.getInstance().flush();
+            context.deleteDatabase(WEB_WEBVIEW_DB);
+            context.deleteDatabase(WEB_WEBVIEW_CACHE);
+            webView.clearCache(true);
+            webView.clearHistory();
+            webView.clearFormData();
+            webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+            isIncognitoMode = true;
+        } else {
+            webSettings.setAppCacheEnabled(true);
+            String appCachePath = webView.getContext().getApplicationContext().getDir(
+                            "cache", Context.MODE_PRIVATE).getPath();
+            webSettings.setAppCachePath(appCachePath);
+            isIncognitoMode = false;
+        }
     }
 
     /**

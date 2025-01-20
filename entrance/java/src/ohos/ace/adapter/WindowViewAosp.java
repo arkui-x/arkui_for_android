@@ -15,11 +15,7 @@
 package ohos.ace.adapter;
 
 import android.content.Context;
-import android.content.BroadcastReceiver;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeProvider;
@@ -31,41 +27,19 @@ public class WindowViewAosp extends WindowView {
     public static String TAG = WindowViewAosp.class.getSimpleName();
     AccessibilityCrossPlatformBridge accessibilityBridge;
 
-    boolean isWindowOrientationChanging = false;
-
-    Runnable orientationChanged = ()->{
-        if (accessibilityBridge != null && accessibilityBridge.isTouchExplorationEnabled()
-            && isWindowOrientationChanging) {
-            Log.d(TAG,"surfaceChanged aosp");
-            isWindowOrientationChanging = false;
+    Runnable orientationChanged = () -> {
+        if (accessibilityBridge != null && accessibilityBridge.isTouchExplorationEnabled()) {
             accessibilityBridge.sendAccessibilityFocusInvalidate(-1);
         }
     };
-
-    public static String ARKUI_ORIENTAION_ACTION = "intent.arkui.ORIENTAION_ACTION";
-    BroadcastReceiver orientationReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (ARKUI_ORIENTAION_ACTION.equals(intent.getAction())) {
-                isWindowOrientationChanging = true;
-                Log.d(TAG, "onReceive : " + ARKUI_ORIENTAION_ACTION);
-            }
-        }
-    };
-
-    public void setWindowOrientationChanging(boolean windowOrientationChanging) {
-        isWindowOrientationChanging = windowOrientationChanging;
-    }
 
     public WindowViewAosp(Context context, int windowId) {
         super(context);
         accessibilityBridge = new AccessibilityCrossPlatformBridge(
                     (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE),
                     context.getContentResolver(),this, windowId);
-        IntentFilter filter = new IntentFilter(ARKUI_ORIENTAION_ACTION);
-        context.registerReceiver(orientationReceiver,filter);
-
     }
+    
     public boolean performAccessibilityAction(int action,  Bundle arguments) {
         super.performAccessibilityAction(action, arguments);
         return false;
@@ -73,6 +47,10 @@ public class WindowViewAosp extends WindowView {
     
     @Override
     public AccessibilityNodeProvider getAccessibilityNodeProvider() {
+        if (super.getWindowOrientation()) {
+            return null;
+        }
+
         if (accessibilityBridge != null && accessibilityBridge.isAccessibilityEnabled()) {
             return accessibilityBridge;
         } else {
@@ -83,8 +61,12 @@ public class WindowViewAosp extends WindowView {
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         super.surfaceChanged(holder, format, width, height);
-        removeCallbacks(orientationChanged);
-        postDelayed(orientationChanged, 100);
+
+        if (super.getWindowOrientation()) {
+            super.setWindowOrientation(false);
+            removeCallbacks(orientationChanged);
+            postDelayed(orientationChanged, 100);
+        }
     }
 
     @Override
@@ -102,18 +84,8 @@ public class WindowViewAosp extends WindowView {
     }
 
     public void destroyAosp() {
-        try{
-            if (orientationReceiver != null) {
-                Log.d(TAG, "destroyAosp unregisterReceiver");
-                getContext().unregisterReceiver(orientationReceiver);
-                orientationReceiver = null;
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "destroyAosp:" + e.toString());
-        }
         if (accessibilityBridge != null) {
             accessibilityBridge.release();
         }
     }
 }
-

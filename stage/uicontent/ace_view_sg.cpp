@@ -169,6 +169,9 @@ bool AceViewSG::DispatchBasicEvent(const std::vector<TouchEvent>& touchEvents)
 
 bool AceViewSG::DispatchTouchEvent(const std::shared_ptr<OHOS::MMI::PointerEvent>& pointerEvent)
 {
+    auto instanceId = GetInstanceId();
+    auto container = Platform::AceContainerSG::GetContainer(instanceId);
+    container->SetCurPointerEvent(pointerEvent);
     ProcessDragEvent(pointerEvent);
     ProcessTouchEvent(pointerEvent);
     bool forbiddenToPlatform = false;

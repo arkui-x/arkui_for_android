@@ -52,6 +52,8 @@ public class AceWebPluginAosp extends AceWebPluginBase {
 
     private static final String RICH_TEXT_INIT = "richTextInit";
 
+    private static final String INCOGNITO_MODE = "incognitoMode";
+
     private static final long INVALID_CREATE_ID = -1;
 
     private final AtomicLong nextMapid = new AtomicLong(0L);
@@ -103,9 +105,11 @@ public class AceWebPluginAosp extends AceWebPluginBase {
 
             // Create AceWeb
             aceWeb = new AceWeb(id, context, rootView, getEventCallback());
+            String webincognitoMode = param.get(INCOGNITO_MODE);
             richTextInit = Integer.parseInt(param.get(RICH_TEXT_INIT)) == 1 ? true : false;
             addResource(id, aceWeb);
             aceWeb.initWeb();
+            aceWeb.setIncognitoMode(String.valueOf(webincognitoMode));
             aceWeb.setPageUrl(pageUrl);
             aceWeb.loadUrl(webSrc);
             int physicalWidth = toPhysicalPixels(Double.parseDouble(param.get(WEBVIEW_WIDTH)));

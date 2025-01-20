@@ -13,16 +13,13 @@
  * limitations under the License.
  */
 
-#include "core/components_ng/pattern/time_picker/timepicker_haptic_factory.h"
-#include "core/components_ng/pattern/time_picker/timepicker_haptic_interface.h"
+#include "adapter/ohos/entrance/picker/picker_haptic_factory.h"
+#include "adapter/ohos/entrance/picker/picker_haptic_interface.h"
 
 
 namespace OHOS::Ace::NG {
-std::shared_ptr<ITimepickerAudioHaptic> TimepickerAudioHapticFactory::instance_ { nullptr };
-std::mutex TimepickerAudioHapticFactory::mutex_;
-
-std::shared_ptr<ITimepickerAudioHaptic> TimepickerAudioHapticFactory::GetInstance()
+std::shared_ptr<IPickerAudioHaptic> PickerAudioHapticFactory::GetInstance()
 {
-    return instance_;
+    return nullptr;
 }
 } // namespace OHOS::Ace::NG

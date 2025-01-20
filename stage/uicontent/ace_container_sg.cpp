@@ -1212,4 +1212,55 @@ void AceContainerSG::InitializeSubContainer(int32_t parentContainerId)
     GetSettings().usePlatformAsUIThread = parentSettings.usePlatformAsUIThread;
     GetSettings().usingSharedRuntime = parentSettings.usingSharedRuntime;
 }
+
+void AceContainerSG::SetCurPointerEvent(const std::shared_ptr<MMI::PointerEvent>& currentEvent)
+{
+    std::lock_guard<std::mutex> lock(pointerEventMutex_);
+    currentPointerEvent_ = currentEvent;
+    auto callbacksIter = stopDragCallbackMap_.begin();
+    while (callbacksIter != stopDragCallbackMap_.end()) {
+        auto pointerId = callbacksIter->first;
+        MMI::PointerEvent::PointerItem pointerItem;
+        bool hasPointerItem = currentEvent->GetPointerItem(pointerId, pointerItem);
+        bool isPressed = hasPointerItem ? pointerItem.IsPressed() : false;
+        if (!hasPointerItem || !isPressed) {
+            for (const auto& callback : callbacksIter->second) {
+                if (callback) {
+                    callback();
+                }
+            }
+            callbacksIter = stopDragCallbackMap_.erase(callbacksIter);
+        } else {
+            ++callbacksIter;
+        }
+    }
+}
+
+bool AceContainerSG::GetCurPointerEventInfo(DragPointerEvent& dragPointerEvent, StopDragCallback&& stopDragCallback)
+{
+    std::lock_guard<std::mutex> lock(pointerEventMutex_);
+    CHECK_NULL_RETURN(currentPointerEvent_, false);
+    MMI::PointerEvent::PointerItem pointerItem;
+    if (!currentPointerEvent_->GetPointerItem(dragPointerEvent.pointerId, pointerItem) || !pointerItem.IsPressed()) {
+        return false;
+    }
+    dragPointerEvent.sourceType = currentPointerEvent_->GetSourceType();
+    dragPointerEvent.displayX = pointerItem.GetDisplayX();
+    dragPointerEvent.displayY = pointerItem.GetDisplayY();
+    dragPointerEvent.sourceTool = static_cast<SourceTool>(pointerItem.GetToolType());
+    RegisterStopDragCallback(dragPointerEvent.pointerId, std::move(stopDragCallback));
+    return true;
+}
+
+void AceContainerSG::RegisterStopDragCallback(int32_t pointerId, StopDragCallback&& stopDragCallback)
+{
+    auto iter = stopDragCallbackMap_.find(pointerId);
+    if (iter != stopDragCallbackMap_.end()) {
+        iter->second.emplace_back(std::move(stopDragCallback));
+    } else {
+        std::list<StopDragCallback> list;
+        list.emplace_back(std::move(stopDragCallback));
+        stopDragCallbackMap_.emplace(pointerId, list);
+    }
+}
 } // namespace OHOS::Ace::Platform

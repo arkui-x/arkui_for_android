@@ -65,6 +65,8 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
     private AcePlatformViewPluginBase acePlatformViewPluginBase;
     private AceWebPluginBase aceWebPluginBase;
 
+    private boolean isWindowOrientationChanging = false;
+
     /**
      * Constructor of WindowView
      *
@@ -477,6 +479,14 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
             return true;
         }
         return super.onKeyUp(keyCode, event);
+    }
+
+    public void setWindowOrientation(boolean isOrientation) {
+        isWindowOrientationChanging = isOrientation;
+    }
+
+    public boolean getWindowOrientation() {
+        return isWindowOrientationChanging;
     }
 
     private native void nativeSurfaceCreated(long windowPtr, Surface surface);

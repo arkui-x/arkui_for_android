@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -51,6 +51,8 @@ public class StageConfiguration {
 
     private static final String DEVICE_TYPE_TABLET = "Tablet";
 
+    private static final String SYSTEM_FONT_SIZE_SCALE = "system.font.size.scale";
+
     /**
      * Convert configuration.
      *
@@ -87,6 +89,8 @@ public class StageConfiguration {
             int den = config.densityDpi;
             json.put(DENSITY_KEY, String.valueOf(den));
             json.put(LANGUAGE_MODE_KEY, config.locale);
+            float fontSizeScale = config.fontScale;
+            json.put(SYSTEM_FONT_SIZE_SCALE, String.valueOf(fontSizeScale));
             int minScreenWidth = config.smallestScreenWidthDp;
             if (minScreenWidth == Configuration.SMALLEST_SCREEN_WIDTH_DP_UNDEFINED) {
                 if (diagonalSize <= 6.9 && diagonalSize >= 0) {

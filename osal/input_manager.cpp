@@ -22,4 +22,10 @@ bool InputManager::GetSystemHotkeys(std::vector<HotKey>& hotkeys)
     return true;
 }
 
+std::shared_ptr<MMI::PointerEvent> InputManager::CreatePointerEvent(
+    const std::shared_ptr<const MMI::PointerEvent>& pointerEvent)
+{
+    return nullptr;
+}
+
 } // namespace OHOS::Ace
