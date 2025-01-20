@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,6 +21,31 @@ package ohos.ace.adapter;
  * @since 1
  */
 public interface ILogger {
+    /**
+     * Log level of debug.
+     */
+    public static final int LOG_DEBUG = 0;
+
+    /**
+     * Log level of info.
+     */
+    public static final int LOG_INFO = 1;
+
+    /**
+     * Log level of warning.
+     */
+    public static final int LOG_WARN = 2;
+
+    /**
+     * Log level of error.
+     */
+    public static final int LOG_ERROR = 3;
+
+    /**
+     * Log level of fatal.
+     */
+    public static final int LOG_FATAL = 4;
+
     /**
      * Determines if debug log is permitted output.
      *
@@ -59,6 +84,14 @@ public interface ILogger {
      * @param msg message to print
      */
     void e(String tag, String msg);
+
+    /**
+     * Log wrapper for print fatal log.
+     *
+     * @param tag message tag
+     * @param msg message to print
+     */
+    void f(String tag, String msg);
 
     /**
      * Log wrapper for report jank log.

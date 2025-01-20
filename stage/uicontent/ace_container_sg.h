@@ -246,7 +246,7 @@ public:
         }
     }
 
-    ResourceConfiguration GetResourceConfiguration() const
+    ResourceConfiguration GetResourceConfiguration() const override
     {
         return resourceInfo_.GetResourceConfiguration();
     }
@@ -327,6 +327,9 @@ public:
         return true;
     }
 
+    void SetCurPointerEvent(const std::shared_ptr<MMI::PointerEvent>& currentEvent);
+
+    bool GetCurPointerEventInfo(DragPointerEvent& dragPointerEvent, StopDragCallback&& stopDragCallback) override;
 private:
     virtual bool MaybeRelease() override;
     void InitializeFrontend();
@@ -339,9 +342,11 @@ private:
     void SetGetViewScaleCallback();
     void InitThemeManager();
     void SetupRootElement();
+    std::string GetOldLanguageTag() const;
 
     void SetUIWindowInner(sptr<OHOS::Rosen::Window> uiWindow);
     sptr<OHOS::Rosen::Window> GetUIWindowInner() const;
+    void RegisterStopDragCallback(int32_t pointerId, StopDragCallback&& stopDragCallback);
 
     AceView* aceView_ { nullptr };
     RefPtr<TaskExecutor> taskExecutor_;
@@ -382,6 +387,10 @@ private:
     sptr<OHOS::Rosen::Window> uiWindow_ = nullptr;
     std::string windowName_;
     bool isSubContainer_ = false;
+
+    std::mutex pointerEventMutex_;
+    std::shared_ptr<MMI::PointerEvent> currentPointerEvent_;
+    std::unordered_map<int32_t, std::list<StopDragCallback>> stopDragCallbackMap_;
 
     ACE_DISALLOW_COPY_AND_MOVE(AceContainerSG);
 };

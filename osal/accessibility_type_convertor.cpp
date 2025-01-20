@@ -26,6 +26,29 @@ const char SCROLL_END_EVENT[] = "scrollend";
 const char SCROLL_START_EVENT[] = "scrollstart";
 const char MOUSE_HOVER_ENTER[] = "mousehoverenter";
 const char MOUSE_HOVER_EXIT[] = "mousehoverexit";
+const char ACE_COMPONENT_CHECKBOX[] = "Checkbox";
+const char ACE_COMPONENT_CHECKBOXGROUP[] = "CheckboxGroup";
+const char ACE_COMPONENT_GAUGE[] = "Gauge";
+const char ACE_COMPONENT_MARQUEE[] = "Marquee";
+const char ACE_COMPONENT_MENUITEM[] = "MenuItem";
+const char ACE_COMPONENT_MENUITEMGROUP[] = "MenuItemGroup";
+const char ACE_COMPONENT_MENU[] = "Menu";
+const char ACE_COMPONENT_NAVIGATION[] = "Navigation";
+const char ACE_COMPONENT_DATEPICKER[] = "DatePicker";
+const char ACE_COMPONENT_PROGRESS[] = "Progress";
+const char ACE_COMPONENT_RADIO[] = "Radio";
+const char ACE_COMPONENT_RATING[] = "Rating";
+const char ACE_COMPONENT_SCROLLBAR[] = "ScrollBar";
+const char ACE_COMPONENT_SELECT[] = "Select";
+const char ACE_COMPONENT_SLIDER[] = "Slider";
+const char ACE_COMPONENT_STEPPER[] = "Stepper";
+const char ACE_COMPONENT_TEXT[] = "Text";
+const char ACE_COMPONENT_TEXTCLOCK[] = "TextClock";
+const char ACE_COMPONENT_TEXTPICKER[] = "TextPicker";
+const char ACE_COMPONENT_TEXTTIMER[] = "TextTimer";
+const char ACE_COMPONENT_TIMEPICKER[] = "TimePicker";
+const char ACE_COMPONENT_TOGGLE[] = "Toggle";
+const char ACE_COMPONENT_WEB[] = "Web";
 
 static const ActionTable ACTIONTABLE[] = {
     { AceAction::ACTION_CLICK, AndroidActionType::ACTION_CLICK, ActionType::ACCESSIBILITY_ACTION_CLICK },
@@ -55,6 +78,13 @@ static const ActionTable ACTIONTABLE[] = {
     { AceAction::ACTION_SET_SELECTION, AndroidActionType::ACTION_SET_SELECTION,
         ActionType::ACCESSIBILITY_ACTION_SET_SELECTION },
 };
+
+static const char* ACE_COMPONENTS[] = { ACE_COMPONENT_CHECKBOX, ACE_COMPONENT_CHECKBOXGROUP, ACE_COMPONENT_GAUGE,
+    ACE_COMPONENT_MARQUEE, ACE_COMPONENT_MENUITEM, ACE_COMPONENT_MENUITEMGROUP, ACE_COMPONENT_MENU,
+    ACE_COMPONENT_NAVIGATION, ACE_COMPONENT_DATEPICKER, ACE_COMPONENT_PROGRESS, ACE_COMPONENT_RADIO,
+    ACE_COMPONENT_RATING, ACE_COMPONENT_SCROLLBAR, ACE_COMPONENT_SELECT, ACE_COMPONENT_SLIDER, ACE_COMPONENT_STEPPER,
+    ACE_COMPONENT_TEXT, ACE_COMPONENT_TEXTCLOCK, ACE_COMPONENT_TEXTPICKER, ACE_COMPONENT_TEXTTIMER,
+    ACE_COMPONENT_TIMEPICKER, ACE_COMPONENT_TOGGLE, ACE_COMPONENT_WEB };
 
 AndroidEventType ConvertStrToAndroidEventType(const std::string& type)
 {
@@ -102,8 +132,8 @@ AndroidEventType ConvertAndroidEventType(AccessibilityEventType type)
             AndroidEventType::TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED },
         { AccessibilityEventType::TEXT_MOVE_UNIT, AndroidEventType::TYPE_VIEW_TEXT_TRAVERSED_AT_MOVEMENT_GRANULARITY },
         { AccessibilityEventType::SCROLL_START, AndroidEventType::TYPE_VIEW_TARGETED_BY_SCROLL },
-        { AccessibilityEventType::PAGE_CLOSE, AndroidEventType::TYPE_WINDOW_CONTENT_CHANGED },
-        { AccessibilityEventType::PAGE_OPEN, AndroidEventType::TYPE_WINDOW_CONTENT_CHANGED },
+        { AccessibilityEventType::PAGE_CLOSE, AndroidEventType::TYPE_PAGE_CLOSE },
+        { AccessibilityEventType::PAGE_OPEN, AndroidEventType::TYPE_PAGE_OPEN },
     };
     AndroidEventType eventType = AndroidEventType::TYPE_VIEW_INVALID;
     int64_t idx = BinarySearchFindIndex(eventTypeMap, ArraySize(eventTypeMap), type);
@@ -158,5 +188,16 @@ AndroidMovementGranularity TextMoveUnitConvertAndroid(TextMoveUnit moveUnit)
         }
     }
     return AndroidMovementGranularity::MOVEMENT_GRANULARITY_INVALID;
+}
+
+bool IsComponentInArray(const std::string& componentType)
+{
+    const auto NUM_COMPONENTS = sizeof(ACE_COMPONENTS) / sizeof(ACE_COMPONENTS[0]);
+    for (auto index = 0; index < NUM_COMPONENTS; ++index) {
+        if (ACE_COMPONENTS[index] == componentType) {
+            return true;
+        }
+    }
+    return false;
 }
 } // namespace OHOS::Ace::Framework

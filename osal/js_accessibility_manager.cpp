@@ -321,6 +321,18 @@ void UpdateAccessibilityNodePosition(const RefPtr<AccessibilityNode>& node, Acce
     nodeInfo.SetRectInScreen(bounds);
 }
 
+bool IsImportantForAccessibility(const std::string& aceLevel, const std::string& componentType)
+{
+    bool bRet = false;
+    if (aceLevel == NG::AccessibilityProperty::Level::YES_STR) {
+        bRet = true;
+    }
+    if (aceLevel == NG::AccessibilityProperty::Level::AUTO) {
+        bRet = IsComponentInArray(componentType);
+    }
+    return bRet;
+}
+
 void UpdateAccessibilityNodeSupport(const RefPtr<AccessibilityNode>& node, AccessibilityElementInfo& nodeInfo,
     const RefPtr<JsAccessibilityManager>& manager, int windowId)
 {
@@ -352,12 +364,8 @@ void UpdateAccessibilityNodeSupport(const RefPtr<AccessibilityNode>& node, Acces
         nodeInfo.SetVisible(false);
     }
 
-    if (node->GetImportantForAccessibility() == NG::AccessibilityProperty::Level::YES_STR ||
-        node->GetImportantForAccessibility() == NG::AccessibilityProperty::Level::AUTO) {
-        nodeInfo.SetImportantForAccessibility(true);
-    } else {
-        nodeInfo.SetImportantForAccessibility(false);
-    }
+    bool isImportant = IsImportantForAccessibility(node->GetImportantForAccessibility(), node->GetTag());
+    nodeInfo.SetImportantForAccessibility(isImportant);
 }
 
 void UpdateAccessibilityNodeInfo(const RefPtr<AccessibilityNode>& node, AccessibilityElementInfo& nodeInfo,
@@ -1109,13 +1117,9 @@ void JsAccessibilityManager::UpdateAccessibilityElementInfoImportant(const RefPt
             nodeInfo.AddAction(action);
         }
     }
-
-    if (accessibilityProperty->GetAccessibilityLevel() == NG::AccessibilityProperty::Level::YES_STR ||
-        accessibilityProperty->GetAccessibilityLevel() == NG::AccessibilityProperty::Level::AUTO) {
-        nodeInfo.SetImportantForAccessibility(true);
-    } else {
-        nodeInfo.SetImportantForAccessibility(false);
-    }
+    bool isImportant = IsImportantForAccessibility(
+        accessibilityProperty->GetAccessibilityLevel(), accessibilityProperty->GetAccessibilityRole());
+    nodeInfo.SetImportantForAccessibility(isImportant);
 }
 
 namespace {
@@ -1786,7 +1790,7 @@ void AddEventInfoJsonImporved(Json& eventInfoJson, AccessibilityElementInfo& ele
     eventInfoJson["BundleName"] = elementInfo.GetBundleName();
     eventInfoJson["ComponentType"] = elementInfo.GetComponentType();
     eventInfoJson["Content"] = elementInfo.GetContent();
-    eventInfoJson["Hint"] = elementInfo.GetHint();
+    eventInfoJson["Hint"] = elementInfo.GetTextType();
     eventInfoJson["DescriptionInfo"] = elementInfo.GetDescriptionInfo();
     eventInfoJson["ComponentResourceId"] = elementInfo.GetComponentResourceId();
     eventInfoJson["AccessibilityId"] = elementInfo.GetAccessibilityId();
@@ -3200,7 +3204,7 @@ void JsAccessibilityManager::AccessibilityElementInfo2JsonStr(
     retJson["BundleName"] = info.GetBundleName();
     retJson["ComponentType"] = info.GetComponentType();
     retJson["Content"] = info.GetContent();
-    retJson["Hint"] = info.GetHint();
+    retJson["Hint"] = info.GetTextType();
     retJson["DescriptionInfo"] = info.GetDescriptionInfo();
     retJson["ComponentResourceId"] = info.GetComponentResourceId();
     retJson["AccessibilityId"] = info.GetAccessibilityId();

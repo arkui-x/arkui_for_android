@@ -92,7 +92,10 @@ int32_t AbilityContextAdapter::StartAbility(const std::string& instanceName, con
 
     auto startActivityMethod =
         env->GetMethodID(objClass, "startActivity", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
-    if (startActivityMethod == nullptr) {
+    auto startActivityMethodNew =
+        env->GetMethodID(objClass, "startActivity",
+        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
+    if (startActivityMethod == nullptr || startActivityMethodNew == nullptr) {
         LOGE("fail to get the method StartActivity id");
         return AAFwk::INNER_ERR;
     }
@@ -105,15 +108,24 @@ int32_t AbilityContextAdapter::StartAbility(const std::string& instanceName, con
 
     jstring jBundleName = env->NewStringUTF(bundleName.c_str());
     jstring jActivityName = env->NewStringUTF(activityName.c_str());
+    jstring jType = env->NewStringUTF(want.GetType().c_str());
     jstring jParams = env->NewStringUTF(wantParams.c_str());
-    if (jBundleName == nullptr || jActivityName == nullptr || jParams == nullptr) {
-        LOGE("jBundleName or jActivityName or jParams is nullptr");
+    if (jBundleName == nullptr || jActivityName == nullptr || jParams == nullptr || jType == nullptr) {
+        LOGE("jBundleName or jActivityName or jParams or jType is nullptr");
         return AAFwk::INNER_ERR;
     }
 
-    auto result = env->CallIntMethod(stageActivity, startActivityMethod, jBundleName, jActivityName, jParams);
+    int result;
+    if (bundleName == "com.ohos.filepicker" || bundleName == "com.ohos.photos") {
+        result = env->CallIntMethod(
+        stageActivity, startActivityMethodNew, jBundleName, jActivityName, jType, jParams);
+    } else {
+        result = env->CallIntMethod(
+        stageActivity, startActivityMethod, jBundleName, jActivityName, jParams);
+    }
     env->DeleteLocalRef(jBundleName);
     env->DeleteLocalRef(jActivityName);
+    env->DeleteLocalRef(jType);
     env->DeleteLocalRef(jParams);
 
     if (result != ERR_OK) {
@@ -292,7 +304,10 @@ int32_t AbilityContextAdapter::StartAbilityForResult(
 
     auto startActivityForResultMethod = env->GetMethodID(
         objClass, "startActivityForResult", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)I");
-    if (startActivityForResultMethod == nullptr) {
+    auto startActivityForResultMethodNew = env->GetMethodID(
+        objClass, "startActivityForResult",
+        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)I");
+    if (startActivityForResultMethod == nullptr || startActivityForResultMethodNew == nullptr) {
         LOGE("fail to get the method startActivityForResult id");
         return AAFwk::INNER_ERR;
     }
@@ -306,15 +321,23 @@ int32_t AbilityContextAdapter::StartAbilityForResult(
 
     jstring jBundleName = env->NewStringUTF(bundleName.c_str());
     jstring jActivityName = env->NewStringUTF(activityName.c_str());
+    jstring jType = env->NewStringUTF(want.GetType().c_str());
     jstring jParams = env->NewStringUTF(wantParams.c_str());
-    if (jBundleName == nullptr || jActivityName == nullptr || jParams == nullptr) {
-        LOGE("jBundleName or jActivityName or jParams is nullptr");
+    if (jBundleName == nullptr || jActivityName == nullptr || jParams == nullptr || jType == nullptr) {
+        LOGE("jBundleName or jActivityName or jParams or jType is nullptr");
         return AAFwk::INNER_ERR;
     }
-    auto result = env->CallIntMethod(
+    int result;
+    if (bundleName == "com.ohos.filepicker" || bundleName == "com.ohos.photos") {
+        result = env->CallIntMethod(
+        stageActivity, startActivityForResultMethodNew, jBundleName, jActivityName, jType, jParams, requestCode);
+    } else {
+        result = env->CallIntMethod(
         stageActivity, startActivityForResultMethod, jBundleName, jActivityName, jParams, requestCode);
+    }
     env->DeleteLocalRef(jBundleName);
     env->DeleteLocalRef(jActivityName);
+    env->DeleteLocalRef(jType);
     env->DeleteLocalRef(jParams);
 
     if (result != ERR_OK) {

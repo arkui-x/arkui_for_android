@@ -54,6 +54,8 @@
       "OHOS::Ace::NG::PipelineContext::GetCurrentContext()";
       OHOS::Ace::NG::ViewAbstract::*;
       OHOS::Ace::NG::ViewStackProcessor::*;
+      OHOS::Ace::NG::UINode::*;
+      OHOS::Ace::NG::OverlayManager::*;
       OHOS::Ace::Platform::AceApplicationInfoImpl::*;
       OHOS::Ace::PipelineBase::*;
       OHOS::Ace::Scheduler::*;
@@ -65,6 +67,7 @@
       "OHOS::Ace::SystemProperties::colorMode_";
       "OHOS::Ace::SystemProperties::GetDebugEnabled()";
       "OHOS::Ace::SystemProperties::GetResourceDecoupling()";
+      "OHOS::Ace::SystemProperties::taskPriorityAdjustmentEnable_";
       OHOS::Ace::V2::PATTERN_LOCK_ETS_TAG;
       OHOS::Ace::V2::QRCODE_ETS_TAG;
       OHOS::Ace::V2::RELATIVE_CONTAINER_ETS_TAG;
@@ -79,6 +82,10 @@
       OHOS::Ace::SpringMotion::*;
       OHOS::Ace::ShadowTheme::*;
       OHOS::Ace::PerfMonitor::*;
+      WorkerManager::*;
+      "NapiErrorManager::GetInstance()";
+      "NapiErrorManager::NotifyUncaughtException(napi_env__*, napi_value__*, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, unsigned int)";
+      "NapiErrorManager::NotifyUnhandledRejection(napi_env__*, napi_value__**, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, unsigned int)";
 
       virtual?thunk?to?OHOS::Ace::Animator::~Animator??;
 
@@ -98,6 +105,11 @@
       vtable?for?OHOS::Ace::NG::LayoutProperty;
       vtable?for?OHOS::Ace::NG::TouchEventActuator;
       vtable?for?OHOS::Ace::ResourceWrapper;
+
+      vtable?for?OHOS::NetStack::Socks5::Socks5ProxyResponse;
+      vtable?for?OHOS::NetStack::Socks5::Socks5MethodRequest;
+      vtable?for?OHOS::NetStack::Socks5::Socks5NoneMethod;
+      vtable?for?OHOS::NetStack::Socks5::Socks5UdpHeader;
 
       VTT?for?OHOS::Ace::Animator;
       VTT?for?OHOS::Ace::Container;
@@ -434,6 +446,7 @@
       OHOS::Ace::NG::FocusHub::*;
       OHOS::Ace::NG::InputEventHub::*;
       OHOS::Ace::NG::InputEventActuator::*;
+      "OHOS::Ace::LifeCycleCheckable::~LifeCycleCheckable()";
       
       OHOS::AppExecFwk::EventHandler::*;
       OHOS::AppExecFwk::EventRunner::*;
@@ -462,6 +475,9 @@
       "OHOS::AbilityRuntime::CreateJsError(napi_env__*, int, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::AbilityRuntime::BindNativeFunction(napi_env__*, napi_value__*, char const*, char const*, napi_value__* (*)(napi_env__*, napi_callback_info__*))";
       HiLogIsLoggable;
+      HiLogSetAppMinLogLevel;
+      HcfCreateCmsGenerator;
+      HcfCmsGeneratorSpiCreate;
       OHOS::HiviewDFX::HiLog::*;
       OHOS::Media::ImageSource::*;
       OHOS::Ace::SubwindowManager::*;
@@ -507,6 +523,39 @@
       OHOS::Ace::NG::RenderContext::*;
       OHOS::Ace::Recorder::EventRecorder::*;
       OHOS::Ace::Recorder::EventParamsBuilder::*;
+      OHOS::MMI::KeyEvent::*;
+
+      vtable?for?OHOS::Rosen::LinearInterpolator;
+      VTT?for?OHOS::Rosen::LinearInterpolator;
+      OHOS::Rosen::RSSystemProperties::*;
+      OHOS::Rosen::RSCommandFactory::*;
+      OHOS::Rosen::RSNodeGetAnimationsValueFraction::*;
+      OHOS::Rosen::RSInterpolator::*;
+      OHOS::Ace::UdmfClient::*;
+      OHOS::Ace::NG::DragDropFuncWrapper::*;
+      OHOS::Ace::InteractionInterface::*;
+      OHOS::Msdp::DeviceStatus::InteractionManager::*;
+      OHOS::Ace::PixelMap::*;
+      panda::JSValueRef::*;
+      panda::ObjectRef::*;
+      "NapiValueToLocalValue(napi_value__*)";
+
+      "panda::os::thread::GetCurrentThreadId()";
+      "panda::GetStacktrace()";
+      "panda::PrintStack(std::__ndk1::vector<unsigned long, std::__ndk1::allocator<unsigned long> > const&, std::__ndk1::basic_ostream<char, std::__ndk1::char_traits<char> >&)";
+      "panda::time::GetCurrentTimeInMillis(bool)";
+      panda::Logger::logger;
+      "panda::Logger::Message::~Message()";
+      panda::panda_file::*;
+      "panda::utf::Mutf8Size(unsigned char const*)";
+      "panda::utf::ConvertRegionMUtf8ToUtf16(unsigned char const*, unsigned short*, unsigned long, unsigned long, unsigned long)";
+      "panda::os::unix::memory::futex::Mutex::Mutex()";
+      "panda::os::unix::memory::futex::Mutex::Lock()";
+      "panda::os::unix::memory::futex::Mutex::Unlock()";
+      "panda::os::mem::MmapDeleter(std::byte*, unsigned long)";
+      "panda::PrintStack(std::__ndk1::vector<unsigned int, std::__ndk1::allocator<unsigned int> > const&, std::__ndk1::basic_ostream<char, std::__ndk1::char_traits<char> >&)";
+      "panda::utf::ConvertRegionMUtf8ToUtf16(unsigned char const*, unsigned short*, unsigned int, unsigned int, unsigned int)";
+      "panda::os::mem::MmapDeleter(std::byte*, unsigned int)";
     };
   local:
     *;
