@@ -87,6 +87,8 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebPermissionRequestObject.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebJsDialogObject.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebJsPromptObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebDownloadItemObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebDownloadHelperObject.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebResourceRequestObject.java",
 
   # bridge files
