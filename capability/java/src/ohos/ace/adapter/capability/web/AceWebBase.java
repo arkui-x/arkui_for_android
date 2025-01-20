@@ -73,47 +73,41 @@ public abstract class AceWebBase {
 
     private void callMethodMapWebAtrribute() {
         IAceOnCallResourceMethod zoomAccess = (param) -> zoomAccess(param);
-        this.callMethodMap.put(WEB_FLAG + id + METHOD +
-            PARAM_EQUALS +
-            "zoomAccess" +
-            PARAM_BEGIN,
-            zoomAccess);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "zoomAccess" + PARAM_BEGIN, zoomAccess);
         IAceOnCallResourceMethod javascriptAccess = (param) -> javascriptAccess(param);
-        this.callMethodMap.put(WEB_FLAG + id + METHOD +
-            PARAM_EQUALS +
-            "javascriptAccess" +
-            PARAM_BEGIN,
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "javascriptAccess" + PARAM_BEGIN,
             javascriptAccess);
         IAceOnCallResourceMethod minFontSize = (param) -> minFontSize(param);
-        this.callMethodMap.put(WEB_FLAG + id + METHOD +
-            PARAM_EQUALS +
-            "minFontSize" +
-            PARAM_BEGIN,
-            minFontSize);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "minFontSize" + PARAM_BEGIN, minFontSize);
         IAceOnCallResourceMethod horizontalScrollBarAccess = (param) -> horizontalScrollBarAccess(param);
-        this.callMethodMap.put(WEB_FLAG + id + METHOD +
-            PARAM_EQUALS +
-            "horizontalScrollBarAccess" +
-            PARAM_BEGIN,
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "horizontalScrollBarAccess" + PARAM_BEGIN,
             horizontalScrollBarAccess);
         IAceOnCallResourceMethod verticalScrollBarAccess = (param) -> verticalScrollBarAccess(param);
-        this.callMethodMap.put(WEB_FLAG + id + METHOD +
-            PARAM_EQUALS +
-            "verticalScrollBarAccess" +
-            PARAM_BEGIN,
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "verticalScrollBarAccess" + PARAM_BEGIN,
             verticalScrollBarAccess);
         IAceOnCallResourceMethod backgroundColor = (param) -> backgroundColor(param);
-        this.callMethodMap.put(WEB_FLAG + id + METHOD +
-            PARAM_EQUALS +
-            "backgroundColor" +
-            PARAM_BEGIN,
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "backgroundColor" + PARAM_BEGIN,
             backgroundColor);
         IAceOnCallResourceMethod mediaPlayGestureAccess = (param) -> mediaPlayGestureAccess(param);
-        this.callMethodMap.put(WEB_FLAG + id + METHOD +
-            PARAM_EQUALS +
-            "mediaPlayGestureAccess" +
-            PARAM_BEGIN,
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "mediaPlayGestureAccess" + PARAM_BEGIN,
             mediaPlayGestureAccess);
+        IAceOnCallResourceMethod onlineImageAccess = (param) -> onlineImageAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "onlineImageAccess" + PARAM_BEGIN,
+            onlineImageAccess);
+        IAceOnCallResourceMethod geolocationAccess = (param) -> geolocationAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "geolocationAccess" + PARAM_BEGIN,
+            geolocationAccess);
+        IAceOnCallResourceMethod blockNetwork = (param) -> blockNetwork(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "blockNetwork" + PARAM_BEGIN, blockNetwork);
+        IAceOnCallResourceMethod mixedMode = (param) -> mixedMode(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "mixedMode" + PARAM_BEGIN, mixedMode);
+        IAceOnCallResourceMethod domStorageAccess = (param) -> domStorageAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "domStorageAccess" + PARAM_BEGIN,
+            domStorageAccess);
+        IAceOnCallResourceMethod cacheMode = (param) -> cacheMode(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "cacheMode" + PARAM_BEGIN, cacheMode);
+        IAceOnCallResourceMethod imageAccess = (param) -> imageAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "imageAccess" + PARAM_BEGIN, imageAccess);
     }
 
     private void callMethodMapPutXWardMethod() {
@@ -825,6 +819,62 @@ public abstract class AceWebBase {
      * @return result of call.
      */
     public abstract String zoomAccess(Map<String, String> params);
+
+    /**
+     * onlineImageAccess
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String onlineImageAccess(Map<String, String> params);
+
+    /**
+     * geolocationAccess
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String geolocationAccess(Map<String, String> params);
+
+    /**
+     * blockNetwork
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String blockNetwork(Map<String, String> params);
+
+    /**
+     * mixedMode
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String mixedMode(Map<String, String> params);
+
+    /**
+     * domStorageAccess
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String domStorageAccess(Map<String, String> params);
+
+    /**
+     * cacheMode
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String cacheMode(Map<String, String> params);
+
+    /**
+     * imageAccess
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String imageAccess(Map<String, String> params);
 
     public abstract String javascriptAccess(Map<String, String> params);
 
