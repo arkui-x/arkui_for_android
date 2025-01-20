@@ -30,6 +30,33 @@ constexpr int8_t ACTION_POINT = 1;
 
 static std::unordered_map<int, int> actionPointMap;
 
+SourceTool GetSourceTool(int32_t orgToolType)
+{
+    switch (orgToolType) {
+        case OHOS::MMI::PointerEvent::TOOL_TYPE_FINGER:
+            return SourceTool::FINGER;
+        case OHOS::MMI::PointerEvent::TOOL_TYPE_PEN:
+            return SourceTool::PEN;
+        case OHOS::MMI::PointerEvent::TOOL_TYPE_RUBBER:
+            return SourceTool::RUBBER;
+        case OHOS::MMI::PointerEvent::TOOL_TYPE_BRUSH:
+            return SourceTool::BRUSH;
+        case OHOS::MMI::PointerEvent::TOOL_TYPE_PENCIL:
+            return SourceTool::PENCIL;
+        case OHOS::MMI::PointerEvent::TOOL_TYPE_AIRBRUSH:
+            return SourceTool::AIRBRUSH;
+        case OHOS::MMI::PointerEvent::TOOL_TYPE_MOUSE:
+            return SourceTool::MOUSE;
+        case OHOS::MMI::PointerEvent::TOOL_TYPE_LENS:
+            return SourceTool::LENS;
+        case OHOS::MMI::PointerEvent::TOOL_TYPE_TOUCHPAD:
+            return SourceTool::TOUCHPAD;
+        default:
+            LOGW("unknown tool type");
+            return SourceTool::UNKNOWN;
+    }
+}
+
 TouchPoint ConvertTouchPoint(const MMI::PointerEvent::PointerItem& pointerItem)
 {
     TouchPoint touchPoint;
@@ -45,7 +72,7 @@ TouchPoint ConvertTouchPoint(const MMI::PointerEvent::PointerItem& pointerItem)
     touchPoint.force = static_cast<float>(pointerItem.GetPressure());
     touchPoint.tiltX = pointerItem.GetTiltX();
     touchPoint.tiltY = pointerItem.GetTiltY();
-    touchPoint.sourceTool = static_cast<SourceTool>(pointerItem.GetToolType());
+    touchPoint.sourceTool = static_cast<SourceTool>(GetSourceTool(pointerItem.GetToolType()));
     return touchPoint;
 }
 
@@ -177,7 +204,7 @@ void ConvertPointerEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent,
     event.deviceId = pointerItem.GetDeviceId();
     event.downTime = TimeStamp(std::chrono::microseconds(pointerItem.GetDownTime()));
     event.time = TimeStamp(std::chrono::microseconds(pointerEvent->GetActionTime()));
-    event.sourceTool = static_cast<SourceTool>(pointerItem.GetToolType());
+    event.sourceTool = static_cast<SourceTool>(GetSourceTool(pointerItem.GetToolType()));
     event.targetWindowId = pointerItem.GetTargetWindowId();
 }
 

@@ -124,6 +124,13 @@ public class AceWeb extends AceWebBase {
     private static final String NTC_ZOOM_FACTOR = "zoom_factor";
 
     private static final String NTC_ZOOM_ACCESS = "zoomAccess";
+    private static final String NTC_ONLINE_IMAGE_ACCESS = "onlineImageAccess";
+    private static final String NTC_GEOLOCATION_ACCESS = "geolocationAccess";
+    private static final String NTC_BLOCK_NETWORK = "blockNetwork";
+    private static final String NTC_MIXED_MODE = "mixedMode";
+    private static final String NTC_DOM_STORAGE_ACCESS = "domStorageAccess";
+    private static final String NTC_CACHE_MODE = "cacheMode";
+    private static final String NTC_IMAGE_ACCESS = "imageAccess";
     private static final String NTC_JAVASCRIPT_ACCESS = "javascriptAccess";
     private static final String NTC_MIN_FONT_SIZE = "minFontSize";
     private static final String NTC_HORIZONTAL_SCROLLBAR_ACCESS = "horizontalScrollBarAccess";
@@ -132,6 +139,9 @@ public class AceWeb extends AceWebBase {
     private static final String NTC_MEDIA_PLAY_GESTURE_ACCESS = "mediaPlayGestureAccess";
     private static final String WEB_MESSAGE_PORT_ONE = "port1";
     private static final String WEB_MESSAGE_PORT_TWO = "port2";
+    private static final String ONE_STRING = "1";
+    private static final String WEB_WEBVIEW_DB = "webview.db";
+    private static final String WEB_WEBVIEW_CACHE = "webviewCache.db";
 
     private static final String WEB_DOWNLOAD_CONCAT_DIR = "/Temp/";
 
@@ -173,6 +183,12 @@ public class AceWeb extends AceWebBase {
 
     private static final Object WEB_LOCK = new Object();
 
+    private static final int MIXED_MODE_DEFAULT_VALUE = 0;
+
+    private static final int CACHE_MODE_OH_DEFAULT_VALUE = 0;
+
+    private static final int CACHE_MODE_DEFAULT_VALUE = -1;
+
     private static String currentPageUrl;
 
     private static String routerUrl;
@@ -194,6 +210,8 @@ public class AceWeb extends AceWebBase {
     private final View rootView;
 
     private boolean isWebOnPage = true;
+
+    private boolean isIncognitoMode = false;
 
     private MotionEvent motionEvent;
 
@@ -576,10 +594,40 @@ public class AceWeb extends AceWebBase {
         webSettings.setLoadsImagesAutomatically(true);
         webSettings.setDefaultTextEncodingName("utf-8");
         webSettings.setDomStorageEnabled(true);
+        webSettings.setBlockNetworkLoads(false);
+        webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        webSettings.setBlockNetworkImage(true);
+        webSettings.setGeolocationEnabled(true);
         webSettings.setAllowContentAccess(false);
 
         webSettings.setAllowFileAccessFromFileURLs(true);
         WebView.setWebContentsDebuggingEnabled(false);
+    }
+
+    /**
+     * Set stealth mode.
+     *
+     * @param incognitoModeValue The incoming stealth mode value.
+     */
+    public void setIncognitoMode(String incognitoModeValue) {
+        final WebSettings webSettings = webView.getSettings();
+        if (ONE_STRING.equals(incognitoModeValue)) {
+            CookieManager.getInstance().removeAllCookies(null);
+            CookieManager.getInstance().flush();
+            context.deleteDatabase(WEB_WEBVIEW_DB);
+            context.deleteDatabase(WEB_WEBVIEW_CACHE);
+            webView.clearCache(true);
+            webView.clearHistory();
+            webView.clearFormData();
+            webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+            isIncognitoMode = true;
+        } else {
+            webSettings.setAppCacheEnabled(true);
+            String appCachePath = webView.getContext().getApplicationContext().getDir(
+                            "cache", Context.MODE_PRIVATE).getPath();
+            webSettings.setAppCachePath(appCachePath);
+            isIncognitoMode = false;
+        }
     }
 
     /**
@@ -956,6 +1004,123 @@ public class AceWeb extends AceWebBase {
             return FAIL_TAG;
         }
         webView.getSettings().setSupportZoom(access);
+        return SUCCESS_TAG;
+    }
+
+    private String getErrorInfo(String params) {
+        ALog.w(LOG_TAG, params + " NumberFormatException");
+        return FAIL_TAG;
+    }
+
+    @Override
+    public String onlineImageAccess(Map<String, String> params) {
+        if (!params.containsKey(NTC_ONLINE_IMAGE_ACCESS) || webView == null) {
+            return FAIL_TAG;
+        }
+        boolean access = true;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_ONLINE_IMAGE_ACCESS));
+            access = accessNum != 0;
+        } catch (NumberFormatException ignored) {
+            return getErrorInfo("onlineImageAccess");
+        }
+        webView.getSettings().setBlockNetworkImage(access);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String geolocationAccess(Map<String, String> params) {
+        if (!params.containsKey(NTC_GEOLOCATION_ACCESS) || webView == null) {
+            return FAIL_TAG;
+        }
+        boolean access = true;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_GEOLOCATION_ACCESS));
+            access = accessNum != 0;
+        } catch (NumberFormatException ignored) {
+            return getErrorInfo("geolocationAccess");
+        }
+        webView.getSettings().setGeolocationEnabled(access);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String blockNetwork(Map<String, String> params) {
+        if (!params.containsKey(NTC_BLOCK_NETWORK) || webView == null) {
+            return FAIL_TAG;
+        }
+        boolean access = true;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_BLOCK_NETWORK));
+            access = accessNum != 0;
+        } catch (NumberFormatException ignored) {
+            return getErrorInfo("blockNetwork");
+        }
+        webView.getSettings().setBlockNetworkLoads(access);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String mixedMode(Map<String, String> params) {
+        if (!params.containsKey(NTC_MIXED_MODE) || webView == null) {
+            return FAIL_TAG;
+        }
+        int access = MIXED_MODE_DEFAULT_VALUE;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_MIXED_MODE));
+            access = accessNum;
+        } catch (NumberFormatException ignored) {
+            return getErrorInfo("mixedMode");
+        }
+        webView.getSettings().setMixedContentMode(access);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String domStorageAccess(Map<String, String> params) {
+        if (!params.containsKey(NTC_DOM_STORAGE_ACCESS) || webView == null) {
+            return FAIL_TAG;
+        }
+        boolean access = true;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_DOM_STORAGE_ACCESS));
+            access = accessNum != 0;
+        } catch (NumberFormatException ignored) {
+            return getErrorInfo("domStorageAccess");
+        }
+        webView.getSettings().setDomStorageEnabled(access);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String cacheMode(Map<String, String> params) {
+        if (!params.containsKey(NTC_CACHE_MODE) || webView == null) {
+            return FAIL_TAG;
+        }
+        int access = CACHE_MODE_DEFAULT_VALUE;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_CACHE_MODE));
+            access = accessNum == CACHE_MODE_OH_DEFAULT_VALUE ? CACHE_MODE_DEFAULT_VALUE : accessNum;
+        } catch (NumberFormatException ignored) {
+            return getErrorInfo("cacheMode");
+        }
+        webView.getSettings().setCacheMode(access);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String imageAccess(Map<String, String> params) {
+        if (!params.containsKey(NTC_IMAGE_ACCESS) || webView == null) {
+            return FAIL_TAG;
+        }
+        boolean access = true;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_IMAGE_ACCESS));
+            access = accessNum != 0;
+        } catch (NumberFormatException ignored) {
+            return getErrorInfo("imageAccess");
+        }
+        webView.getSettings().setLoadsImagesAutomatically(access);
         return SUCCESS_TAG;
     }
 

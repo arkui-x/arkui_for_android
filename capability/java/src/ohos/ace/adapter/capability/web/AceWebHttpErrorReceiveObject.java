@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,23 +17,33 @@ package ohos.ace.adapter.capability.web;
 
 import android.webkit.WebResourceResponse;
 import android.webkit.WebResourceRequest;
+import java.util.HashMap;
+import java.util.Map;
 
-public class AceWebHttpErrorReceiveObject {
+/**
+ * Represents an object that extends AceWebResourceRequestObject to handle HTTP
+ * error responses.
+ * This class is designed to manage and manipulate web resource requests and
+ * their corresponding error responses.
+ *
+ * @since 2024-5-31
+ */
+public class AceWebHttpErrorReceiveObject extends AceWebResourceRequestObject {
     private static final String LOG_TAG = "AceWebHttpErrorReceiveObject";
 
-    private WebResourceRequest request;
     private WebResourceResponse response;
 
+    /**
+     * Constructs an AceWebHttpErrorReceiveObject with the specified
+     * WebResourceRequest and WebResourceResponse.
+     *
+     * @param request  The WebResourceRequest associated with this object.
+     * @param response The WebResourceResponse associated with this object,
+     *                 representing the error response.
+     */
     public AceWebHttpErrorReceiveObject(WebResourceRequest request, WebResourceResponse response) {
-        this.request = request;
+        super(request);
         this.response = response;
-    }
-
-    public String getRequestUrl() {
-        if (this.request.getUrl() != null) {
-            return this.request.getUrl().toString();
-        }
-        return "";
     }
 
     public String getResponseMimeType() {
@@ -52,5 +62,44 @@ public class AceWebHttpErrorReceiveObject {
 
     public int getResponseCode() {
         return this.response.getStatusCode();
+    }
+
+    /**
+     * Retrieves the data of the response.
+     *
+     * @return A string representing the response data, or an empty string if the
+     *         data is not available.
+     */
+    public String getResponseData() {
+        if (this.response.getData() != null) {
+            return this.response.getData().toString();
+        }
+        return "";
+    }
+
+    /**
+     * Retrieves the reason phrase of the response.
+     *
+     * @return A string representing the reason phrase, or an empty string if the
+     *         reason phrase is not available.
+     */
+    public String getReason() {
+        if (this.response.getReasonPhrase() != null) {
+            return this.response.getReasonPhrase();
+        }
+        return "";
+    }
+
+    /**
+     * Retrieves the response headers as a map.
+     *
+     * @return A map of response headers, or an empty map if the headers are not
+     *         available.
+     */
+    public Map<String, String> getResponseHeader() {
+        if (this.response.getResponseHeaders() != null) {
+            return this.response.getResponseHeaders();
+        }
+        return new HashMap<String, String>();
     }
 }
