@@ -44,10 +44,16 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
 
     private final AtomicLong nextWebId = new AtomicLong(0L);
 
+    public AceWebPluginBase() {
+        // plugin name is web, version is 1.0.
+        super("web", 1.0f);
+        objectMap = new HashMap<Long, AceWebBase>();
+    }
+
     protected native void nativeInit();
 
     protected native void nativeInitWebDataBase();
-    
+
     /**
      * Native init webview download item methods.
      */
@@ -105,12 +111,6 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param result The result of the message event.
      */
     protected native static void onMessageEventExt(long webId, String portHandle, String result);
-
-    public AceWebPluginBase() {
-        // plugin name is web, version is 1.0.
-        super("web", 1.0f);
-        objectMap = new HashMap<Long, AceWebBase>();
-    }
 
     /**
      * This is called to get a atomic id.

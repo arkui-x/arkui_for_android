@@ -210,9 +210,9 @@ public class AceWebDownloadItemObject {
     }
 
     /**
-     * Set download error code.
+     * Set download mimeType.
      *
-     * @param err Download error code.
+     * @param mimeType Download mimeType.
      */
     public synchronized void setMimeType(String mimeType) {
         this.mimeType_ = mimeType;
@@ -253,7 +253,7 @@ public class AceWebDownloadItemObject {
     public synchronized void setSuggestedFileName(String suggestedFilename) {
         this.suggestedFilename_ = suggestedFilename;
     }
-    
+
     /**
      * Get download suggested file name.
      *
@@ -271,7 +271,7 @@ public class AceWebDownloadItemObject {
     public synchronized void setRealName(String realName) {
         this.realName_ = realName;
     }
-    
+
     /**
      * Get download real file name.
      *
@@ -289,7 +289,7 @@ public class AceWebDownloadItemObject {
     public synchronized void setRealPath(String realPath) {
         this.realPath_ = realPath;
     }
-    
+
     /**
      * Get download real file path.
      *
