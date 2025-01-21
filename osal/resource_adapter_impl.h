@@ -91,6 +91,7 @@ private:
     mutable std::shared_mutex resourceMutex_;
     std::shared_ptr<Global::Resource::ResConfig> resConfig_;
     ACE_DISALLOW_COPY_AND_MOVE(ResourceAdapterImpl);
+    ColorMode GetResourceColorMode() const override;
 };
 } // namespace OHOS::Ace
 #endif // FOUNDATION_ACE_ADAPTER_AOSP_OSAL_RESOURCE_ADAPTER_IMPL_H
