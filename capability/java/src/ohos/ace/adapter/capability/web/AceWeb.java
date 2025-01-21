@@ -54,16 +54,13 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
-import android.view.MotionEvent;
-import android.webkit.WebMessage;
-import android.webkit.WebMessagePort;
-import android.widget.FrameLayout;
 import android.media.MediaMetadataRetriever;
 import android.os.Handler;
 import java.util.HashMap;
 import java.util.ArrayList;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.animation.ValueAnimator;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -176,6 +173,12 @@ public class AceWeb extends AceWebBase {
 
     private static final int SHOW_VIDEO_TIME = 200;
 
+    private static final int WEBVIEW_PAGE_TOP = 0;
+
+    private static final int WEBVIEW_PAGE_HALF = 2;
+
+    private static final int WEBVIEW_DURATION = 500;
+
     private static final int WEB_DOWNLOAD_TASK_NUM = 3;
 
     private static final int WEB_DOWNLOAD_PERCENT = 100;
@@ -193,6 +196,10 @@ public class AceWeb extends AceWebBase {
     private static final int MAXIMUM_POOL_SIZE = 10;
 
     private static final int CAPACITY = 100;
+
+    private static final float WEBVIEW_ZOOMIN_VALUE = 1.2f;
+
+    private static final float WEBVIEW_ZOOMOUT_VALUE = 0.8f;
 
     private static final int WEB_NETWORK_DISCONNECTED = 22;
 
@@ -237,6 +244,8 @@ public class AceWeb extends AceWebBase {
     private final View rootView;
 
     private boolean isWebOnPage = true;
+
+    private boolean isZoomAccess = true;
 
     private boolean isIncognitoMode = false;
 
@@ -1211,6 +1220,7 @@ public class AceWeb extends AceWebBase {
             ALog.w(LOG_TAG, "zoomAccess NumberFormatException");
             return FAIL_TAG;
         }
+        isZoomAccess = access;
         webView.getSettings().setSupportZoom(access);
         return SUCCESS_TAG;
     }
@@ -2147,6 +2157,63 @@ public class AceWeb extends AceWebBase {
     }
 
     @Override
+    public String zoomIn() {
+        if (webView == null) {
+            return FAIL_TAG;
+        }
+        if (webView != null) {
+            this.webView.zoomBy(WEBVIEW_ZOOMIN_VALUE);
+            return SUCCESS_TAG;
+        }
+        return FAIL_TAG;
+    }
+
+    @Override
+    public String zoomOut() {
+        if (webView == null) {
+            return FAIL_TAG;
+        }
+        if (webView != null) {
+            this.webView.zoomBy(WEBVIEW_ZOOMOUT_VALUE);
+            return SUCCESS_TAG;
+        }
+        return FAIL_TAG;
+    }
+
+    @Override
+    public void pageUp(boolean top) {
+        if (this.webView == null) {
+            return;
+        }
+        int webViewHeight = webView.getHeight();
+        int halfScreenHeight = webViewHeight / WEBVIEW_PAGE_HALF;
+        int currentOffsetY = this.webView.getScrollY();
+        int finalY = top ? WEBVIEW_PAGE_TOP : Math.max(0, currentOffsetY - halfScreenHeight);
+        ValueAnimator animator = ValueAnimator.ofInt(currentOffsetY, finalY);
+        animator.setDuration(WEBVIEW_DURATION);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                int value = (int) animation.getAnimatedValue();
+                webView.scrollTo(0, value);
+            }
+        });
+        animator.start();
+    }
+
+    @Override
+    public String getOriginalUrl() {
+        if (this.webView == null) {
+            return "";
+        }
+        return this.webView.getOriginalUrl();
+    }
+
+    public boolean getZoomAccess() {
+        return isZoomAccess;
+    }
+
+    @Override
     public String clearHistory(Map<String, String> params) {
         if (webView != null) {
             this.webView.clearHistory();
@@ -2165,5 +2232,47 @@ public class AceWeb extends AceWebBase {
     public String getUserAgentString() {
         final WebSettings webSettings = webView.getSettings();
         return webSettings.getUserAgentString();
+    }
+
+    /**
+     * setWebDebuggingAccess.
+     *
+     * @param params is webDebuggingAccess boolean.
+     */
+    public void setWebDebuggingAccess(boolean webDebuggingAccess) {
+        WebView.setWebContentsDebuggingEnabled(webDebuggingAccess);
+    }
+
+    @Override
+    public String pageDown(boolean bottom) {
+        if (this.webView != null) {
+            int webViewHeight = webView.getHeight();
+            int ContentHeight = (int) (webView.getContentHeight() * webView.getScale() - webViewHeight);
+            int halfScreenHeight = webViewHeight / WEBVIEW_PAGE_HALF;
+            int currentOffsetY = webView.getScrollY();
+            int currentOffsetX = webView.getScrollX();
+            int finalY = bottom ? ContentHeight : Math.min(ContentHeight, currentOffsetY + halfScreenHeight);
+            ValueAnimator animator = ValueAnimator.ofInt(currentOffsetY, finalY);
+            animator.setDuration(WEBVIEW_DURATION);
+            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    int value = (int) animation.getAnimatedValue();
+                    webView.scrollTo(currentOffsetX, value);
+                }
+            });
+            animator.start();
+            return SUCCESS_TAG;
+        }
+        return FAIL_TAG;
+    }
+
+    @Override
+    public String postUrl(String url, byte[] postData) {
+        if (webView != null) {
+            this.webView.postUrl(url, postData);
+            return SUCCESS_TAG;
+        }
+        return FAIL_TAG;
     }
 }
