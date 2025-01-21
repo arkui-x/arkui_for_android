@@ -54,14 +54,18 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.media.MediaMetadataRetriever;
+import android.os.Handler;
+import java.util.HashMap;
+import java.util.ArrayList;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.animation.ValueAnimator;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -76,6 +80,17 @@ import ohos.ace.adapter.capability.web.AceWebConsoleMessageObject;
 import ohos.ace.adapter.capability.web.AceWebErrorReceiveObject;
 import ohos.ace.adapter.capability.web.AceWebHttpErrorReceiveObject;
 import ohos.ace.adapter.capability.web.AceWebOverrideUrlObject;
+import ohos.ace.adapter.capability.web.AceWebRefreshAccessedHistoryObject;
+import ohos.ace.adapter.capability.web.AceWebFullScreenEnterObject;
+import ohos.ace.adapter.capability.web.AceWebFullScreenExitObject;
+import java.util.Map;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
+import java.net.URL;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import ohos.ace.adapter.capability.web.AceWebScrollObject;
 
 /**
@@ -156,6 +171,8 @@ public class AceWeb extends AceWebBase {
 
     private static final int NO_ERROR = 0;
 
+    private static final int SHOW_VIDEO_TIME = 200;
+
     private static final int WEBVIEW_PAGE_TOP = 0;
 
     private static final int WEBVIEW_PAGE_HALF = 2;
@@ -173,6 +190,12 @@ public class AceWeb extends AceWebBase {
     private static final int CAN_NOT_POST_MESSAGE = 17100010;
 
     private static final int CAN_NOT_REGISTER_MESSAGE_EVENT = 17100006;
+
+    private static final int CORE_POOL_SIZE = 5;
+
+    private static final int MAXIMUM_POOL_SIZE = 10;
+
+    private static final int CAPACITY = 100;
 
     private static final float WEBVIEW_ZOOMIN_VALUE = 1.2f;
 
@@ -231,6 +254,11 @@ public class AceWeb extends AceWebBase {
     private ExecutorService downloadExecutor_;
 
     private List<WebMessagePort> webMessagePorts = new ArrayList<WebMessagePort>();
+    private int videoWidth = 0;
+    private int videoHeight = 0;
+    private boolean isFullScreenExit = false;
+    private View mCustomView;
+    private WebChromeClient.CustomViewCallback mCustomViewCallback;
 
     private WebviewBroadcastReceive webviewBroadcastReceive_;
 
@@ -395,6 +423,51 @@ public class AceWeb extends AceWebBase {
         });
     }
 
+    private boolean isVideoUrl(String urlStr) {
+        try {
+            URL url = new URL(urlStr);
+            if (urlStr == null || urlStr.isEmpty()) {
+                ALog.w(LOG_TAG, "URL string is null or empty");
+                return false;
+            }
+            URLConnection uRLConnection = url.openConnection();
+            if (uRLConnection instanceof HttpURLConnection) {
+                HttpURLConnection connection = (HttpURLConnection) uRLConnection;
+                connection.setRequestMethod("HEAD");
+                connection.connect();
+                int responseCode = connection.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    String contentType = connection.getContentType();
+                    if (contentType != null && contentType.startsWith("video")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            ALog.e(LOG_TAG, "isVideoUrl is not right");
+        }
+        return false;
+    }
+
+    private void getSize() {
+        if (videoWidth == 0 || videoHeight == 0) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (videoWidth == 0 || videoHeight == 0) {
+                        getSize();
+                    } else {
+                        showSend();
+                    }
+                }
+            }, SHOW_VIDEO_TIME);
+        } else {
+            showSend();
+        }
+    }
+
     /**
      * This is called to add callback interface for web.
      *
@@ -418,6 +491,46 @@ public class AceWeb extends AceWebBase {
             @Override
             public void onPageFinished(WebView view, String url) {
                 AceWeb.this.onPageLoaded(url);
+                if (url != null && (url.startsWith("http") || url.startsWith("https"))) {
+                    ThreadPoolExecutor executorService = new ThreadPoolExecutor(
+                            CORE_POOL_SIZE,
+                            MAXIMUM_POOL_SIZE,
+                            0L, TimeUnit.MILLISECONDS,
+                            new LinkedBlockingQueue<Runnable>(CAPACITY),
+                            new ThreadPoolExecutor.CallerRunsPolicy()
+                    );
+                    executorService.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!isVideoUrl(url)) {
+                                return;
+                            }
+                            MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+                            mediaMetadataRetriever.setDataSource(url, new HashMap());
+                            try {
+                                videoWidth = Integer.parseInt(mediaMetadataRetriever.
+                                extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
+                                videoHeight = Integer.parseInt(mediaMetadataRetriever.
+                                extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
+                            } catch (Exception e) {
+                                videoWidth = 0;
+                                videoHeight = 0;
+                                ALog.e(LOG_TAG, "Exception occurred while getting video dimensions");
+                            } finally {
+                                try {
+                                    if (mediaMetadataRetriever != null) {
+                                        mediaMetadataRetriever.release();
+                                    }
+                                } catch (IllegalStateException e) {
+                                    ALog.e(LOG_TAG, "Failed to release MediaMetadataRetriever: " + e.getMessage());
+                                }
+                            }
+                        }
+                    });
+                    if (executorService.isTerminated()) {
+                        executorService.shutdown();
+                    }
+                }
             }
 
             @Override
@@ -428,7 +541,12 @@ public class AceWeb extends AceWebBase {
 
             @Override
             public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
-                AceWeb.this.fireRefreshHistory(url);
+                boolean hasNetwork = checkIsHasNetworkConnection();
+                if (!hasNetwork) {
+                    isReload = false;
+                }
+                AceWebRefreshAccessedHistoryObject object = new AceWebRefreshAccessedHistoryObject(url, isReload);
+                AceWeb.this.fireRefreshHistory(object);
             }
 
             @Override
@@ -463,6 +581,68 @@ public class AceWeb extends AceWebBase {
             @Override
             public void onReceivedTitle(WebView view, String title) {
                 AceWeb.this.firePageRecvTitle(title);
+            }
+
+            @Override
+            public void onShowCustomView(View view, WebChromeClient.CustomViewCallback customViewCallback) {
+                super.onShowCustomView(view, customViewCallback);
+                if (mCustomView != null || mCustomViewCallback != null) {
+                    mCustomViewCallback.onCustomViewHidden();
+                    return;
+                }
+                if (webView != null && webView.getParent() != null
+                && webView.getParent().getParent() instanceof ViewGroup) {
+                    // Get the layout of the video when the webView is fullscreen
+                    ViewGroup parent = (ViewGroup) webView.getParent().getParent();
+                    if (parent == null) {
+                        ALog.e(LOG_TAG, "Parent view is null");
+                        return;
+                    }
+                    parent.setVisibility(View.GONE);
+                    if (parent.getParent() instanceof ViewGroup) {
+                        ViewGroup rootLayout = (ViewGroup) parent.getParent();
+                        if (rootLayout == null) {
+                            ALog.e(LOG_TAG, "Root layout is null");
+                            return;
+                        }
+                        rootLayout.addView(view, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT));
+                    }
+                }
+                mCustomView = view;
+                mCustomViewCallback = customViewCallback;
+                getSize();
+            }
+
+            @Override
+            public void onHideCustomView() {
+                super.onHideCustomView();
+                if (mCustomView != null) {
+                    if (mCustomViewCallback != null) {
+                        mCustomViewCallback.onCustomViewHidden();
+                        mCustomViewCallback = null;
+                    }
+                    if (mCustomView != null && mCustomView.getParent() != null) {
+                        if (mCustomView.getParent() instanceof ViewGroup) {
+                            ViewGroup parent = (ViewGroup) mCustomView.getParent();
+                            parent.removeView(mCustomView);
+                        }
+                        showParentCustomView(webView);
+                        mCustomView = null;
+                    }
+                }
+                AceWebFullScreenExitObject Obj = new AceWebFullScreenExitObject();
+                AceWeb.this.fireFullScreenExit(Obj);
+            }
+
+            @Override
+            public boolean onJsBeforeUnload(WebView view, String url, String message, JsResult result) {
+                AceWebJsDialogObject aceWebJsDialogObject = new AceWebJsDialogObject(url, message, result);
+                boolean jsResult = AceWeb.this.fireJsBeforeUnload(aceWebJsDialogObject);
+                if (!jsResult) {
+                    aceWebJsDialogObject.cancel();
+                }
+                return jsResult;
             }
 
             @Override
@@ -536,6 +716,30 @@ public class AceWeb extends AceWebBase {
                 AceWeb.this.fireDownloadStart(object);
             }
         });
+    }
+
+    private boolean checkIsHasNetworkConnection() {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm == null) {
+            return false;
+        }
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+    }
+
+    private void showParentCustomView(AceWebView webView) {
+        if (webView != null && webView.getParent() != null && webView.getParent().getParent() != null) {
+            if (webView.getParent().getParent() instanceof ViewGroup) {
+                ViewGroup parentView = (ViewGroup) webView.getParent().getParent();
+                parentView.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    private void showSend() {
+        AceWebFullScreenEnterObject fullScreenEnterObject = new AceWebFullScreenEnterObject(videoWidth, videoHeight);
+        fullScreenEnterObject.setFullEnterRequestExitCallback(mCustomViewCallback);
+        AceWeb.this.fireFullScreenEnter(fullScreenEnterObject);
     }
 
     /**

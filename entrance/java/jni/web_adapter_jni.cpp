@@ -611,6 +611,95 @@ void JniWebGeolocationObject::Invoke(int index, const std::string& origin, const
     env->CallVoidMethod(obj, method, jorigin, jallow, jretain);
 }
 
+class JniWebRefreshAccessedHistoryObject final : public WebRefreshAccessedHistoryObject {
+public:
+    std::string GetUrl(void* object);
+    bool GetIsRefreshed(void* object);
+};
+
+std::string JniWebRefreshAccessedHistoryObject::GetUrl(void* object)
+{
+    return GetStringFromJNI(*(jobject *)object, "getUrl");
+}
+
+bool JniWebRefreshAccessedHistoryObject::GetIsRefreshed(void* object)
+{
+    return GetBoolFromJNI(*(jobject *)object, "getIsRefreshed");
+}
+
+class JniWebFullScreenEnterObject final : public WebFullScreenEnterObject {
+public:
+ 	JniWebFullScreenEnterObject() = default;
+    ~JniWebFullScreenEnterObject() = default;
+     int GetWidths(void* object);
+     int GetHeights(void* object);
+     int AddObject(void* object);
+     void DelObject(int index);
+     Platform::JniEnvironment::JavaGlobalRef& GetGeolocationJobject(int index);
+     void ExitFullScreen(void* object, int index);
+private:
+    int index_;
+    std::unordered_map<int, WebObject*> objectMap_;
+    std::mutex mutex_;
+};
+
+int JniWebFullScreenEnterObject::GetWidths(void* object)
+{
+    return GetIntFromJNI(*(jobject *)object, "widths");
+}
+
+int JniWebFullScreenEnterObject::GetHeights(void* object)
+{
+    return GetIntFromJNI(*(jobject *)object, "heights");
+}
+
+int JniWebFullScreenEnterObject::AddObject(void* object)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    objectMap_[++index_] = new WebObject(object);
+    return index_;
+}
+
+void JniWebFullScreenEnterObject::DelObject(int index)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto iter = objectMap_.find(index);
+    if (iter != objectMap_.end()) {
+        auto obj = iter->second;
+        delete obj;
+        objectMap_.erase(index);
+    }
+}
+
+Platform::JniEnvironment::JavaGlobalRef& JniWebFullScreenEnterObject::GetGeolocationJobject(int index)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto iter = objectMap_.find(index);
+    auto obj = iter->second;
+    return obj->Get();
+}
+
+void JniWebFullScreenEnterObject::ExitFullScreen(void* object, int index)
+{
+    auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (!env) {
+        LOGE("jni env not ready, env is null");
+        return;
+    }
+    auto obj = GetGeolocationJobject(index).get();
+    if (!obj) {
+        LOGE("obj is nullptr");
+        return;
+    }
+    CallVoidMethodFromJNI(obj, "exitFullScreen");
+}
+
+class JniWebFullScreenExitObject final : public WebFullScreenExitObject {
+public:
+ 	  JniWebFullScreenExitObject() = default;
+    ~JniWebFullScreenExitObject() = default;
+};
+
 class JniWebDownloadResponseObject final : public WebDownloadResponseObject {
 public:
     std::string GetUrl(void* object);
@@ -973,7 +1062,12 @@ bool WebAdapterJni::Register(const std::shared_ptr<JNIEnv>& env)
     OHOS::Ace::WebObjectEventManager::GetInstance().SetPermissionRequestObject(JWebPermissionRequestObject);
     auto JWebCommonDialogObject = OHOS::Ace::Referenced::MakeRefPtr<JniWebCommonDialogObject>();
     OHOS::Ace::WebObjectEventManager::GetInstance().SetCommonDialogObject(JWebCommonDialogObject);
-
+    auto JWebRefreshAccessedHistoryObject = OHOS::Ace::Referenced::MakeRefPtr<JniWebRefreshAccessedHistoryObject>();
+    OHOS::Ace::WebObjectEventManager::GetInstance().SetRefreshAccessedHistoryObject(JWebRefreshAccessedHistoryObject);
+    auto JWebFullScreenEnterObject = OHOS::Ace::Referenced::MakeRefPtr<JniWebFullScreenEnterObject>();
+    OHOS::Ace::WebObjectEventManager::GetInstance().SetFullScreenEnterObject(JWebFullScreenEnterObject);
+    auto JWebFullScreenExitObject = OHOS::Ace::Referenced::MakeRefPtr<JniWebFullScreenExitObject>();
+    OHOS::Ace::WebObjectEventManager::GetInstance().SetFullScreenExitObject(JWebFullScreenExitObject);
     static const JNINativeMethod methods[] = {
         {
             .name = "nativeOnObjectEvent",
