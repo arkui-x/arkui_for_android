@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -116,7 +116,18 @@ bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
             .name = "nativeSetLogger",
             .signature = "(Ljava/lang/Object;)V",
             .fnPtr = reinterpret_cast<void*>(&NativeSetLogger)
-        } };
+        },
+        {
+            .name = "nativeDispatchApplicationOnForeground",
+            .signature = "()V",
+            .fnPtr = reinterpret_cast<void*>(&DispatchApplicationOnForeground),
+        },
+        {
+            .name = "nativeDispatchApplicationOnBackground",
+            .signature = "()V",
+            .fnPtr = reinterpret_cast<void*>(&DispatchApplicationOnBackground),
+        },
+    };
 
     if (!env) {
         LOGE("JNI StageApplicationDelegate: null java env");
@@ -333,6 +344,16 @@ void StageApplicationDelegateJni::NativeSetLogLevel(JNIEnv* env, jobject jobj, j
     }
     std::lock_guard<std::mutex> lock(g_logInterfaceJniLock);
     OHOS::Ace::LogWrapper::SetLogLevel(static_cast<OHOS::Ace::LogLevel>(level));
+}
+
+void StageApplicationDelegateJni::DispatchApplicationOnForeground(JNIEnv* env, jclass myclass)
+{
+    AppMain::GetInstance()->NotifyApplicationForeground();
+}
+
+void StageApplicationDelegateJni::DispatchApplicationOnBackground(JNIEnv* env, jclass myclass)
+{
+    AppMain::GetInstance()->NotifyApplicationBackground();
 }
 } // namespace Platform
 } // namespace AbilityRuntime

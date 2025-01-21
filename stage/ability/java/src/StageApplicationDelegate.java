@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.List;
 import java.util.Locale;
 
@@ -121,6 +122,14 @@ public class StageApplicationDelegate {
     private static final int LOG_MIN = 0;
 
     private static final int LOG_MAX = 4;
+
+    private static final int COUNT_ONE = 1;
+
+    private static final int COUNT_ZERO = 0;
+
+    private AtomicInteger activityCount = new AtomicInteger(0);
+
+    private boolean isBackground = false;
 
     /**
      * Constructor.
@@ -225,6 +234,11 @@ public class StageApplicationDelegate {
 
             @Override
             public void onActivityStarted(Activity activity) {
+                activityCount.getAndIncrement();
+                if (activityCount.get() == COUNT_ONE && isBackground) {
+                    isBackground = false;
+                    nativeDispatchApplicationOnForeground();
+                }
             }
 
             @Override
@@ -238,6 +252,11 @@ public class StageApplicationDelegate {
 
             @Override
             public void onActivityStopped(Activity activity) {
+                activityCount.getAndDecrement();
+                if (activityCount.get() <= COUNT_ZERO && !isBackground) {
+                    isBackground = true;
+                    nativeDispatchApplicationOnBackground();
+                }
                 if (topActivity == activity) {
                     topActivity = null;
                 }
@@ -895,4 +914,8 @@ public class StageApplicationDelegate {
     private native void nativeSetLogLevel(int level);
 
     private native void nativeSetLogger(Object logger);
+
+    private native void nativeDispatchApplicationOnForeground();
+
+    private native void nativeDispatchApplicationOnBackground();
 }

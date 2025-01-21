@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,12 +17,12 @@ package ohos.ace.adapter.capability.web;
 
 import android.view.MotionEvent;
 import android.webkit.WebBackForwardList;
-import ohos.ace.adapter.ALog;
-import ohos.ace.adapter.IAceOnCallResourceMethod;
-import ohos.ace.adapter.IAceOnResourceEvent;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import ohos.ace.adapter.ALog;
+import ohos.ace.adapter.IAceOnCallResourceMethod;
+import ohos.ace.adapter.IAceOnResourceEvent;
 
 /**
  * This class handles the lifecycle of a web.
@@ -894,6 +894,14 @@ public abstract class AceWebBase {
 
     public abstract void evaluateJavascript(String script, long asyncCallbackInfoId);
 
+    /**
+     * Evaluates the given JavaScript code in the context of the current page.
+     *
+     * @param script The JavaScript code to be evaluated.
+     * @param asyncCallbackInfoId The ID of the asynchronous callback information.
+     */
+    public abstract void evaluateJavascriptExt(String script, long asyncCallbackInfoId);
+
     public abstract WebBackForwardList getBackForwardEntries();
 
     public abstract void clearCache(boolean includeDiskFiles);
@@ -924,6 +932,14 @@ public abstract class AceWebBase {
 
     public abstract int postMessageEvent(String portHandle, String webMessageData);
 
+    /**
+     * Send message to HTML5.
+     *
+     * @param portHandle Message port handle.
+     * @param webMessageData The webMessageData is a message sent to H5.
+     */
+    public abstract int postMessageEventExt(String portHandle, String webMessageData);
+
     public abstract int onWebMessagePortEvent(long id, String portHandle);
 
     /**
@@ -950,4 +966,37 @@ public abstract class AceWebBase {
      * @return result of call.
      */
     public abstract String postUrl(String url, byte[] postData);
+
+    /**
+     * Start a download task with url.
+     *
+     * @param id Wevbiew id.
+     * @param url The url of the download task.
+     */
+    public abstract void startDownload(long id, String url);
+
+    /**
+     * Change task download path.
+     *
+     * @param id Wevbiew id.
+     * @param guid The unique identifier of the download task.
+     * @param path The path of the download task.
+     */
+    public abstract void start(long id, String guid, String path);
+
+    /**
+     * Cancel download task.
+     *
+     * @param id Wevbiew id.
+     * @param guid The unique identifier of the download task.
+     */
+    public abstract void cancel(long id, String guid);
+
+    /**
+     * Monitor messages sent by H5
+     *
+     * @param id Wevbiew id.
+     * @param portHandle Message port handle.
+     */
+    public abstract int onWebMessagePortEventExt(long id, String portHandle);
 }
