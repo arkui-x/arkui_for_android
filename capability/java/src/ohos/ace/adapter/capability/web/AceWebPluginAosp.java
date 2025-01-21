@@ -120,6 +120,7 @@ public class AceWebPluginAosp extends AceWebPluginBase {
             FrameLayout.LayoutParams params = aceWeb.buildLayoutParams(physicalWidth, physicalHeight, left, top);
             aceWeb.setWebLayout(physicalWidth, physicalHeight, left, top);
             aceWeb.addWebToSurface(params);
+            addResourceStatic(id, aceWeb);
             return id;
         } catch (NumberFormatException ignored) {
             ALog.e(LOG_TAG, "NumberFormatException");
@@ -139,6 +140,16 @@ public class AceWebPluginAosp extends AceWebPluginBase {
             ALog.w(LOG_TAG, message);
         }
         ALog.w(LOG_TAG, "Creating a webview size is less than the the device screen size");
+    }
+
+    /**
+     * This is called to setWebDebuggingAccess.
+     *
+     * @param webDebuggingAccess whether open webDebuggingAccess
+     * @return void
+     */
+    public void setWebDebuggingAccess(boolean webDebuggingAccess) {
+        aceWeb.setWebDebuggingAccess(webDebuggingAccess);
     }
 
     private int toPhysicalPixels(double logicalPixels) {
@@ -162,4 +173,16 @@ public class AceWebPluginAosp extends AceWebPluginBase {
         return dataBase.getHttpAuthCredential(host, realm);
     }
 
+    /**
+     * This is called to getZoomAccess.
+     *
+     * @return zoomAccess value
+     */
+    public boolean getZoomAccess() {
+        boolean access = true;
+        if (aceWeb != null) {
+            access = aceWeb.getZoomAccess();
+        }
+        return access;
+    }
 }
