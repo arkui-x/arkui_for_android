@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,12 +17,12 @@ package ohos.ace.adapter.capability.web;
 
 import android.view.MotionEvent;
 import android.webkit.WebBackForwardList;
-import ohos.ace.adapter.ALog;
-import ohos.ace.adapter.IAceOnCallResourceMethod;
-import ohos.ace.adapter.IAceOnResourceEvent;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import ohos.ace.adapter.ALog;
+import ohos.ace.adapter.IAceOnCallResourceMethod;
+import ohos.ace.adapter.IAceOnResourceEvent;
 
 /**
  * This class handles the lifecycle of a web.
@@ -73,47 +73,41 @@ public abstract class AceWebBase {
 
     private void callMethodMapWebAtrribute() {
         IAceOnCallResourceMethod zoomAccess = (param) -> zoomAccess(param);
-        this.callMethodMap.put(WEB_FLAG + id + METHOD +
-            PARAM_EQUALS +
-            "zoomAccess" +
-            PARAM_BEGIN,
-            zoomAccess);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "zoomAccess" + PARAM_BEGIN, zoomAccess);
         IAceOnCallResourceMethod javascriptAccess = (param) -> javascriptAccess(param);
-        this.callMethodMap.put(WEB_FLAG + id + METHOD +
-            PARAM_EQUALS +
-            "javascriptAccess" +
-            PARAM_BEGIN,
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "javascriptAccess" + PARAM_BEGIN,
             javascriptAccess);
         IAceOnCallResourceMethod minFontSize = (param) -> minFontSize(param);
-        this.callMethodMap.put(WEB_FLAG + id + METHOD +
-            PARAM_EQUALS +
-            "minFontSize" +
-            PARAM_BEGIN,
-            minFontSize);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "minFontSize" + PARAM_BEGIN, minFontSize);
         IAceOnCallResourceMethod horizontalScrollBarAccess = (param) -> horizontalScrollBarAccess(param);
-        this.callMethodMap.put(WEB_FLAG + id + METHOD +
-            PARAM_EQUALS +
-            "horizontalScrollBarAccess" +
-            PARAM_BEGIN,
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "horizontalScrollBarAccess" + PARAM_BEGIN,
             horizontalScrollBarAccess);
         IAceOnCallResourceMethod verticalScrollBarAccess = (param) -> verticalScrollBarAccess(param);
-        this.callMethodMap.put(WEB_FLAG + id + METHOD +
-            PARAM_EQUALS +
-            "verticalScrollBarAccess" +
-            PARAM_BEGIN,
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "verticalScrollBarAccess" + PARAM_BEGIN,
             verticalScrollBarAccess);
         IAceOnCallResourceMethod backgroundColor = (param) -> backgroundColor(param);
-        this.callMethodMap.put(WEB_FLAG + id + METHOD +
-            PARAM_EQUALS +
-            "backgroundColor" +
-            PARAM_BEGIN,
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "backgroundColor" + PARAM_BEGIN,
             backgroundColor);
         IAceOnCallResourceMethod mediaPlayGestureAccess = (param) -> mediaPlayGestureAccess(param);
-        this.callMethodMap.put(WEB_FLAG + id + METHOD +
-            PARAM_EQUALS +
-            "mediaPlayGestureAccess" +
-            PARAM_BEGIN,
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "mediaPlayGestureAccess" + PARAM_BEGIN,
             mediaPlayGestureAccess);
+        IAceOnCallResourceMethod onlineImageAccess = (param) -> onlineImageAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "onlineImageAccess" + PARAM_BEGIN,
+            onlineImageAccess);
+        IAceOnCallResourceMethod geolocationAccess = (param) -> geolocationAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "geolocationAccess" + PARAM_BEGIN,
+            geolocationAccess);
+        IAceOnCallResourceMethod blockNetwork = (param) -> blockNetwork(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "blockNetwork" + PARAM_BEGIN, blockNetwork);
+        IAceOnCallResourceMethod mixedMode = (param) -> mixedMode(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "mixedMode" + PARAM_BEGIN, mixedMode);
+        IAceOnCallResourceMethod domStorageAccess = (param) -> domStorageAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "domStorageAccess" + PARAM_BEGIN,
+            domStorageAccess);
+        IAceOnCallResourceMethod cacheMode = (param) -> cacheMode(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "cacheMode" + PARAM_BEGIN, cacheMode);
+        IAceOnCallResourceMethod imageAccess = (param) -> imageAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "imageAccess" + PARAM_BEGIN, imageAccess);
     }
 
     private void callMethodMapPutXWardMethod() {
@@ -817,6 +811,62 @@ public abstract class AceWebBase {
 
     public abstract String zoomAccess(Map<String, String> params);
 
+    /**
+     * onlineImageAccess
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String onlineImageAccess(Map<String, String> params);
+
+    /**
+     * geolocationAccess
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String geolocationAccess(Map<String, String> params);
+
+    /**
+     * blockNetwork
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String blockNetwork(Map<String, String> params);
+
+    /**
+     * mixedMode
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String mixedMode(Map<String, String> params);
+
+    /**
+     * domStorageAccess
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String domStorageAccess(Map<String, String> params);
+
+    /**
+     * cacheMode
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String cacheMode(Map<String, String> params);
+
+    /**
+     * imageAccess
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String imageAccess(Map<String, String> params);
+
     public abstract String javascriptAccess(Map<String, String> params);
 
     public abstract String minFontSize(Map<String, String> params);
@@ -834,6 +884,14 @@ public abstract class AceWebBase {
     public abstract String getUrl();
 
     public abstract void evaluateJavascript(String script, long asyncCallbackInfoId);
+
+    /**
+     * Evaluates the given JavaScript code in the context of the current page.
+     *
+     * @param script The JavaScript code to be evaluated.
+     * @param asyncCallbackInfoId The ID of the asynchronous callback information.
+     */
+    public abstract void evaluateJavascriptExt(String script, long asyncCallbackInfoId);
 
     public abstract WebBackForwardList getBackForwardEntries();
 
@@ -865,5 +923,46 @@ public abstract class AceWebBase {
 
     public abstract int postMessageEvent(String portHandle, String webMessageData);
 
+    /**
+     * Send message to HTML5.
+     *
+     * @param portHandle Message port handle.
+     * @param webMessageData The webMessageData is a message sent to H5.
+     */
+    public abstract int postMessageEventExt(String portHandle, String webMessageData);
+
     public abstract int onWebMessagePortEvent(long id, String portHandle);
+
+    /**
+     * Start a download task with url.
+     *
+     * @param id Wevbiew id.
+     * @param url The url of the download task.
+     */
+    public abstract void startDownload(long id, String url);
+
+    /**
+     * Change task download path.
+     *
+     * @param id Wevbiew id.
+     * @param guid The unique identifier of the download task.
+     * @param path The path of the download task.
+     */
+    public abstract void start(long id, String guid, String path);
+
+    /**
+     * Cancel download task.
+     *
+     * @param id Wevbiew id.
+     * @param guid The unique identifier of the download task.
+     */
+    public abstract void cancel(long id, String guid);
+
+    /**
+     * Monitor messages sent by H5
+     *
+     * @param id Wevbiew id.
+     * @param portHandle Message port handle.
+     */
+    public abstract int onWebMessagePortEventExt(long id, String portHandle);
 }

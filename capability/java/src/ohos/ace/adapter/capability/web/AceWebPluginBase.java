@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -32,31 +32,85 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class AceWebPluginBase extends AceResourcePlugin {
     private static final String LOG_TAG = "AceWebPluginBase";
 
+    private static final int CAN_NOT_POST_MESSAGE = 17100010;
+
+    private static final int CAN_NOT_REGISTER_MESSAGE_EVENT = 17100006;
+
     private static Map<Long, AceWebBase> objectMap;
-
-    private final AtomicLong nextWebId = new AtomicLong(0L);
-
-    protected native void nativeInit();
-
-    protected native void nativeInitWebDataBase();
-
-    protected native static void onReceiveValue(String value, long asyncCallbackInfoId);
-
-    protected native static void onMessage(long webId, String portHandle, String result);
 
     private static boolean hasInit = false;
 
     protected static boolean richTextInit = false;
-    
-    private static final int CAN_NOT_POST_MESSAGE = 17100010;
 
-    private static final int CAN_NOT_REGISTER_MESSAGE_EVENT = 17100006;
+    private final AtomicLong nextWebId = new AtomicLong(0L);
 
     public AceWebPluginBase() {
         // plugin name is web, version is 1.0.
         super("web", 1.0f);
         objectMap = new HashMap<Long, AceWebBase>();
     }
+
+    protected native void nativeInit();
+
+    protected native void nativeInitWebDataBase();
+
+    /**
+     * Native init webview download item methods.
+     */
+    protected native void nativeInitWebDownloadItem();
+
+    protected native static void onReceiveValue(String value, long asyncCallbackInfoId);
+
+    /**
+     * Native method to handle the received JavaScript execution result.
+     *
+     * @param value The result value from the JavaScript execution.
+     * @param asyncCallbackInfoId The ID of the asynchronous callback information.
+     */
+    protected native static void onReceiveRunJavaScriptExtValue(String value, long asyncCallbackInfoId);
+
+    protected native static void onMessage(long webId, String portHandle, String result);
+
+    /**
+     * Callback before start a download task.
+     *
+     * @param id Webview id.
+     * @param object The object of download process data.
+     */
+    protected native static void onBeforeDownloadObject(long id, Object object);
+
+    /**
+     * Callback during the download process.
+     *
+     * @param id Webview id.
+     * @param object The object of download process data.
+     */
+    protected native static void onDownloadUpdatedObject(long id, Object object);
+
+    /**
+     * Callback when the download failed.
+     *
+     * @param id Webview id.
+     * @param object The object of download process data.
+     */
+    protected native static void onDownloadFailedObject(long id, Object object);
+
+    /**
+     * Callback when the download finished.
+     *
+     * @param id Webview id.
+     * @param object The object of download process data.
+     */
+    protected native static void onDownloadFinishObject(long id, Object object);
+
+    /**
+     * Handles the message event extension.
+     *
+     * @param webId Webview id.
+     * @param portHandle The handle of the port through which the message is received.
+     * @param result The result of the message event.
+     */
+    protected native static void onMessageEventExt(long webId, String portHandle, String result);
 
     /**
      * This is called to get a atomic id.
@@ -79,6 +133,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         if (!hasInit && !richTextInit) {
             nativeInit();
             nativeInitWebDataBase();
+            nativeInitWebDownloadItem();
             hasInit = true;
         }
         richTextInit = false;
@@ -224,6 +279,20 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
             webBase.evaluateJavascript(script, asyncCallbackInfoId);
+        }
+    }
+
+    /**
+     * Evaluates the given JavaScript code in the context of the web view identified by the specified ID.
+     *
+     * @param id webId.
+     * @param script The JavaScript code to be evaluated.
+     * @param asyncCallbackInfoId The identifier for the asynchronous callback information.
+     */
+    public void evaluateJavascriptExt(long id, String script, long asyncCallbackInfoId) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.evaluateJavascriptExt(script, asyncCallbackInfoId);
         }
     }
 
@@ -380,10 +449,81 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         return CAN_NOT_POST_MESSAGE;
     }
 
+    /**
+     * Send message to HTML5.
+     *
+     * @param id Wevbiew id.
+     * @param portHandle Message port handle.
+     * @param webMessage The Message is a message sent to H5.
+     * @return The result of the message event.
+     */
+    public int postMessageEventExt(long id, String portHandle, String webMessage) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.postMessageEventExt(portHandle, webMessage);
+        }
+        return CAN_NOT_POST_MESSAGE;
+    }
+
     public int onWebMessagePortEvent(long id, String portHandle) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
             return webBase.onWebMessagePortEvent(id, portHandle);
+        }
+        return CAN_NOT_REGISTER_MESSAGE_EVENT;
+    }
+
+    /**
+     * Start a download task with url.
+     *
+     * @param id Wevbiew id.
+     * @param url The url of the download task.
+     */
+    public void startDownload(long id, String url) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.startDownload(id, url);
+        }
+    }
+
+    /**
+     * Change task download path.
+     *
+     * @param id Wevbiew id.
+     * @param guid The unique identifier of the download task.
+     * @param path The path of the download task.
+     */
+    public void start(long id, String guid, String path) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.start(id, guid, path);
+        }
+    }
+
+    /**
+     * Cancel download task.
+     *
+     * @param id Wevbiew id.
+     * @param guid The unique identifier of the download task.
+     */
+    public void cancel(long id, String guid) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.cancel(id, guid);
+        }
+    }
+
+    /**
+     * Monitor messages sent by H5
+     *
+     * @param id Wevbiew id.
+     * @param portHandle Message port handle.
+     * @return The result of the message event.
+     */
+    public int onWebMessagePortEventExt(long id, String portHandle) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.onWebMessagePortEventExt(id, portHandle);
         }
         return CAN_NOT_REGISTER_MESSAGE_EVENT;
     }

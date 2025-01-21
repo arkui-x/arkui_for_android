@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,29 +16,37 @@
 package ohos.ace.adapter.capability.web;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
+import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.net.Uri;
+import android.os.Environment;
 import android.view.Display;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
 import android.webkit.GeolocationPermissions;
 import android.webkit.HttpAuthHandler;
-import android.webkit.JsResult;
 import android.webkit.JsPromptResult;
+import android.webkit.JsResult;
 import android.webkit.PermissionRequest;
+import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
+import android.webkit.WebMessage;
+import android.webkit.WebMessagePort;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -53,17 +61,27 @@ import android.widget.FrameLayout;
 import android.media.MediaMetadataRetriever;
 import android.os.Handler;
 import java.util.HashMap;
-import java.util.List;
 import java.util.ArrayList;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.IAceOnCallResourceMethod;
 import ohos.ace.adapter.IAceOnResourceEvent;
+import ohos.ace.adapter.capability.web.AceWebConsoleMessageObject;
 import ohos.ace.adapter.capability.web.AceWebErrorReceiveObject;
 import ohos.ace.adapter.capability.web.AceWebHttpErrorReceiveObject;
-import ohos.ace.adapter.capability.web.AceWebScrollObject;
-import ohos.ace.adapter.capability.web.AceWebConsoleMessageObject;
 import ohos.ace.adapter.capability.web.AceWebOverrideUrlObject;
 import ohos.ace.adapter.capability.web.AceWebRefreshAccessedHistoryObject;
 import ohos.ace.adapter.capability.web.AceWebFullScreenEnterObject;
@@ -76,6 +94,7 @@ import java.net.URL;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import ohos.ace.adapter.capability.web.AceWebScrollObject;
 
 /**
  * This class handles the lifecycle of a AceWebview.
@@ -124,6 +143,13 @@ public class AceWeb extends AceWebBase {
     private static final String NTC_ZOOM_FACTOR = "zoom_factor";
 
     private static final String NTC_ZOOM_ACCESS = "zoomAccess";
+    private static final String NTC_ONLINE_IMAGE_ACCESS = "onlineImageAccess";
+    private static final String NTC_GEOLOCATION_ACCESS = "geolocationAccess";
+    private static final String NTC_BLOCK_NETWORK = "blockNetwork";
+    private static final String NTC_MIXED_MODE = "mixedMode";
+    private static final String NTC_DOM_STORAGE_ACCESS = "domStorageAccess";
+    private static final String NTC_CACHE_MODE = "cacheMode";
+    private static final String NTC_IMAGE_ACCESS = "imageAccess";
     private static final String NTC_JAVASCRIPT_ACCESS = "javascriptAccess";
     private static final String NTC_MIN_FONT_SIZE = "minFontSize";
     private static final String NTC_HORIZONTAL_SCROLLBAR_ACCESS = "horizontalScrollBarAccess";
@@ -136,14 +162,59 @@ public class AceWeb extends AceWebBase {
     private static final String WEB_WEBVIEW_DB = "webview.db";
     private static final String WEB_WEBVIEW_CACHE = "webviewCache.db";
 
+    private static final String WEB_DOWNLOAD_CONCAT_DIR = "/Temp/";
+
+    private static final String WEB_DOWNLOAD_START_EVENT = "webDownloadStartEvent";
+
+    private static final String WEB_DOWNLOAD_UPDATE_EVENT = "webDownloadUpdateEvent";
+
+    private static final String WEB_DOWNLOAD_FAILED_EVENT = "webDownloadFailedEvent";
+
+    private static final String WEB_DOWNLOAD_COMPLETE_EVENT = "webDownloadCompleteEvent";
+
     private static final int NO_ERROR = 0;
+
     private static final int SHOW_VIDEO_TIME = 200;
+
+    private static final int WEB_DOWNLOAD_TASK_NUM = 3;
+
+    private static final int WEB_DOWNLOAD_PERCENT = 100;
+
+    private static final int WEB_DOWNLOAD_TIMER_DELAY = 500;
+
+    private static final long WEB_DOWNLOAD_SPEED_RATE = 2L;
+
     private static final int CAN_NOT_POST_MESSAGE = 17100010;
 
     private static final int CAN_NOT_REGISTER_MESSAGE_EVENT = 17100006;
+
     private static final int CORE_POOL_SIZE = 5;
+
     private static final int MAXIMUM_POOL_SIZE = 10;
+
     private static final int CAPACITY = 100;
+
+    private static final int WEB_NETWORK_DISCONNECTED = 22;
+
+    private static final int WEB_DOWNLOAD_USER_CANCELED = 40;
+
+    private static final int WEB_DOWNLOAD_RUNNING = 0;
+
+    private static final int WEB_DOWNLOAD_COMPLETED = 1;
+
+    private static final int WEB_DOWNLOAD_CANCEL = 2;
+
+    private static final int WEB_DOWNLOAD_INTERRUPTED = 3;
+
+    private static final int WEB_DOWNLOAD_DEPANDING = 4;
+
+    private static final Object WEB_LOCK = new Object();
+
+    private static final int MIXED_MODE_DEFAULT_VALUE = 0;
+
+    private static final int CACHE_MODE_OH_DEFAULT_VALUE = 0;
+
+    private static final int CACHE_MODE_DEFAULT_VALUE = -1;
 
     private static String currentPageUrl;
 
@@ -171,12 +242,23 @@ public class AceWeb extends AceWebBase {
 
     private MotionEvent motionEvent;
 
+    private ExecutorService downloadExecutor_;
+
     private List<WebMessagePort> webMessagePorts = new ArrayList<WebMessagePort>();
     private int videoWidth = 0;
     private int videoHeight = 0;
     private boolean isFullScreenExit = false;
     private View mCustomView;
     private WebChromeClient.CustomViewCallback mCustomViewCallback;
+
+    private WebviewBroadcastReceive webviewBroadcastReceive_;
+
+    private Timer webDownloadUpdateTimer_ = null;
+
+    private HashMap<Long, String> webDownloadItemIdMap_ = new HashMap<Long, String>();
+
+    private HashMap<String, AceWebDownloadItemObject> webDownloadItemMap_ =
+        new HashMap<String, AceWebDownloadItemObject>();
 
     public class AceWebView extends WebView {
         private static final String LOG_TAG = "AceWebView";
@@ -199,6 +281,8 @@ public class AceWeb extends AceWebBase {
         this.context = context;
         this.rootView = view;
         webView = new AceWebView(context);
+        downloadExecutor_ = Executors.newFixedThreadPool(WEB_DOWNLOAD_TASK_NUM);
+        registerWebviewReceiver(context);
     }
 
     @Override
@@ -718,6 +802,10 @@ public class AceWeb extends AceWebBase {
         webSettings.setLoadsImagesAutomatically(true);
         webSettings.setDefaultTextEncodingName("utf-8");
         webSettings.setDomStorageEnabled(true);
+        webSettings.setBlockNetworkLoads(false);
+        webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        webSettings.setBlockNetworkImage(true);
+        webSettings.setGeolocationEnabled(true);
         webSettings.setAllowContentAccess(false);
 
         webSettings.setAllowFileAccessFromFileURLs(true);
@@ -1127,6 +1215,123 @@ public class AceWeb extends AceWebBase {
         return SUCCESS_TAG;
     }
 
+    private String getErrorInfo(String params) {
+        ALog.w(LOG_TAG, params + " NumberFormatException");
+        return FAIL_TAG;
+    }
+
+    @Override
+    public String onlineImageAccess(Map<String, String> params) {
+        if (!params.containsKey(NTC_ONLINE_IMAGE_ACCESS) || webView == null) {
+            return FAIL_TAG;
+        }
+        boolean access = true;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_ONLINE_IMAGE_ACCESS));
+            access = accessNum != 0;
+        } catch (NumberFormatException ignored) {
+            return getErrorInfo("onlineImageAccess");
+        }
+        webView.getSettings().setBlockNetworkImage(access);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String geolocationAccess(Map<String, String> params) {
+        if (!params.containsKey(NTC_GEOLOCATION_ACCESS) || webView == null) {
+            return FAIL_TAG;
+        }
+        boolean access = true;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_GEOLOCATION_ACCESS));
+            access = accessNum != 0;
+        } catch (NumberFormatException ignored) {
+            return getErrorInfo("geolocationAccess");
+        }
+        webView.getSettings().setGeolocationEnabled(access);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String blockNetwork(Map<String, String> params) {
+        if (!params.containsKey(NTC_BLOCK_NETWORK) || webView == null) {
+            return FAIL_TAG;
+        }
+        boolean access = true;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_BLOCK_NETWORK));
+            access = accessNum != 0;
+        } catch (NumberFormatException ignored) {
+            return getErrorInfo("blockNetwork");
+        }
+        webView.getSettings().setBlockNetworkLoads(access);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String mixedMode(Map<String, String> params) {
+        if (!params.containsKey(NTC_MIXED_MODE) || webView == null) {
+            return FAIL_TAG;
+        }
+        int access = MIXED_MODE_DEFAULT_VALUE;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_MIXED_MODE));
+            access = accessNum;
+        } catch (NumberFormatException ignored) {
+            return getErrorInfo("mixedMode");
+        }
+        webView.getSettings().setMixedContentMode(access);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String domStorageAccess(Map<String, String> params) {
+        if (!params.containsKey(NTC_DOM_STORAGE_ACCESS) || webView == null) {
+            return FAIL_TAG;
+        }
+        boolean access = true;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_DOM_STORAGE_ACCESS));
+            access = accessNum != 0;
+        } catch (NumberFormatException ignored) {
+            return getErrorInfo("domStorageAccess");
+        }
+        webView.getSettings().setDomStorageEnabled(access);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String cacheMode(Map<String, String> params) {
+        if (!params.containsKey(NTC_CACHE_MODE) || webView == null) {
+            return FAIL_TAG;
+        }
+        int access = CACHE_MODE_DEFAULT_VALUE;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_CACHE_MODE));
+            access = accessNum == CACHE_MODE_OH_DEFAULT_VALUE ? CACHE_MODE_DEFAULT_VALUE : accessNum;
+        } catch (NumberFormatException ignored) {
+            return getErrorInfo("cacheMode");
+        }
+        webView.getSettings().setCacheMode(access);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String imageAccess(Map<String, String> params) {
+        if (!params.containsKey(NTC_IMAGE_ACCESS) || webView == null) {
+            return FAIL_TAG;
+        }
+        boolean access = true;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_IMAGE_ACCESS));
+            access = accessNum != 0;
+        } catch (NumberFormatException ignored) {
+            return getErrorInfo("imageAccess");
+        }
+        webView.getSettings().setLoadsImagesAutomatically(access);
+        return SUCCESS_TAG;
+    }
+
     @Override
     public String javascriptAccess(Map<String, String> params) {
         if (!params.containsKey(NTC_JAVASCRIPT_ACCESS) || webView == null) {
@@ -1240,6 +1445,22 @@ public class AceWeb extends AceWebBase {
                 ALog.w(LOG_TAG, "evaluateJavascript onReceiveValue:" + value);
                 // native c++
                 AceWebPluginBase.onReceiveValue(value, asyncCallbackInfoId);
+            }
+        });
+    }
+
+    @Override
+    public void evaluateJavascriptExt(String script, long asyncCallbackInfoId) {
+        if (this.webView == null) {
+            return;
+        }
+        this.webView.evaluateJavascript(script, new ValueCallback<String>() {
+            @Override
+            public void onReceiveValue(String value) {
+                if (value.equals("null")) {
+                    value = "This type not support, only string is supported";
+                }
+                AceWebPluginBase.onReceiveRunJavaScriptExtValue(value, asyncCallbackInfoId);
             }
         });
     }
@@ -1359,6 +1580,32 @@ public class AceWeb extends AceWebBase {
         return NO_ERROR;
     }
 
+    /**
+     * Send message to HTML5.
+     *
+     * @param portHandle Message port handle.
+     * @param webMessageData The webMessageData is a message sent to H5.
+     */
+    @Override
+    public int postMessageEventExt(String portHandle, String webMessageData) {
+        if (webMessagePorts.isEmpty() || portHandle == null) {
+            return CAN_NOT_POST_MESSAGE;
+        }
+        WebMessagePort port = getWebMessagePort(portHandle);
+        if (port == null) {
+            return CAN_NOT_POST_MESSAGE;
+        }
+        ALog.e(LOG_TAG, "postMessageEventExt webMessageData:" + webMessageData);
+        WebMessage webMessage = new WebMessage(webMessageData);
+        try {
+            port.postMessage(webMessage);
+        } catch (IllegalStateException e) {
+            ALog.e(LOG_TAG, "postMessageEventExt has already disenabled");
+            return CAN_NOT_POST_MESSAGE;
+        }
+        return NO_ERROR;
+    }
+
     @Override
     public int onWebMessagePortEvent(long id, String portHandle) {
         if (webMessagePorts.isEmpty() || portHandle == null) {
@@ -1381,6 +1628,462 @@ public class AceWeb extends AceWebBase {
             });
         } catch (IllegalStateException e) {
             ALog.e(LOG_TAG, "onWebMessagePortEvent has already disenabled");
+            return CAN_NOT_REGISTER_MESSAGE_EVENT;
+        }
+        return NO_ERROR;
+    }
+
+    /**
+     * Start a download task with url.
+     *
+     * @param id Wevbiew id.
+     * @param url The url of the download task.
+     */
+    @Override
+    public void startDownload(long id, String url) {
+        String guid = AceWebDownloadHelperObject.createDownloadGuid();
+        String suggestedName = URLUtil.guessFileName(url, null, null);
+        AceWebDownloadItemObject object = new AceWebDownloadItemObject(id, guid, suggestedName,
+            WEB_DOWNLOAD_DEPANDING, url);
+        if (object == null) {
+            ALog.e(LOG_TAG, "can't create webdownload data");
+            return;
+        }
+        synchronized (WEB_LOCK) {
+            webDownloadItemMap_.put(guid, object);
+        }
+        try {
+            downloadExecutor_.execute(new WebDownloadHeadRunnable(guid));
+        } catch (RejectedExecutionException e) {
+            ALog.e(LOG_TAG, "startDownload failed:" + e);
+            sendWebviewDownloadFailedBroadcast(guid, 0);
+        }
+    }
+
+    /**
+     * Change task download path.
+     *
+     * @param id Wevbiew id.
+     * @param guid The unique identifier of the download task.
+     * @param path The path of the download task.
+     */
+    @Override
+    public void start(long id, String guid, String path) {
+        AceWebDownloadItemObject object;
+        synchronized (WEB_LOCK) {
+            object = webDownloadItemMap_.get(guid);
+            if (object == null) {
+                ALog.e(LOG_TAG, "can't find webdownload data");
+                return;
+            }
+            setDownloadPath(path, object);
+            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(object.getUrl()));
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            request.setAllowedOverMetered(false);
+            request.setVisibleInDownloadsUi(true);
+            request.setAllowedOverMetered(true);
+            request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI |
+                DownloadManager.Request.NETWORK_MOBILE);
+            File downloadFile = new File(object.getRealPath(), object.getRealName());
+            Uri downloadUri = Uri.fromFile(downloadFile);
+            request.setDestinationUri(downloadUri);
+            Object downloadService = context.getSystemService(Context.DOWNLOAD_SERVICE);
+            if (downloadService != null && downloadService instanceof DownloadManager) {
+                DownloadManager downloadManager = (DownloadManager) downloadService;
+                if (downloadManager != null) {
+                    long downloadId = downloadManager.enqueue(request);
+                    object.setDownloadId(downloadId);
+                    webDownloadItemIdMap_.put(downloadId, guid);
+                    startDownloadUpdateTimer();
+                    return;
+                }
+            }
+            sendWebviewDownloadFailedBroadcast(object.getGuid(), 0);
+        }
+    }
+
+    /**
+     * Cancel download task.
+     *
+     * @param id Wevbiew id.
+     * @param guid The unique identifier of the download task.
+     */
+    @Override
+    public void cancel(long id, String guid) {
+        synchronized (WEB_LOCK) {
+            AceWebDownloadItemObject object = webDownloadItemMap_.get(guid);
+            if (object == null) {
+                ALog.e(LOG_TAG, "download failed, start aceWebDownloadItemObject is null");
+                return;
+            }
+            DownloadManager downloadManager = null;
+            Object downloadService = context.getSystemService(Context.DOWNLOAD_SERVICE);
+            if (downloadService != null && downloadService instanceof DownloadManager) {
+                downloadManager = (DownloadManager) downloadService;
+            }
+            if (downloadManager != null) {
+                downloadManager.remove(object.getDownloadId());
+            }
+            updateDownloadDataWithState(object, WEB_DOWNLOAD_CANCEL, WEB_DOWNLOAD_USER_CANCELED);
+            AceWebPluginBase.onDownloadFailedObject(object.getWebId(), object);
+            clearAllDownloadDataByGuid(guid, object.getDownloadId(), object.getFullPath());
+        }
+    }
+
+    /**
+     * Create runnable to get download head data.
+     */
+    class WebDownloadHeadRunnable implements Runnable {
+        private final String guid_;
+
+        public WebDownloadHeadRunnable(String guid) {
+            this.guid_ = guid;
+        }
+
+        /**
+         * Execute runnable to get download head data.
+         */
+        @Override
+        public void run() {
+            AceWebDownloadItemObject object;
+            synchronized (WEB_LOCK) {
+                object = webDownloadItemMap_.get(this.guid_);
+                if (object == null) {
+                    clearAllDownloadDataByGuid(this.guid_, -1, object.getFullPath());
+                    ALog.e(LOG_TAG, "can't find webdownload data");
+                    return;
+                }
+            }
+            HttpURLConnection connection = null;
+            try {
+                Object httpConnection = new URL(object.getUrl()).openConnection();
+                if (httpConnection != null && httpConnection instanceof HttpURLConnection) {
+                    connection = (HttpURLConnection) httpConnection;
+                }
+                if (connection == null) {
+                    sendWebviewDownloadBroadcastByKey(WEB_DOWNLOAD_START_EVENT, this.guid_);
+                    return;
+                }
+                connection.setRequestMethod("HEAD");
+                object.setMethod("GET");
+                int responseCode = connection.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    long fileSize = connection.getContentLength();
+                    String mimeType = connection.getContentType();
+                    object.setTotalBytes(fileSize == -1 ? 0 : fileSize);
+                    object.setMimeType(mimeType == null ? "" : mimeType);
+                }
+                connection.disconnect();
+                sendWebviewDownloadBroadcastByKey(WEB_DOWNLOAD_START_EVENT, this.guid_);
+            } catch (ProtocolException e) {
+                sendWebviewDownloadFailedBroadcast(object.getGuid(), 0);
+                ALog.e(LOG_TAG, "connect failed," + e);
+            } catch (IOException e) {
+                sendWebviewDownloadFailedBroadcast(object.getGuid(), WEB_NETWORK_DISCONNECTED);
+                ALog.e(LOG_TAG, "connect failed," + e);
+            }
+        }
+    }
+
+    private int queryDownloadState(AceWebDownloadItemObject object) {
+        DownloadManager downloadManager = null;
+        Object downloadService = context.getSystemService(Context.DOWNLOAD_SERVICE);
+        if (downloadService != null && downloadService instanceof DownloadManager) {
+            downloadManager = (DownloadManager) downloadService;
+        }
+        DownloadManager.Query query = new DownloadManager.Query();
+        if (downloadManager == null || query == null || object == null) {
+            ALog.e(LOG_TAG, "queryDownloadState failed");
+            return DownloadManager.STATUS_PENDING;
+        }
+        query.setFilterById(object.getDownloadId());
+        Cursor cursor = downloadManager.query(query);
+        if (cursor.moveToFirst()) {
+            try {
+                object.setState(cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS)));
+                int errCode = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON));
+                object.setLastErrorCode(AceWebDownloadHelperObject.convertsHttpErrorCode(errCode));
+                object.setReceivedBytes(cursor.getLong(cursor.getColumnIndex(
+                    DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)));
+                long totalBytes = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
+                if (totalBytes != -1) {
+                    object.setTotalBytes(totalBytes);
+                }
+            } catch (IllegalArgumentException e) {
+                ALog.e(LOG_TAG, "query failed," + e);
+            }
+        }
+        return object.getState();
+    }
+
+    private void startDownloadUpdateTimer() {
+        synchronized (WEB_LOCK) {
+            if (webDownloadUpdateTimer_ != null) {
+                return;
+            }
+            webDownloadUpdateTimer_ = new Timer();
+        }
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                synchronized (WEB_LOCK) {
+                    if (webDownloadItemMap_.isEmpty()) {
+                        stopDownloadUpdateTimer();
+                    }
+                    for (Map.Entry<String, AceWebDownloadItemObject> objectPairs : webDownloadItemMap_.entrySet()) {
+                        AceWebDownloadItemObject object = objectPairs.getValue();
+                        if (object == null || object.getDownloadId() == -1) {
+                            continue;
+                        }
+                        int state = queryDownloadState(object);
+                        if (state == DownloadManager.STATUS_RUNNING) {
+                            updateDownloadDataWithState(object, WEB_DOWNLOAD_RUNNING, 0);
+                            sendWebviewDownloadBroadcastByKey(WEB_DOWNLOAD_UPDATE_EVENT, object.getGuid());
+                        } else if (state == DownloadManager.STATUS_PAUSED) {
+                            if (object.getLastErrorCode() != 0) {
+                                DownloadManager downloadManager = null;
+                                Object downloadService = context.getSystemService(Context.DOWNLOAD_SERVICE);
+                                if (downloadService != null && downloadService instanceof DownloadManager) {
+                                    downloadManager = (DownloadManager) downloadService;
+                                }
+                                if (downloadManager != null) {
+                                    downloadManager.remove(object.getDownloadId());
+                                }
+                                updateDownloadDataWithState(object, WEB_DOWNLOAD_INTERRUPTED,
+                                    object.getLastErrorCode());
+                                sendWebviewDownloadFailedBroadcast(object.getGuid(), object.getLastErrorCode());
+                            }
+                        } else if (state == DownloadManager.STATUS_FAILED) {
+                            updateDownloadDataWithState(object, WEB_DOWNLOAD_INTERRUPTED, object.getLastErrorCode());
+                            sendWebviewDownloadFailedBroadcast(object.getGuid(), 0);
+                        }
+                    }
+                }
+            }
+        };
+        if (webDownloadUpdateTimer_ != null && timerTask != null) {
+            webDownloadUpdateTimer_.schedule(timerTask, 0, WEB_DOWNLOAD_TIMER_DELAY);
+        }
+    }
+
+    private void stopDownloadUpdateTimer() {
+        synchronized (WEB_LOCK) {
+            if (webDownloadUpdateTimer_ != null && webDownloadItemMap_.isEmpty()) {
+                webDownloadUpdateTimer_.cancel();
+                webDownloadUpdateTimer_ = null;
+            }
+        }
+    }
+
+    private void updateDownloadDataWithState(AceWebDownloadItemObject object, int state, int errCode) {
+        if (object != null) {
+            object.setState(state);
+            object.setLastErrorCode(errCode);
+            if (state == WEB_DOWNLOAD_CANCEL || state == WEB_DOWNLOAD_INTERRUPTED) {
+                object.setPercentComplete(0);
+                object.setReceivedBytes(0);
+                object.setFullPath("");
+                return;
+            }
+            long lastBytes = object.getLastBytes();
+            long receivedBytes = object.getReceivedBytes();
+            long totalBytes = object.getTotalBytes();
+            object.setCurrentSpeed((receivedBytes - lastBytes) * WEB_DOWNLOAD_SPEED_RATE > totalBytes ?
+                totalBytes : (receivedBytes - lastBytes) * WEB_DOWNLOAD_SPEED_RATE);
+            object.setLastBytes(receivedBytes);
+            if (totalBytes > 0) {
+                object.setPercentComplete(Math.round(WEB_DOWNLOAD_PERCENT * receivedBytes / totalBytes));
+            }
+        }
+    }
+
+    private void onWebviewDownloadFailedInMain(String guid, int err) {
+        synchronized (WEB_LOCK) {
+            AceWebDownloadItemObject object = webDownloadItemMap_.get(guid);
+            if (object != null) {
+                updateDownloadDataWithState(object, WEB_DOWNLOAD_INTERRUPTED, err);
+                AceWebPluginBase.onDownloadFailedObject(object.getWebId(), object);
+                clearAllDownloadDataByGuid(guid, -1, object.getFullPath());
+            }
+        }
+    }
+
+    private void actionWebviewDownloadStart(Intent intent) {
+        String guid = intent.getStringExtra("guid");
+        AceWebDownloadItemObject object;
+        synchronized (WEB_LOCK) {
+            object = webDownloadItemMap_.get(guid);
+            if (object != null) {
+                AceWebPluginBase.onBeforeDownloadObject(object.getWebId(), object);
+            }
+        }
+    }
+
+    private void actionWebviewDownloadUpdate(Intent intent) {
+        String guid = intent.getStringExtra("guid");
+        synchronized (WEB_LOCK) {
+            AceWebDownloadItemObject object = webDownloadItemMap_.get(guid);
+            if (object != null) {
+                AceWebPluginBase.onDownloadUpdatedObject(object.getWebId(), object);
+            }
+        }
+    }
+
+    private void actionWebviewDownloadFailed(Intent intent) {
+        String guid = intent.getStringExtra("guid");
+        int errCode = intent.getIntExtra("errCode", 0);
+        onWebviewDownloadFailedInMain(guid, errCode);
+    }
+
+    private void actionWebviewDownloadComplete(Intent intent) {
+        Long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+        synchronized (WEB_LOCK) {
+            String guid = webDownloadItemIdMap_.get(downloadId);
+            AceWebDownloadItemObject object;
+            object = webDownloadItemMap_.get(guid);
+            if (object != null) {
+                int state = queryDownloadState(object);
+                if (state == DownloadManager.STATUS_FAILED) {
+                    updateDownloadDataWithState(object, WEB_DOWNLOAD_INTERRUPTED, object.getLastErrorCode());
+                    AceWebPluginBase.onDownloadFailedObject(object.getWebId(), object);
+                } else {
+                    updateDownloadDataWithState(object, WEB_DOWNLOAD_COMPLETED, 0);
+                    AceWebPluginBase.onDownloadFinishObject(object.getWebId(), object);
+                }
+                clearAllDownloadDataByGuid(guid, object.getDownloadId(), object.getFullPath());
+            }
+        }
+    }
+
+    /**
+     * Receive broadcast.
+     */
+    class WebviewBroadcastReceive extends BroadcastReceiver {
+        /**
+         * Receive broadcast.
+         *
+         * @param context Application context.
+         * @param intent Intent object.
+         */
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String strAction = intent.getAction();
+            if (WEB_DOWNLOAD_START_EVENT.equals(strAction)) {
+                actionWebviewDownloadStart(intent);
+            } else if (WEB_DOWNLOAD_UPDATE_EVENT.equals(strAction)) {
+                actionWebviewDownloadUpdate(intent);
+            } else if (WEB_DOWNLOAD_FAILED_EVENT.equals(strAction)) {
+                actionWebviewDownloadFailed(intent);
+            } else if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(strAction)) {
+                actionWebviewDownloadComplete(intent);
+            }
+        }
+    };
+
+    private void registerWebviewReceiver(Context context) {
+        if (webviewBroadcastReceive_ == null) {
+            webviewBroadcastReceive_ = new WebviewBroadcastReceive();
+        }
+
+        IntentFilter itFilter = new IntentFilter();
+        if (itFilter == null) {
+            ALog.e(LOG_TAG, "registerWebviewReceiver itFilter is null!");
+            webviewBroadcastReceive_ = null;
+            return;
+        }
+        itFilter.addAction(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+        itFilter.addAction(WEB_DOWNLOAD_UPDATE_EVENT);
+        itFilter.addAction(WEB_DOWNLOAD_START_EVENT);
+        itFilter.addAction(WEB_DOWNLOAD_FAILED_EVENT);
+        context.registerReceiver(webviewBroadcastReceive_, itFilter);
+    }
+
+    private void sendWebviewDownloadBroadcastByKey(String eventName, String guid) {
+        Intent intent = new Intent(eventName);
+        if (intent != null) {
+            intent.putExtra("guid", guid);
+            sendWebviewDownloadBroadcast(intent);
+        }
+    }
+
+    private void sendWebviewDownloadFailedBroadcast(String guid, int err) {
+        Intent intent = new Intent(WEB_DOWNLOAD_FAILED_EVENT);
+        if (intent != null) {
+            intent.putExtra("guid", guid);
+            intent.putExtra("errCode", err);
+            sendWebviewDownloadBroadcast(intent);
+        }
+    }
+
+    private void sendWebviewDownloadBroadcast(Intent intent) {
+        if (context != null) {
+            context.sendBroadcast(intent);
+        }
+    }
+
+    private void setDownloadPath(String path, AceWebDownloadItemObject object) {
+        String fullPath = object.getFullPath();
+        if (!fullPath.equals("")) {
+            return;
+        }
+        String finalPath = "";
+        if (AceWebDownloadHelperObject.isLegalPath(path)) {
+            finalPath = AceWebDownloadHelperObject.getNonDuplicatePath(path);
+        } else {
+            String fileName = object.getSuggestedFileName();
+            File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            finalPath = AceWebDownloadHelperObject.getNonDuplicatePath(downloadsDir.getPath() +
+                WEB_DOWNLOAD_CONCAT_DIR + fileName);
+        }
+        int divideIndex = finalPath.lastIndexOf('/');
+        if (divideIndex != -1) {
+            String realPath = finalPath.substring(0, divideIndex + 1);
+            String realName = finalPath.substring(divideIndex + 1);
+            object.setRealName(realName);
+            object.setRealPath(realPath);
+        } else {
+            object.setRealPath(finalPath);
+        }
+        object.setFullPath(finalPath);
+    }
+
+    private void clearAllDownloadDataByGuid(String guid, long downloadId, String path) {
+        synchronized (WEB_LOCK) {
+            webDownloadItemMap_.remove(guid);
+            webDownloadItemIdMap_.remove(downloadId);
+            AceWebDownloadHelperObject.removeFilePathFromList(path);
+            stopDownloadUpdateTimer();
+        }
+    }
+
+    /**
+     * Monitor messages sent by H5
+     *
+     * @param id Wevbiew id.
+     * @param portHandle Message port handle.
+     */
+    @Override
+    public int onWebMessagePortEventExt(long id, String portHandle) {
+        if (webMessagePorts.isEmpty() || portHandle == null) {
+            return CAN_NOT_REGISTER_MESSAGE_EVENT;
+        }
+        WebMessagePort port = getWebMessagePort(portHandle);
+        if (port == null) {
+            return CAN_NOT_REGISTER_MESSAGE_EVENT;
+        }
+        try {
+            port.setWebMessageCallback(new WebMessagePort.WebMessageCallback() {
+                @Override
+                public void onMessage(WebMessagePort port, WebMessage message) {
+                    if (message == null) {
+                        return;
+                    }
+                    // native c++
+                    AceWebPluginBase.onMessageEventExt(id, portHandle, message.getData());
+                }
+            });
+        } catch (IllegalStateException e) {
+            ALog.e(LOG_TAG, "onWebMessagePortEventExt has already disenabled");
             return CAN_NOT_REGISTER_MESSAGE_EVENT;
         }
         return NO_ERROR;

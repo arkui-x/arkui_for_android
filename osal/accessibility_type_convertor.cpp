@@ -133,6 +133,7 @@ AndroidEventType ConvertAndroidEventType(AccessibilityEventType type)
         { AccessibilityEventType::TEXT_MOVE_UNIT, AndroidEventType::TYPE_VIEW_TEXT_TRAVERSED_AT_MOVEMENT_GRANULARITY },
         { AccessibilityEventType::SCROLL_START, AndroidEventType::TYPE_VIEW_TARGETED_BY_SCROLL },
         { AccessibilityEventType::PAGE_CLOSE, AndroidEventType::TYPE_PAGE_CLOSE },
+        { AccessibilityEventType::ANNOUNCE_FOR_ACCESSIBILITY, AndroidEventType::TYPE_ANNOUNCEMENT },
         { AccessibilityEventType::PAGE_OPEN, AndroidEventType::TYPE_PAGE_OPEN },
     };
     AndroidEventType eventType = AndroidEventType::TYPE_VIEW_INVALID;
