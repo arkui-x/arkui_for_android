@@ -189,6 +189,14 @@ void ResourceAdapterImpl::UpdateConfig(const ResourceConfiguration& config, bool
     resourceManager_->UpdateResConfig(*resConfig, themeFlag);
 }
 
+ColorMode ResourceAdapterImpl::GetResourceColorMode() const
+{
+    CHECK_NULL_RETURN(resourceManager_, ColorMode::LIGHT);
+    std::unique_ptr<Global::Resource::ResConfig> resConfig(Global::Resource::CreateResConfig());
+    resourceManager_->GetResConfig(*resConfig);
+    return resConfig->GetColorMode() == OHOS::Global::Resource::ColorMode::DARK ? ColorMode::DARK : ColorMode::LIGHT;
+}
+
 RefPtr<ThemeStyle> ResourceAdapterImpl::GetTheme(int32_t themeId)
 {
     CheckThemeId(themeId);
