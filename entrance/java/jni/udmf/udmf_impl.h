@@ -69,6 +69,8 @@ private:
     void AddSpanStringRecord(
         const RefPtr<UnifiedData>& unifiedData, std::vector<uint8_t>& data) override;
     std::vector<uint8_t> GetSpanStringRecord(const RefPtr<UnifiedData>& unifiedData) override;
+    int32_t StartAsyncDataRetrieval(napi_env env, napi_value napiValue, const std::string& key) override;
+    int32_t Cancel(const std::string& key) override;
 };
 
 class UnifiedDataImpl : public UnifiedData {

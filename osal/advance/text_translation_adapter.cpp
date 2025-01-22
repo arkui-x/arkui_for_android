@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (C) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,14 +13,10 @@
  * limitations under the License.
  */
 
-#include "adapter/ohos/entrance/picker/picker_haptic_factory.h"
-#include "adapter/ohos/entrance/picker/picker_haptic_interface.h"
+#include "core/common/ai/text_translation_adapter.h"
 
+namespace OHOS::Ace {
 
-namespace OHOS::Ace::NG {
-std::shared_ptr<IPickerAudioHaptic> PickerAudioHapticFactory::GetInstance(
-    const std::string& uri, const std::string& effectId)
-{
-    return nullptr;
-}
-} // namespace OHOS::Ace::NG
+void TextTranslationAdapter::StartAITextTranslationTask(const std::string& translateText, const std::string& rectStr) {}
+
+} // namespace OHOS::Ace

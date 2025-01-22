@@ -47,6 +47,7 @@ public:
     void SavePixelMapToFile(const std::string& dst) const override;
     RefPtr<PixelMap> GetCropPixelMap(const Rect& srcRect) override;
     bool EncodeTlv(std::vector<uint8_t>& buff) override;
+    uint32_t WritePixels(const WritePixelsOptions& opts) override;
 private:
     std::shared_ptr<Media::PixelMap> pixmap_;
 };
