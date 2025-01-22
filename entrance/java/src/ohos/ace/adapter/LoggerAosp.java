@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -71,6 +71,14 @@ public class LoggerAosp implements ILogger {
     public void e(String tag, String msg) {
         Log.e(tag, msg);
     }
+
+    /**
+     * Log wrapper for print fatal log.
+     *
+     * @param tag message tag
+     * @param msg message to print
+     */
+    public void f(String tag, String msg) {}
 
     /**
      * Log wrapper for report jank log.

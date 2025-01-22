@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,20 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package ohos.ace.adapter.capability.web;
 
-#include "base/input_manager/input_manager.h"
+/**
+ * The AceWebFullScreenExitObject class is used to handle full screen objects, manage video width and other properties
+ *
+ * @since 2024-12-30
+ */
+public class AceWebFullScreenExitObject {
+    private static final String LOG_TAG = "AceWebFullScreenExitObject";
 
-namespace OHOS::Ace {
-
-bool InputManager::GetSystemHotkeys(std::vector<HotKey>& hotkeys)
-{
-    return true;
+    public AceWebFullScreenExitObject() {}
 }
-
-std::shared_ptr<MMI::PointerEvent> InputManager::CreatePointerEvent(
-    const std::shared_ptr<const MMI::PointerEvent>& pointerEvent)
-{
-    return nullptr;
-}
-
-} // namespace OHOS::Ace

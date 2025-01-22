@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,12 +23,16 @@
 #include "stage_asset_provider.h"
 
 #include "adapter/android/entrance/java/jni/jni_environment.h"
+#include "adapter/android/entrance/java/jni/log_interface_jni.h"
 #include "base/log/log.h"
 #include "base/utils/utils.h"
 
 namespace OHOS {
 namespace AbilityRuntime {
 namespace Platform {
+namespace {
+std::mutex g_logInterfaceJniLock;
+} // namespace
 bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
     LOGI("StageApplicationDelegateJni register start.");
@@ -102,7 +106,28 @@ bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
             .name = "nativeSetLocale",
             .signature = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&SetLocale),
-        } };
+        },
+        {
+            .name = "nativeSetLogLevel",
+            .signature = "(I)V",
+            .fnPtr = reinterpret_cast<void*>(&NativeSetLogLevel)
+        },
+        {
+            .name = "nativeSetLogger",
+            .signature = "(Ljava/lang/Object;)V",
+            .fnPtr = reinterpret_cast<void*>(&NativeSetLogger)
+        },
+        {
+            .name = "nativeDispatchApplicationOnForeground",
+            .signature = "()V",
+            .fnPtr = reinterpret_cast<void*>(&DispatchApplicationOnForeground),
+        },
+        {
+            .name = "nativeDispatchApplicationOnBackground",
+            .signature = "()V",
+            .fnPtr = reinterpret_cast<void*>(&DispatchApplicationOnBackground),
+        },
+    };
 
     if (!env) {
         LOGE("JNI StageApplicationDelegate: null java env");
@@ -300,6 +325,35 @@ void StageApplicationDelegateJni::AttachStageApplicationDelegate(JNIEnv* env, jc
         return;
     }
     ApplicationContextAdapter::GetInstance()->SetStageApplicationDelegate(object);
+}
+
+void StageApplicationDelegateJni::NativeSetLogger(JNIEnv* env, jobject jobj, jobject jobjLogger)
+{
+    if (env == nullptr) {
+        LOGE("JNI JniStageApplicationDelegate: null java env");
+        return;
+    }
+    Ace::Platform::LogInterfaceJni::SetLogger(env, jobjLogger);
+}
+
+void StageApplicationDelegateJni::NativeSetLogLevel(JNIEnv* env, jobject jobj, jint level)
+{
+    if (env == nullptr) {
+        LOGE("JNI JniStageApplicationDelegate: null java env");
+        return;
+    }
+    std::lock_guard<std::mutex> lock(g_logInterfaceJniLock);
+    OHOS::Ace::LogWrapper::SetLogLevel(static_cast<OHOS::Ace::LogLevel>(level));
+}
+
+void StageApplicationDelegateJni::DispatchApplicationOnForeground(JNIEnv* env, jclass myclass)
+{
+    AppMain::GetInstance()->NotifyApplicationForeground();
+}
+
+void StageApplicationDelegateJni::DispatchApplicationOnBackground(JNIEnv* env, jclass myclass)
+{
+    AppMain::GetInstance()->NotifyApplicationBackground();
 }
 } // namespace Platform
 } // namespace AbilityRuntime

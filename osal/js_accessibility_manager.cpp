@@ -1117,8 +1117,10 @@ void JsAccessibilityManager::UpdateAccessibilityElementInfoImportant(const RefPt
             nodeInfo.AddAction(action);
         }
     }
-    bool isImportant = IsImportantForAccessibility(
-        accessibilityProperty->GetAccessibilityLevel(), accessibilityProperty->GetAccessibilityRole());
+    const std::string& componentType = accessibilityProperty->HasAccessibilityRole()
+                                           ? accessibilityProperty->GetAccessibilityRole()
+                                           : nodeInfo.GetComponentType();
+    bool isImportant = IsImportantForAccessibility(accessibilityProperty->GetAccessibilityLevel(), componentType);
     nodeInfo.SetImportantForAccessibility(isImportant);
 }
 
@@ -1512,8 +1514,24 @@ void ClearAccessibilityFocus(const RefPtr<NG::FrameNode>& root, int64_t focusNod
 {
     auto oldFocusNode = GetFramenodeByAccessibilityId(root, focusNodeId);
     CHECK_NULL_VOID(oldFocusNode);
+    bool isAccessibilityVirtualNode = oldFocusNode->IsAccessibilityVirtualNode();
+    RefPtr<NG::RenderContext> renderContext = nullptr;
+    if (isAccessibilityVirtualNode) {
+        auto parentUinode = oldFocusNode->GetVirtualNodeParent().Upgrade();
+        CHECK_NULL_VOID(parentUinode);
+        auto parentFrame = AceType::DynamicCast<NG::FrameNode>(parentUinode);
+        CHECK_NULL_VOID(parentFrame);
+        renderContext = parentFrame->GetRenderContext();
+    } else {
+        renderContext = oldFocusNode->GetRenderContext();
+    }
+    CHECK_NULL_VOID(renderContext);
     if (oldFocusNode->GetTag() != V2::WEB_CORE_TAG) {
-        oldFocusNode->GetRenderContext()->UpdateAccessibilityFocus(false);
+        if (isAccessibilityVirtualNode) {
+            renderContext->UpdateAccessibilityFocus(false, oldFocusNode->GetAccessibilityId());
+        } else {
+            renderContext->UpdateAccessibilityFocus(false);
+        }
     }
 }
 
@@ -1692,23 +1710,6 @@ void GenerateAccessibilityEventInfo(const AccessibilityEvent& accessibilityEvent
 
 void JsAccessibilityManager::UpdateVirtualNodeFocus()
 {
-    auto frameNode = lastFrameNode_.Upgrade();
-    CHECK_NULL_VOID(frameNode);
-    RefPtr<NG::RenderContext> renderContext;
-    if (frameNode->IsAccessibilityVirtualNode()) {
-        auto parentUinode = frameNode->GetVirtualNodeParent().Upgrade();
-        CHECK_NULL_VOID(parentUinode);
-        auto parentFrame = AceType::DynamicCast<NG::FrameNode>(parentUinode);
-        CHECK_NULL_VOID(parentFrame);
-        renderContext = parentFrame->GetRenderContext();
-        CHECK_NULL_VOID(renderContext);
-        renderContext->UpdateAccessibilityFocus(false);
-        auto rect = frameNode->GetTransformRectRelativeToWindow();
-        NG::RectT<int32_t> rectInt { static_cast<int32_t>(rect.Left()), static_cast<int32_t>(rect.Top()),
-            static_cast<int32_t>(rect.Width()), static_cast<int32_t>(rect.Height()) };
-        renderContext->UpdateAccessibilityFocusRect(rectInt);
-        renderContext->UpdateAccessibilityFocus(true, frameNode->GetAccessibilityId());
-    }
 }
 
 JsAccessibilityManager::~JsAccessibilityManager()
@@ -1790,7 +1791,7 @@ void AddEventInfoJsonImporved(Json& eventInfoJson, AccessibilityElementInfo& ele
     eventInfoJson["BundleName"] = elementInfo.GetBundleName();
     eventInfoJson["ComponentType"] = elementInfo.GetComponentType();
     eventInfoJson["Content"] = elementInfo.GetContent();
-    eventInfoJson["Hint"] = elementInfo.GetTextType();
+    eventInfoJson["Hint"] = elementInfo.GetHint();
     eventInfoJson["DescriptionInfo"] = elementInfo.GetDescriptionInfo();
     eventInfoJson["ComponentResourceId"] = elementInfo.GetComponentResourceId();
     eventInfoJson["AccessibilityId"] = elementInfo.GetAccessibilityId();
@@ -3204,7 +3205,7 @@ void JsAccessibilityManager::AccessibilityElementInfo2JsonStr(
     retJson["BundleName"] = info.GetBundleName();
     retJson["ComponentType"] = info.GetComponentType();
     retJson["Content"] = info.GetContent();
-    retJson["Hint"] = info.GetTextType();
+    retJson["Hint"] = info.GetHint();
     retJson["DescriptionInfo"] = info.GetDescriptionInfo();
     retJson["ComponentResourceId"] = info.GetComponentResourceId();
     retJson["AccessibilityId"] = info.GetAccessibilityId();

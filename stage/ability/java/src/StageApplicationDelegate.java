@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.List;
 import java.util.Locale;
 
@@ -56,6 +57,7 @@ import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.AppModeConfig;
 import ohos.ace.adapter.LoggerAosp;
+import ohos.ace.adapter.ILogger;
 
 import org.json.JSONObject;
 
@@ -116,6 +118,18 @@ public class StageApplicationDelegate {
     private AcePlatformCapability platformCapability = null;
 
     private static boolean isCopyNativeLibs = false;
+
+    private static final int LOG_MIN = 0;
+
+    private static final int LOG_MAX = 4;
+
+    private static final int COUNT_ONE = 1;
+
+    private static final int COUNT_ZERO = 0;
+
+    private AtomicInteger activityCount = new AtomicInteger(0);
+
+    private boolean isBackground = false;
 
     /**
      * Constructor.
@@ -220,6 +234,11 @@ public class StageApplicationDelegate {
 
             @Override
             public void onActivityStarted(Activity activity) {
+                activityCount.getAndIncrement();
+                if (activityCount.get() == COUNT_ONE && isBackground) {
+                    isBackground = false;
+                    nativeDispatchApplicationOnForeground();
+                }
             }
 
             @Override
@@ -233,6 +252,11 @@ public class StageApplicationDelegate {
 
             @Override
             public void onActivityStopped(Activity activity) {
+                activityCount.getAndDecrement();
+                if (activityCount.get() <= COUNT_ZERO && !isBackground) {
+                    isBackground = true;
+                    nativeDispatchApplicationOnBackground();
+                }
                 if (topActivity == activity) {
                     topActivity = null;
                 }
@@ -827,6 +851,38 @@ public class StageApplicationDelegate {
         }
     }
 
+    /**
+     * Set log interface.
+     *
+     * @param logger the log interface.
+     */
+    public void setLogInterface(ILogger logger) {
+        try {
+            ALog.setLogger(logger);
+            nativeSetLogger(logger);
+        } catch (UnsatisfiedLinkError e) {
+            Log.e(LOG_TAG, "logInterface: JNI is not registered.");
+        }
+    }
+
+    /**
+     * Set log level.
+     *
+     * @param logLevel the log level.
+     */
+    public void setLogLevel(int logLevel) {
+        try {
+            if (logLevel < LOG_MIN || logLevel > LOG_MAX) {
+                Log.e(LOG_TAG, "logLevel is invalid.");
+                return;
+            }
+            ALog.setLoggerLevel(logLevel);
+            nativeSetLogLevel(logLevel);
+        } catch (UnsatisfiedLinkError e) {
+            Log.e(LOG_TAG, "logInterface: JNI is not registered.");
+        }
+    }
+
     private native void nativeSetAssetManager(Object assetManager);
 
     private native void nativeSetHapPath(String hapPath);
@@ -854,4 +910,12 @@ public class StageApplicationDelegate {
     private native void nativeSetLocale(String language, String country, String script);
 
     private native void nativeAttachStageApplicationDelegate(StageApplicationDelegate object);
+
+    private native void nativeSetLogLevel(int level);
+
+    private native void nativeSetLogger(Object logger);
+
+    private native void nativeDispatchApplicationOnForeground();
+
+    private native void nativeDispatchApplicationOnBackground();
 }

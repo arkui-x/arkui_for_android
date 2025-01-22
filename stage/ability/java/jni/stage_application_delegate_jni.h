@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -43,6 +43,10 @@ public:
     static void SetLocale(JNIEnv* env, jclass myclass, jstring jlanguage, jstring jcountry, jstring jscript);
     static void AttachStageApplicationDelegate(JNIEnv* env, jclass myclass, jobject object);
     static void SetPackageName(JNIEnv* env, jclass myclass, jstring object);
+    static void NativeSetLogger(JNIEnv* env, jobject jobj, jobject jobjLogger);
+    static void NativeSetLogLevel(JNIEnv* env, jobject jobj, jint level);
+    static void DispatchApplicationOnForeground(JNIEnv* env, jclass myclass);
+    static void DispatchApplicationOnBackground(JNIEnv* env, jclass myclass);
 };
 } // namespace Platform
 } // namespace AbilityRuntime

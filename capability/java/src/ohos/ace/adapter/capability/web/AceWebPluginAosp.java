@@ -52,6 +52,8 @@ public class AceWebPluginAosp extends AceWebPluginBase {
 
     private static final String RICH_TEXT_INIT = "richTextInit";
 
+    private static final String INCOGNITO_MODE = "incognitoMode";
+
     private static final long INVALID_CREATE_ID = -1;
 
     private final AtomicLong nextMapid = new AtomicLong(0L);
@@ -103,9 +105,11 @@ public class AceWebPluginAosp extends AceWebPluginBase {
 
             // Create AceWeb
             aceWeb = new AceWeb(id, context, rootView, getEventCallback());
+            String webincognitoMode = param.get(INCOGNITO_MODE);
             richTextInit = Integer.parseInt(param.get(RICH_TEXT_INIT)) == 1 ? true : false;
             addResource(id, aceWeb);
             aceWeb.initWeb();
+            aceWeb.setIncognitoMode(String.valueOf(webincognitoMode));
             aceWeb.setPageUrl(pageUrl);
             aceWeb.loadUrl(webSrc);
             int physicalWidth = toPhysicalPixels(Double.parseDouble(param.get(WEBVIEW_WIDTH)));
@@ -116,6 +120,7 @@ public class AceWebPluginAosp extends AceWebPluginBase {
             FrameLayout.LayoutParams params = aceWeb.buildLayoutParams(physicalWidth, physicalHeight, left, top);
             aceWeb.setWebLayout(physicalWidth, physicalHeight, left, top);
             aceWeb.addWebToSurface(params);
+            addResourceStatic(id, aceWeb);
             return id;
         } catch (NumberFormatException ignored) {
             ALog.e(LOG_TAG, "NumberFormatException");
@@ -135,6 +140,16 @@ public class AceWebPluginAosp extends AceWebPluginBase {
             ALog.w(LOG_TAG, message);
         }
         ALog.w(LOG_TAG, "Creating a webview size is less than the the device screen size");
+    }
+
+    /**
+     * This is called to setWebDebuggingAccess.
+     *
+     * @param webDebuggingAccess whether open webDebuggingAccess
+     * @return void
+     */
+    public void setWebDebuggingAccess(boolean webDebuggingAccess) {
+        aceWeb.setWebDebuggingAccess(webDebuggingAccess);
     }
 
     private int toPhysicalPixels(double logicalPixels) {
@@ -158,4 +173,16 @@ public class AceWebPluginAosp extends AceWebPluginBase {
         return dataBase.getHttpAuthCredential(host, realm);
     }
 
+    /**
+     * This is called to getZoomAccess.
+     *
+     * @return zoomAccess value
+     */
+    public boolean getZoomAccess() {
+        boolean access = true;
+        if (aceWeb != null) {
+            access = aceWeb.getZoomAccess();
+        }
+        return access;
+    }
 }

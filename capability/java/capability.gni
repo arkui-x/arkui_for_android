@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+# Copyright (c) 2022-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -90,6 +90,12 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebJsDialogObject.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebJsPromptObject.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceGeolocationPermissions.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebRefreshAccessedHistoryObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebFullScreenEnterObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebFullScreenExitObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebDownloadItemObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebDownloadHelperObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebResourceRequestObject.java",
 
   # bridge files
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeBaseCodec.java",
