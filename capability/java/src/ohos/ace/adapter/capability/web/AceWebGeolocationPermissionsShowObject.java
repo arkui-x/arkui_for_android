@@ -18,15 +18,23 @@ import ohos.ace.adapter.ALog;
 
 import android.webkit.GeolocationPermissions;
 
+/**
+ * AceGeolocationPermissionsShowObject class is used to handle Web page geolocation permission display objects.
+ *
+ * @since 1
+ */
 public class AceWebGeolocationPermissionsShowObject {
     private static final String LOG_TAG = "AceWebGeolocationPermissionsShowObject";
 
     private String origin;
+    private boolean isIncognitoMode = false;
     private GeolocationPermissions.Callback callback;
 
-    public AceWebGeolocationPermissionsShowObject(String origin, GeolocationPermissions.Callback callback) {
+    public AceWebGeolocationPermissionsShowObject(String origin, GeolocationPermissions.Callback callback,
+            boolean isIncognitoMode) {
         this.origin = origin;
         this.callback = callback;
+        this.isIncognitoMode = isIncognitoMode;
     }
 
     public String getOrigin() {
@@ -35,7 +43,11 @@ public class AceWebGeolocationPermissionsShowObject {
 
     public void invoke(String origin, boolean allow, boolean retain) {
         try {
-            this.callback.invoke(origin, allow, retain);
+            if (isIncognitoMode) {
+                this.callback.invoke(origin, allow, false);
+            } else {
+                this.callback.invoke(origin, allow, retain);
+            }
         } catch (Exception e) {
             ALog.e(LOG_TAG, "call invoke method failed");
         }

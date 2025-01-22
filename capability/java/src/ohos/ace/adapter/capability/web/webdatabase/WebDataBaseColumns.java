@@ -28,5 +28,20 @@ public class WebDataBaseColumns {
         public static final String TABLE_NAME_HTTPAUTH = "http_auth";
         public static final String COLUMN_NAME_HOST = "host";
         public static final String COLUMN_NAME_REALM = "realm";
+
+        /**
+         * geolocation table name.
+         */
+        public static final String TABLE_NAME_GEOLOCATION = "geolocation";
+
+        /**
+         * origin column name
+         */
+        public static final String COLUMN_NAME_ORIGIN = "origin";
+
+        /**
+         * result column name
+         */
+        public static final String COLUMN_NAME_RESULT = "result";
     }
 }

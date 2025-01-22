@@ -148,6 +148,8 @@ public class AceWeb extends AceWebBase {
 
     private boolean isWebOnPage = true;
 
+    private boolean isIncognitoMode = false;
+
     private MotionEvent motionEvent;
 
     private List<WebMessagePort> webMessagePorts = new ArrayList<WebMessagePort>();
@@ -390,7 +392,7 @@ public class AceWeb extends AceWebBase {
             @Override
             public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
                 AceWebGeolocationPermissionsShowObject object = new AceWebGeolocationPermissionsShowObject(origin,
-                        callback);
+                        callback, isIncognitoMode);
                 AceWeb.this.firePageGeoPermission(object);
             }
 

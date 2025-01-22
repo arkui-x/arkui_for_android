@@ -26,15 +26,17 @@ public class WebDataBaseManager {
 
     private WebDataBaseHttpAuthDao httpAuthDao;
     private WebDataBaseCredentialDao credentialDao;
+    private WebDataBaseGeolocationPermissionsDao geolocationPermissionsDao;
     private WebDataBaseHelper db;
 
     private WebDataBaseManager() {}
 
     private WebDataBaseManager(WebDataBaseHelper db, WebDataBaseHttpAuthDao httpAuthDao,
-        WebDataBaseCredentialDao credentialDao) {
+            WebDataBaseCredentialDao credentialDao, WebDataBaseGeolocationPermissionsDao geolocationPermissionsDao) {
         this.db = db;
         this.httpAuthDao = httpAuthDao;
         this.credentialDao = credentialDao;
+        this.geolocationPermissionsDao = geolocationPermissionsDao;
     }
 
     public static WebDataBaseManager getInstance(Context context) {
@@ -42,7 +44,8 @@ public class WebDataBaseManager {
             return instance;
         }
         WebDataBaseHelper db = new WebDataBaseHelper(context.getApplicationContext());
-        instance = new WebDataBaseManager(db, new WebDataBaseHttpAuthDao(db), new WebDataBaseCredentialDao(db));
+        instance = new WebDataBaseManager(db, new WebDataBaseHttpAuthDao(db), new WebDataBaseCredentialDao(db),
+                new WebDataBaseGeolocationPermissionsDao(db));
         return instance;
     }
 
@@ -99,5 +102,9 @@ public class WebDataBaseManager {
 
     public boolean existHttpAuthCredentials() {
         return credentialDao.exist();
+    }
+
+    public WebDataBaseGeolocationPermissionsDao getGeolocationPermissionsDao() {
+        return geolocationPermissionsDao;
     }
 }
