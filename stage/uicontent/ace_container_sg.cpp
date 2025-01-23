@@ -286,10 +286,15 @@ void AceContainerSG::InitializeCallback()
         AceEngine::Get().BuriedBomb(instanceId, bombId);
         AceEngine::Get().DefusingBomb(instanceId);
         context->GetTaskExecutor()->PostTask(
-            [weak, event]() {
+            [weak, event, node]() {
                 auto context = weak.Upgrade();
                 CHECK_NULL_VOID(context);
-                context->OnTouchEvent(event);
+                if (event.type == TouchType::HOVER_ENTER || event.type == TouchType::HOVER_MOVE ||
+                    event.type == TouchType::HOVER_EXIT || event.type == TouchType::HOVER_CANCEL) {
+                    context->OnAccessibilityHoverEvent(event, node);
+                } else {
+                    context->OnTouchEvent(event);
+                }
                 context->NotifyDispatchTouchEventDismiss(event);
             },
             TaskExecutor::TaskType::UI, "ArkUI-XAceContainerSGTouchEventCallback");
