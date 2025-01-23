@@ -68,8 +68,10 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseHelper.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseCredential.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseHttpAuth.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseGeolocationPermissions.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseCredentialDao.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseHttpAuthDao.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseGeolocationPermissionsDao.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseManager.java",
 
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWeb.java",
@@ -87,6 +89,7 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebPermissionRequestObject.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebJsDialogObject.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebJsPromptObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceGeolocationPermissions.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebRefreshAccessedHistoryObject.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebFullScreenEnterObject.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebFullScreenExitObject.java",
