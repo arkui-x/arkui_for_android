@@ -105,6 +105,12 @@ void AceViewSG::RegisterAxisEventCallback(AxisEventCallback&& callback)
     axisEventCallback_ = std::move(callback);
 }
 
+void AceViewSG::RegisterCrownEventCallback(CrownEventCallback&& callback)
+{
+    ACE_DCHECK(callback);
+    crownEventCallback_ = std::move(callback);
+}
+
 void AceViewSG::RegisterViewPositionChangeCallback(ViewPositionChangeCallback&& callback)
 {
     ACE_DCHECK(callback);

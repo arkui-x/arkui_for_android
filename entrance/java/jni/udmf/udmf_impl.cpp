@@ -274,4 +274,14 @@ std::vector<uint8_t> UdmfClientImpl::GetSpanStringRecord(const RefPtr<UnifiedDat
     return {};
 }
 
+int32_t UdmfClientImpl::StartAsyncDataRetrieval(napi_env env, napi_value napiValue, const std::string& key)
+{
+    return -1;
+}
+
+int32_t UdmfClientImpl::Cancel(const std::string& key)
+{
+    return -1;
+}
+
 } // namespace OHOS::Ace

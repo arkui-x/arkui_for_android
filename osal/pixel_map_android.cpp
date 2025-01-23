@@ -177,6 +177,11 @@ bool PixelMapAndroid::EncodeTlv(std::vector<uint8_t>& buff)
     return false;
 }
 
+uint32_t PixelMapAndroid::WritePixels(const WritePixelsOptions& opts)
+{
+    return 0;
+}
+
 RefPtr<PixelMap> PixelMap::CreatePixelMap(void* rawPtr)
 {
     std::shared_ptr<Media::PixelMap>* pixmapPtr = reinterpret_cast<std::shared_ptr<Media::PixelMap>*>(rawPtr);
@@ -189,6 +194,13 @@ RefPtr<PixelMap> PixelMap::CreatePixelMap(void* rawPtr)
 
 RefPtr<PixelMap> PixelMap::Create(std::unique_ptr<Media::PixelMap>&& pixmap)
 {
+    return AceType::MakeRefPtr<PixelMapAndroid>(std::move(pixmap));
+}
+
+RefPtr<PixelMap> PixelMap::Create(const InitializationOptions& opts)
+{
+    Media::InitializationOptions options;
+    std::unique_ptr<Media::PixelMap> pixmap = Media::PixelMap::Create(options);
     return AceType::MakeRefPtr<PixelMapAndroid>(std::move(pixmap));
 }
 
