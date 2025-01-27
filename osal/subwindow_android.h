@@ -217,6 +217,8 @@ public:
         isToastWindow_ = isToastWindow;
     }
 
+    bool ShowSelectOverlay(const RefPtr<NG::FrameNode>& overlayNode) override;
+
 private:
     void InitSubwindow(const RefPtr<Platform::AceContainerSG>& parentContainer);
     bool InitSubContainer(const RefPtr<Platform::AceContainerSG>& parentContainer) const;
