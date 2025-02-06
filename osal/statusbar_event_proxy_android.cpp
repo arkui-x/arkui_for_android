@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,20 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#include "adapter/android/osal/system_bar_style_ohos.h"
-#include "base/log/log.h"
+#include "core/event/statusbar/statusbar_event_proxy.h"
 
 namespace OHOS::Ace {
-RefPtr<SystemBarStyle> SystemBarStyle::CreateStyleFromJsObj(void* env, void* value)
-{
-    LOGI("Not supported in previewer");
-    return nullptr;
-}
+std::unique_ptr<StatusBarEventProxy> StatusBarEventProxy::instance_;
+std::mutex StatusBarEventProxy::mutex_;
 
-RefPtr<SystemBarStyle> SystemBarStyle::CreateStyleFromColor(const uint32_t colorValue)
+StatusBarEventProxy* StatusBarEventProxy::GetInstance()
 {
-    LOGI("Not supported in previewer");
     return nullptr;
 }
 } // namespace OHOS::Ace
