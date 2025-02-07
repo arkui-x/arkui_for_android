@@ -330,6 +330,8 @@ public:
     void SetCurPointerEvent(const std::shared_ptr<MMI::PointerEvent>& currentEvent);
 
     bool GetCurPointerEventInfo(DragPointerEvent& dragPointerEvent, StopDragCallback&& stopDragCallback) override;
+
+    bool GetLastMovingPointerPosition(DragPointerEvent& dragPointerEvent) override;
 private:
     virtual bool MaybeRelease() override;
     void InitializeFrontend();
@@ -391,7 +393,7 @@ private:
     std::mutex pointerEventMutex_;
     std::shared_ptr<MMI::PointerEvent> currentPointerEvent_;
     std::unordered_map<int32_t, std::list<StopDragCallback>> stopDragCallbackMap_;
-
+    std::map<int32_t, std::shared_ptr<MMI::PointerEvent>> currentEvents_;
     ACE_DISALLOW_COPY_AND_MOVE(AceContainerSG);
 };
 } // namespace OHOS::Ace::Platform
