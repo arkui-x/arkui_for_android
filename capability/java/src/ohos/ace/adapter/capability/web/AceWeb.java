@@ -58,8 +58,6 @@ import android.media.MediaMetadataRetriever;
 import android.os.Handler;
 import java.util.HashMap;
 import java.util.ArrayList;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.animation.ValueAnimator;
 import java.io.File;
 import java.io.IOException;
@@ -248,6 +246,8 @@ public class AceWeb extends AceWebBase {
     private boolean isZoomAccess = true;
 
     private boolean isIncognitoMode = false;
+
+    private boolean isErrorOccurred = false;
 
     private MotionEvent motionEvent;
 
@@ -479,6 +479,7 @@ public class AceWeb extends AceWebBase {
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                isErrorOccurred = true;
                 AceWebErrorReceiveObject object = new AceWebErrorReceiveObject(error, request);
                 AceWeb.this.fireErrorReceive(object);
             }
@@ -541,9 +542,9 @@ public class AceWeb extends AceWebBase {
 
             @Override
             public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
-                boolean hasNetwork = checkIsHasNetworkConnection();
-                if (!hasNetwork) {
-                    isReload = false;
+                if (isErrorOccurred) {
+                    isErrorOccurred = false;
+                    return;
                 }
                 AceWebRefreshAccessedHistoryObject object = new AceWebRefreshAccessedHistoryObject(url, isReload);
                 AceWeb.this.fireRefreshHistory(object);
@@ -716,15 +717,6 @@ public class AceWeb extends AceWebBase {
                 AceWeb.this.fireDownloadStart(object);
             }
         });
-    }
-
-    private boolean checkIsHasNetworkConnection() {
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm == null) {
-            return false;
-        }
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 
     private void showParentCustomView(AceWebView webView) {
