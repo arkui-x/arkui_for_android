@@ -1222,6 +1222,10 @@ void AceContainerSG::SetCurPointerEvent(const std::shared_ptr<MMI::PointerEvent>
 {
     std::lock_guard<std::mutex> lock(pointerEventMutex_);
     currentPointerEvent_ = currentEvent;
+    MMI::PointerEvent::PointerItem pointerItem;
+    currentEvent->GetPointerItem(currentEvent->GetPointerId(), pointerItem);
+    int32_t originId = pointerItem.GetOriginPointerId();
+    currentEvents_[originId] = currentEvent;
     auto callbacksIter = stopDragCallbackMap_.begin();
     while (callbacksIter != stopDragCallbackMap_.end()) {
         auto pointerId = callbacksIter->first;
@@ -1254,6 +1258,25 @@ bool AceContainerSG::GetCurPointerEventInfo(DragPointerEvent& dragPointerEvent, 
     dragPointerEvent.displayY = pointerItem.GetDisplayY();
     dragPointerEvent.sourceTool = static_cast<SourceTool>(pointerItem.GetToolType());
     RegisterStopDragCallback(dragPointerEvent.pointerId, std::move(stopDragCallback));
+    return true;
+}
+
+bool AceContainerSG::GetLastMovingPointerPosition(DragPointerEvent& dragPointerEvent)
+{
+    std::lock_guard<std::mutex> lock(pointerEventMutex_);
+    auto iter = currentEvents_.find(dragPointerEvent.originId);
+    if (iter == currentEvents_.end()) {
+        return false;
+    }
+    MMI::PointerEvent::PointerItem pointerItem;
+    auto currentPointerEvent = iter->second;
+    CHECK_NULL_RETURN(currentPointerEvent, false);
+    if (!currentPointerEvent->GetPointerItem(currentPointerEvent->GetPointerId(), pointerItem) ||
+        !pointerItem.IsPressed()) {
+        return false;
+    }
+    dragPointerEvent.displayX = pointerItem.GetDisplayX();
+    dragPointerEvent.displayY = pointerItem.GetDisplayY();
     return true;
 }
 
