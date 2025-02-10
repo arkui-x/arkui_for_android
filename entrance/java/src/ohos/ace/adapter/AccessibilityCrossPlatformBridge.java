@@ -539,8 +539,12 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
                 result.setClassName(getClassNameString(isTextInputChild ? ACE_COMPONENT_BUTTON : componentType));
                 String accessibilityText = jsonObject.getString(KEY_ACCESSIBILITY_TEXT).trim();
                 String accessibilityDescription = jsonObject.getString(KEY_DESCRIPTION_INFO).trim();
+                String text = counterCovertContent(jsonObject.getString("Content"),
+                        jsonObject.getInt("AccessibilityId"),
+                        componentType);
                 boolean isFocusable = jsonObject.getBoolean("IsFocusable")
                         || jsonObject.getBoolean("ImportantForAccessibility")
+                        || !text.isEmpty()
                         || !accessibilityText.isEmpty()
                         || !accessibilityDescription.isEmpty();
                 result.setFocusable(isFocusable);
@@ -548,13 +552,11 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
                 setParentID(result, jsonObject);
                 setBounds(result, jsonObject);
                 setCollection(result, jsonObject);
-                String text = counterCovertContent(jsonObject.getString("Content"),
-                        jsonObject.getInt("AccessibilityId"),
-                        componentType);
                 result.setText(isTextInputChild ? "显示或隐藏密码" : text);
                 result.setHintText(jsonObject.getString("Hint"));
-                result.setContentDescription(accessibilityText.isEmpty() ? accessibilityDescription
-                        : accessibilityText + "\n" + accessibilityDescription);
+                String contentDescription = accessibilityText.isEmpty() ? text + "\n" + accessibilityDescription
+                        : accessibilityText + "\n" + accessibilityDescription;
+                result.setContentDescription(contentDescription.trim());
                 setChildren(result, jsonObject, isTextInputChild || isSideBarChild || isArrayButton
                         || ACE_COMPONENT_SLIDER.equals(componentType));
                 if (!setTooltipTextAndText(result, jsonObject)) {
