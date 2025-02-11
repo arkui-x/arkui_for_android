@@ -42,8 +42,9 @@ void EventReport::SendFormException(FormExcepType type) {}
 
 void EventReport::JsEventReport(int32_t eventType, const std::string& jsonStr) {}
 
-void EventReport::JsErrReport(const std::string& packageName,
-    const std::string& reason, const std::string& summary) {}
+void EventReport::JsErrReport(
+    const std::string& packageName, const std::string& reason, const std::string& summary,
+    const std::string& uniqueId) {}
 
 void EventReport::ANRRawReport(RawEventType type, int32_t uid, const std::string& packageName,
                                const std::string& processName, const std::string& msg) {}
