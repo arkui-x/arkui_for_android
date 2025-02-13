@@ -72,6 +72,11 @@ public:
         return false;
     }
 
+    bool IsContains(const std::string& url) override
+    {
+        return false;
+    }
+
     DownloadManagerImpl() = default;
 
     ~DownloadManagerImpl() = default;
