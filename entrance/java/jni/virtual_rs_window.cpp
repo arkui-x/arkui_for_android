@@ -186,7 +186,6 @@ std::recursive_mutex g_sysBarPropMapMutex;
 uint32_t g_KeyboardHeight = 0;
 bool g_IsFullScreen = false;
 bool g_IsStatusBarHide = false;
-bool g_IsNavigationIndicatorShow = false;
 
 Window::Window(std::shared_ptr<AbilityRuntime::Platform::Context> context, uint32_t windowId)
     : context_(context), windowId_(windowId), brightness_(SubWindowManagerJni::GetAppScreenBrightness())
@@ -1174,9 +1173,6 @@ WMError Window::SetSpecificBarProperty(WindowType type, const SystemBarProperty&
         result = SubWindowManagerJni::SetNavigationBarStatus(hide);
     } else if (type == WindowType::WINDOW_TYPE_NAVIGATION_INDICATOR) {
         result = SubWindowManagerJni::SetNavigationIndicatorStatus(hide);
-        if (result) {
-            g_IsNavigationIndicatorShow = property.enable_;
-        }
     } else {
         LOGE("The WindowType is not set to SpecificBarProperty. The WindowType is %{public}d", type);
     }
@@ -1236,7 +1232,7 @@ Rect Window::GetRightRect(const Rect& safeAreaRect)
 
 Rect Window::GetBottomRect(const Rect& safeAreaRect)
 {
-    if (SubWindowManagerJni::GetNavigationBarHeight() == 0) {
+    if (!SubWindowManagerJni::GetNavigationBarStatus()) {
         return EMPTY_RECT;
     }
 
@@ -1274,7 +1270,6 @@ WMError Window::GetAvoidAreaByType(AvoidAreaType type, AvoidArea& avoidArea)
     avoidArea.bottomRect_ = EMPTY_RECT;
     auto WMErrorCode = WMError::WM_OK;
     const Rect safeAreaRect = SubWindowManagerJni::GetSafeArea();
-    auto NavigationIndicatorHeight = SubWindowManagerJni::GetNavigationIndicatorHeight();
 
     switch (type) {
         case AvoidAreaType::TYPE_SYSTEM:
@@ -1296,7 +1291,7 @@ WMError Window::GetAvoidAreaByType(AvoidAreaType type, AvoidArea& avoidArea)
             }
             break;
         case AvoidAreaType::TYPE_NAVIGATION_INDICATOR:
-            if (g_IsNavigationIndicatorShow && NavigationIndicatorHeight > 0) {
+            if (SubWindowManagerJni::GetNavigationIndicatorStatus()) {
                 avoidArea.bottomRect_ = GetBottomRect(safeAreaRect);
             }
             break;
