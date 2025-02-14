@@ -42,6 +42,8 @@ public:
 
     void ResizeWindow() override;
 
+    void ResizeWindowForMenu() override;
+
     NG::RectF GetRect() override;
 
     void SetRect(const NG::RectF& rect) override;

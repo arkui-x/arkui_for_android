@@ -333,4 +333,9 @@ int32_t SystemProperties::GetDragDropFrameworkStatus()
 {
     return dragDropFrameworkStatus_;
 }
+
+bool SystemProperties::IsSuperFoldDisplayDevice()
+{
+    return false;
+}
 } // namespace OHOS::Ace

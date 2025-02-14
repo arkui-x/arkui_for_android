@@ -67,6 +67,7 @@ template("ace_common_jni_source_set") {
       "$ace_root/adapter/android/entrance/java/jni/ace_application_info_impl.cpp",
       "$ace_root/adapter/android/entrance/java/jni/ace_env_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/ace_resource_register.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/ace_translate_manager.cpp",
       "$ace_root/adapter/android/entrance/java/jni/display_info.cpp",
       "$ace_root/adapter/android/entrance/java/jni/display_info_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/download_manager.cpp",

@@ -43,7 +43,7 @@ void EventReport::SendFormException(FormExcepType type) {}
 void EventReport::JsEventReport(int32_t eventType, const std::string& jsonStr) {}
 
 void EventReport::JsErrReport(const std::string& packageName,
-    const std::string& reason, const std::string& summary) {}
+    const std::string& reason, const std::string& summary, const std::string& uniqueId) {}
 
 void EventReport::ANRRawReport(RawEventType type, int32_t uid, const std::string& packageName,
                                const std::string& processName, const std::string& msg) {}
@@ -83,4 +83,7 @@ void EventReport::ReportUiExtensionTransparentEvent(const std::string& pageUrl, 
     const std::string& moduleName) {}
 
 void EventReport::ReportDragInfo(const DragInfo& dragInfo) {}
+
+void EventReport::ReportTextFieldErrorEvent(int32_t frameNodeId, int32_t depth, const std::string& errorType)
+{}
 } // namespace OHOS::Ace

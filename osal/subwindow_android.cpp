@@ -755,4 +755,8 @@ bool SubwindowAndroid::ShowSelectOverlay(const RefPtr<NG::FrameNode>& overlayNod
 {
     return false;
 }
+
+void SubwindowAndroid::ResizeWindowForMenu()
+{
+}
 } // namespace Ace

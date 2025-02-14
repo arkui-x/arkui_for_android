@@ -41,4 +41,9 @@ FoldStatus DisplayInfoUtils::GetCurrentFoldStatus()
 {
     return FoldStatus::UNKNOWN;
 }
+
+std::vector<Rect> DisplayInfoUtils::GetCurrentFoldCreaseRegion()
+{
+    return {};
+}
 } // namespace OHOS::Ace::DisplayInfoUtils
