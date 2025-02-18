@@ -102,6 +102,10 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     private static final int RESULT_OK = -1;
 
+    private static final int ERR_INVALID_PARAMETERS = -1;
+
+    private static final int ERR_OK = 0;
+
     private static boolean isFrist = false;
 
     private int requestCode = 0;
@@ -123,10 +127,6 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     private AcePlatformPlugin platformPlugin = null;
 
     private BridgeManager bridgeManager = null;
-
-    private static final int ERR_INVALID_PARAMETERS = -1;
-
-    private static final int ERR_OK = 0;
 
     private KeyboardHeightProvider keyboardHeightProvider;
 
@@ -178,7 +178,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         Trace.endSection();
 
         keyboardHeightProvider = new KeyboardHeightProvider(this);
- 
+
         windowView.post(new Runnable() {
             public void run() {
                 keyboardHeightProvider.start();
@@ -670,15 +670,14 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     /**
      * add ArkUI-X plugin to list for registry.
-     * 
+     *
      * @param pluginName The full class name includes the package name of the plugin.
      * @since 11
      */
     public void addPlugin(String pluginName) {
         if (pluginName == null) {
             Log.e(LOG_TAG, "plugin name is null!");
-        }
-        else {
+        } else {
             Log.d(LOG_TAG, "add plugin: " + pluginName);
             pluginList.add(pluginName);
         }
@@ -715,12 +714,11 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         Log.i(LOG_TAG, "Report fully drawn end." + System.nanoTime());
     }
 
-    
     /**
      * Register the platformView to activity. before super.onCreate.
      */
     public void registerPlatformViewFactory(PlatformViewFactory platformViewFactory) {
-        if(platformViewPluginAosp == null){
+        if (platformViewPluginAosp == null) {
             Log.i(LOG_TAG, "PlatformViewPluginAosp is null");
             return;
         }

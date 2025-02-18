@@ -20,9 +20,14 @@ import android.content.Context;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * WebDataBaseManager class is used to manage the database of the web data.
+ *
+ * @since 2024-05-31
+ */
 public class WebDataBaseManager {
-    private static WebDataBaseManager instance;
     static final String LOG_TAG = "WebDataBaseManager";
+    private static WebDataBaseManager instance;
 
     private WebDataBaseHttpAuthDao httpAuthDao;
     private WebDataBaseCredentialDao credentialDao;

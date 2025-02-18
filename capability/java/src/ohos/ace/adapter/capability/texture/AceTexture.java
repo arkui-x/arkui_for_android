@@ -90,7 +90,7 @@ public class AceTexture {
     private int textureHeight = 0;
 
     private int instanceId = -1;
-    
+
     private float[] transform = new float[16];
 
     private SurfaceTexture.OnFrameAvailableListener onFrameListener = new SurfaceTexture.OnFrameAvailableListener() {
@@ -108,7 +108,8 @@ public class AceTexture {
      * @param callback resource callback
      * @param initParam initialization parameters
      */
-    public AceTexture(int instanceId, long id, IAceTexture textureImpl, IAceOnResourceEvent callback, Map<String, String> initParam) {
+    public AceTexture(int instanceId, long id, IAceTexture textureImpl, IAceOnResourceEvent callback,
+            Map<String, String> initParam) {
         this.surfaceTexture = new SurfaceTexture(0);
         this.surfaceTexture.detachFromGLContext();
         this.surfaceTexture.setOnFrameAvailableListener(onFrameListener);
@@ -132,7 +133,6 @@ public class AceTexture {
             PARAM_BEGIN, callSetTextureSize);
 
         IAceOnCallResourceMethod callAttachToGLContext = new IAceOnCallResourceMethod() {
-
             /**
              * attatch to glcontext
              * @param params size params
@@ -146,7 +146,6 @@ public class AceTexture {
             PARAM_BEGIN, callAttachToGLContext);
 
         IAceOnCallResourceMethod callUpdateTextureImage = new IAceOnCallResourceMethod() {
-
             /**
              * update texture image
              * @param params size params
@@ -243,7 +242,7 @@ public class AceTexture {
         }
 
         int texName = Integer.parseInt(params.get(TEXTURE_ID_KEY));
-        if (Integer.parseInt(params.get(TEXTURE_IS_ATTACH)) == 1){
+        if (Integer.parseInt(params.get(TEXTURE_IS_ATTACH)) == 1) {
             surfaceTexture.attachToGLContext(texName);
         } else {
             surfaceTexture.detachFromGLContext();

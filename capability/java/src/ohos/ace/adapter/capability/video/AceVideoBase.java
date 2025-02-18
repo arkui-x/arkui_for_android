@@ -46,6 +46,8 @@ public abstract class AceVideoBase {
 
     private final IAceOnResourceEvent callback;
 
+    private final Map<String, IAceOnCallResourceMethod> callMethodMap;
+
     private boolean isAutoPlay;
 
     private boolean isMute;
@@ -53,8 +55,6 @@ public abstract class AceVideoBase {
     private float speed;
 
     private boolean isLooping;
-
-    private final Map<String, IAceOnCallResourceMethod> callMethodMap;
 
     /**
      * InnerProcessor.
@@ -88,7 +88,6 @@ public abstract class AceVideoBase {
         callMethodMap = new HashMap<>();
 
         IAceOnCallResourceMethod callInit = new IAceOnCallResourceMethod() {
-
             /**
              * This is called to init media player.
              *
@@ -97,7 +96,6 @@ public abstract class AceVideoBase {
              */
             public String onCall(Map<String, String> param) {
                 runAsync(new InnerProcessor(param) {
-
                     /**
                      * This is called to init media player.
                      */
@@ -111,7 +109,6 @@ public abstract class AceVideoBase {
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "init" + PARAM_BEGIN, callInit);
 
         IAceOnCallResourceMethod callStart = new IAceOnCallResourceMethod() {
-
             /**
              * This is called to start player.
              *
@@ -120,7 +117,6 @@ public abstract class AceVideoBase {
              */
             public String onCall(Map<String, String> param) {
                 runAsync(new InnerProcessor(param) {
-
                     /**
                      * This is called to start player.
                      */
@@ -134,7 +130,6 @@ public abstract class AceVideoBase {
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "start" + PARAM_BEGIN, callStart);
 
         IAceOnCallResourceMethod callPause = new IAceOnCallResourceMethod() {
-
             /**
              * This is called to pause player.
              *
@@ -143,7 +138,6 @@ public abstract class AceVideoBase {
              */
             public String onCall(Map<String, String> param) {
                 runAsync(new InnerProcessor(param) {
-
                     /**
                      * This is called to pause player.
                      */
@@ -162,7 +156,6 @@ public abstract class AceVideoBase {
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "stop" + PARAM_BEGIN, callStop);
 
         IAceOnCallResourceMethod callGetPosition = new IAceOnCallResourceMethod() {
-
             /**
              * This is called to get video position.
              *
@@ -171,7 +164,6 @@ public abstract class AceVideoBase {
              */
             public String onCall(Map<String, String> param) {
                 runAsync(new InnerProcessor(param) {
-
                     /**
                      * This is called to get video position.
                      */
@@ -185,7 +177,6 @@ public abstract class AceVideoBase {
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "getposition" + PARAM_BEGIN, callGetPosition);
 
         IAceOnCallResourceMethod callSeekTo = new IAceOnCallResourceMethod() {
-
             /**
              * This is called to seek video.
              *
@@ -194,7 +185,6 @@ public abstract class AceVideoBase {
              */
             public String onCall(Map<String, String> param) {
                 runAsync(new InnerProcessor(param) {
-
                     /**
                      * This is called to seek video.
                      */
@@ -208,7 +198,6 @@ public abstract class AceVideoBase {
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "seekto" + PARAM_BEGIN, callSeekTo);
 
         IAceOnCallResourceMethod setVolume = new IAceOnCallResourceMethod() {
-
             /**
              * This is called to set volume.
              *
@@ -217,7 +206,6 @@ public abstract class AceVideoBase {
              */
             public String onCall(Map<String, String> param) {
                 runAsync(new InnerProcessor(param) {
-
                     /**
                      * This is called to set volume.
                      */
@@ -231,7 +219,6 @@ public abstract class AceVideoBase {
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "setvolume" + PARAM_BEGIN, setVolume);
 
         IAceOnCallResourceMethod enableLooping = new IAceOnCallResourceMethod() {
-
             /**
              * This is called to enable single looping.
              *
@@ -240,7 +227,6 @@ public abstract class AceVideoBase {
              */
             public String onCall(Map<String, String> param) {
                 runAsync(new InnerProcessor(param) {
-
                     /**
                      * This is called to enable single looping.
                      */
@@ -254,7 +240,6 @@ public abstract class AceVideoBase {
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "enablelooping" + PARAM_BEGIN, enableLooping);
 
         IAceOnCallResourceMethod setSpeed = new IAceOnCallResourceMethod() {
-
             /**
              * This is called to set video speed.
              *
@@ -263,7 +248,6 @@ public abstract class AceVideoBase {
              */
             public String onCall(Map<String, String> param) {
                 runAsync(new InnerProcessor(param) {
-
                     /**
                      * This is called to set video speed.
                      */
@@ -277,7 +261,6 @@ public abstract class AceVideoBase {
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "setspeed" + PARAM_BEGIN, setSpeed);
 
         IAceOnCallResourceMethod setDirection = new IAceOnCallResourceMethod() {
-
             /**
              * This is called to set video direction.
              *
@@ -286,7 +269,6 @@ public abstract class AceVideoBase {
              */
             public String onCall(Map<String, String> param) {
                 runAsync(new InnerProcessor(param) {
-
                     /**
                      * This is called to set video direction.
                      */
@@ -300,7 +282,6 @@ public abstract class AceVideoBase {
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "setdirection" + PARAM_BEGIN, setDirection);
 
         IAceOnCallResourceMethod setLandscape = new IAceOnCallResourceMethod() {
-
             /**
              * This is called to set video direction LANDSCAPE.
              *
@@ -309,7 +290,6 @@ public abstract class AceVideoBase {
              */
             public String onCall(Map<String, String> param) {
                 runAsync(new InnerProcessor(param) {
-
                     /**
                      * This is called to set video direction LANDSCAPE.
                      */
@@ -323,7 +303,6 @@ public abstract class AceVideoBase {
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "setlandscape" + PARAM_BEGIN, setLandscape);
 
         IAceOnCallResourceMethod callSetSurface = new IAceOnCallResourceMethod() {
-
             /**
              * This is called to set video surface
              *
@@ -332,7 +311,6 @@ public abstract class AceVideoBase {
              */
             public String onCall(Map<String, String> param) {
                 runAsync(new InnerProcessor(param) {
-
                     /**
                      * This is called to set video surface
                      */

@@ -519,7 +519,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
             AceWebBase webBase = objectMap.get(id);
             return webBase.createWebMessagePorts();
         }
-        String[] ports ={ "", "" };
+        String[] ports = {"", ""};
         return ports;
     }
 

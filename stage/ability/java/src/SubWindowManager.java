@@ -42,14 +42,7 @@ import java.util.Map;
  * The type Sub window manager.
  */
 public class SubWindowManager {
-
     private static final String TAG = "SubWindowManager";
-
-    private Activity mRootActivity;
-    private Map<String, SubWindow> mSubWindowMap = new HashMap<>();
-    private static SubWindowManager _sinstance;
-    private int uiOptions_ = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-    public static int uiOptionsStatic = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
     private static final int NO_HEIGHT = 0;
     private static final int LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES = 1;
     private static final int LOCATION_X = 0;
@@ -58,6 +51,13 @@ public class SubWindowManager {
     private static final int API_28 = 28;
     private static final int API_29 = 29;
     private static final int API_30 = 30;
+
+    private static SubWindowManager _sinstance;
+    public static int uiOptionsStatic = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+
+    private Activity mRootActivity;
+    private Map<String, SubWindow> mSubWindowMap = new HashMap<>();
+    private int uiOptions_ = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
     /*
      ** copy from native wm_common.h: enum class Orientation
@@ -98,12 +98,12 @@ public class SubWindowManager {
         Log.d(TAG, "setActivity called.");
         mRootActivity = activity;
         if (mRootActivity != null) {
-            Window window = mRootActivity.getWindow();           
+            Window window = mRootActivity.getWindow();
             View decorView = window.getDecorView();
             int option = decorView.getSystemUiVisibility();
             uiOptions_ = uiOptions_ | option;
             uiOptionsStatic = uiOptionsStatic | option;
-        } 
+        }
     }
 
     /**
@@ -520,7 +520,7 @@ public class SubWindowManager {
         result = setSystemUiVisibilityInner();
         return result;
     }
-    
+
     /**
      * Set navigationIndicator bar status.
      *
@@ -917,7 +917,7 @@ public class SubWindowManager {
 
     /**
      * Called by native to unregister Window Handle.
-     * 
+     *
      * @param name   the name
      * @return the boolean
      */

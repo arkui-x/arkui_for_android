@@ -64,33 +64,32 @@ public class WebDataBaseCredentialDao {
     }
 
     public WebDataBaseCredential find(String username, String password, Long httpAuthId) {
-      String selection = WebDataBaseColumns.EntryColumns.COLUMN_NAME_USERNAME + " = ? AND " +
-          WebDataBaseColumns.EntryColumns.COLUMN_NAME_USERPASS + " = ? AND " +
-          WebDataBaseColumns.EntryColumns.COLUMN_NAME_HTTP_AUTH_ID + " = ?";
-      String[] selectionArgs = {username, password, httpAuthId.toString()};
+        String selection = WebDataBaseColumns.EntryColumns.COLUMN_NAME_USERNAME + " = ? AND " +
+                WebDataBaseColumns.EntryColumns.COLUMN_NAME_USERPASS + " = ? AND " +
+                WebDataBaseColumns.EntryColumns.COLUMN_NAME_HTTP_AUTH_ID + " = ?";
+        String[] selectionArgs = {username, password, httpAuthId.toString()};
 
-      Cursor cursor = dataBaseHelper.getReadableDatabase().query(
-          WebDataBaseColumns.EntryColumns.TABLE_NAME_CREDENTIAL,
-          columns,
-          selection,
-          selectionArgs,
-          null,
-          null,
-          null
-      );
+        Cursor cursor = dataBaseHelper.getReadableDatabase().query(
+                WebDataBaseColumns.EntryColumns.TABLE_NAME_CREDENTIAL,
+                columns,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null);
 
-      WebDataBaseCredential credential = null;
-      if (cursor.moveToNext()) {
-          Long rowId = cursor.getLong(cursor.getColumnIndexOrThrow(WebDataBaseColumns.EntryColumns._ID));
-          String rowUsername = cursor.getString(
-              cursor.getColumnIndexOrThrow(WebDataBaseColumns.EntryColumns.COLUMN_NAME_USERNAME));
-          String rowPassword = cursor.getString(
-              cursor.getColumnIndexOrThrow(WebDataBaseColumns.EntryColumns.COLUMN_NAME_USERPASS));
-          credential = new WebDataBaseCredential(rowId, rowUsername, rowPassword, httpAuthId);
-      }
-      cursor.close();
+        WebDataBaseCredential credential = null;
+        if (cursor.moveToNext()) {
+            Long rowId = cursor.getLong(cursor.getColumnIndexOrThrow(WebDataBaseColumns.EntryColumns._ID));
+            String rowUsername = cursor.getString(
+                    cursor.getColumnIndexOrThrow(WebDataBaseColumns.EntryColumns.COLUMN_NAME_USERNAME));
+            String rowPassword = cursor.getString(
+                    cursor.getColumnIndexOrThrow(WebDataBaseColumns.EntryColumns.COLUMN_NAME_USERPASS));
+            credential = new WebDataBaseCredential(rowId, rowUsername, rowPassword, httpAuthId);
+        }
+        cursor.close();
 
-      return credential;
+        return credential;
     }
 
     public long insert(WebDataBaseCredential credential) {
@@ -100,7 +99,7 @@ public class WebDataBaseCredentialDao {
         credentialValues.put(WebDataBaseColumns.EntryColumns.COLUMN_NAME_HTTP_AUTH_ID, credential.getHttpAuthId());
 
         return dataBaseHelper.getWritableDatabase().insert(
-            WebDataBaseColumns.EntryColumns.TABLE_NAME_CREDENTIAL, null, credentialValues);
+                WebDataBaseColumns.EntryColumns.TABLE_NAME_CREDENTIAL, null, credentialValues);
     }
 
     public long delete(WebDataBaseCredential credential) {
@@ -108,7 +107,7 @@ public class WebDataBaseCredentialDao {
         String[] whereArgs = {credential.getId().toString()};
 
         return dataBaseHelper.getWritableDatabase().delete(
-            WebDataBaseColumns.EntryColumns.TABLE_NAME_CREDENTIAL, whereClause, whereArgs);
+                WebDataBaseColumns.EntryColumns.TABLE_NAME_CREDENTIAL, whereClause, whereArgs);
     }
 
     public long update(WebDataBaseCredential credential) {
@@ -120,8 +119,8 @@ public class WebDataBaseCredentialDao {
         String[] whereArgs = {credential.getHttpAuthId().toString()};
 
         return dataBaseHelper.getWritableDatabase().update(
-            WebDataBaseColumns.EntryColumns.TABLE_NAME_CREDENTIAL, credentialValues, whereClause, whereArgs);
-  }
+                WebDataBaseColumns.EntryColumns.TABLE_NAME_CREDENTIAL, credentialValues, whereClause, whereArgs);
+    }
 
     public boolean exist() {
         Cursor cursor = dataBaseHelper.getReadableDatabase().query(

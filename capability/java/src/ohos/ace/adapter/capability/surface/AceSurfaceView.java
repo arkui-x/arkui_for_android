@@ -136,7 +136,6 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                 callSetIsFullScreen);
 
         IAceOnCallResourceMethod callAttachNativeWindow = new IAceOnCallResourceMethod() {
-
             /**
              * Attach native window
              *
@@ -193,7 +192,7 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         }
         return SUCCESS;
     }
-    
+
     /**
      * Set is fullscreen
      *
@@ -217,7 +216,7 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                     continue;
                 }
                 SurfaceView surfaceView = (SurfaceView)view;
-                if (isFullScreen == 0) {  
+                if (isFullScreen == 0) {
                     surfaceView.setVisibility(View.VISIBLE);
                 } else {
                     surfaceView.setVisibility(View.INVISIBLE);
