@@ -49,6 +49,7 @@
       "OHOS::Ace::NG::DragControllerFuncWrapper::ResetContextMenuDragPosition(int)";
       "OHOS::Ace::NG::DragControllerFuncWrapper::CreatePreviewNode(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode>&, OHOS::Ace::NG::PreparedInfoForDrag&, OHOS::Ace::NG::PreparedAsyncCtxForAnimate&)";
       "OHOS::Ace::NG::DragControllerFuncWrapper::GetOriginNodeOffset(OHOS::Ace::NG::PreparedInfoForDrag&, OHOS::Ace::NG::PreparedAsyncCtxForAnimate&)";
+      "OHOS::Ace::NG::DragControllerFuncWrapper::HideDragPreviewWindow(int)";
       OHOS::Ace::NG::GestureEventHub::*;
       OHOS::Ace::NG::FrameNode::*;
       OHOS::Ace::NG::LayoutProperty::*;
@@ -79,6 +80,7 @@
       OHOS::Ace::V2::RELATIVE_CONTAINER_ETS_TAG;
       OHOS::Ace::ViewAbstractModel::*;
       OHOS::Media::PixelMapNapi::*;
+      "OHOS::Media::StrToULL(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, unsigned long&)";
       OHOS::Rosen::Drawing::Bitmap::*;
       OHOS::Rosen::Drawing::CoreCanvas::*;
       OHOS::Rosen::Drawing::Pen::*;

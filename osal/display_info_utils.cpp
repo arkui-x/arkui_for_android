@@ -18,12 +18,6 @@
 #include "core/common/display_info.h"
 
 namespace OHOS::Ace {
-DisplayInfoUtils& DisplayInfoUtils::GetInstance()
-{
-    static DisplayInfoUtils instance;
-    return instance;
-}
-
 RefPtr<DisplayInfo> DisplayInfoUtils::GetDisplayInfo(int32_t displayId)
 {
     return AceType::MakeRefPtr<DisplayInfo>();
@@ -31,9 +25,9 @@ RefPtr<DisplayInfo> DisplayInfoUtils::GetDisplayInfo(int32_t displayId)
 
 void DisplayInfoUtils::InitIsFoldable() {}
 
-bool DisplayInfoUtils::IsFoldable()
+bool DisplayInfoUtils::GetIsFoldable()
 {
-    hasInitIsFoldable = true;
+    hasInitIsFoldable_ = true;
     return false;
 }
 
@@ -44,6 +38,7 @@ FoldStatus DisplayInfoUtils::GetCurrentFoldStatus()
 
 std::vector<Rect> DisplayInfoUtils::GetCurrentFoldCreaseRegion()
 {
+    hasInitFoldCreaseRegion_ = true;
     return {};
 }
 } // namespace OHOS::Ace::DisplayInfoUtils
