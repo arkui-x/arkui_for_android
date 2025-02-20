@@ -38,7 +38,7 @@ public:
     explicit SubwindowAndroid(int32_t instanceId);
     ~SubwindowAndroid() = default;
 
-    bool InitContainer() override;
+    void InitContainer() override;
 
     void ResizeWindow() override;
 
@@ -186,6 +186,10 @@ public:
     Rect GetParentWindowRect() const override;
 
     Rect GetUIExtensionHostWindowRect() const override;
+
+    Rect GetFoldExpandAvailableRect() const override;
+
+    bool CheckHostWindowStatus() const override;
 
     bool IsFreeMultiWindow() const override
     {

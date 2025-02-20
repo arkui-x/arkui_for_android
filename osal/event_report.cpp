@@ -86,4 +86,10 @@ void EventReport::ReportDragInfo(const DragInfo& dragInfo) {}
 
 void EventReport::ReportTextFieldErrorEvent(int32_t frameNodeId, int32_t depth, const std::string& errorType)
 {}
+
+void EventReport::ReportScrollableErrorEvent(
+    const std::string& nodeType, ScrollableErrorType errorType, const std::string& subErrorType)
+{}
+
+void EventReport::ReportRichEditorInfo(const RichEditorInfo& richEditorInfo) {}
 } // namespace OHOS::Ace
