@@ -35,6 +35,7 @@ static const JNINativeMethod METHODS[] = {
     { "performAction", "(II)V", reinterpret_cast<void*>(TextInputJni::PerformAction) },
     { "updateInputFilterErrorText", "(ILjava/lang/String;)V",
         reinterpret_cast<void*>(TextInputJni::UpdateInputFilterErrorText) },
+    { "notifyKeyboardClosedByUser", "(I)V", reinterpret_cast<void*>(TextInputJni::NotifyKeyboardClosedByUser) },
 };
 
 static const char* const METHOD_SET_CLIENT = "setTextInputClient";
@@ -211,6 +212,15 @@ void TextInputJni::UpdateInputFilterErrorText(JNIEnv* env, jclass clazz, jint cl
         return;
     }
     TextInputClientHandler::GetInstance().UpdateInputFilterErrorText(clientId, content);
+}
+
+void TextInputJni::NotifyKeyboardClosedByUser(JNIEnv* env, jclass clazz, jint clientId)
+{
+    if (env == nullptr) {
+        LOGW("env is null");
+        return;
+    }
+    TextInputClientHandler::GetInstance().NotifyKeyboardClosedByUser(clientId);
 }
 
 bool TextInputJni::ShowTextInput(bool isFocusViewChanged, int32_t instanceId)
