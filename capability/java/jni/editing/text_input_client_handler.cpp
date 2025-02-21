@@ -84,4 +84,25 @@ void TextInputClientHandler::UpdateInputFilterErrorText(const int32_t clientId, 
             TaskExecutor::TaskType::UI, "ArkUI-XTextInputClientHandlerUpdateInputFilterErrorText");
     }
 }
+
+void TextInputClientHandler::NotifyKeyboardClosedByUser(const int32_t clientId)
+{
+    TextInputConnection* connection = GetConnectionByClientId(clientId);
+    if (connection) {
+        auto weak = AceType::WeakClaim(connection);
+        connection->GetTaskExecutor()->PostTask(
+            [weak] {
+                auto currentConnection = weak.Upgrade();
+                if (currentConnection == nullptr) {
+                    LOGE("currentConnection is nullptr");
+                    return;
+                }
+                auto client = currentConnection->GetClient();
+                if (client) {
+                    client->NotifyKeyboardClosedByUser();
+                }
+            },
+            TaskExecutor::TaskType::UI, "ArkUI-XTextInputClientHandlerNotifyKeyboardClosedByUser");
+    }
+}
 } // namespace OHOS::Ace::Platform

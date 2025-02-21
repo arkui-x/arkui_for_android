@@ -115,6 +115,11 @@ public abstract class TextInputPluginBase {
                 TextInputPluginBase.updateInputFilterErrorText(clientId, errorText);
             }
         }
+
+        @Override
+        public void notifyKeyboardClosedByUser(int clientId) {
+            TextInputPluginBase.notifyKeyboardClosedByUser(clientId);
+        }
     }
 
     /**
@@ -234,6 +239,8 @@ public abstract class TextInputPluginBase {
     private static native void performAction(int client, int action);
 
     private static native void updateInputFilterErrorText(int client, String errorText);
+
+    private static native void notifyKeyboardClosedByUser(int client);
 
     /**
      * native func for Init.
