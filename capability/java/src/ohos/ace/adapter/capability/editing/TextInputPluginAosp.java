@@ -248,6 +248,9 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
     public void release(){
         this.view = null;
         Delegate.release();
+        if (wrapper != null) {
+            wrapper.removeListener();
+        }
     }
 
     // Update selection to Editable.

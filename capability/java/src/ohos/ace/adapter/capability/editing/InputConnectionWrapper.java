@@ -16,12 +16,14 @@
 package ohos.ace.adapter.capability.editing;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.text.Editable;
 import android.text.Selection;
 import android.text.method.TextKeyListener;
 import android.text.SpannableString;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.ExtractedText;
@@ -35,8 +37,10 @@ import ohos.ace.adapter.ALog;
  *
  * @since 1
  */
-class InputConnectionWrapper extends BaseInputConnection {
+class InputConnectionWrapper extends BaseInputConnection implements ViewTreeObserver.OnGlobalLayoutListener {
     private static final String LOG_TAG = "Ace_IME";
+
+    private static final int MIN_HEIGHT = 300;
 
     private final View aceView;
 
@@ -53,6 +57,8 @@ class InputConnectionWrapper extends BaseInputConnection {
     private InputMethodManager imm;
 
     private int extractedTextRequestToken = 0;
+
+    private boolean isSoftKeyboardOpened;
 
     /**
      * constructor of InputConnectionWrapper
@@ -75,6 +81,29 @@ class InputConnectionWrapper extends BaseInputConnection {
         if (manager instanceof InputMethodManager) {
             this.imm = (InputMethodManager) manager;
         }
+
+        aceView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+    }
+
+    @Override
+    public void onGlobalLayout() {
+        Rect r = new Rect();
+        aceView.getWindowVisibleDisplayFrame(r);
+        int heightDiff = aceView.getRootView().getHeight() - (r.bottom - r.top);
+        ALog.d(LOG_TAG, "onGlobalLayout: " + heightDiff);
+        if (!isSoftKeyboardOpened && heightDiff > MIN_HEIGHT) {
+            isSoftKeyboardOpened = true;
+        } else if (isSoftKeyboardOpened && heightDiff < MIN_HEIGHT) {
+            isSoftKeyboardOpened = false;
+            delegate.performAction(clientId, TextInputAction.DONE);
+        }
+    }
+
+    /**
+     * remove the listener of aceView
+     */
+    public void removeListener() {
+        aceView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
     }
 
     @Override
