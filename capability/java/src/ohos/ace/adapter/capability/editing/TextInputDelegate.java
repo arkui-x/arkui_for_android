@@ -49,4 +49,11 @@ public interface TextInputDelegate {
      * @param errorText The error text content
      */
     void updateInputFilterErrorText(int client, String errorText);
+
+    /**
+     * Called when the keyboard is closed.
+     *
+     * @param clientId The client identifier
+     */
+    void notifyKeyboardClosedByUser(int clientId);
 }

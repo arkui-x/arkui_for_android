@@ -95,7 +95,7 @@ class InputConnectionWrapper extends BaseInputConnection implements ViewTreeObse
             isSoftKeyboardOpened = true;
         } else if (isSoftKeyboardOpened && heightDiff < MIN_HEIGHT) {
             isSoftKeyboardOpened = false;
-            delegate.performAction(clientId, TextInputAction.DONE);
+            delegate.notifyKeyboardClosedByUser(clientId);
         }
     }
 
