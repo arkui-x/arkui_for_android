@@ -66,7 +66,7 @@ public class SubWindow {
             super.dismiss();
         }
     }
-    
+
     /**
      * The type Window param.
      */
@@ -75,18 +75,22 @@ public class SubWindow {
          * The Background color.
          */
         public int backgroundColor;
+
         /**
          * The Width.
          */
         public int width;
+
         /**
          * The Height.
          */
         public int height;
+
         /**
          * The X.
          */
         public int x;
+
         /**
          * The Y.
          */
@@ -159,12 +163,11 @@ public class SubWindow {
         subWindowView.setTouchInterceptor(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                int x = (int)event.getX();
-                int y = (int)event.getY();
+                int x = (int) event.getX();
+                int y = (int) event.getY();
                 Log.d(TAG, "subWindowView onTouch. event.getAction()=" + event.getAction() + ", x=" + x + ", y=" + y);
-                if ((event.getAction() == MotionEvent.ACTION_OUTSIDE) ||
-                    ((event.getAction() == MotionEvent.ACTION_DOWN) &&
-                     (x < 0 || x > subWindowView.getWidth() || y < 0 || y > subWindowView.getHeight()))) {
+                if ((event.getAction() == MotionEvent.ACTION_OUTSIDE) || ((event.getAction() == MotionEvent.ACTION_DOWN)
+                        && (x < 0 || x > subWindowView.getWidth() || y < 0 || y > subWindowView.getHeight()))) {
                     Log.d(TAG, "touch outside");
                     if (nativeSubWindowPtr != 0L) {
                         nativeOnWindowTouchOutside(nativeSubWindowPtr);
@@ -219,8 +222,8 @@ public class SubWindow {
      * Dispatch touch event to main window.
      */
     public boolean dispatchTouchEventToMainWindow(MotionEvent event) {
-        int touchX = (int)event.getX() + windowParam.x;
-        int touchY = (int)event.getY() + windowParam.y;
+        int touchX = (int) event.getX() + windowParam.x;
+        int touchY = (int) event.getY() + windowParam.y;
         MotionEvent newEvent = MotionEvent.obtain(event.getDownTime(), event.getEventTime(), event.getAction(),
             touchX, touchY, event.getMetaState());
         mainView.dispatchTouchEvent(newEvent);
@@ -437,7 +440,6 @@ public class SubWindow {
         }
     }
 
-    ///////////////////////////Members Getter & Setter/////////////////////////////////////////////
     private String name;
     private int windowId = InstanceIdGenerator.getAndIncrement();
     private int parentId;

@@ -98,26 +98,16 @@ public class StageApplicationDelegate {
     private static final String ARCH_ARM64 = "arm64-v8a";
 
     private static final String ARCH_ARM = "armeabi-v7a";
-    
+
     private static final String ARCH_X86 = "x86_64";
+
+    private static final String CACERT_FILE = "/cacert.ca";
 
     private static final int ERR_INVALID_PARAMETERS = -1;
 
     private static final int ERR_OK = 0;
 
-    private static final String CACERT_FILE = "/cacert.ca";
-
-    private Application stageApplication = null;
-
-    private volatile Activity topActivity = null;
-
-    private static boolean isInitialized = false;
-
     private static final int DEFAULT_VERSION_CODE = -1;
-
-    private AcePlatformCapability platformCapability = null;
-
-    private static boolean isCopyNativeLibs = false;
 
     private static final int LOG_MIN = 0;
 
@@ -126,6 +116,16 @@ public class StageApplicationDelegate {
     private static final int COUNT_ONE = 1;
 
     private static final int COUNT_ZERO = 0;
+
+    private static boolean isInitialized = false;
+
+    private static boolean isCopyNativeLibs = false;
+
+    private Application stageApplication = null;
+
+    private volatile Activity topActivity = null;
+
+    private AcePlatformCapability platformCapability = null;
 
     private AtomicInteger activityCount = new AtomicInteger(0);
 
@@ -145,9 +145,9 @@ public class StageApplicationDelegate {
         try {
             String str = stageApplication.getApplicationContext().getApplicationInfo().nativeLibraryDir;
             String architecture = str.substring(str.lastIndexOf('/') + 1);
-            if (architecture.equals("arm64")) {
+            if ("arm64".equals(architecture)) {
                 architecture = ARCH_ARM64;
-            } else if (architecture.equals("arm")) {
+            } else if ("arm".equals(architecture)) {
                 architecture = ARCH_ARM;
             } else {
                 architecture = ARCH_X86;
@@ -205,7 +205,7 @@ public class StageApplicationDelegate {
             Log.e(LOG_TAG, "get Assets path failed, error: " + e.getMessage());
         }
         setResourcesFilePrefixPath(stageApplication.getApplicationContext().getFilesDir().getPath() +
-                                    "/"+ ASSETS_SUB_PATH);
+                                    "/" + ASSETS_SUB_PATH);
         setLocaleInfo();
         Trace.endSection();
 
@@ -213,7 +213,7 @@ public class StageApplicationDelegate {
         initConfiguration();
         setPackageName();
         File file = stageApplication.getExternalFilesDir((String) null);
-        if(file != null){
+        if (file != null) {
             createCacertFile(file.getAbsolutePath());
         }
 
@@ -354,7 +354,7 @@ public class StageApplicationDelegate {
                 String subPath;
                 if ("".equals(path)) {
                     subPath = list[i];
-                } else if (list[i].equals(RESOURCES_DIR) || list[i].equals(SYSTEMRES_DIR)) {
+                } else if (RESOURCES_DIR.equals(list[i]) || SYSTEMRES_DIR.equals(list[i])) {
                     continue;
                 } else {
                     subPath = path + "/" + list[i];
@@ -407,8 +407,8 @@ public class StageApplicationDelegate {
         int oldVersionCode = sharedPreferences.getInt(APP_VERSION_CODE, DEFAULT_VERSION_CODE);
         boolean isDebug = isApkInDebug(stageApplication);
         Log.i(LOG_TAG, "Old version code is: " + oldVersionCode +
-                       ", current version code is: " + versionCode +
-                       ", apk is debug: " + isDebug);
+            ", current version code is: " + versionCode +
+            ", apk is debug: " + isDebug);
         if (!isDebug && oldVersionCode >= versionCode) {
             Log.i(LOG_TAG, "The resource has been copied.");
             return;
@@ -439,7 +439,7 @@ public class StageApplicationDelegate {
         for (String resourcesName : moduleResources) {
             copyFilesFromAssets(ASSETS_SUB_PATH + "/" + resourcesName,
                     stageApplication.getApplicationContext().getFilesDir().getPath() +
-                    "/" + ASSETS_SUB_PATH+ "/" + resourcesName);
+                    "/" + ASSETS_SUB_PATH + "/" + resourcesName);
         }
 
         SharedPreferences.Editor edit = sharedPreferences.edit();
@@ -515,7 +515,8 @@ public class StageApplicationDelegate {
 
     private double getDeviceTypeByPhysicalSize() {
         // Find the current window manager, if none is found we default to the current device as a mobile phone.
-        WindowManager windowManager = (WindowManager) stageApplication.getSystemService(stageApplication.WINDOW_SERVICE);
+        WindowManager windowManager = (WindowManager) stageApplication
+                .getSystemService(stageApplication.WINDOW_SERVICE);
         if (windowManager == null) {
             return 0;
         }
@@ -815,7 +816,7 @@ public class StageApplicationDelegate {
                 if (files == null) {
                     return;
                 }
-                for (File file: files) {
+                for (File file : files) {
                     readFile(writer, file);
                 }
             } finally {
@@ -823,7 +824,7 @@ public class StageApplicationDelegate {
             }
         } catch (FileNotFoundException e) {
             Log.e(LOG_TAG, "read cacert err: " + e.getMessage());
-         } catch (IOException e) {
+        } catch (IOException e) {
             Log.e(LOG_TAG, "read cacert err: " + e.getMessage());
         }
     }

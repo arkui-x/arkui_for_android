@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since 1
  */
 public final class InstanceIdGenerator {
-
     private static final AtomicInteger ID_GENERATOR = new AtomicInteger(1);
 
     /**

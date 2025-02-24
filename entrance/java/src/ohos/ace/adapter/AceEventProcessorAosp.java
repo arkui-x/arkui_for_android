@@ -345,11 +345,12 @@ public class AceEventProcessorAosp {
         packet.putLong(eventSourceTransKeySource(event.getSource()));
     }
 
-    private static void addMouseToBuffer(MotionEvent event, int actionIndex, int actionType, int mouseKey, ByteBuffer packet, float lastX, float lastY) {
+    private static void addMouseToBuffer(MotionEvent event, int actionIndex, int actionType, int mouseKey,
+            ByteBuffer packet, float lastX, float lastY) {
         if (actionType == ActionType.UNKNOWN) {
             return;
         }
-  
+
         long timeStamp = event.getEventTime() * 1000;
         packet.putDouble(event.getX(actionIndex));                      // physicalX;
         packet.putDouble(event.getY(actionIndex));                      // physicalY;
@@ -370,11 +371,11 @@ public class AceEventProcessorAosp {
 
     public static int eventSourceTransKeySource(int eventSource) {
         int keySource = KeySourceType.NONE;
-        switch(eventSource) {
+        switch (eventSource) {
             case InputDevice.SOURCE_ANY: // 0xffffff00
                 keySource = KeySourceType.NONE;
                 break;
-            case InputDevice.SOURCE_CLASS_NONE: // 0x00000000 
+            case InputDevice.SOURCE_CLASS_NONE: // 0x00000000
                 keySource = KeySourceType.NONE;
                 break;
             case InputDevice.SOURCE_KEYBOARD: // 0x00000101
@@ -391,14 +392,14 @@ public class AceEventProcessorAosp {
                 break;
             default:
                 keySource = KeySourceType.TOUCH;
-                break; 
+                break;
         }
         return keySource;
     }
 
     public static int ToolTypeTransSourceTool(int toolType) {
         int sourceTool = SourceTool.UNKNOWN;
-        switch(toolType) {
+        switch (toolType) {
             case MotionEvent.TOOL_TYPE_ERASER:
                 sourceTool = SourceTool.UNKNOWN;
                 break;
@@ -408,11 +409,11 @@ public class AceEventProcessorAosp {
             case MotionEvent.TOOL_TYPE_MOUSE:
                 sourceTool = SourceTool.MOUSE;
                 break;
-            case MotionEvent.TOOL_TYPE_STYLUS: 
+            case MotionEvent.TOOL_TYPE_STYLUS:
                 sourceTool = SourceTool.PEN;
                 break;
-            default: 
-                break; 
+            default:
+                break;
         }
         return sourceTool;
     }
@@ -434,7 +435,7 @@ public class AceEventProcessorAosp {
         }
         if (isMeta) {
             ctrlKeysBit |= CtrlKeysBit.META;
-        }     
+        }
         return ctrlKeysBit;
     }
 

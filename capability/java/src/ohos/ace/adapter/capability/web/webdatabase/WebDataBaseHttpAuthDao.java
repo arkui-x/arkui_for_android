@@ -79,5 +79,5 @@ public class WebDataBaseHttpAuthDao {
         cursor.close();
 
         return httpAuth;
-  }
+    }
 }

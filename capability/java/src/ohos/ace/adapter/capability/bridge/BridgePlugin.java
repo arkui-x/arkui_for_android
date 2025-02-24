@@ -312,11 +312,11 @@ public abstract class BridgePlugin {
 
     /**
      * Call ArkTS registered method
-     * 
+     *
      * @param methodName ArkTS registered method's name
      * @param parameters method's parameters
      */
-    public void callMethod(String methodName,  Object... parameters) {
+    public void callMethod(String methodName, Object... parameters) {
         MethodData methodData = new MethodData(methodName, parameters);
         this.callMethod(methodData);
     }

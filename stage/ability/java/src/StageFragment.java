@@ -60,6 +60,12 @@ public class StageFragment extends Fragment {
 
     private static final String INSTANCE_DEFAULT_NAME = "default";
 
+    private static final String WANT_PARAMS = "params";
+
+    private static final int ERR_INVALID_PARAMETERS = -1;
+
+    private static final int ERR_OK = 0;
+
     private static final int WANT_PARAMS_TYPE = 10;
 
     private static final String PHOTO_VIDEO_TYPE = "image/*;video/*";
@@ -101,12 +107,6 @@ public class StageFragment extends Fragment {
     private WindowView windowView = null;
 
     private FrameLayout framelayout;
-
-    private static final String WANT_PARAMS = "params";
-
-    private static final int ERR_INVALID_PARAMETERS = -1;
-
-    private static final int ERR_OK = 0;
 
     private AcePlatformPlugin platformPlugin = null;
 
@@ -158,7 +158,7 @@ public class StageFragment extends Fragment {
                 FrameLayout.LayoutParams.MATCH_PARENT);
             framelayout.setLayoutParams(params);
             framelayout.addView(windowView, 0);
-        }        
+        }
         return framelayout;
     }
 
@@ -166,7 +166,7 @@ public class StageFragment extends Fragment {
     public void onResume() {
         Log.i(LOG_TAG, "OnResume called, instance name:" + getInstanceName());
         super.onResume();
-        if(isHidden()){
+        if (isHidden()) {
             Log.i(LOG_TAG, "OnResume called, isHidden");
             isToResume = true;
             return;
@@ -182,7 +182,7 @@ public class StageFragment extends Fragment {
     }
 
     @Override
-    public void onHiddenChanged(boolean isHidden){
+    public void onHiddenChanged(boolean isHidden) {
         super.onHiddenChanged(isHidden);
         Log.i(LOG_TAG, "onHiddenChanged called, isHidden:" + isHidden);
         if (!isHidden && isToResume) {
@@ -204,7 +204,7 @@ public class StageFragment extends Fragment {
         if (getView() == null || windowView == null) {
             return;
         }
-        Trace.beginSection("StageFragment::setUserVisibleHint");  
+        Trace.beginSection("StageFragment::setUserVisibleHint");
         if (isVisibleToUser) {
             Log.i(LOG_TAG, "StageFragment isVisible to User, instance name:" + getInstanceName());
             if (platformPlugin != null) {
@@ -398,9 +398,9 @@ public class StageFragment extends Fragment {
 
     /**
      * Set the instance name, should called before super.onCreate()
-    *
-    * @param name the instance name to set
-    */
+     *
+     * @param name the instance name to set
+     */
     public void setInstanceName(String name) {
         if (name != null && !name.isEmpty()) {
             instanceName = name + String.valueOf(instanceId);
@@ -415,9 +415,9 @@ public class StageFragment extends Fragment {
 
     /**
      * Get the instance name.
-    *
-    * @return The instanceName.
-    */
+     *
+     * @return The instanceName.
+     */
     public String getInstanceName() {
         return instanceName == null ? INSTANCE_DEFAULT_NAME : instanceName;
     }

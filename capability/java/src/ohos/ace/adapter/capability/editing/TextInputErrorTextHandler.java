@@ -21,7 +21,6 @@ package ohos.ace.adapter.capability.editing;
  * @since 10
  */
 public interface TextInputErrorTextHandler {
-
     /**
      * called when text input error text changed
      *

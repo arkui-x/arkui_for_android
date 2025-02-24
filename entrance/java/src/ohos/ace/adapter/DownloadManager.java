@@ -140,7 +140,7 @@ public class DownloadManager {
 
             try {
                 SSLContext sslContext = SSLContext.getInstance("SSL");
-                sslContext.init(null, new TrustManager[] { new AceX509TrustManager() }, new SecureRandom());
+                sslContext.init(null, new TrustManager[] {new AceX509TrustManager()}, new SecureRandom());
                 HostnameVerifier ignoreHostnameVerifier = new HostnameVerifier() {
                     public boolean verify(String host, SSLSession sslSession) {
                         if (host == null || host.isEmpty()) {

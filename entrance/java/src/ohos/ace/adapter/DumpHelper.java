@@ -76,14 +76,17 @@ public final class DumpHelper {
                     "    -render                        dump information of Render tree." + System.lineSeparator() +
                     "    -layer                         dump information of Layer tree." + System.lineSeparator() +
                     "    -foucs                         dump information of Focus tree." + System.lineSeparator() +
-                    "    -frontend                      dump information of Frontend." + System.lineSeparator() +
-                    "    -pipeline                      dump information of Pipeline context." + System.lineSeparator() +
-                    "    -memory                        dump information of Memory usage." + System.lineSeparator() +
+                    "    -frontend                      dump information of Frontend."
+                    + System.lineSeparator() +
+                    "    -pipeline                      dump information of Pipeline context."
+                    + System.lineSeparator() + "    -memory                        dump information of Memory usage."
+                    + System.lineSeparator() +
                     "    -accessibility                 dump information of accessibility tree."
                     + System.lineSeparator() +
                     "    -accessibility <ID>            dump the property of accessibility node with <ID>."
                     + System.lineSeparator() +
-                    "    -accessibility <ID> <action>   dispatch the accessibility event to node with <ID>, <action> as below:."
+                    "    -accessibility <ID> <action>   dispatch the accessibility event to node with <ID>, "
+                    + "<action> as below:."
                     + System.lineSeparator() +
                     "                                     2  --- custom event" + System.lineSeparator() +
                     "                                     10 --- click event" + System.lineSeparator() +

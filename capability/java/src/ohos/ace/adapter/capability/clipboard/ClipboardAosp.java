@@ -60,7 +60,7 @@ public class ClipboardAosp extends ClipboardPluginBase {
 
     @Override
     public String getData() {
-        if(clipManager == null){
+        if (clipManager == null) {
             initClipManager();
         }
         if (clipManager != null) {
@@ -78,7 +78,7 @@ public class ClipboardAosp extends ClipboardPluginBase {
 
     @Override
     public void setData(String data) {
-        if(clipManager == null){
+        if (clipManager == null) {
             initClipManager();
         }
         if (clipManager != null) {
@@ -89,7 +89,7 @@ public class ClipboardAosp extends ClipboardPluginBase {
 
     @Override
     public boolean hasData() {
-        if(clipManager == null){
+        if (clipManager == null) {
             initClipManager();
         }
         if (clipManager != null) {
@@ -100,7 +100,7 @@ public class ClipboardAosp extends ClipboardPluginBase {
 
     @Override
     public void clear() {
-        if(clipManager == null){
+        if (clipManager == null) {
             initClipManager();
         }
         if (clipManager != null) {
