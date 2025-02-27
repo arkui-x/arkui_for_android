@@ -63,6 +63,8 @@ bool SystemProperties::textTraceEnable_ = false;
 bool SystemProperties::syntaxTraceEnable_ = false;
 bool SystemProperties::accessibilityEnabled_ = false;
 bool SystemProperties::windowAnimationEnabled_ = false;
+bool SystemProperties::debugEnabled_ = false;
+DebugFlags SystemProperties::debugFlags_ = 0;
 std::atomic<bool> SystemProperties::debugBoundaryEnabled_(false);
 bool SystemProperties::debugAutoUIEnabled_ = false;
 bool SystemProperties::debugOffsetLogEnabled_ = false;

@@ -268,6 +268,11 @@ void SubwindowAndroid::HideWindow()
     context->SendEventToAccessibility(event);
 }
 
+bool SubwindowAndroid::IsSameDisplayWithParentWindow(bool useInitializedId)
+{
+    return false;
+}
+
 void SubwindowAndroid::SetHotAreas(const std::vector<Rect>& rects, int32_t overlayId)
 {
     LOGI("Set hot areas enter.");
@@ -768,4 +773,27 @@ bool SubwindowAndroid::ShowSelectOverlay(const RefPtr<NG::FrameNode>& overlayNod
 void SubwindowAndroid::ResizeWindowForMenu()
 {
 }
+
+MenuWindowState SubwindowAndroid::GetAttachState()
+{
+    return attachState_;
+}
+
+MenuWindowState SubwindowAndroid::GetDetachState()
+{
+    return detachState_;
+}
+
+void SubwindowAndroid::ShowBindSheetNG(bool isShow, std::function<void(const std::string&)>&& callback,
+    std::function<RefPtr<NG::UINode>()>&& buildNodeFunc, std::function<RefPtr<NG::UINode>()>&& buildtitleNodeFunc,
+    NG::SheetStyle& sheetStyle, std::function<void()>&& onAppear, std::function<void()>&& onDisappear,
+    std::function<void()>&& shouldDismiss, std::function<void(const int32_t)>&& onWillDismiss,
+    std::function<void()>&& onWillAppear, std::function<void()>&& onWillDisappear,
+    std::function<void(const float)>&& onHeightDidChange,
+    std::function<void(const float)>&& onDetentsDidChange,
+    std::function<void(const float)>&& onWidthDidChange,
+    std::function<void(const float)>&& onTypeDidChange,
+    std::function<void()>&& sheetSpringBack, const RefPtr<NG::FrameNode>& targetNode)
+ {
+ }
 } // namespace Ace

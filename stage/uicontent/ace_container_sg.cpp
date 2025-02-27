@@ -712,7 +712,7 @@ void AceContainerSG::UpdateConfiguration(const std::string& colorMode, const std
         configurationChange.directionUpdate = true;
 
         CHECK_NULL_VOID(pipelineContext_);
-        auto dragDropManager = static_cast<NG::PipelineContext*>(pipelineContext_.GetRawPtr())->GetDragDropManager();
+        auto dragDropManager = AceType::DynamicCast<NG::PipelineContext>(pipelineContext_)->GetDragDropManager();
         if (dragDropManager && dragDropManager->IsItemDragging()) {
             dragDropManager->CancelItemDrag();
         }
