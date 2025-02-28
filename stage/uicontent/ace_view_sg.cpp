@@ -64,6 +64,8 @@ void AceViewSG::RegisterKeyEventCallback(KeyEventCallback&& callback)
     keyEventCallback_ = std::move(callback);
 }
 
+void AceViewSG::RegisterNonPointerEventCallback(NonPointerEventCallback&& callback) {}
+
 void AceViewSG::RegisterMouseEventCallback(MouseEventCallback&& callback)
 {
     ACE_DCHECK(callback);
@@ -205,7 +207,7 @@ void AceViewSG::ProcessDragEvent(const std::shared_ptr<OHOS::MMI::PointerEvent>&
 {
     CHECK_NULL_VOID(pointerEvent);
     DragEventAction action;
-    PointerEvent event;
+    DragPointerEvent event;
     ConvertPointerEvent(pointerEvent, event);
     CHECK_NULL_VOID(dragEventCallback_);
     int32_t orgAction = pointerEvent->GetPointerAction();

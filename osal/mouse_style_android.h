@@ -28,7 +28,6 @@ public:
     ~MouseStyleAndroid() = default;
     bool SetPointerStyle(int32_t windowId, MouseFormat pointerStyle) const override;
     int32_t GetPointerStyle(int32_t windowId, int32_t& pointerStyle) const override;
-    bool ChangePointerStyle(int32_t windowId, MouseFormat mouseFormat) const override;
 };
 
 } // namespace OHOS::Ace

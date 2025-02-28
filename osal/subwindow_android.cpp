@@ -748,4 +748,8 @@ void SubwindowAndroid::HideEventColumn()
     ContainerScope scope(parentContainerId_);
     manager->RemoveEventColumn();
 }
+
+void SubwindowAndroid::ResizeWindowForMenu()
+{
+}
 } // namespace Ace
