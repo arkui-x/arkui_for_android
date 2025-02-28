@@ -804,10 +804,14 @@ void AceContainerSG::InitThemeManager()
         } else {
             ThemeConstants::InitDeviceType();
             auto themeManager = AceType::MakeRefPtr<ThemeManagerImpl>();
+            LOGI("UIContent SetThemeManager enter.");
             pipelineContext->SetThemeManager(themeManager);
+            LOGI("UIContent SetThemeManager end.");
             themeManager->InitResource(resourceInfo);
+            LOGI("UIContent InitResource end.");
             themeManager->SetColorScheme(colorScheme);
             themeManager->LoadResourceThemes();
+            LOGI("UIContent LoadResourceThemes end.");
             aceView->SetBackgroundColor(themeManager->GetBackgroundColor());
         }
         if (colorScheme == ColorScheme::SCHEME_DARK) {
