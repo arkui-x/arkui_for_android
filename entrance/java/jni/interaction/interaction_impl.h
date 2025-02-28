@@ -80,6 +80,10 @@ public:
 
     int32_t SetDraggableState(bool state) override;
 
+    int32_t GetAppDragSwitchState(bool& state) override;
+
+    void SetDraggableStateAsync(bool state, int64_t downTime) override;
+
     int32_t UpdatePointAction(const std::shared_ptr<MMI::PointerEvent>& pointerEvent);
     
     int32_t GetPointerId()
