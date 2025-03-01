@@ -136,14 +136,15 @@ void ResourceAdapterImpl::Init(const ResourceInfo& resourceInfo)
     resourcePathStr_ = packagePath;
     std::string sysResIndexPath = packagePath + DELIMITER + "systemres" + DELIMITER + "resources.index";
     auto resConfig = ConvertConfigToGlobal(resourceInfo.GetResourceConfiguration());
+    LOGI("ResourceAdapterImpl ConvertConfigToGlobal end.");
     resConfig_ = resConfig;
     auto hapPath = resourceInfo.GetHapPath();
     if (hapPath.empty()) {
-        LOGI("sysResIndexPath: %s", sysResIndexPath.c_str());
+        LOGI("hapPath empty, sysResIndexPath: %s", sysResIndexPath.c_str());
         std::shared_ptr<Global::Resource::ResourceManager> newResMgr(Global::Resource::CreateResourceManager());
         auto sysResRet = newResMgr->AddResource(sysResIndexPath.c_str());
         auto configRet = newResMgr->UpdateResConfig(*resConfig);
-        LOGI("AddSysRes result=%{public}d, UpdateResConfig result=%{public}d,"
+        LOGI("hapPath empty, AddSysRes result=%{public}d, UpdateResConfig result=%{public}d,"
              "ori=%{public}d, dpi=%{public}d, device=%{public}d, colorMode=%{public}d,",
             sysResRet, configRet, resConfig->GetDirection(), resConfig->GetScreenDensity(),
             resConfig->GetDeviceType(), resConfig->GetColorMode());
@@ -154,13 +155,15 @@ void ResourceAdapterImpl::Init(const ResourceInfo& resourceInfo)
         std::string token;
         while (std::getline(iss, token, ':')) {
             std::shared_ptr<Global::Resource::ResourceManager> newResMgr(Global::Resource::CreateResourceManager());
+            LOGE("ResourceAdapterImpl CreateResourceManager end.");
             if (!newResMgr) {
                 LOGE("create resource manager from Global::Resource::CreateResourceManager() failed!");
             }
             std::string appResIndexPath = token + DELIMITER + "resources.index";
             auto appResRet = newResMgr->AddResource(appResIndexPath.c_str());
-            LOGI("sysResIndexPath: %s", sysResIndexPath.c_str());
+            LOGI("appResIndexPath: %s", appResIndexPath.c_str());
             auto sysResRet = newResMgr->AddResource(sysResIndexPath.c_str());
+            LOGI("sysResIndexPath: %s", sysResIndexPath.c_str());
 
             auto configRet = newResMgr->UpdateResConfig(*resConfig);
             LOGI("AddAppRes result=%{public}d, AddSysRes result=%{public}d,  UpdateResConfig result=%{public}d,"
