@@ -53,6 +53,7 @@ public:
         const int32_t clientId, const std::shared_ptr<TextEditingValue>& value, bool needFireChangeEvent = true) const;
     void PerformAction(const int32_t clientId, const TextInputAction action);
     void UpdateInputFilterErrorText(const int32_t clientId, const std::string& errorText);
+    void NotifyKeyboardClosedByUser(const int32_t clientId);
 
 private:
     // All operations must be called on Ace UI thread.

@@ -37,6 +37,7 @@ public:
     static void UpdateEditingState(JNIEnv* env, jclass clazz, jint inputClientId, jstring editingState);
     static void PerformAction(JNIEnv* env, jclass clazz, jint clientId, jint actionValue);
     static void UpdateInputFilterErrorText(JNIEnv* env, jclass clazz, jint inputClientId, jstring errorText);
+    static void NotifyKeyboardClosedByUser(JNIEnv* env, jclass clazz, jint clientId);
 
     // Called by C++
     static bool SetClient(int32_t clientId, const TextInputConfiguration& config, const int32_t instanceId);
