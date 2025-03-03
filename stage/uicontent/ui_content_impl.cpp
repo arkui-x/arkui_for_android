@@ -690,6 +690,10 @@ void UIContentImpl::UpdateViewportConfig(const ViewportConfig& config, OHOS::Ros
 {
     LOGI("UIContentImpl: UpdateViewportConfig %{public}s", config.ToString().c_str());
     ACE_SCOPED_TRACE("UpdateViewportConfig %s", config.ToString().c_str());
+    
+    auto orientation = config.Height() >= config.Width() ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE;
+    SystemProperties::InitDeviceInfo(config.Width(), config.Height(), orientation, config.Density(), false);
+
     SystemProperties::SetResolution(config.Density());
     SystemProperties::SetDeviceOrientation(
         config.Height() >= config.Width() ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE);
