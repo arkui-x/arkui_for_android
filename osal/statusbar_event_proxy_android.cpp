@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,24 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#include "adapter/android/osal/mouse_style_android.h"
+#include "core/event/statusbar/statusbar_event_proxy.h"
 
 namespace OHOS::Ace {
+std::unique_ptr<StatusBarEventProxy> StatusBarEventProxy::instance_;
+std::mutex StatusBarEventProxy::mutex_;
 
-RefPtr<MouseStyle> MouseStyle::CreateMouseStyle()
+StatusBarEventProxy* StatusBarEventProxy::GetInstance()
 {
-    return AceType::MakeRefPtr<MouseStyleAndroid>();
+    return nullptr;
 }
-
-bool MouseStyleAndroid::SetPointerStyle(int32_t windowId, MouseFormat pointerStyle) const
-{
-    return false;
-}
-
-int32_t MouseStyleAndroid::GetPointerStyle(int32_t windowId, int32_t& pointerStyle) const
-{
-    return -1;
-}
-
 } // namespace OHOS::Ace

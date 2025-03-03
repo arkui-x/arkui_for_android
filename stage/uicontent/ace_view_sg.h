@@ -69,6 +69,7 @@ public:
 
     void RegisterTouchEventCallback(TouchEventCallback&& callback) override;
     void RegisterKeyEventCallback(KeyEventCallback&& callback) override;
+    void RegisterNonPointerEventCallback(NonPointerEventCallback&& callback) override;
     void RegisterMouseEventCallback(MouseEventCallback&& callback) override;
     void RegisterRotationEventCallback(RotationEventCallBack&& callback) override;
     void RegisterViewChangeCallback(ViewChangeCallback&& callback) override;

@@ -24,4 +24,10 @@ TouchEvent ConvertToTouchEvent(const std::shared_ptr<MMI::PointerEvent>& srcPoin
 void ConvertToMouseEvent(MouseEvent& mouseEvent, const std::shared_ptr<MMI::PointerEvent>& srcPointerEvent) {}
 
 void ConvertToAxisEvent(AxisEvent& event, const std::shared_ptr<MMI::PointerEvent>& srcPointerEvent) {}
+
+void SetClonedPointerEvent(const MMI::PointerEvent* pointerEvent, ArkUITouchEvent* arkUITouchEventCloned) {}
+
+void SetPostPointerEvent(TouchEvent& touchEvent, ArkUITouchEvent* arkUITouchEventCloned) {}
+
+void DestroyRawPointerEvent(ArkUITouchEvent* arkUITouchEvent) {}
 }
