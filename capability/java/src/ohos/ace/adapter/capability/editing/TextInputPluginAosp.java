@@ -194,6 +194,10 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
                 filterArray.add(inputFilter);
             }
             int maxInputLength = config.getMaxInputLength();
+            if (maxInputLength > 0) {
+                LengthFilter lengthFilter = new InputFilter.LengthFilter(maxInputLength);
+                filterArray.add(lengthFilter);
+            }
             if (filterArray.size() > 0) {
                 editable.setFilters(filterArray.toArray(new InputFilter[filterArray.size()]));
             }
