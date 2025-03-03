@@ -22,7 +22,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.InputFilter;
-import android.text.InputFilter.LengthFilter;
 import android.text.InputType;
 import android.text.Selection;
 import android.view.View;
@@ -194,11 +193,6 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
                 TextInputFilter inputFilter = new TextInputFilter(inputFilterRule);
                 inputFilter.setTextInputErrorTextHandler(this);
                 filterArray.add(inputFilter);
-            }
-            int maxInputLength = config.getMaxInputLength();
-            if (maxInputLength > 0) {
-                LengthFilter lengthFilter = new InputFilter.LengthFilter(maxInputLength);
-                filterArray.add(lengthFilter);
             }
             if (filterArray.size() > 0) {
                 editable.setFilters(filterArray.toArray(new InputFilter[filterArray.size()]));
