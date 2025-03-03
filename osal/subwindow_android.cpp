@@ -794,6 +794,24 @@ void SubwindowAndroid::ShowBindSheetNG(bool isShow, std::function<void(const std
     std::function<void(const float)>&& onWidthDidChange,
     std::function<void(const float)>&& onTypeDidChange,
     std::function<void()>&& sheetSpringBack, const RefPtr<NG::FrameNode>& targetNode)
- {
- }
+{
+    auto aceContainer = Platform::AceContainerSG::GetContainer(childContainerId_);
+    CHECK_NULL_VOID(aceContainer);
+    auto context = DynamicCast<NG::PipelineContext>(aceContainer->GetPipelineContext());
+    CHECK_NULL_VOID(context);
+    auto overlay = context->GetOverlayManager();
+    CHECK_NULL_VOID(overlay);
+    ResizeWindow();
+    ShowWindow();
+    CHECK_NULL_VOID(window_);
+    window_->SetFullScreen(true);
+    window_->SetTouchable(true);
+    ContainerScope scope(childContainerId_);
+    overlay->OnBindSheet(isShow, std::move(callback), std::move(buildNodeFunc),
+        std::move(buildtitleNodeFunc), sheetStyle, std::move(onAppear), std::move(onDisappear),
+        std::move(shouldDismiss), std::move(onWillDismiss),
+        std::move(onWillAppear), std::move(onWillDisappear), std::move(onHeightDidChange),
+        std::move(onDetentsDidChange), std::move(onWidthDidChange), std::move(onTypeDidChange),
+        std::move(sheetSpringBack), targetNode);
+}
 } // namespace Ace
