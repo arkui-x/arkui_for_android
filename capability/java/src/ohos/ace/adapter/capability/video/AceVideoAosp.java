@@ -120,7 +120,7 @@ public class AceVideoAosp extends AceVideoBase
 
     private boolean isTrueBack = false;
 
-    private boolean isTexture= false;
+    private boolean isTexture = false;
 
     private boolean isStoped = false;
 
@@ -310,7 +310,7 @@ public class AceVideoAosp extends AceVideoBase
                                 mediaPlayer.stop();
                             }
                             state = PlayState.STOPPED;
-                        }else{
+                        } else {
                             if (mediaPlayer.isPlaying()) {
                                 mediaPlayer.pause();
                             }
@@ -346,8 +346,7 @@ public class AceVideoAosp extends AceVideoBase
                                 ALog.e(LOG_TAG, "run firePrepared, IllegalStateException.");
                             }
                         }
-                    }
-                    finally {
+                    } finally {
                         mediaPlayerLock.unlock();
                     }
                 }
@@ -386,7 +385,6 @@ public class AceVideoAosp extends AceVideoBase
         ALog.i(LOG_TAG, "onError");
         runOnUIThread(
             new Runnable() {
-
                 /**
                  * This is called to fire error event.
                  */
@@ -417,7 +415,6 @@ public class AceVideoAosp extends AceVideoBase
     public void onCompletion(MediaPlayer mp) {
         runOnUIThread(
             new Runnable() {
-
                 /**
                  * This is called to fire completion event.
                  */
@@ -433,7 +430,6 @@ public class AceVideoAosp extends AceVideoBase
     public void onSeekComplete(MediaPlayer mp) {
         runOnUIThread(
             new Runnable() {
-
                 /**
                  * This is called to fire seek complete event.
                  */
@@ -446,7 +442,7 @@ public class AceVideoAosp extends AceVideoBase
                             } catch (IllegalStateException ignored) {
                                 ALog.e(LOG_TAG, "run failed, IllegalStateException.");
                             }
-                        } 
+                        }
                     } finally {
                         mediaPlayerLock.unlock();
                     }
@@ -661,7 +657,7 @@ public class AceVideoAosp extends AceVideoBase
             }
             try {
                 if (isNeedResume) {
-                    ALog.i(LOG_TAG, "getPosition return:  "+"currentpos=" + position / SECOND_TO_MSEC);
+                    ALog.i(LOG_TAG, "getPosition return:  " + "currentpos=" + position / SECOND_TO_MSEC);
                     return "currentpos=" + position / SECOND_TO_MSEC;
                 } else {
                     position = mediaPlayer.getCurrentPosition();
@@ -675,7 +671,6 @@ public class AceVideoAosp extends AceVideoBase
         }
         runOnUIThread(
             new Runnable() {
-
                 /**
                  * This is called to fire play currenttime.
                  */
@@ -844,7 +839,7 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public void onActivityResume() {
         runAsync(() -> {
-           if (isResumePlaying) {
+            if (isResumePlaying) {
                 start(null);
                 isResumePlaying = false;
                 runOnUIThread(() -> {
@@ -861,7 +856,6 @@ public class AceVideoAosp extends AceVideoBase
             pause(null);
             runAsync(
                 new Runnable() {
-
                     /**
                      * This is called to fire play currenttime.
                      */
@@ -884,7 +878,6 @@ public class AceVideoAosp extends AceVideoBase
         if (screenOn) {
             runOnUIThread(
                 new Runnable() {
-
                     /**
                      * Add flags if window is not null.
                      */
@@ -897,7 +890,6 @@ public class AceVideoAosp extends AceVideoBase
         } else {
             runOnUIThread(
                 new Runnable() {
-
                     /**
                      * Clear flags if window is not null.
                      */
@@ -965,7 +957,6 @@ public class AceVideoAosp extends AceVideoBase
             mediaPlayer = null;
             return;
         }
-        
     }
 
     private boolean resume() {

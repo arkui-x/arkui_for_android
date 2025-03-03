@@ -62,7 +62,7 @@ public class AceTexturePluginAosp extends AceResourcePlugin {
      * @return texture id
      */
     public long create(Map<String, String> param) {
-        AceTexture aceTexture = new AceTexture(instanceId, nextTextureId.get(), textureImpl, 
+        AceTexture aceTexture = new AceTexture(instanceId, nextTextureId.get(), textureImpl,
                                                 getEventCallback(), param);
         objectMap.put(nextTextureId.get(), aceTexture);
         registerCallMethod(aceTexture.getCallMethod());

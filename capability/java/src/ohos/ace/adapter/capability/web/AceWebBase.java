@@ -33,8 +33,8 @@ public abstract class AceWebBase {
     private static final String LOG_TAG = "AceWebBase";
 
     /** Should be the same with corresponding var
-    * in core/components/web/resource/web_resource.cpp
-    */
+     * in core/components/web/resource/web_resource.cpp
+     */
     private static final String PARAM_NONE = "";
 
     private static final String PARAM_AND = "#HWJS-&-#";
@@ -308,11 +308,11 @@ public abstract class AceWebBase {
     public abstract void setTouchEvent(MotionEvent event);
 
     /**
-    * This is called to update web layout.
-    *
-    * @param params is param map.
-    * @return result of call.
-    */
+     * This is called to update web layout.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
     public abstract String updateWebLayout(Map<String, String> params);
 
     /**

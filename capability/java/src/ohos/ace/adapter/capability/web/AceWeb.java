@@ -152,21 +152,6 @@ public class AceWeb extends AceWebBase {
 
     private List<WebMessagePort> webMessagePorts = new ArrayList<WebMessagePort>();
 
-    public class AceWebView extends WebView {
-        private static final String LOG_TAG = "AceWebView";
-
-        public AceWebView(Context context) {
-            super(context);
-        }
-
-        @Override
-        protected void onScrollChanged(int l, int t, int oldl, int oldt) {
-            super.onScrollChanged(l, t, oldl, oldt);
-            AceWebScrollObject object = new AceWebScrollObject(l, t);
-            AceWeb.this.fireScrollChanged(object);
-        }
-    }
-
     public AceWeb(long id, Context context, View view, IAceOnResourceEvent callback) {
         super(id, callback);
         this.callback = callback;
@@ -185,6 +170,21 @@ public class AceWeb extends AceWebBase {
 
     public WebView getWebview() {
         return webView;
+    }
+
+    public class AceWebView extends WebView {
+        private static final String LOG_TAG = "AceWebView";
+
+        public AceWebView(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+            super.onScrollChanged(l, t, oldl, oldt);
+            AceWebScrollObject object = new AceWebScrollObject(l, t);
+            AceWeb.this.fireScrollChanged(object);
+        }
     }
 
     /**
@@ -247,7 +247,7 @@ public class AceWeb extends AceWebBase {
             for (int index = 0; index < contentChildCount; index++) {
                 View view = contentView1.getChildAt(index);
                 String viewClassName = view.getClass().getName();
-                if (viewClassName.equals("ohos.ace.adapter.WindowView")) {
+                if ("ohos.ace.adapter.WindowView".equals(viewClassName)) {
                     view.setZ(100.f);
                 } else {
                     view.setZ(-1.f);
@@ -1063,7 +1063,7 @@ public class AceWeb extends AceWebBase {
         for (WebMessagePort port : messagePorts) {
             webMessagePorts.add(port);
         }
-        String[] ports = { WEB_MESSAGE_PORT_ONE, WEB_MESSAGE_PORT_TWO };
+        String[] ports = {WEB_MESSAGE_PORT_ONE, WEB_MESSAGE_PORT_TWO};
         return ports;
     }
 
@@ -1071,10 +1071,10 @@ public class AceWeb extends AceWebBase {
         if (webMessagePorts.isEmpty()) {
             return null;
         }
-        if (port.equals(WEB_MESSAGE_PORT_ONE)) {
+        if (WEB_MESSAGE_PORT_ONE.equals(port)) {
             return webMessagePorts.get(0);
         }
-        if (port.equals(WEB_MESSAGE_PORT_TWO)) {
+        if (WEB_MESSAGE_PORT_TWO.equals(port)) {
             return webMessagePorts.get(1);
         }
         return null;

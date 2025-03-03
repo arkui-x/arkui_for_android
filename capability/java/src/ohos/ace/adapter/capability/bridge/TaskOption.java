@@ -13,14 +13,13 @@
  * limitations under the License.
  */
 
- package ohos.ace.adapter.capability.bridge;
+package ohos.ace.adapter.capability.bridge;
 /**
  * Task option of Bridge.
  *
  * @since 11
  */
 public class TaskOption {
-
     private boolean isSerial_ = true;
 
     /**

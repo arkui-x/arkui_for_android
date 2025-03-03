@@ -38,7 +38,7 @@ import ohos.ace.adapter.ALog;
  *
  * @since 1
  */
-public class TextInputPluginAosp extends TextInputPluginBase implements TextInputErrorTextHandler{
+public class TextInputPluginAosp extends TextInputPluginBase implements TextInputErrorTextHandler {
     private static final String LOG_TAG = "Ace_IME";
 
     private View view;
@@ -140,7 +140,6 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
         ALog.d(LOG_TAG, "showTextInput");
         runOnUIThread(
             new Runnable() {
-
                 /**
                  * Show keyboard.
                  */
@@ -161,7 +160,6 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
         ALog.d(LOG_TAG, "hideTextInput");
         runOnUIThread(
             new Runnable() {
-
                 /**
                  * Hide keyboard.
                  */
@@ -245,7 +243,7 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
     }
 
     @Override
-    public void release(){
+    public void release() {
         this.view = null;
         Delegate.release();
     }

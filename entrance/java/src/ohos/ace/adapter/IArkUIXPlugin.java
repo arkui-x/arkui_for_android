@@ -16,15 +16,15 @@ package ohos.ace.adapter;
 
 /**
  * ArkUI-X plugin.
- * 
+ *
  * Interface to be implemented by all ArkUI-X plugins.
- * 
+ *
  * @since 11
  */
 public interface IArkUIXPlugin {
     /**
      * ArkUI-X plugin registry callback, called at registry.
-     * 
+     *
      * @param pluginContext provides the resources that the plugin might need.
      * @since 11
      */
@@ -32,7 +32,7 @@ public interface IArkUIXPlugin {
 
     /**
      * ArkUI-X plugin unregistry callback, called at unregistry.
-     * 
+     *
      * @since 11
      */
     void onUnRegistry(PluginContext pluginContext);

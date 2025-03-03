@@ -36,7 +36,7 @@ public interface AceEventCallback {
      *
      */
     void onFinish();
-    
+
     /**
      * called when status bar background color has changed.
      *

@@ -192,7 +192,7 @@ public class BridgeSerializer {
 
     private static void writeBoolArray(ByteArrayOutputStream stream, Object data) {
         stream.write(T_LIST_BOOL);
-        List<Boolean> list =  new ArrayList<>();
+        List<Boolean> list = new ArrayList<>();
         for (boolean boolIt : (boolean[]) data) {
             list.add(boolIt);
         }
@@ -234,7 +234,7 @@ public class BridgeSerializer {
 
     private static void writeStringArray(ByteArrayOutputStream stream, Object data) {
         stream.write(T_LIST_STRING);
-        List<String> list = Arrays.asList((String[])data);
+        List<String> list = Arrays.asList((String[]) data);
         writeSize(stream, list.size());
         for (String iter : list) {
             writeString(stream, iter);
@@ -359,7 +359,7 @@ public class BridgeSerializer {
         for (int i = 0; i < length; i++) {
             list.add(readData(data));
         }
-        boolean[] result= new boolean[list.size()];
+        boolean[] result = new boolean[list.size()];
         int count = 0;
         for (Object iter : list) {
             result[count] = (boolean) iter;

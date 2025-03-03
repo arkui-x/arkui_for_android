@@ -49,25 +49,25 @@ public class BridgeManager {
 
     private static final int NO_PARAM = 4;
 
+    private static HashMap<Integer, BridgeManager> managerMap_ = new HashMap<Integer, BridgeManager>();
+
+    private static BridgeBinaryCodec bridgeBinaryCodec_ = BridgeBinaryCodec.getInstance();
+
+    private static Lock managerMapLock_ = new ReentrantLock();
+
     private HashMap<String, BridgePlugin> bridgeMap_;
 
     private HashMap<String, BridgeTaskQueueHandler> handlerMap_;
 
-    private static HashMap<Integer, BridgeManager> managerMap_ = new HashMap<Integer, BridgeManager>();
-
     private Lock bridgeMapLock_ = new ReentrantLock();
-
-    private static Lock managerMapLock_ = new ReentrantLock();
 
     private Lock handlerMapLock_ = new ReentrantLock();
 
     private int instanceId_ = 0;
 
-    private static BridgeBinaryCodec bridgeBinaryCodec_ = BridgeBinaryCodec.getInstance();
-
     /**
      * Constructor of BridgeManager.
-     * 
+     *
      * @param instanceId the id of instance.
      * @return BridgeManager object.
      */
@@ -149,7 +149,8 @@ public class BridgeManager {
                 return false;
             } else {
                 managerMap_.put(instanceId, bridgeManager);
-                ALog.i(LOG_TAG, "The BridgeManager registered successfully, instanceId is " + String.valueOf(instanceId));
+                ALog.i(LOG_TAG,
+                    "The BridgeManager registered successfully, instanceId is " + String.valueOf(instanceId));
                 return true;
             }
         } finally {
@@ -179,7 +180,7 @@ public class BridgeManager {
         }
     }
 
-     /**
+    /**
      * release BridgeManager object.
      *
      */
@@ -540,7 +541,7 @@ public class BridgeManager {
             } else if (!data.getClass().isArray()) {
                 if (!ParameterHelper.isExceedJsSafeInteger(data)) {
                     sendMessageResponseErrorCode(
-                        bridgeName, this.instanceId_,BridgeErrorCode.BRIDGE_EXCEEDS_SAFE_INTEGER);
+                        bridgeName, this.instanceId_, BridgeErrorCode.BRIDGE_EXCEEDS_SAFE_INTEGER);
                     return;
                 }
                 dataJson.put(MESSAGE_JSON_KEY, data);

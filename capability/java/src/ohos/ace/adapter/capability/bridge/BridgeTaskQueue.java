@@ -20,7 +20,6 @@ package ohos.ace.adapter.capability.bridge;
  * @since 11
  */
 public interface BridgeTaskQueue {
-
     /**
      * Get tag of BridgeTaskQueue.
      *

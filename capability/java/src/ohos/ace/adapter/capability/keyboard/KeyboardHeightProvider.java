@@ -99,7 +99,7 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
             screenSizeYMap.put(orientation, screenSizeY);
         }
 
-        int navigationBarMaxHeight = (int)(screenSizeY * navigationBarMaxHeightRate);
+        int navigationBarMaxHeight = (int) (screenSizeY * navigationBarMaxHeightRate);
         if (screenSizeY.intValue() > screenSize.y) {
             if ((screenSizeY - screenSize.y) > navigationBarMaxHeight) {
                 return;
@@ -208,7 +208,7 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
                 public void run() {
                     try {
                         showAtLocation(parentView, Gravity.NO_GRAVITY, 0, 0);
-                    } catch (WindowManager.BadTokenException exception){
+                    } catch (WindowManager.BadTokenException exception) {
                         ALog.e(LOG_TAG, "showAtLocation failed.");
                     }
                 }

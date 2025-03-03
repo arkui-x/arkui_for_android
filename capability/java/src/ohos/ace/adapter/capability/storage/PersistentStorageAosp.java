@@ -30,9 +30,9 @@ public class PersistentStorageAosp extends PersistentStorageBase {
 
     private static final String SHARE_PREFERENCE_NAME = "storage_data";
 
-    private String databasePath;
-
     SharedPreferences mSharePreferences;
+
+    private String databasePath;
 
     private Context context;
 

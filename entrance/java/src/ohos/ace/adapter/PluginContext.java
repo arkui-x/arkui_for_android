@@ -22,9 +22,9 @@ import ohos.ace.adapter.capability.bridge.BridgeManager;
 
 /**
  * Plugin Context.
- * 
+ *
  * provides the resources that the plugin might need.
- * 
+ *
  * @since 11
  */
 public class PluginContext {
@@ -34,7 +34,7 @@ public class PluginContext {
 
     /**
      * Constructor of PluginContext.
-     * 
+     *
      * @param context context of the stageActivity.
      * @param bridgeManager bridgeManager of the stageActivity.
      * @since 11
@@ -47,7 +47,7 @@ public class PluginContext {
 
     /**
      * get context of the stageActivity.
-     * 
+     *
      * @since 11
      */
     public Context getContext() {
@@ -56,7 +56,7 @@ public class PluginContext {
 
     /**
      * get BridgeManager of the stageActivity.
-     * 
+     *
      * @since 11
      */
     public BridgeManager getBridgeManager() {
@@ -65,14 +65,14 @@ public class PluginContext {
 
     /**
      * get absolute path of rawfile.
-     * 
+     *
      * @param name name of module.
      * @param filePath relative path of rawfile.
      * @return absolute path of rawfile.
      * @since 11
      */
     public String getRawFilePath(String name, String filePath) {
-        String path = this.context.getFilesDir().getAbsolutePath() + "/arkui-x/" + name + "/resources/rawfile/" 
+        String path = this.context.getFilesDir().getAbsolutePath() + "/arkui-x/" + name + "/resources/rawfile/"
             + filePath;
         File file = new File(path);
         if (!file.exists()) {
@@ -83,7 +83,7 @@ public class PluginContext {
 
     /**
      * get absolute path of rawfile.
-     * 
+     *
      * @param filePath relative path of rawfile.
      * @return absolute path of rawfile.
      * @since 11

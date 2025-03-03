@@ -25,7 +25,8 @@ public class AceWebDownloadStartObject {
     private String mimetype;
     private long contentLength;
 
-    public AceWebDownloadStartObject(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
+    public AceWebDownloadStartObject(String url, String userAgent, String contentDisposition, String mimetype,
+            long contentLength) {
         this.url = url;
         this.userAgent = userAgent;
         this.contentDisposition = contentDisposition;

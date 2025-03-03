@@ -24,7 +24,6 @@ import android.util.Log;
  * The type Display info.
  */
 public class DisplayInfo {
-
     private static final String TAG = "DisplayInfo";
     private static volatile DisplayInfo _sinstance;
 
