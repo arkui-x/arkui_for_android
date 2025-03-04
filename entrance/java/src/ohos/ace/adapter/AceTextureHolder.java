@@ -19,11 +19,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
 import android.graphics.SurfaceTexture;
-import android.view.Surface;
 
 /**
  * The class to hold all surfaceTextures in plugins
  *
+ * @since 2024-5-31
  */
 public final class AceTextureHolder {
     private static final String LOG_TAG = "AceTextureHolder";
@@ -45,7 +45,7 @@ public final class AceTextureHolder {
      * Add surfaceTexture by id
      *
      * @param id      id of surfaceTexture
-     * @param surface the surfaceTexture object
+     * @param surfaceTexture the surfaceTexture object
      */
     public static void addSurfaceTexture(long id, SurfaceTexture surfaceTexture) {
         ALog.i(LOG_TAG, "addSurfaceTexture");

@@ -45,6 +45,7 @@ public class TextInputFilter implements InputFilter {
 
     /**
      * Set textinput error text handler.
+     *
      * @param handler the handler
      */
     public void setTextInputErrorTextHandler(TextInputErrorTextHandler handler) {

@@ -181,7 +181,7 @@ public class StageApplicationDelegate {
             loadLibraryFromAppData();
         }
         Trace.beginSection("initApplication");
-        AppModeConfig.InitAppMode();
+        AppModeConfig.initAppMode();
 
         attachStageApplication();
 
@@ -338,7 +338,6 @@ public class StageApplicationDelegate {
      *
      * @param assetsList accepts the files in the assets folder
      * @param path       the path under the assets folder
-     * @return result of method return
      */
     private void traverseAssets(List<String> assetsList, String path) {
         AssetManager assetManager = stageApplication.getAssets();
@@ -392,7 +391,7 @@ public class StageApplicationDelegate {
             Log.e(LOG_TAG, "stageApplication is null");
             return;
         }
-        int versionCode = GetAppVersionCode();
+        int versionCode = getAppVersionCode();
         if (versionCode == DEFAULT_VERSION_CODE) {
             Log.e(LOG_TAG, "Getting app version code failed.");
             return;
@@ -829,7 +828,7 @@ public class StageApplicationDelegate {
         }
     }
 
-    private int GetAppVersionCode() {
+    private int getAppVersionCode() {
         int appVersionCode = DEFAULT_VERSION_CODE;
         try {
             PackageInfo packageInfo = stageApplication.getApplicationContext()

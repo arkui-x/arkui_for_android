@@ -28,6 +28,7 @@ public class LoggerAosp implements ILogger {
      *
      * @return true if debuggable, false otherwise.
      */
+    @Override
     public boolean isDebuggable() {
         return false;
     }
@@ -38,6 +39,7 @@ public class LoggerAosp implements ILogger {
      * @param tag message tag
      * @param msg message to print
      */
+    @Override
     public void d(String tag, String msg) {
         Log.d(tag, msg);
     }
@@ -48,6 +50,7 @@ public class LoggerAosp implements ILogger {
      * @param tag message tag
      * @param msg message to print
      */
+    @Override
     public void i(String tag, String msg) {
         Log.i(tag, msg);
     }
@@ -58,6 +61,7 @@ public class LoggerAosp implements ILogger {
      * @param tag message tag
      * @param msg message to print
      */
+    @Override
     public void w(String tag, String msg) {
         Log.w(tag, msg);
     }
@@ -68,6 +72,7 @@ public class LoggerAosp implements ILogger {
      * @param tag message tag
      * @param msg message to print
      */
+    @Override
     public void e(String tag, String msg) {
         Log.e(tag, msg);
     }
@@ -78,6 +83,7 @@ public class LoggerAosp implements ILogger {
      * @param tag message tag
      * @param msg message to print
      */
+    @Override
     public void f(String tag, String msg) {}
 
     /**
@@ -86,6 +92,7 @@ public class LoggerAosp implements ILogger {
      * @param tag message tag
      * @param msg message to print
      */
+    @Override
     public void jankLog(int tag, String msg) {
     }
 }

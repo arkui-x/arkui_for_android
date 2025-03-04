@@ -54,6 +54,9 @@ public class DownloadManager {
 
     private static volatile boolean isSslInited = false;
 
+    private DownloadManager() {
+    }
+
     private static class AceX509TrustManager implements X509TrustManager {
         @Override
         public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
@@ -67,9 +70,6 @@ public class DownloadManager {
         public X509Certificate[] getAcceptedIssuers() {
             return new X509Certificate[0];
         }
-    }
-
-    private DownloadManager() {
     }
 
     /**
@@ -142,6 +142,13 @@ public class DownloadManager {
                 SSLContext sslContext = SSLContext.getInstance("SSL");
                 sslContext.init(null, new TrustManager[] {new AceX509TrustManager()}, new SecureRandom());
                 HostnameVerifier ignoreHostnameVerifier = new HostnameVerifier() {
+                    /**
+                     * Verify the hostname of the server.
+                     *
+                     * @param host the host name of the server.
+                     * @param sslSession the SSL session used for this connection.
+                     * @return true if the host name is acceptable, false otherwise.
+                     */
                     public boolean verify(String host, SSLSession sslSession) {
                         if (host == null || host.isEmpty()) {
                             return false;

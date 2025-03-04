@@ -586,10 +586,7 @@ float AccessibilityElementInfo::GetOffset() const
 AccessibilityElementInfo::AccessibilityElementInfo() {}
 
 AccessibleAction::AccessibleAction(ActionType actionType, const std::string& description)
-{
-    actionType_ = actionType;
-    description_ = description;
-}
+    : actionType_(actionType), description_(description) {}
 
 ActionType AccessibleAction::GetActionType() const
 {
@@ -839,14 +836,12 @@ int32_t AccessibilityElementInfo::GetParentWindowId() const
     return parentWindowId_;
 }
 
-ExtraElementInfo::ExtraElementInfo(const std::map<std::string, std::string> extraElementValueStr,
-    const std::map<std::string, int32_t> extraElementValueInt)
-{
-    extraElementValueStr_ = extraElementValueStr;
-    extraElementValueInt_ = extraElementValueInt;
-}
+ExtraElementInfo::ExtraElementInfo(const std::map<std::string, std::string>& extraElementValueStr,
+    const std::map<std::string, int32_t>& extraElementValueInt)
+    : extraElementValueStr_(extraElementValueStr),
+      extraElementValueInt_(extraElementValueInt) {}
 
-RetError ExtraElementInfo::SetExtraElementInfo(const std::string keyStr, const std::string valueStr)
+RetError ExtraElementInfo::SetExtraElementInfo(const std::string& keyStr, const std::string& valueStr)
 {
     auto extraElementInfoIter = setOfExtraElementInfo.find(keyStr);
     if (extraElementInfoIter != setOfExtraElementInfo.end()) {
@@ -998,13 +993,8 @@ const std::vector<SpanInfo>& AccessibilityElementInfo::GetSpanList() const
 
 SpanInfo::SpanInfo(const int32_t& spanId, const std::string& spanText, const std::string& accessibilityText,
     const std::string& accessibilityDescription, const std::string& accessibilityLevel)
-{
-    spanId_ = spanId;
-    spanText_ = spanText;
-    accessibilityText_ = accessibilityText;
-    accessibilityDescription_ = accessibilityDescription;
-    accessibilityLevel_ = accessibilityLevel;
-}
+    : spanId_(spanId), spanText_(spanText), accessibilityText_(accessibilityText),
+      accessibilityDescription_(accessibilityDescription), accessibilityLevel_(accessibilityLevel) {}
 
 void SpanInfo::SetSpanId(const int32_t spanId)
 {
@@ -1016,21 +1006,20 @@ void SpanInfo::SetSpanText(const std::string spanText)
     spanText_ = spanText;
 }
 
-void SpanInfo::SetAccessibilityText(const std::string accessibilityText)
+void SpanInfo::SetAccessibilityText(const std::string& accessibilityText)
 {
     accessibilityText_ = accessibilityText;
 }
 
-void SpanInfo::SetAccessibilityDescription(const std::string accessibilityDescription)
+void SpanInfo::SetAccessibilityDescription(const std::string& accessibilityDescription)
 {
     accessibilityDescription_ = accessibilityDescription;
 }
 
-void SpanInfo::SetAccessibilityLevel(const std::string accessibilityLevel)
+void SpanInfo::SetAccessibilityLevel(const std::string& accessibilityLevel)
 {
     accessibilityLevel_ = accessibilityLevel;
 }
-
 int32_t SpanInfo::GetSpanId() const
 {
     return spanId_;

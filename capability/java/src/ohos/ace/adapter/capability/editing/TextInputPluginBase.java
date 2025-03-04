@@ -98,6 +98,9 @@ public abstract class TextInputPluginBase {
             return text.substring(start, selectionEnd);
         }
 
+        /**
+         * Release the last value map.
+         */
         public static void release() {
             lastValueMap.clear();
         }

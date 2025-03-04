@@ -29,7 +29,7 @@ bool JniAppModeConfig::Register()
         {
             .name = "nativeInitAppMode",
             .signature = "()V",
-            .fnPtr = reinterpret_cast<void*>(&InitAppMode),
+            .fnPtr = reinterpret_cast<void*>(&initAppMode),
         },
     };
 
@@ -49,7 +49,7 @@ bool JniAppModeConfig::Register()
     return ret;
 }
 
-void JniAppModeConfig::InitAppMode(JNIEnv* env, jclass myclass)
+void JniAppModeConfig::initAppMode(JNIEnv* env, jclass myclass)
 {
     LOGI("JniAppModeConfig: SetAppMode");
     if (env == nullptr) {

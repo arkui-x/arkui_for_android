@@ -23,7 +23,19 @@ import java.nio.ByteBuffer;
  * @since 10
  */
 public interface BridgeBaseCodec<T> {
+    /**
+     * Encode the data.
+     *
+     * @param message The data to be encoded.
+     * @return The encoded data.
+     */
     ByteBuffer encodeData(T message);
 
+    /**
+     * Decode the data.
+     *
+     * @param message The data to be decoded.
+     * @return The decoded data.
+     */
     T decodeData(ByteBuffer message);
 }

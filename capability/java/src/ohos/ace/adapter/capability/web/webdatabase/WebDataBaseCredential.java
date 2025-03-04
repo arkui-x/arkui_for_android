@@ -15,6 +15,11 @@
 
 package ohos.ace.adapter.capability.web;
 
+/**
+ * WebDataBaseCredential class is used to store the credential information of WebDataBase.
+ *
+ * @since 2024-05-31
+ */
 public class WebDataBaseCredential {
     private Long id;
     private String username;

@@ -26,13 +26,10 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
 import ohos.ace.adapter.AccessibilityCrossPlatformBridge.ArkUiAccessibilityNodeInfo;
 
-import java.lang.Class;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -47,6 +44,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
+/**
+ * AccessibilityCrossPlatformBridge is used to provide accessibility service for ArkUI components.
+ *
+ * @since 2024-11-29
+ */
 public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider {
     private static final String TAG = "ArkUIAccessbilityProvider";
     private static FocusedNode currentFocusNode = null;
@@ -94,6 +96,19 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
     private static final int TYPE_PAGE_CLOSE = 2050;
     private static final int EVENT_DELAY_TIME = 1000;
 
+    Runnable updateNodeIds = () -> {
+        if (!isTouchExplorationEnabled()) {
+            return;
+        }
+
+        int[] intArray = nativeGetTreeIdArray(this.windowId);
+        if (intArray == null || intArray.length <= 0) {
+            return;
+        }
+
+        updateAccessibilityNodeInfod(intArray);
+    };
+
     private final AccessibilityManager accessibilityManager;
     private final ContentResolver contentResolver;
     private View arkuiRootAccessibilityView = null;
@@ -109,18 +124,6 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
     private boolean isMenuFocus = false;
     private boolean isStateChanged = true;
     private boolean disabledDelay = false;
-    Runnable updateNodeIds = () -> {
-        if (!isTouchExplorationEnabled()) {
-            return;
-        }
-
-        int[] intArray = nativeGetTreeIdArray(this.windowId);
-        if (intArray == null || intArray.length <= 0) {
-            return;
-        }
-
-        updateAccessibilityNodeInfod(intArray);
-    };
 
     private final AccessibilityManager.AccessibilityStateChangeListener stateChangeListener = (isEnable) -> {
         onChanged(isEnable);
@@ -181,6 +184,11 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
             return info;
         }
 
+        /**
+         * Creates and returns an ArkUiAccessibilityNodeInfo object.
+         *
+         * @param jsonStr The JSON string used to initialize the ArkUiAccessibilityNodeInfo
+         */
         public void init(String jsonStr) {
             if (!jsonStr.isEmpty()) {
                 try {
@@ -199,8 +207,19 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
     }
 
     private static class FocusedNode {
+        /**
+         * The node id of the focused node
+         */
         public int nodeId = -1;
+
+        /**
+         * The window id of the focused node
+         */
         public int windowId = 0;
+
+        /**
+         * The page id of the focused node
+         */
         public int pageId = -1;
 
         private FocusedNode(int nodeId, int windowId) {
@@ -214,27 +233,76 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
             this.pageId = pageId;
         }
 
+        /**
+         * Creates and returns a FocusedNode object.
+         *
+         * @param nodeId   The unique identifier for the node
+         * @param windowId The unique identifier for the window
+         * @return The initialized FocusedNode object
+         */
         public static FocusedNode obtain(int nodeId, int windowId) {
             return new FocusedNode(nodeId, windowId);
         }
 
+        /**
+         * Creates and returns a FocusedNode object.
+         *
+         * @param nodeId   The unique identifier for the node
+         * @param windowId The unique identifier for the window
+         * @param pageId   The unique identifier for the page
+         * @return The initialized FocusedNode object
+         */
         public static FocusedNode obtain(int nodeId, int windowId, int pageId) {
             return new FocusedNode(nodeId, windowId, pageId);
         }
     }
 
     private class TextMoveUnit {
+        /**
+         * The text move unit
+         */
         public static final int STEP_INVALID = 0x0000;
+
+        /**
+         * Move one character at a time
+         */
         public static final int STEP_CHARACTER = 0x0001;
+
+        /**
+         * Move one word at a time
+         */
         public static final int STEP_WORD = 0x0002;
+
+        /**
+         * Move one line at a time
+         */
         public static final int STEP_LINE = 0x0004;
+
+        /**
+         * Move one paragraph at a time
+         */
         public static final int STEP_PARAGRAPH = 0x0008;
+
+        /**
+         * Move one page at a time
+         */
         public static final int STEP_PAGE = 0x0010;
     }
 
     private class ScrollType {
+        /**
+         * Scroll to the default position
+         */
         public static final int SCROLL_DEFAULT = -1;
+
+        /**
+         * Scroll to the half position
+         */
         public static final int SCROLL_HALF = 0;
+
+        /**
+         * Scroll to the full position
+         */
         public static final int SCROLL_FULL = 1;
     }
 
@@ -269,6 +337,9 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         }
     }
 
+    /**
+     * Release the resources.
+     */
     public void release() {
         if (accessibilityManager != null) {
             accessibilityManager.removeAccessibilityStateChangeListener(stateChangeListener);
@@ -284,6 +355,11 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         arkUiAccFocusRouteNodes.clear();
     }
 
+    /**
+     * Gets the current focus node
+     *
+     * @return the current focus node
+     */
     public boolean isAccessibilityEnabled() {
         if (accessibilityManager != null) {
             return accessibilityManager.isEnabled();
@@ -292,6 +368,11 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         return false;
     }
 
+    /**
+     * Gets the current focus node
+     *
+     * @return the current focus node
+     */
     public boolean isTouchExplorationEnabled() {
         if (accessibilityManager != null) {
             return accessibilityManager.isTouchExplorationEnabled();
@@ -369,6 +450,11 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         return findNodeInfo(parent, node -> node.nodeInfo.isAccessibilityFocused());
     }
 
+    /**
+     * Gets the current focus node
+     *
+     * @param ids the current focus node id
+     */
     synchronized public void updateAccessibilityNodeInfod(int[] ids) {
         if (ids == null || ids.length <= 0 || !isTouchExplorationEnabled()) {
             return;
@@ -483,7 +569,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         }
 
         String jsonStr = nativeCreateAccessibilityNodeInfo(virtualViewId, this.windowId);
-        result = ConvertJsonToNodeInfo(jsonStr);
+        result = convertJsonToNodeInfo(jsonStr);
         if (result == null) {
             Log.e(TAG, "Failed to convert JSON to NodeInfo for virtualViewId: " + virtualViewId + ", windowId: "
                     + this.windowId + ", JSON: " + jsonStr);
@@ -520,7 +606,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         return boundsInScreen;
     }
 
-    AccessibilityNodeInfo ConvertJsonToNodeInfo(String jsonStr) {
+    AccessibilityNodeInfo convertJsonToNodeInfo(String jsonStr) {
         AccessibilityNodeInfo result = null;
         if (!jsonStr.isEmpty()) {
             try {
@@ -832,9 +918,9 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
                     isNoFocusable = false;
                     return false;
                 }
-                if (null != currentFocusNode && currentFocusNode.windowId != this.windowId) {
-                    int[] args = { currentFocusNode.nodeId, AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS,
-                            currentFocusNode.windowId };
+                if (currentFocusNode != null && currentFocusNode.windowId != this.windowId) {
+                    int[] args = {currentFocusNode.nodeId, AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS,
+                                    currentFocusNode.windowId};
                     nativePerformAction(args, jsonString);
                 }
                 boolean ret = performAction(virtualViewId, action, jsonString);
@@ -900,7 +986,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
 
     private void setScrollAmountArg(Bundle arguments, JSONObject jsonObject) throws JSONException {
         if (Build.VERSION.SDK_INT >= ANDROID_API_35) {
-            final String ACTION_ARGUMENT_SCROLL_AMOUNT_FLOAT = 
+            final String ACTION_ARGUMENT_SCROLL_AMOUNT_FLOAT =
                 "android.view.accessibility.action.ARGUMENT_SCROLL_AMOUNT_FLOAT";
             if (arguments.containsKey(ACTION_ARGUMENT_SCROLL_AMOUNT_FLOAT)) {
                 float scrollFloat = arguments.getFloat(ACTION_ARGUMENT_SCROLL_AMOUNT_FLOAT);
@@ -920,6 +1006,12 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         return super.findAccessibilityNodeInfosByText(text, virtualViewId);
     }
 
+    /**
+     * Sends accessibility event.
+     *
+     * @param viewId the view id
+     * @param eventType the event type
+     */
     public void sendAccessibilityEvent(int viewId, int eventType) {
         if (!isEnabled()) {
             return;
@@ -938,6 +1030,12 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         return event;
     }
 
+    /**
+     * Convert json to node info.
+     *
+     * @param eventType the event type
+     * @return the accessibility node info
+     */
     public AccessibilityEvent obtainAccessibilityEvent(int eventType) {
         return AccessibilityEvent.obtain(eventType);
     }
@@ -964,9 +1062,14 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         }
 
         String jsonStr = nativeFindFocusedElementInfo(focus, this.windowId);
-        return ConvertJsonToNodeInfo(jsonStr);
+        return convertJsonToNodeInfo(jsonStr);
     }
 
+    /**
+     * Send window content change event.
+     *
+     * @param virtualViewId the virtual view id
+     */
     public void sendWindowContentChangeEvent(int virtualViewId) {
         AccessibilityEvent event = obtainAccessibilityEvent(virtualViewId,
                 AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
@@ -974,6 +1077,11 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         sendAccessibilityEvent(event);
     }
 
+    /**
+     * Send accessibility focus invalidate.
+     *
+     * @param virtualViewId the virtual view id
+     */
     public void sendAccessibilityFocusInvalidate(int virtualViewId) {
         int invalidateId = -1;
         if (virtualViewId >= 0) {
@@ -1000,6 +1108,14 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         return childCount;
     }
 
+    /**
+     * Update all node info.
+     *
+     * @param nodeId the node id
+     * @param accessibilityEvent the accessibility event
+     * @param arg the arg
+     * @return the boolean
+     */
     public boolean onSendAccessibilityEvent(int nodeId, int accessibilityEvent, String arg) {
         AccessibilityEvent event = obtainAccessibilityEvent(nodeId, accessibilityEvent);
         String componentType = "";
@@ -1153,15 +1269,34 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         }
     }
 
+    /**
+     * Perform action.
+     *
+     * @param virtualViewId the virtual view id
+     * @param accessibilityAction the accessibility action
+     * @param bundleString the bundle string
+     * @return the boolean
+     */
     public boolean performAction(int virtualViewId, int accessibilityAction, String bundleString) {
-        int args[] = { virtualViewId, accessibilityAction, this.windowId };
+        int[] args = {virtualViewId, accessibilityAction, this.windowId};
         return nativePerformAction(args, bundleString);
     }
 
+    /**
+     * Perform action.
+     *
+     * @return the boolean
+     */
     public boolean isEnabled() {
         return (isAccessibilityEnabled() && isTouchExplorationEnabled()) || disabledDelay;
     }
 
+    /**
+     * Register js accessibility state observer.
+     *
+     * @param objectPtr the object ptr
+     * @return the boolean
+     */
     public boolean registerJsAccessibilityStateObserver(long objectPtr) {
         if (jsAccessibilityStateObserverPtr == 0L) {
             jsAccessibilityStateObserverPtr = objectPtr;
@@ -1175,6 +1310,11 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         return false;
     }
 
+    /**
+     * Unregister js accessibility state observer.
+     *
+     * @return the boolean
+     */
     public boolean unregisterJsAccessibilityStateObserver() {
         if (jsAccessibilityStateObserverPtr != 0L) {
             jsAccessibilityStateObserverPtr = 0L;
@@ -1184,6 +1324,11 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         return false;
     }
 
+    /**
+     * Accessibility state changed.
+     *
+     * @param accessibilityEnabled the accessibility enabled
+     */
     public void accessibilityStateChanged(boolean accessibilityEnabled) {
         if (jsAccessibilityStateObserverPtr != 0L) {
             nativeAccessibilityStateChanged(accessibilityEnabled, jsAccessibilityStateObserverPtr);

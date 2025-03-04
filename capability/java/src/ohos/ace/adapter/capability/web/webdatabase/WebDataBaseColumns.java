@@ -17,16 +17,51 @@ package ohos.ace.adapter.capability.web;
 
 import android.provider.BaseColumns;
 
+/**
+ * Contains database column and table definitions for web-related data storage.
+ *
+ * @since 2024-05-31
+ */
 public class WebDataBaseColumns {
     private WebDataBaseColumns() {}
 
+    /**
+     * Database table and column names for web-related entries.
+     */
     public static class EntryColumns implements BaseColumns {
+        /**
+         * credential table name.
+         */
         public static final String TABLE_NAME_CREDENTIAL = "credential";
+
+        /**
+         * username column name
+         */
         public static final String COLUMN_NAME_USERNAME = "username";
+
+        /**
+         * password column name
+         */
         public static final String COLUMN_NAME_USERPASS = "password";
+
+        /**
+         * http_auth_id column name
+         */
         public static final String COLUMN_NAME_HTTP_AUTH_ID = "http_auth_id";
+
+        /**
+         * http_auth table name.
+         */
         public static final String TABLE_NAME_HTTPAUTH = "http_auth";
+
+        /**
+         * host column name
+         */
         public static final String COLUMN_NAME_HOST = "host";
+
+        /**
+         * port column name
+         */
         public static final String COLUMN_NAME_REALM = "realm";
 
         /**

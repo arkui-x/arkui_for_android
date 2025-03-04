@@ -1745,8 +1745,7 @@ void JsAccessibilityManager::InitializeCallback()
     CHECK_NULL_VOID(pipelineContext);
     windowId_ = pipelineContext->GetWindowId();
 
-    bool isEnabled = false;
-    isEnabled = JsAccessibilityManagerJni::isEnabled(windowId_);
+    bool isEnabled = JsAccessibilityManagerJni::isEnabled(windowId_);
     AceApplicationInfo::GetInstance().SetAccessibilityEnabled(isEnabled);
 
     if (pipelineContext->IsFormRender() || pipelineContext->IsJsCard() || pipelineContext->IsJsPlugin()) {
@@ -2441,7 +2440,7 @@ bool conversionDirection(std::string dir)
     return false;
 }
 
-inline void getArgumentByKey(const std::map<std::string, std::string>& actionArguments, const std::string checkKey,
+inline void getArgumentByKey(const std::map<std::string, std::string>& actionArguments, const std::string& checkKey,
     int32_t& argument)
 {
     auto iter = actionArguments.find(checkKey);
@@ -2526,7 +2525,7 @@ void PrepareActionScroll(AccessibilityActionParam& param, const std::map<std::st
     param.scrollType = static_cast<AccessibilityScrollType>(scrollType);
 }
 
-bool ActAccessibilityAction(Accessibility::ActionType action, const std::map<std::string, std::string> actionArguments,
+bool ActAccessibilityAction(Accessibility::ActionType action, const std::map<std::string, std::string>& actionArguments,
     RefPtr<NG::AccessibilityProperty> accessibilityProperty)
 {
     AccessibilityActionParam param;

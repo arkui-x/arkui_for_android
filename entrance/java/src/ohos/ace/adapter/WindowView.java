@@ -21,7 +21,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import ohos.ace.adapter.capability.platformview.AcePlatformViewPluginBase;
 import ohos.ace.adapter.capability.platformview.AcePlatformViewBase;
-import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginBase;
 import ohos.ace.adapter.capability.web.AceWebBase;
 import android.view.InputDevice;
@@ -142,6 +141,7 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
 
     /**
      * Called by activity to notify keyboard height changed.
+     *
      * @param height the height of keyboard
      */
     public void keyboardHeightChanged(int height) {
@@ -332,6 +332,12 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    /**
+     * Convert action and button state to action key.
+     *
+     * @param event Action and button state.
+     * @return Action key.
+     */
     public boolean onHoverEventAosp(MotionEvent event) {
         if (nativeWindowPtr == 0L) {
             return super.onTouchEvent(event);
@@ -348,7 +354,8 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
                 int buttonState = event.getButtonState();
 
                 int actionKey = getActionKey(actionMasked, buttonState);
-                ByteBuffer mousePacket = AceEventProcessorAosp.processMouseEvent(event, actionKey, lastMouseX, lastMouseY);
+                ByteBuffer mousePacket = AceEventProcessorAosp.processMouseEvent(event, actionKey, lastMouseX,
+                        lastMouseY);
                 nativeDispatchMouseDataPacket(nativeWindowPtr, mousePacket, mousePacket.position());
             }
             ByteBuffer packet = AceEventProcessorAosp.processHoverTouchEvent(event);

@@ -68,7 +68,7 @@ public class BridgeBinaryCodec implements BridgeBaseCodec<Object> {
     /**
      * Decode data.
      *
-     * @param data Data to be decoded.
+     * @param byteBuffer Data to be decoded.
      * @return Return decode data.
      */
     @Override

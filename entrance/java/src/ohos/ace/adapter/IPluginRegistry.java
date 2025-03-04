@@ -20,6 +20,8 @@ import java.util.Set;
  * Plugin Registry.
  *
  * Interface to be implemented by Plugin Registry.
+ *
+ * @since 2024-05-31
  */
 public interface IPluginRegistry {
     /**

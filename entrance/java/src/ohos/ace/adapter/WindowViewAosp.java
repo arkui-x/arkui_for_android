@@ -23,8 +23,17 @@ import android.view.SurfaceHolder;
 
 import ohos.ace.adapter.WindowView;
 
+/**
+ * WindowViewAosp is a class that extends WindowView.
+ *
+ * @since 2024-11-29
+ */
 public class WindowViewAosp extends WindowView {
+    /**
+     * WindowViewAosp constructor.
+     */
     public static String TAG = WindowViewAosp.class.getSimpleName();
+
     AccessibilityCrossPlatformBridge accessibilityBridge;
 
     Runnable orientationChanged = () -> {
@@ -37,14 +46,21 @@ public class WindowViewAosp extends WindowView {
         super(context);
         accessibilityBridge = new AccessibilityCrossPlatformBridge(
                     (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE),
-                    context.getContentResolver(),this, windowId);
+                    context.getContentResolver(), this, windowId);
     }
-    
-    public boolean performAccessibilityAction(int action,  Bundle arguments) {
+
+    /**
+     * performAccessibilityAction is a method that performs an accessibility action.
+     *
+     * @param action accessibility action
+     * @param arguments arguments of accessibility action
+     * @return true if the action was performed, false otherwise
+     */
+    public boolean performAccessibilityAction(int action, Bundle arguments) {
         super.performAccessibilityAction(action, arguments);
         return false;
     }
-    
+
     @Override
     public AccessibilityNodeProvider getAccessibilityNodeProvider() {
         if (super.getWindowOrientation()) {
@@ -76,13 +92,16 @@ public class WindowViewAosp extends WindowView {
         }
         return super.onHoverEvent(event);
     }
-    
+
     @Override
     public void destroy() {
         super.destroy();
         destroyAosp();
     }
 
+    /**
+     * destroyAosp is a method that destroys the AOSP part of the WindowView.
+     */
     public void destroyAosp() {
         if (accessibilityBridge != null) {
             accessibilityBridge.release();

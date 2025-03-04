@@ -57,25 +57,9 @@ public abstract class AceVideoBase {
     private boolean isLooping;
 
     /**
-     * InnerProcessor.
-     */
-    public abstract class InnerProcessor implements Runnable {
-        Map<String, String> param;
-
-        /**
-         * InnerProcessor to keep calling param value to member var :param;
-         *
-         * @param param calling param
-         */
-        public InnerProcessor(Map<String, String> param) {
-            this.param = param;
-        }
-    };
-
-    /**
      * base constructor of AceVideo
      *
-     * @param id id of plugin
+     * @param id       id of plugin
      * @param callback resource callback
      */
     public AceVideoBase(long id, IAceOnResourceEvent callback) {
@@ -112,7 +96,7 @@ public abstract class AceVideoBase {
             /**
              * This is called to start player.
              *
-             * @param param
+             * @param param calling param
              * @return unused
              */
             public String onCall(Map<String, String> param) {
@@ -133,7 +117,7 @@ public abstract class AceVideoBase {
             /**
              * This is called to pause player.
              *
-             * @param param
+             * @param param calling param
              * @return unused
              */
             public String onCall(Map<String, String> param) {
@@ -159,7 +143,7 @@ public abstract class AceVideoBase {
             /**
              * This is called to get video position.
              *
-             * @param param
+             * @param param calling param
              * @return unused
              */
             public String onCall(Map<String, String> param) {
@@ -180,7 +164,7 @@ public abstract class AceVideoBase {
             /**
              * This is called to seek video.
              *
-             * @param param
+             * @param param calling param
              * @return unused
              */
             public String onCall(Map<String, String> param) {
@@ -201,7 +185,7 @@ public abstract class AceVideoBase {
             /**
              * This is called to set volume.
              *
-             * @param param
+             * @param param calling param
              * @return unused
              */
             public String onCall(Map<String, String> param) {
@@ -222,7 +206,7 @@ public abstract class AceVideoBase {
             /**
              * This is called to enable single looping.
              *
-             * @param param
+             * @param param calling param
              * @return unused
              */
             public String onCall(Map<String, String> param) {
@@ -243,7 +227,7 @@ public abstract class AceVideoBase {
             /**
              * This is called to set video speed.
              *
-             * @param param
+             * @param param calling param
              * @return unused
              */
             public String onCall(Map<String, String> param) {
@@ -264,7 +248,7 @@ public abstract class AceVideoBase {
             /**
              * This is called to set video direction.
              *
-             * @param param
+             * @param param calling param
              * @return unused
              */
             public String onCall(Map<String, String> param) {
@@ -285,7 +269,7 @@ public abstract class AceVideoBase {
             /**
              * This is called to set video direction LANDSCAPE.
              *
-             * @param param
+             * @param param calling param
              * @return unused
              */
             public String onCall(Map<String, String> param) {
@@ -306,7 +290,7 @@ public abstract class AceVideoBase {
             /**
              * This is called to set video surface
              *
-             * @param param
+             * @param param calling param
              * @return unused
              */
             public String onCall(Map<String, String> param) {
@@ -328,6 +312,22 @@ public abstract class AceVideoBase {
         });
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "updateresource" + PARAM_BEGIN, callUpdateSrc);
     }
+
+    /**
+     * InnerProcessor.
+     */
+    public abstract class InnerProcessor implements Runnable {
+        Map<String, String> param;
+
+        /**
+         * InnerProcessor to keep calling param value to member var :param;
+         *
+         * @param param calling param
+         */
+        public InnerProcessor(Map<String, String> param) {
+            this.param = param;
+        }
+    };
 
     /**
      * This is called to release.
@@ -404,7 +404,7 @@ public abstract class AceVideoBase {
     /**
      * set mute.
      *
-     * @param params is video mute.
+     * @param isMute is video mute.
      */
     public void setIsMute(boolean isMute) {
         this.isMute = isMute;
@@ -422,7 +422,7 @@ public abstract class AceVideoBase {
     /**
      * This is called to set speed.
      *
-     * @param is video speed.
+     * @param speed video speed.
      */
     public void setSpeed(float speed) {
         this.speed = speed;
@@ -440,7 +440,7 @@ public abstract class AceVideoBase {
     /**
      * This is called to set looping.
      *
-     * @param is video looping.
+     * @param isLooping video looping.
      */
     public void setLooping(boolean isLooping) {
         this.isLooping = isLooping;
@@ -627,7 +627,7 @@ public abstract class AceVideoBase {
     /**
      * This is called to async runnable.
      *
-     * @param Runnable runnable.
+     * @param runnable runnable.
      * @return Result.
      */
     public abstract String runAsync(Runnable runnable);

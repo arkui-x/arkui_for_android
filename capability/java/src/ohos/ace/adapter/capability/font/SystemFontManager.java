@@ -98,6 +98,7 @@ public class SystemFontManager {
      * Get font information from font file object.
      *
      * @param fontFile font file object.
+     * @param fontInfo font information object.
      */
     private void getFontInfoFromFile(File fontFile, SystemFontInfo fontInfo) {
         if (fontFile == null || fontInfo == null) {
@@ -120,6 +121,7 @@ public class SystemFontManager {
      * Get font information from font style object.
      *
      * @param fontStyle font style object.
+     * @param fontInfo font information object.
      */
     private void getFontInfoFromStyle(Object fontStyle, SystemFontInfo fontInfo) {
         if (fontStyle == null || fontInfo == null) {

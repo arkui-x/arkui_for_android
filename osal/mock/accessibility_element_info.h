@@ -126,10 +126,10 @@ class ExtraElementInfo {
 public:
     ExtraElementInfo() {}
 
-    ExtraElementInfo(const std::map<std::string, std::string> extraElementValueStr,
-        const std::map<std::string, int32_t> extraElementValueInt);
+    ExtraElementInfo(const std::map<std::string, std::string>& extraElementValueStr,
+        const std::map<std::string, int32_t>& extraElementValueInt);
 
-    RetError SetExtraElementInfo(const std::string keyStr, const std::string valueStr);
+    RetError SetExtraElementInfo(const std::string& keyStr, const std::string& valueStr);
 
     RetError SetExtraElementInfo(const std::string keyStr, const int32_t valueInt);
 
@@ -208,11 +208,11 @@ public:
 
     void SetSpanText(const std::string spanText);
 
-    void SetAccessibilityText(const std::string accessibilityText);
+    void SetAccessibilityText(const std::string& accessibilityText);
 
-    void SetAccessibilityDescription(const std::string accessibilityDescription);
+    void SetAccessibilityDescription(const std::string& accessibilityDescription);
 
-    void SetAccessibilityLevel(const std::string accessibilityLevel);
+    void SetAccessibilityLevel(const std::string& accessibilityLevel);
 
     int32_t GetSpanId() const;
 

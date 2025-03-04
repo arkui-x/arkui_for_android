@@ -327,6 +327,13 @@ public class BridgeManager {
         }
     }
 
+    /**
+     * Other platforms call methods.
+     *
+     * @param bridgeName Name of bridge.
+     * @param methodName Name of method.
+     * @param parameters Param of the method.
+     */
     private void jsCallMethodInner(BridgePlugin bridgePlugin, String methodName, String parameters) {
         JSONObject resultJsonObj = new JSONObject();
         BridgeErrorCode bridgeErrorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
@@ -687,7 +694,7 @@ public class BridgeManager {
         nativePlatformSendMessageBinary(bridgeName, buffer, this.instanceId_);
     }
 
-    private void PlatformSendMethodResultBinaryInner(String bridgeName, String methodName,
+    private void platformSendMethodResultBinaryInner(String bridgeName, String methodName,
         ByteBuffer resultBuffer, int instanceId, BridgeErrorCode bridgeErrorCode) {
         nativePlatformSendMethodResultBinary(bridgeName, methodName, resultBuffer, instanceId,
             bridgeErrorCode.getId(), bridgeErrorCode.getErrorMessage());
@@ -754,7 +761,7 @@ public class BridgeManager {
                 }
             }
         }
-        PlatformSendMethodResultBinaryInner(bridgePlugin.getBridgeName(), methodName, resultBuffer,
+        platformSendMethodResultBinaryInner(bridgePlugin.getBridgeName(), methodName, resultBuffer,
             this.instanceId_, bridgeErrorCode);
     }
 
@@ -798,7 +805,7 @@ public class BridgeManager {
      * platforms call methods by binary type.
      *
      * @param bridgeName Name of bridge.
-     * @param bufferData Method data.
+     * @param methodData Method data.
      */
     public BridgeErrorCode platformCallMethodBinary(String bridgeName, MethodData methodData) {
         BridgeErrorCode errorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
@@ -843,6 +850,8 @@ public class BridgeManager {
      * @param bridgeName Name of bridge.
      * @param methodName Name of method.
      * @param result result of the method.
+     * @param errorCode Error code.
+     * @param errorMessage Error message.
      */
     public void jsSendMethodResultBinary(String bridgeName, String methodName, ByteBuffer result,
     int errorCode, String errorMessage) {

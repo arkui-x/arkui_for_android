@@ -18,6 +18,11 @@ package ohos.ace.adapter.capability.web;
 import android.webkit.JsResult;
 import ohos.ace.adapter.ALog;
 
+/**
+ * AceWebJsDialogObject is used to handle the dialog from the web page.
+ *
+ * @since 2024-05-31
+ */
 public class AceWebJsDialogObject {
     private static final String LOG_TAG = "AceWebJsDialogObject";
 
@@ -25,20 +30,40 @@ public class AceWebJsDialogObject {
     private String message;
     private JsResult result;
 
+    /**
+     * Constructor of AceWebJsDialogObject.
+     *
+     * @param url the url of the web page
+     * @param message the message of the dialog
+     * @param result the JsResult object
+     */
     public AceWebJsDialogObject(String url, String message, JsResult result) {
         this.url = url;
         this.message = message;
         this.result = result;
     }
 
+    /**
+     * Get the url of the web page.
+     *
+     * @return the url of the web page
+     */
     public String getUrl() {
         return this.url;
     }
 
+    /**
+     * Get the message of the dialog.
+     *
+     * @return the message of the dialog
+     */
     public String getMessage() {
         return this.message;
     }
 
+    /**
+     * Confirm the dialog.
+     */
     public void confirm() {
         try {
             this.result.confirm();
@@ -47,6 +72,9 @@ public class AceWebJsDialogObject {
         }
     }
 
+    /**
+     * Cancel the dialog.
+     */
     public void cancel() {
         try {
             this.result.cancel();

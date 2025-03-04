@@ -290,6 +290,11 @@ class InputConnectionWrapper extends BaseInputConnection implements ViewTreeObse
             composingEnd);
     }
 
+    /**
+     * Update the error text of the input filter.
+     *
+     * @param errorText The error text of the input filter.
+     */
     public void updateInputFilterErrorText(String errorText) {
         delegate.updateInputFilterErrorText(clientId, errorText);
     }

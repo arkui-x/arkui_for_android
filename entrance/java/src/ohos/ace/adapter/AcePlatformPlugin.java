@@ -26,6 +26,11 @@ import ohos.ace.adapter.capability.surface.IAceSurface;
 import ohos.ace.adapter.capability.texture.AceTexturePluginAosp;
 import ohos.ace.adapter.capability.texture.IAceTexture;
 
+/**
+ * AcePlatformPlugin is used to create platform plugin for AceViewAosp.
+ *
+ * @since 2023-08-06
+ */
 public class AcePlatformPlugin implements InputConnectionClient {
     private static final String LOG_TAG = "AcePlatformPlugin";
 
@@ -62,6 +67,7 @@ public class AcePlatformPlugin implements InputConnectionClient {
     /**
      * Initialize resource register
      *
+     * @param instanceId the instance id
      */
     private void initResRegister(int instanceId) {
         resRegister = new AceResourceRegister();
@@ -72,6 +78,9 @@ public class AcePlatformPlugin implements InputConnectionClient {
         resRegister.setRegisterPtr(resRegisterPtr);
     }
 
+    /**
+     * Called to release platform plugin.
+     */
     public void release() {
         if (resRegister != null) {
             resRegister.release();
@@ -128,6 +137,12 @@ public class AcePlatformPlugin implements InputConnectionClient {
         addResourcePlugin(AceTexturePluginAosp.createRegister(instanceId, textureImpl));
     }
 
+    /**
+     * Called to initialize surface plugin.
+     *
+     * @param context the context
+     * @param instanceId the instance id
+     */
     public void initSurfacePlugin(Context context, int instanceId) {
         IAceSurface surfaceImpl = new IAceSurface() {
             @Override

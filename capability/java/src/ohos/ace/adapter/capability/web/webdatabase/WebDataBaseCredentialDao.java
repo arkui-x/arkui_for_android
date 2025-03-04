@@ -21,6 +21,11 @@ import android.database.Cursor;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * WebDataBaseCredentialDao class is used to operate the WebDataBaseCredential
+ *
+ * @since 2024-05-31
+ */
 public class WebDataBaseCredentialDao {
     WebDataBaseHelper dataBaseHelper;
     String[] columns = {
@@ -34,6 +39,12 @@ public class WebDataBaseCredentialDao {
         this.dataBaseHelper = dataBaseHelper;
     }
 
+    /**
+     * Insert a WebDataBaseCredential into the database
+     *
+     * @param httpAuthId the http auth id
+     * @return the inserted WebDataBaseCredential
+     */
     public List<WebDataBaseCredential> getAllByHttpAuthId(Long httpAuthId) {
         String selection = WebDataBaseColumns.EntryColumns.COLUMN_NAME_HTTP_AUTH_ID + " = ?";
         String[] selectionArgs = {httpAuthId.toString()};
@@ -63,6 +74,14 @@ public class WebDataBaseCredentialDao {
         return credentials;
     }
 
+    /**
+     * Find a WebDataBaseCredential by username, password and http auth id
+     *
+     * @param username the username
+     * @param password the password
+     * @param httpAuthId the http auth id
+     * @return the found WebDataBaseCredential
+     */
     public WebDataBaseCredential find(String username, String password, Long httpAuthId) {
         String selection = WebDataBaseColumns.EntryColumns.COLUMN_NAME_USERNAME + " = ? AND " +
                 WebDataBaseColumns.EntryColumns.COLUMN_NAME_USERPASS + " = ? AND " +
@@ -92,6 +111,12 @@ public class WebDataBaseCredentialDao {
         return credential;
     }
 
+    /**
+     * Insert a WebDataBaseCredential into the database
+     *
+     * @param credential the WebDataBaseCredential
+     * @return the inserted WebDataBaseCredential
+     */
     public long insert(WebDataBaseCredential credential) {
         ContentValues credentialValues = new ContentValues();
         credentialValues.put(WebDataBaseColumns.EntryColumns.COLUMN_NAME_USERNAME, credential.getUsername());
@@ -102,6 +127,12 @@ public class WebDataBaseCredentialDao {
                 WebDataBaseColumns.EntryColumns.TABLE_NAME_CREDENTIAL, null, credentialValues);
     }
 
+    /**
+     * Delete a WebDataBaseCredential by id
+     *
+     * @param credential the WebDataBaseCredential
+     * @return the number of rows deleted
+     */
     public long delete(WebDataBaseCredential credential) {
         String whereClause = WebDataBaseColumns.EntryColumns._ID + " = ?";
         String[] whereArgs = {credential.getId().toString()};
@@ -110,6 +141,12 @@ public class WebDataBaseCredentialDao {
                 WebDataBaseColumns.EntryColumns.TABLE_NAME_CREDENTIAL, whereClause, whereArgs);
     }
 
+    /**
+     * Update a WebDataBaseCredential
+     *
+     * @param credential the WebDataBaseCredential
+     * @return the number of rows updated
+     */
     public long update(WebDataBaseCredential credential) {
         ContentValues credentialValues = new ContentValues();
         credentialValues.put(WebDataBaseColumns.EntryColumns.COLUMN_NAME_USERNAME, credential.getUsername());
@@ -122,6 +159,11 @@ public class WebDataBaseCredentialDao {
                 WebDataBaseColumns.EntryColumns.TABLE_NAME_CREDENTIAL, credentialValues, whereClause, whereArgs);
     }
 
+    /**
+     * Check if a WebDataBaseCredential exists
+     *
+     * @return true if exists, false otherwise
+     */
     public boolean exist() {
         Cursor cursor = dataBaseHelper.getReadableDatabase().query(
             WebDataBaseColumns.EntryColumns.TABLE_NAME_CREDENTIAL,

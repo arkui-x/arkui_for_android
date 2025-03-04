@@ -180,6 +180,9 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         keyboardHeightProvider = new KeyboardHeightProvider(this);
 
         windowView.post(new Runnable() {
+            /**
+             * Called from the thread that created the view hierarchy
+             */
             public void run() {
                 keyboardHeightProvider.start();
             }
@@ -284,7 +287,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         activityDelegate.dispatchOnActivityResult(getInstanceName(), requestCode,
             resultCode == RESULT_OK ? RESULTCODE_OK : RESULTCODE_ERROR, resultWantParams, intent);
     }
-    
+
     private void handleNonPickerActivityResult(int requestCode, int resultCode, Intent intent) {
         Log.i(LOG_TAG, "onActivityResult called");
         super.onActivityResult(requestCode, resultCode, intent);
@@ -716,6 +719,8 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     /**
      * Register the platformView to activity. before super.onCreate.
+     *
+     * @param platformViewFactory The platformViewFactory.
      */
     public void registerPlatformViewFactory(PlatformViewFactory platformViewFactory) {
         if (platformViewPluginAosp == null) {

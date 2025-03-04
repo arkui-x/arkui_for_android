@@ -15,7 +15,11 @@
 
 package ohos.ace.adapter.capability.web;
 
-
+/**
+ * AceWebDownloadStartObject class is used to store the information of the download start event.
+ *
+ * @since 2024-05-31
+ */
 public class AceWebDownloadStartObject {
     private static final String LOG_TAG = "AceWebDownloadStartObject";
 
