@@ -30,7 +30,7 @@ InputMethodManager* InputMethodManager::GetInstance()
     return instance_.get();
 }
 
-void InputMethodManager::OnFocusNodeChange(const RefPtr<NG::FrameNode>& curFocusNode) {}
+void InputMethodManager::OnFocusNodeChange(const RefPtr<NG::FrameNode>& curFocusNode, FocusReason focusReason) {}
 
 void InputMethodManager::ProcessKeyboardInWindowScene(const RefPtr<NG::FrameNode>& curFocusNode) {}
 
