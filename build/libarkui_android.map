@@ -75,6 +75,8 @@
       "OHOS::Ace::SystemProperties::GetDebugEnabled()";
       "OHOS::Ace::SystemProperties::GetResourceDecoupling()";
       "OHOS::Ace::SystemProperties::taskPriorityAdjustmentEnable_";
+      "OHOS::Ace::SystemProperties::debugEnabled_";
+      "OHOS::Ace::SystemProperties::debugFlags_";
       OHOS::Ace::V2::PATTERN_LOCK_ETS_TAG;
       OHOS::Ace::V2::QRCODE_ETS_TAG;
       OHOS::Ace::V2::RELATIVE_CONTAINER_ETS_TAG;
