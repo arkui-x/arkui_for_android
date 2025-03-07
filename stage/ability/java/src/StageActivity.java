@@ -150,13 +150,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     protected void onStart() {
         Log.i(LOG_TAG, "StageActivity onStart called");
         super.onStart();
-    }
-
-    @Override
-    protected void onResume() {
-        Log.i(LOG_TAG, "StageActivity onResume called");
-        super.onResume();
-        Trace.beginSection("StageActivity::onResume");
+        Trace.beginSection("StageActivity::onStart");
         activityDelegate.dispatchOnForeground(getInstanceName());
         windowView.foreground();
         if (platformPlugin != null) {
@@ -166,6 +160,12 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
         keyboardHeightProvider.setKeyboardHeightObserver(this);
         SubWindowManager.keepSystemUiVisibility(this);
+    }
+
+    @Override
+    protected void onResume() {
+        Log.i(LOG_TAG, "StageActivity onResume called");
+        super.onResume();
     }
 
     @Override
