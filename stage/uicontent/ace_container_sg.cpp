@@ -774,18 +774,20 @@ void InitResourceAndThemeManager(const RefPtr<PipelineBase>& pipelineContext, co
 
     auto defaultBundleName = "";
     auto defaultModuleName = "";
-    ResourceManager::GetInstance().AddResourceAdapter(defaultBundleName, defaultModuleName, resourceAdapter);
+    int32_t instanceId = pipelineContext->GetInstanceId();
+    ResourceManager::GetInstance().AddResourceAdapter(
+        defaultBundleName, defaultModuleName, instanceId, resourceAdapter);
     if (context) {
         auto bundleName = context->GetBundleName();
         auto moduleName = context->GetHapModuleInfo()->name;
         if (!bundleName.empty() && !moduleName.empty()) {
-            ResourceManager::GetInstance().AddResourceAdapter(bundleName, moduleName, resourceAdapter);
+            ResourceManager::GetInstance().AddResourceAdapter(bundleName, moduleName, instanceId, resourceAdapter);
         }
     } else if (abilityInfo) {
         auto bundleName = abilityInfo->bundleName;
         auto moduleName = abilityInfo->moduleName;
         if (!bundleName.empty() && !moduleName.empty()) {
-            ResourceManager::GetInstance().AddResourceAdapter(bundleName, moduleName, resourceAdapter);
+            ResourceManager::GetInstance().AddResourceAdapter(bundleName, moduleName, instanceId, resourceAdapter);
         }
     }
 }
