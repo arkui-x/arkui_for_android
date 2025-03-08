@@ -100,7 +100,7 @@ public class SystemFontManager {
      * @param fontFile font file object.
      */
     private void getFontInfoFromFile(File fontFile, SystemFontInfo fontInfo) {
-        if (null == fontFile || null == fontInfo) {
+        if (fontFile == null || fontInfo == null) {
             return;
         }
         try {
@@ -122,7 +122,7 @@ public class SystemFontManager {
      * @param fontStyle font style object.
      */
     private void getFontInfoFromStyle(Object fontStyle, SystemFontInfo fontInfo) {
-        if (null == fontStyle || null == fontInfo) {
+        if (fontStyle == null || fontInfo == null) {
             return;
         }
         try {
@@ -142,14 +142,14 @@ public class SystemFontManager {
      * @return font information list.
      */
     private List<SystemFontInfo> getFontInfoList(Set<Object> fonts) {
-        if (null == fonts || fonts.isEmpty()) {
+        if (fonts == null || fonts.isEmpty()) {
             return null;
         }
         List<SystemFontInfo> result = new ArrayList<>();
         try {
             for (Object fontObject : fonts) {
                 SystemFontInfo fontInfo = new SystemFontInfo();
-                File fontFile = (File)getFileMethod.invoke(fontObject);
+                File fontFile = (File) getFileMethod.invoke(fontObject);
                 getFontInfoFromFile(fontFile, fontInfo);
                 Object fontStyle = getStyleMethod.invoke(fontObject);
                 getFontInfoFromStyle(fontStyle, fontInfo);

@@ -21,7 +21,6 @@ package ohos.ace.adapter.capability.keyboard;
  * @since 10
  */
 public interface KeyboardHeightObserver {
-
     /**
      * called when keyboard height has changed.
      *

@@ -13,35 +13,33 @@
  * limitations under the License.
  */
 
- package ohos.ace.adapter.capability.platformview;
+package ohos.ace.adapter.capability.platformview;
 
- import android.view.View;
- 
- /**
-  * The class for interface IPlatformView on Android platform.
-  *
-  * @since 1
-  */
- public interface IPlatformView {
- 
-     /**
-      * This is Android view.
-      *
-      * @return View
-      */
-     View getView();
- 
-     /**
-      * This is dispose resource.
-      *
-      * @return void
-      */
-     void onDispose();
- 
-     /**
-      * This is tag of PlatformView.
-      *
-      * @return String
-      */
-     String getPlatformViewID();
- }
+import android.view.View;
+
+/**
+ * The class for interface IPlatformView on Android platform.
+ *
+ * @since 1
+ */
+public interface IPlatformView {
+    /**
+     * This is Android view.
+     *
+     * @return View
+     */
+    View getView();
+
+    /**
+     * This is dispose resource.
+     *
+     */
+    void onDispose();
+
+    /**
+     * This is tag of PlatformView.
+     *
+     * @return String
+     */
+    String getPlatformViewID();
+}

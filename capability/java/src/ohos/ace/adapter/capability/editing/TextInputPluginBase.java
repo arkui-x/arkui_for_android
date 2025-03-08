@@ -51,6 +51,7 @@ public abstract class TextInputPluginBase {
      */
     public static class Delegate implements TextInputDelegate {
         private static Map<Integer, String> lastValueMap = new HashMap<>();
+
         @Override
         public void updateEditingState(int clientId, String text, int selectionStart, int selectionEnd,
             int composingStart, int composingEnd) {

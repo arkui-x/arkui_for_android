@@ -13,20 +13,21 @@
  * limitations under the License.
  */
 
- package ohos.ace.adapter.capability.platformview;
+package ohos.ace.adapter.capability.platformview;
 
- import ohos.ace.adapter.capability.platformview.IPlatformView;
- 
- /**
-  * The class for interface PlatformViewFactory on Android platform.
-  *
-  * @since 1
-  */
- public abstract class PlatformViewFactory {
-     /**
-      * Using xComponentId to Obtain Platform View.
-      *
-      * @return IPlatformView
-      */
-     public abstract IPlatformView getPlatformView(String xComponentId);
- }
+import ohos.ace.adapter.capability.platformview.IPlatformView;
+
+/**
+ * The class for interface PlatformViewFactory on Android platform.
+ *
+ * @since 1
+ */
+public abstract class PlatformViewFactory {
+    /**
+     * Using xComponentId to Obtain Platform View.
+     *
+     * @param xComponentId the component id
+     * @return IPlatformView
+     */
+    public abstract IPlatformView getPlatformView(String xComponentId);
+}

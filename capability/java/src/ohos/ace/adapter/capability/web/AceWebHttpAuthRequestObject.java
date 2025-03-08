@@ -56,7 +56,6 @@ public class AceWebHttpAuthRequestObject {
         } catch (Exception e) {
             ALog.e(LOG_TAG, "call cancel method failed");
         }
-        
     }
 
     public boolean proceed(String username, String password) {

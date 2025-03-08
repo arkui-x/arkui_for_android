@@ -18,56 +18,56 @@ import java.util.Set;
 
 /**
  * Plugin Registry.
- * 
+ *
  * Interface to be implemented by Plugin Registry.
  */
 public interface IPluginRegistry {
-     /**
-      * add a plugin to PluginRegistry.
-      * 
-      * @param name The full class name includes the package name of the plugin.
-      */
-     void registryPlugin(String name);
+    /**
+     * add a plugin to PluginRegistry.
+     *
+     * @param name The full class name includes the package name of the plugin.
+     */
+    void registryPlugin(String name);
 
-     /**
-      * add plugins to PluginRegistry.
-      * 
-      * @param pluginList A set of plugins that need to be added.
-      */
-     void registryPlugins(Set<String> pluginList);
+    /**
+     * add plugins to PluginRegistry.
+     *
+     * @param pluginList A set of plugins that need to be added.
+     */
+    void registryPlugins(Set<String> pluginList);
 
-     /**
-      * remove a plugin from PluginRegistry.
-      * 
-      * @param name The full class name includes the package name of the plugin.
-      */
-     void unRegistryPlugin(String name);
+    /**
+     * remove a plugin from PluginRegistry.
+     *
+     * @param name The full class name includes the package name of the plugin.
+     */
+    void unRegistryPlugin(String name);
 
-     /**
-      * remove plugins to PluginRegistry.
-      * 
-      * @param pluginList A set of plugins that need to be removed.
-      */
-     void unRegistryPlugins(Set<String> pluginList);
+    /**
+     * remove plugins to PluginRegistry.
+     *
+     * @param pluginList A set of plugins that need to be removed.
+     */
+    void unRegistryPlugins(Set<String> pluginList);
 
-     /**
-      * remove all plugins from PluginRegistry.
-      */
-     void unRegistryAllPlugins();
+    /**
+     * remove all plugins from PluginRegistry.
+     */
+    void unRegistryAllPlugins();
 
-     /**
-      * Check whether a plugin has been added to PluginRegistry.
-      * 
-      * @param name The full class name includes the package name of the plugin.
-      * @return return true if the plugin has been added to PluginRegistry.
-      */
-     boolean hasPlugin(String name);
+    /**
+     * Check whether a plugin has been added to PluginRegistry.
+     *
+     * @param name The full class name includes the package name of the plugin.
+     * @return return true if the plugin has been added to PluginRegistry.
+     */
+    boolean hasPlugin(String name);
 
-     /**
-      * get a plugin instance that has been added to PluginRegistry.
-      * 
-      * @param name The full class name includes the package name of the plugin.
-      * @return return plugin if the plugin has been added to PluginRegistry.
-      */
-     IArkUIXPlugin getPlugin(String name);
+    /**
+     * get a plugin instance that has been added to PluginRegistry.
+     *
+     * @param name The full class name includes the package name of the plugin.
+     * @return return plugin if the plugin has been added to PluginRegistry.
+     */
+    IArkUIXPlugin getPlugin(String name);
 }

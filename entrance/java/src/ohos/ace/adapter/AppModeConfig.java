@@ -19,7 +19,6 @@ package ohos.ace.adapter;
  * Configure application model
  */
 public class AppModeConfig {
-
     private AppModeConfig() {}
 
     public static void InitAppMode() {

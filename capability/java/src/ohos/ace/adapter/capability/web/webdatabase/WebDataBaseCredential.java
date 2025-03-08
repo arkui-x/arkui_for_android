@@ -26,7 +26,7 @@ public class WebDataBaseCredential {
         this.password = password;
     }
 
-    public WebDataBaseCredential (Long id, String username, String password, Long httpAuthId) {
+    public WebDataBaseCredential(Long id, String username, String password, Long httpAuthId) {
         this.id = id;
         this.username = username;
         this.password = password;

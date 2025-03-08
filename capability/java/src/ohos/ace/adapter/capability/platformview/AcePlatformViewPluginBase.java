@@ -13,137 +13,141 @@
  * limitations under the License.
  */
 
- package ohos.ace.adapter.capability.platformview;
+package ohos.ace.adapter.capability.platformview;
 
- import java.util.HashMap;
- import java.util.Map;
- import java.util.concurrent.atomic.AtomicLong;
- 
- import ohos.ace.adapter.AceResourcePlugin;
- import ohos.ace.adapter.capability.platformview.IPlatformView;
- /**
-  * The class for creating  PlatformView on Android platform.
-  *
-  * @since 1
-  */
- public abstract class AcePlatformViewPluginBase extends AceResourcePlugin {
-     private final AtomicLong nextPlatformViewId = new AtomicLong(0L);
- 
-     private Map<Long, AcePlatformViewBase> objectMap;
- 
-     /**
-      * constructor of AcePlatformViewPluginBase
-      *
-      */
-     public AcePlatformViewPluginBase() {
-         // plugin name is PlatformView, version is 1.0.
-         super("platformview", 1.0f);
-         objectMap = new HashMap<Long, AcePlatformViewBase>();
-     }
- 
-     /**
-      * This is called to get a atomic id.
-      *
-      * @return id
-      */
-     public long getAtomicId() {
-         return nextPlatformViewId.getAndIncrement();
-     }
- 
-     /**
-      * This is called to add a resource object to map.
-      *
-      * @param id PlatformView id
-      * @param PlatformView PlatformView object
-      */
-     public void addResource(long id, AcePlatformViewBase view) {
-         objectMap.put(id, view);
-         registerCallMethod(view.getCallMethod());
-     }
- 
-     /**
-      * This is called to create AcePlatformViewBase.
-      *
-      * @param param calling param
-      * @return resource id
-      */
-     public abstract long create(Map<String, String> param);
- 
-     public abstract void registerPlatformViewFactory(PlatformViewFactory platformViewFactory);
- 
-     /**
-      * This is called to get AcePlatformViewBase object by id.
-      *
-      * @param id id of object
-      * @return object or null if id not found
-      */
-     public Object getObject(long id) {
-         return objectMap.get(id);
-     }
- 
-     public Map<Long, AcePlatformViewBase> getObjectMap() {
-         return objectMap;
-     }
- 
-     /**
-      * This is called for activity resume.
-      */
-     public void onActivityResume() {
-         for (Map.Entry<Long, AcePlatformViewBase> entry : objectMap.entrySet()) {
-             if (entry.getValue() == null) {
-                 continue;
-             }
-             entry.getValue().onActivityResume();
-         }
-     }
- 
-     /**
-      * This is called for activity pause.
-      */
-     public void onActivityPause() {
-         for (Map.Entry<Long, AcePlatformViewBase> entry : objectMap.entrySet()) {
-             entry.getValue().onActivityPause();
-         }
-     }
- 
-     /**
-      * This is called to release AcePlatformViewBase by id.
-      *
-      * @param id id of object
-      * @return result of release
-      */
-     public boolean release(long id) {
-         if (objectMap.containsKey(id)) {
-             AcePlatformViewBase view = objectMap.get(id);
-             unregisterCallMethod(view.getCallMethod());
-             view.release();
-             objectMap.remove(id);
-             return true;
-         }
-         return false;
-     }
- 
-     /**
-      * This is called to release all AcePlatformViewBase.
-      */
-     public void release() {
-         for (Map.Entry<Long, AcePlatformViewBase> entry : objectMap.entrySet()) {
-             entry.getValue().release();
-         }
-         objectMap.clear();
-     }
- 
-     /**
-      * notify activity lifecycle changed to plugin.
-      *
-      * @param isBackground to background state
-      */
-     @Override
-     public void notifyLifecycleChanged(Boolean isBackground) {
-         if (isBackground) {
-             onActivityPause();
-         } else {
-             onActivityResume();
-         }
-     }
- }
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+
+import ohos.ace.adapter.AceResourcePlugin;
+/**
+ * The class for creating  PlatformView on Android platform.
+ *
+ * @since 1
+ */
+public abstract class AcePlatformViewPluginBase extends AceResourcePlugin {
+    private final AtomicLong nextPlatformViewId = new AtomicLong(0L);
+
+    private Map<Long, AcePlatformViewBase> objectMap;
+
+    /**
+     * constructor of AcePlatformViewPluginBase
+     *
+     */
+    public AcePlatformViewPluginBase() {
+        // plugin name is PlatformView, version is 1.0.
+        super("platformview", 1.0f);
+        objectMap = new HashMap<Long, AcePlatformViewBase>();
+    }
+
+    /**
+     * This is called to get a atomic id.
+     *
+     * @return id
+     */
+    public long getAtomicId() {
+        return nextPlatformViewId.getAndIncrement();
+    }
+
+    /**
+     * This is called to add a resource object to map.
+     *
+     * @param id PlatformView id
+     * @param view PlatformView object
+     */
+    public void addResource(long id, AcePlatformViewBase view) {
+        objectMap.put(id, view);
+        registerCallMethod(view.getCallMethod());
+    }
+
+    /**
+     * This is called to create AcePlatformViewBase.
+     *
+     * @param param calling param
+     * @return resource id
+     */
+    public abstract long create(Map<String, String> param);
+
+    /**
+     * This is called to register PlatformViewFactory.
+     *
+     * @param platformViewFactory PlatformViewFactory object
+     */
+    public abstract void registerPlatformViewFactory(PlatformViewFactory platformViewFactory);
+
+    /**
+     * This is called to get AcePlatformViewBase object by id.
+     *
+     * @param id id of object
+     * @return object or null if id not found
+     */
+    public Object getObject(long id) {
+        return objectMap.get(id);
+    }
+
+    public Map<Long, AcePlatformViewBase> getObjectMap() {
+        return objectMap;
+    }
+
+    /**
+     * This is called for activity resume.
+     */
+    public void onActivityResume() {
+        for (Map.Entry<Long, AcePlatformViewBase> entry : objectMap.entrySet()) {
+            if (entry.getValue() == null) {
+                continue;
+            }
+            entry.getValue().onActivityResume();
+        }
+    }
+
+    /**
+     * This is called for activity pause.
+     */
+    public void onActivityPause() {
+        for (Map.Entry<Long, AcePlatformViewBase> entry : objectMap.entrySet()) {
+            entry.getValue().onActivityPause();
+        }
+    }
+
+    /**
+     * This is called to release AcePlatformViewBase by id.
+     *
+     * @param id id of object
+     * @return result of release
+     */
+    public boolean release(long id) {
+        if (objectMap.containsKey(id)) {
+            AcePlatformViewBase view = objectMap.get(id);
+            unregisterCallMethod(view.getCallMethod());
+            view.release();
+            objectMap.remove(id);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * This is called to release all AcePlatformViewBase.
+     */
+    public void release() {
+        for (Map.Entry<Long, AcePlatformViewBase> entry : objectMap.entrySet()) {
+            entry.getValue().release();
+        }
+        objectMap.clear();
+    }
+
+    /**
+     * notify activity lifecycle changed to plugin.
+     *
+     * @param isBackground to background state
+     */
+    @Override
+    public void notifyLifecycleChanged(Boolean isBackground) {
+        if (isBackground) {
+            onActivityPause();
+        } else {
+            onActivityResume();
+        }
+    }
+}

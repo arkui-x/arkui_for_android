@@ -51,7 +51,6 @@ public final class AceResourceRegister {
         pluginMap = new HashMap<String, AceResourcePlugin>();
         callMethodMap = new HashMap<String, IAceOnCallResourceMethod>();
         callbackHandler = new IAceOnResourceEvent() {
-
             /**
              * Fire event to native
              *

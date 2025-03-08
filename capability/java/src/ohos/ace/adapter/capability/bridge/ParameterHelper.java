@@ -301,7 +301,7 @@ public class ParameterHelper {
                 for (boolean booleanIter : (boolean[]) objects) {
                     JsonArray.put(booleanIter);
                 }
-            } else if (objects.getClass().getName().toString().equals(LONG_ARRAY_CLASS_NAME)) {
+            } else if (LONG_ARRAY_CLASS_NAME.equals(objects.getClass().getName().toString())) {
                 for (long longIter : (long[]) objects) {
                     if (!isExceedJsSafeInteger(longIter)) {
                         return null;

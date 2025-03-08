@@ -23,7 +23,6 @@ import java.util.Map;
  * @since 1
  */
 public abstract class AceResourcePlugin {
-
     /**
      * Object of AceResourceRegister
      */

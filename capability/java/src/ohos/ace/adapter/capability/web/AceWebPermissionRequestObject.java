@@ -51,9 +51,9 @@ public class AceWebPermissionRequestObject {
         String[] strArray = this.request.getResources();
         int resourcesId = 0;
         for (String str : strArray) {
-            if (str.equals("android.webkit.resource.VIDEO_CAPTURE")) {
+            if ("android.webkit.resource.VIDEO_CAPTURE".equals(str)) {
                 resourcesId |= RESOURCESID_ONE;
-            } else if (str.equals("android.webkit.resource.AUDIO_CAPTURE")) {
+            } else if ("android.webkit.resource.AUDIO_CAPTURE".equals(str)) {
                 resourcesId |= RESOURCESID_TWO;
             }
         }

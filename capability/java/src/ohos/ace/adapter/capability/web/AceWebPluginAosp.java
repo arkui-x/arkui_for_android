@@ -129,9 +129,9 @@ public class AceWebPluginAosp extends AceWebPluginBase {
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         if (width > metrics.widthPixels || height > metrics.heightPixels) {
             String message = "Creating the webview size: "
-                        +  "[" + width + ", " + height + "] may result in problems"
-                        +  "It is larger than the device screen size: "
-                        +  "[" + metrics.widthPixels + ", " + metrics.heightPixels + "].";
+                    + "[" + width + ", " + height + "] may result in problems"
+                    + "It is larger than the device screen size: "
+                    + "[" + metrics.widthPixels + ", " + metrics.heightPixels + "].";
             ALog.w(LOG_TAG, message);
         }
         ALog.w(LOG_TAG, "Creating a webview size is less than the the device screen size");

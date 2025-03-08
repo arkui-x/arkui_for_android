@@ -62,11 +62,12 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
     private static final String PLATFORM_VIEW_LEFT = "platformViewLeft";
     private static final String PLATFORM_VIEW_TOUCH_POINT_OFFSET_X = "platformViewTouchPointOffsetX";
     private static final String PLATFORM_VIEW_TOUCH_POINT_OFFSET_Y = "platformViewTouchPointOffsetY";
+    private static final Object PLATFORM_VIEW_LOCK = new Object();
 
-    private PlatformViewWrapper viewWrapper;
     private final Context context;
     private final Handler mainHandler;
-    private static final Object PLATFORM_VIEW_LOCK = new Object();
+
+    private PlatformViewWrapper viewWrapper;
 
     private Handler asyncHandler;
     private HandlerThread handlerThread;
@@ -185,7 +186,7 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
             ALog.e(LOG_TAG, "updateLayout failed: platformViewLeft is illegal");
             return FAIL;
         }
-       
+
         try {
             offsetX = toPhysicalPixels(Double.parseDouble(params.get(PLATFORM_VIEW_LEFT)));
             offsetY = toPhysicalPixels(Double.parseDouble(params.get(PLATFORM_VIEW_TOP)));
