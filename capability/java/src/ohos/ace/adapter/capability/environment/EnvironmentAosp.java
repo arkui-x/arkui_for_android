@@ -18,8 +18,6 @@ package ohos.ace.adapter.capability.environment;
 import android.content.Context;
 import android.view.accessibility.AccessibilityManager;
 
-import ohos.ace.adapter.ALog;
-
 /**
  * EnvironmentAosp
  *

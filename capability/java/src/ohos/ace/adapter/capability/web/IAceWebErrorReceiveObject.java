@@ -15,10 +15,30 @@
 
 package ohos.ace.adapter.capability.web;
 
+/**
+ * AceWebErrorReceiveObject interface definition for web error receive
+ *
+ * @since 2023-12-13
+ */
 public interface IAceWebErrorReceiveObject {
+    /**
+     * Get request url
+     *
+     * @return request url
+     */
     String getRequestUrl();
 
+    /**
+     * Get error info
+     *
+     * @return error info
+     */
     String getErrorInfo();
 
+    /**
+     * Get error code
+     *
+     * @return error code
+     */
     int getErrorCode();
 }

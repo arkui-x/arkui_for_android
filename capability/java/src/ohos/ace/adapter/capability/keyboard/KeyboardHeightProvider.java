@@ -52,6 +52,7 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
 
     /**
      * Constructor.
+     *
      * @param activity the activity
      */
     public KeyboardHeightProvider(Activity activity) {
@@ -190,6 +191,7 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
 
     /**
      * Set keyboard height observer.
+     *
      * @param observer the observer
      */
     public void setKeyboardHeightObserver(KeyboardHeightObserver observer) {

@@ -18,6 +18,11 @@ package ohos.ace.adapter.capability.web;
 import android.webkit.JsPromptResult;
 import ohos.ace.adapter.ALog;
 
+/**
+ * AceWebJsPromptObject is used to handle js prompt request.
+ *
+ * @since 2024-5-31
+ */
 public class AceWebJsPromptObject {
     private static final String LOG_TAG = "AceWebJsPromptObject";
 
@@ -45,6 +50,9 @@ public class AceWebJsPromptObject {
         return this.defaultValue;
     }
 
+    /**
+     * Cancel the prompt.
+     */
     public void cancel() {
         try {
             this.result.cancel();
@@ -53,6 +61,9 @@ public class AceWebJsPromptObject {
         }
     }
 
+    /**
+     * Confirm the prompt.
+     */
     public void confirm() {
         try {
             this.result.confirm();
@@ -61,6 +72,11 @@ public class AceWebJsPromptObject {
         }
     }
 
+    /**
+     * Confirm the prompt with the specified result.
+     *
+     * @param result the result to confirm
+     */
     public void confirm(String result) {
         try {
             this.result.confirm(result);

@@ -16,7 +16,6 @@
 package ohos.ace.adapter.capability.web;
 
 import android.webkit.WebBackForwardList;
-import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.AceResourcePlugin;
 
 import java.util.HashMap;
@@ -38,8 +37,14 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
 
     private static Map<Long, AceWebBase> objectMap;
 
+    /**
+     * Initialize the webview.
+     */
     private static boolean hasInit = false;
 
+    /**
+     * Initialize the webview.
+     */
     protected static boolean richTextInit = false;
 
     private final AtomicLong nextWebId = new AtomicLong(0L);
@@ -50,6 +55,9 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         objectMap = new HashMap<Long, AceWebBase>();
     }
 
+    /**
+     * Initialize the webview.
+     */
     protected native void nativeInit();
 
     /**
@@ -57,6 +65,9 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      */
     protected native void nativeInitStatic();
 
+    /**
+     * Native init webview database methods.
+     */
     protected native void nativeInitWebDataBase();
 
     /**
@@ -64,6 +75,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      */
     protected native void nativeInitWebDownloadItem();
 
+    /**
+     * Native init webview download item methods.
+     *
+     * @param value The value of the webview.
+     * @param asyncCallbackInfoId The ID of the asynchronous callback information.
+     */
     protected native static void onReceiveValue(String value, long asyncCallbackInfoId);
 
     /**
@@ -74,6 +91,13 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      */
     protected native static void onReceiveRunJavaScriptExtValue(String value, long asyncCallbackInfoId);
 
+    /**
+     * Native method to handle the received JavaScript execution result.
+     *
+     * @param webId The webview id.
+     * @param portHandle The port handle for the message.
+     * @param result The result of the message.
+     */
     protected native static void onMessage(long webId, String portHandle, String result);
 
     /**
@@ -160,6 +184,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param param calling param
      * @return resource id
      */
+    @Override
     public abstract long create(Map<String, String> param);
 
     /**
@@ -168,6 +193,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param id id of object
      * @return object or null if id not found
      */
+    @Override
     public Object getObject(long id) {
         if (objectMap.containsKey(id)) {
             return objectMap.get(id);
@@ -205,6 +231,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param id id of object
      * @return result of release
      */
+    @Override
     public boolean release(long id) {
         if (objectMap.containsKey(id)) {
             AceWebBase web = objectMap.get(id);
@@ -220,12 +247,20 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * This is called to release all AceWebBase.
      *
      */
+    @Override
     public void release() {
         for (Map.Entry<Long, AceWebBase> entry : objectMap.entrySet()) {
             entry.getValue().release();
         }
     }
 
+    /**
+     * This is called to load url by id.
+     *
+     * @param id id of object
+     * @param url url to load
+     * @param header header of url
+     */
     public void loadUrl(long id, String url, HashMap<String, String> header) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -233,6 +268,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * This is called to load data by id.
+     *
+     * @param id id of object
+     * @param params params of data
+     */
     public void loadData(long id, HashMap<String, String> params) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -240,6 +281,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * This is called to get url by id.
+     *
+     * @param id id of object
+     * @return url
+     */
     public String getUrl(long id) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -248,6 +295,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         return "";
     }
 
+    /**
+     * This is called to forward by id.
+     *
+     * @param id id of object
+     * @return result of forward
+     */
     public String accessForward(long id) {
         if (objectMap.containsKey(id)) {
             Map<String, String> defaultParam = new HashMap<String, String>();
@@ -257,6 +310,11 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         return "";
     }
 
+    /**
+     * This is called to forward by id.
+     *
+     * @param id id of object
+     */
     public void forward(long id) {
         if (objectMap.containsKey(id)) {
             Map<String, String> defaultParam = new HashMap<String, String>();
@@ -265,6 +323,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * This is called to go back by id.
+     *
+     * @param id id of object
+     * @return result of go back
+     */
     public String accessBackward(long id) {
         if (objectMap.containsKey(id)) {
             Map<String, String> defaultParam = new HashMap<String, String>();
@@ -274,6 +338,11 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         return "";
     }
 
+    /**
+     * This is called to go back by id.
+     *
+     * @param id id of object
+     */
     public void backward(long id) {
         if (objectMap.containsKey(id)) {
             Map<String, String> defaultParam = new HashMap<String, String>();
@@ -282,6 +351,11 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * This is called to refresh by id.
+     *
+     * @param id id of object
+     */
     public void refresh(long id) {
         if (objectMap.containsKey(id)) {
             Map<String, String> defaultParam = new HashMap<String, String>();
@@ -290,6 +364,13 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * Evaluates the given JavaScript code in the context of the web view identified by the specified ID.
+     *
+     * @param id webId.
+     * @param script The JavaScript code to be evaluated.
+     * @param asyncCallbackInfoId The identifier for the asynchronous callback information.
+     */
     public void evaluateJavascript(long id, String script, long asyncCallbackInfoId) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -311,6 +392,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * Get the back forward entries of the webview by id.
+     *
+     * @param id id of object
+     * @return WebBackForwardList of the webview
+     */
     public WebBackForwardList getBackForwardEntries(long id) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -319,6 +406,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         return null;
     }
 
+    /**
+     * Clear the cache of the webview.
+     *
+     * @param id id of object
+     * @param includeDiskFiles Whether to clear disk files.
+     */
     public void removeCache(long id, boolean includeDiskFiles) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -355,6 +448,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * Go back or forward in the history stack.
+     *
+     * @param id id of object
+     * @param steps The number of steps to go back or forward.
+     */
     public void backOrForward(long id, int steps) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -362,6 +461,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * Get the title of the web page.
+     *
+     * @param id id of object
+     * @return The title of the web page.
+     */
     public String getTitle(long id) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -370,6 +475,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         return "";
     }
 
+    /**
+     * Get the height of the content of the web page.
+     *
+     * @param id id of object
+     * @return The height of the content of the web page.
+     */
     public int getPageHeight(long id) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -378,6 +489,13 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         return -1;
     }
 
+    /**
+     * Get the width of the content of the web page.
+     *
+     * @param id id of object
+     * @param step The number of steps to scroll.
+     * @return The width of the content of the web page.
+     */
     public String accessStep(long id, int step) {
         if (objectMap.containsKey(id)) {
             Map<String, String> defaultParam = new HashMap<String, String>();
@@ -388,6 +506,13 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         return "";
     }
 
+    /**
+     * Scroll to the specified position.
+     *
+     * @param id id of object
+     * @param x The x-coordinate of the scroll position.
+     * @param y The y-coordinate of the scroll position.
+     */
     public void scrollTo(long id, int x, int y) {
         if (objectMap.containsKey(id)) {
             Map<String, String> defaultParam = new HashMap<String, String>();
@@ -398,6 +523,13 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * Scroll the content of the webview by the specified amount.
+     *
+     * @param id id of object
+     * @param x The x-coordinate of the scroll position.
+     * @param y The y-coordinate of the scroll position.
+     */
     public void scrollBy(long id, int x, int y) {
         if (objectMap.containsKey(id)) {
             Map<String, String> defaultParam = new HashMap<String, String>();
@@ -408,6 +540,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * zoom the webview with the specified ID.
+     *
+     * @param id id of object
+     * @param step The number of steps to zoom.
+     */
     public void zoom(long id, float step) {
         if (objectMap.containsKey(id)) {
             Map<String, String> defaultParam = new HashMap<String, String>();
@@ -441,6 +579,11 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * stop the webview with the specified ID.
+     *
+     * @param id id of object
+     */
     public void stop(long id) {
         if (objectMap.containsKey(id)) {
             Map<String, String> defaultParam = new HashMap<String, String>();
@@ -477,6 +620,11 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * Scroll through WebView content.
+     *
+     * @param id id of object.
+     */
     public void clearHistory(long id) {
         if (objectMap.containsKey(id)) {
             Map<String, String> defaultParam = new HashMap<String, String>();
@@ -485,6 +633,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * Set the custom user agent of the specified ID.
+     *
+     * @param id id of object
+     * @param userAgent custom user agent
+     */
     public void setCustomUserAgent(long id, String userAgent) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -492,6 +646,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * Get the custom user agent of the specified ID.
+     *
+     * @param id id of object
+     * @return custom user agent
+     */
     public String getCustomUserAgent(long id) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -514,6 +674,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * Create a pair of message ports for communication between Webview and HTML5.
+     *
+     * @param id Wevbiew id.
+     * @return Message ports.
+     */
     public String[] createWebMessagePorts(long id) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -523,6 +689,14 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         return ports;
     }
 
+    /**
+     * Post message to HTML5.
+     *
+     * @param id Wevbiew id.
+     * @param message Message to be posted.
+     * @param ports Message port.
+     * @param uri Message uri.
+     */
     public void postWebMessage(long id, String message, String[] ports, String uri) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -530,6 +704,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * Close the message port with the specified ID.
+     *
+     * @param id Wevbiew id.
+     * @param portHandle Message port handle.
+     */
     public void closeWebMessagePort(long id, String portHandle) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -537,6 +717,14 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         }
     }
 
+    /**
+     * Post message to HTML5.
+     *
+     * @param id Wevbiew id.
+     * @param portHandle Message port handle.
+     * @param webMessage The Message is a message sent to H5.
+     * @return The result of the message event.
+     */
     public int postMessageEvent(long id, String portHandle, String webMessage) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
@@ -561,6 +749,13 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         return CAN_NOT_POST_MESSAGE;
     }
 
+    /**
+     * Register message event.
+     *
+     * @param id Wevbiew id.
+     * @param portHandle Message port handle.
+     * @return The result of the message event.
+     */
     public int onWebMessagePortEvent(long id, String portHandle) {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);

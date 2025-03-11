@@ -15,15 +15,12 @@
 package ohos.stage.ability.adapter;
 
 import android.app.Activity;
-import android.graphics.Color;
 import android.graphics.Rect;
-import android.os.Build;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
 import ohos.ace.adapter.WindowView;
@@ -33,39 +30,12 @@ import java.util.Arrays;
 
 /**
  * The type Sub window.
+ *
+ * @since 2023-08-06
  */
 public class SubWindow {
     private static final String TAG = "SubWindow";
     private long nativeSubWindowPtr = 0L;
-
-    public class PopupSubWindow extends PopupWindow {
-        private static final String TAG = "PopupSubWindow";
-
-        public PopupSubWindow() {
-            super();
-        }
-
-        @Override
-        public void dismiss() {
-            StackTraceElement[] stackTrace = new Exception().getStackTrace();
-            if (stackTrace.length >= 2 && "onTouchEvent".equals(stackTrace[1].getMethodName())) {
-                return;
-            }
-            super.dismiss();
-            if (nativeSubWindowPtr != 0L) {
-                nativeOnSubWindowHide(nativeSubWindowPtr);
-            }
-        }
-
-        public void shutdown() {
-            View cView = getContentView();
-            if (cView != null && cView instanceof WindowViewAosp) {
-                ((WindowViewAosp)cView).destroyAosp();
-                cView = null;
-            }
-            super.dismiss();
-        }
-    }
 
     /**
      * The type Window param.
@@ -108,6 +78,40 @@ public class SubWindow {
         }
     }
 
+    /**
+     * The type Popup sub window.
+     */
+    public class PopupSubWindow extends PopupWindow {
+        private static final String TAG = "PopupSubWindow";
+
+        public PopupSubWindow() {
+            super();
+        }
+
+        @Override
+        public void dismiss() {
+            StackTraceElement[] stackTrace = new Exception().getStackTrace();
+            if (stackTrace.length >= 2 && "onTouchEvent".equals(stackTrace[1].getMethodName())) {
+                return;
+            }
+            super.dismiss();
+            if (nativeSubWindowPtr != 0L) {
+                nativeOnSubWindowHide(nativeSubWindowPtr);
+            }
+        }
+
+        /**
+         * The type Window param.
+         */
+        public void shutdown() {
+            View cView = getContentView();
+            if (cView != null && cView instanceof WindowViewAosp) {
+                ((WindowViewAosp) cView).destroyAosp();
+                cView = null;
+            }
+            super.dismiss();
+        }
+    }
 
     /**
      * Instantiates a new Sub window.
@@ -354,6 +358,8 @@ public class SubWindow {
 
     /**
      * Set window focusable.
+     *
+     * @param isFocusable the is focusable
      */
     public void setFocusable(boolean isFocusable) {
         subWindowView.setFocusable(isFocusable);
@@ -362,6 +368,8 @@ public class SubWindow {
 
     /**
      * Set window touchable.
+     *
+     * @param isTouchable the is touchable
      */
     public void setTouchable(boolean isTouchable) {
         subWindowView.setTouchable(isTouchable);
@@ -369,6 +377,8 @@ public class SubWindow {
 
     /**
      * request focus.
+     *
+     * @return the boolean
      */
     public boolean requestFocus() {
         if (!subWindowView.isShowing()) {
@@ -385,6 +395,9 @@ public class SubWindow {
         return true;
     }
 
+    /**
+     * release focus.
+     */
     public void getFocus() {
         Log.d(TAG, "getFocus(), isFocusable=" + this.isFocusable);
         if (this.isFocusable) {
@@ -393,6 +406,9 @@ public class SubWindow {
         }
     }
 
+    /**
+     * release focus.
+     */
     public void releaseFocus() {
         Log.d(TAG, "releaseFocus(), isFocusable=" + this.isFocusable);
         if (this.isFocusable) {
@@ -403,6 +419,8 @@ public class SubWindow {
 
     /**
      * set window touch hot area.
+     *
+     * @param rectArray the rect array
      */
     public void setTouchHotArea(Rect[] rectArray) {
         Log.d(TAG, "setTouchHotArea(), rectArray:");
@@ -414,6 +432,8 @@ public class SubWindow {
 
     /**
      * set FullScreen.
+     *
+     * @param status the status
      */
     public boolean setFullScreen(boolean status) {
         if (status) {
@@ -431,6 +451,8 @@ public class SubWindow {
 
     /**
      * Set subwindow on top.
+     *
+     * @param status the status
      */
     public void setOnTop(boolean status) {
         if (status) {

@@ -34,7 +34,7 @@ public class ALog {
     /**
      * Sets the Logger instance.
      *
-     * @param log
+     * @param log logger instance
      */
     public static void setLogger(ILogger log) {
         if (log == null) {

@@ -16,7 +16,6 @@
 package ohos.ace.adapter.capability.texture;
 
 import ohos.ace.adapter.AceResourcePlugin;
-import ohos.ace.adapter.ALog;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +28,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class AceTexturePluginAosp extends AceResourcePlugin {
     private static final String LOG_TAG = "AceTexturePluginAosp";
-    private static final AtomicLong nextTextureId = new AtomicLong(0L);
+    private static final AtomicLong NEXT_TEXTURE_ID = new AtomicLong(0L);
 
     private final IAceTexture textureImpl;
 
@@ -48,6 +47,7 @@ public class AceTexturePluginAosp extends AceResourcePlugin {
     /**
      * Create a texture resource register.
      *
+     * @param instanceId instance id
      * @param textureImpl interface for texture interaction with the engine.
      * @return texture plugin
      */
@@ -61,12 +61,13 @@ public class AceTexturePluginAosp extends AceResourcePlugin {
      * @param param calling param
      * @return texture id
      */
+    @Override
     public long create(Map<String, String> param) {
-        AceTexture aceTexture = new AceTexture(instanceId, nextTextureId.get(), textureImpl,
+        AceTexture aceTexture = new AceTexture(instanceId, NEXT_TEXTURE_ID.get(), textureImpl,
                                                 getEventCallback(), param);
-        objectMap.put(nextTextureId.get(), aceTexture);
+        objectMap.put(NEXT_TEXTURE_ID.get(), aceTexture);
         registerCallMethod(aceTexture.getCallMethod());
-        return nextTextureId.getAndIncrement();
+        return NEXT_TEXTURE_ID.getAndIncrement();
     }
 
     /**
@@ -75,6 +76,7 @@ public class AceTexturePluginAosp extends AceResourcePlugin {
      * @param id id of object
      * @return object or null if id not found
      */
+    @Override
     public Object getObject(long id) {
         return objectMap.get(id);
     }
@@ -85,6 +87,7 @@ public class AceTexturePluginAosp extends AceResourcePlugin {
      * @param id id of object
      * @return result of release
      */
+    @Override
     public boolean release(long id) {
         if (objectMap.containsKey(id)) {
             AceTexture aceTexture = objectMap.get(id);
@@ -100,6 +103,7 @@ public class AceTexturePluginAosp extends AceResourcePlugin {
      * Release all AceTexture objects.
      *
      */
+    @Override
     public void release() {
         for (Map.Entry<Long, AceTexture> entry : objectMap.entrySet()) {
             entry.getValue().release();

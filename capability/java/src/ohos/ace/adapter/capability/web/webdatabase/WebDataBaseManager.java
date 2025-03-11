@@ -54,6 +54,13 @@ public class WebDataBaseManager {
         return instance;
     }
 
+    /**
+     * Get the http auth credentials.
+     *
+     * @param host the host
+     * @param realm  the realm
+     * @return the http auth credentials
+     */
     public List<WebDataBaseCredential> getHttpAuthCredentials(String host, String realm) {
         List<WebDataBaseCredential> credentials = new ArrayList<>();
         WebDataBaseHttpAuth httpAuth = httpAuthDao.find(host, realm);
@@ -63,6 +70,13 @@ public class WebDataBaseManager {
         return credentials;
     }
 
+    /**
+     * Get the http auth credential.
+     *
+     * @param host the host
+     * @param realm  the realm
+     * @return the http auth credential
+     */
     public WebDataBaseCredential getHttpAuthCredential(String host, String realm) {
         List<WebDataBaseCredential> credentials = getHttpAuthCredentials(host, realm);
         WebDataBaseCredential credential = new WebDataBaseCredential("", "");
@@ -72,10 +86,21 @@ public class WebDataBaseManager {
         return credential;
     }
 
+    /**
+     * Delete all http auth credentials.
+     */
     public void deleteAllAuthCredentials() {
         db.clearAllTables(db.getWritableDatabase());
     }
 
+    /**
+     * Save the http auth credential.
+     *
+     * @param host the host
+     * @param realm  the realm
+     * @param username the username
+     * @param password the password
+     */
     public void saveHttpAuthCredential(String host, String realm, String username, String password) {
         WebDataBaseHttpAuth httpAuth = httpAuthDao.find(host, realm);
         Long httpAuthId;
@@ -105,6 +130,11 @@ public class WebDataBaseManager {
         }
     }
 
+    /**
+     * Check if the http auth credential exists.
+     *
+     * @return boolean
+     */
     public boolean existHttpAuthCredentials() {
         return credentialDao.exist();
     }

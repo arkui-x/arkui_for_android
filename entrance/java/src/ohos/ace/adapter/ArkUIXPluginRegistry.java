@@ -14,7 +14,6 @@
  */
 package ohos.ace.adapter;
 
-import android.content.Context;
 import android.util.Log;
 
 import java.util.HashSet;
@@ -22,6 +21,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * ArkUIXPluginRegistry is used to register ArkUI-X plugins.
+ *
+ * @since 2024-05-13
+ */
 public class ArkUIXPluginRegistry implements IPluginRegistry {
     private static final String LOG_TAG = "ArkUIXPluginRegistry";
     private PluginContext pluginContext;
@@ -36,6 +40,7 @@ public class ArkUIXPluginRegistry implements IPluginRegistry {
      *
      * @param name The full class name includes the package name of the plugin.
      */
+    @Override
     public void registryPlugin(String name) {
         Log.d(LOG_TAG, "registry plugin: " + name);
         Class pluginClass = null;
@@ -68,6 +73,7 @@ public class ArkUIXPluginRegistry implements IPluginRegistry {
      *
      * @param pluginList A set of ArkUI-X plugins that need to be added.
      */
+    @Override
     public void registryPlugins(Set<String> pluginList) {
         for (String pluginName : pluginList) {
             registryPlugin(pluginName);
@@ -79,6 +85,7 @@ public class ArkUIXPluginRegistry implements IPluginRegistry {
      *
      * @param name The full class name includes the package name of the plugin.
      */
+    @Override
     public void unRegistryPlugin(String name) {
         IArkUIXPlugin plugin = pluginMap.get(name);
         if (plugin != null) {
@@ -93,6 +100,7 @@ public class ArkUIXPluginRegistry implements IPluginRegistry {
      *
      * @param pluginList A set of ArkUI-X plugins that need to be removed.
      */
+    @Override
     public void unRegistryPlugins(Set<String> pluginList) {
         for (String pluginName : pluginList) {
             unRegistryPlugin(pluginName);
@@ -102,6 +110,7 @@ public class ArkUIXPluginRegistry implements IPluginRegistry {
     /**
      * remove all plugins from ArkUI-X PluginRegistry.
      */
+    @Override
     public void unRegistryAllPlugins() {
         unRegistryPlugins(new HashSet<>(pluginMap.keySet()));
         pluginMap.clear();
@@ -113,6 +122,7 @@ public class ArkUIXPluginRegistry implements IPluginRegistry {
      * @param name The full class name includes the package name of the plugin.
      * @return return true if the plugin has been added to ArkUI-X PluginRegistry.
      */
+    @Override
     public boolean hasPlugin(String name) {
         return pluginMap.containsKey(name);
     }
@@ -123,6 +133,7 @@ public class ArkUIXPluginRegistry implements IPluginRegistry {
      * @param name The full class name includes the package name of the plugin.
      * @return return plugin if the plugin has been added to ArkUI-X PluginRegistry.
      */
+    @Override
     public IArkUIXPlugin getPlugin(String name) {
         if (hasPlugin(name)) {
             return pluginMap.get(name);

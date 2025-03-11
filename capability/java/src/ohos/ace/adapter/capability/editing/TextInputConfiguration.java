@@ -60,6 +60,7 @@ public class TextInputConfiguration {
      *
      * @param config Configuration in JSON format.
      * @return IME configuration.
+     * @throws JSONException If the JSON is invalid.
      */
     public static TextInputConfiguration fromJson(JSONObject config) throws JSONException {
         if (config == null) {

@@ -29,11 +29,19 @@ public class TextEditState {
     private final int selectionStart;
     private final int selectionEnd;
 
+    private TextEditState(String text, String hint, int selectionStart, int selectionEnd) {
+        this.text = text;
+        this.hint = hint;
+        this.selectionStart = selectionStart;
+        this.selectionEnd = selectionEnd;
+    }
+
     /**
      * Deserialize textEditState from JSON.
      *
      * @param textEditState Text editing state in JSON format.
      * @return TextEditState object.
+     * @throws JSONException if the textEditState is not a valid JSON object.
      */
     public static TextEditState fromJson(JSONObject textEditState) throws JSONException {
         return new TextEditState(
@@ -42,13 +50,6 @@ public class TextEditState {
             textEditState.getInt("selectionStart"),
             textEditState.getInt("selectionEnd")
         );
-    }
-
-    private TextEditState(String text, String hint, int selectionStart, int selectionEnd) {
-        this.text = text;
-        this.hint = hint;
-        this.selectionStart = selectionStart;
-        this.selectionEnd = selectionEnd;
     }
 
     /**

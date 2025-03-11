@@ -15,6 +15,11 @@
 
 package ohos.ace.adapter.capability.web;
 
+/**
+ * AceWebScaleObject class is used to store the scale information.
+ *
+ * @since 2024-05-31
+ */
 public class AceWebScaleObject {
     private float oldScale;
     private float newScale;

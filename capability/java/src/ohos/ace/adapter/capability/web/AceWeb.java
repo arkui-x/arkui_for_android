@@ -32,7 +32,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
@@ -72,7 +71,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import ohos.ace.adapter.ALog;
-import ohos.ace.adapter.IAceOnCallResourceMethod;
 import ohos.ace.adapter.IAceOnResourceEvent;
 import ohos.ace.adapter.capability.web.AceWebConsoleMessageObject;
 import ohos.ace.adapter.capability.web.AceWebErrorReceiveObject;
@@ -291,6 +289,9 @@ public class AceWeb extends AceWebBase {
         return webView;
     }
 
+    /**
+     * This is to set the ace page url which webview located.
+     */
     public class AceWebView extends WebView {
         private static final String LOG_TAG = "AceWebView";
 
@@ -315,6 +316,10 @@ public class AceWeb extends AceWebBase {
         currentPageUrl = pageUrl;
     }
 
+    /**
+     * This is to get the ace page url which webview located.
+     */
+    @Override
     public String getUrl() {
         if (this.webView == null) {
             return "";
@@ -896,7 +901,8 @@ public class AceWeb extends AceWebBase {
     /**
      * This is called to load the given url.
      *
-     * @param params the url the web needs to load.
+     * @param url the url the web needs to load.
+     * @param header the header of the url.
      */
     @Override
     public void loadUrl(String url, Map<String, String> header) {
@@ -1143,6 +1149,9 @@ public class AceWeb extends AceWebBase {
         motionEvent = MotionEvent.obtain(event);
     }
 
+    /**
+     * This is called to process touch events.
+     */
     public void processTouchEvent() {
         if (motionEvent == null || webView == null) {
             return;
@@ -1509,7 +1518,7 @@ public class AceWeb extends AceWebBase {
 
     @Override
     public String[] createWebMessagePorts() {
-        WebMessagePort messagePorts[] = webView.createWebMessageChannel();
+        WebMessagePort[] messagePorts = webView.createWebMessageChannel();
         webMessagePorts.clear();
         for (WebMessagePort port : messagePorts) {
             webMessagePorts.add(port);
@@ -1518,6 +1527,11 @@ public class AceWeb extends AceWebBase {
         return ports;
     }
 
+    /**
+     * get web message port
+     *
+     * @param port port name
+     */
     public WebMessagePort getWebMessagePort(String port) {
         if (webMessagePorts.isEmpty()) {
             return null;
@@ -1535,7 +1549,7 @@ public class AceWeb extends AceWebBase {
     public void postWebMessage(String message, String[] ports, String targetUri) {
         if (!webMessagePorts.isEmpty()) {
             int length = ports.length;
-            WebMessagePort messagePorts[] = new WebMessagePort[length];
+            WebMessagePort[] messagePorts = new WebMessagePort[length];
             for (int i = 0; i < length; i++) {
                 messagePorts[i] = getWebMessagePort(ports[i]);
             }
@@ -2091,6 +2105,13 @@ public class AceWeb extends AceWebBase {
         return NO_ERROR;
     }
 
+    /**
+     * Scroll to the specified position.
+     *
+     * @param params The scroll parameters.
+     * @return The result of the scroll operation.
+     */
+    @Override
     public String scrollTo(Map<String, String> params) {
         if (!params.containsKey(NTC_PARAM_SCROLLTO_X) || !params.containsKey(NTC_PARAM_SCROLLTO_Y) || webView == null) {
             return FAIL_TAG;
@@ -2229,8 +2250,9 @@ public class AceWeb extends AceWebBase {
     /**
      * setWebDebuggingAccess.
      *
-     * @param params is webDebuggingAccess boolean.
+     * @param webDebuggingAccess is webDebuggingAccess boolean.
      */
+    @Override
     public void setWebDebuggingAccess(boolean webDebuggingAccess) {
         WebView.setWebContentsDebuggingEnabled(webDebuggingAccess);
     }

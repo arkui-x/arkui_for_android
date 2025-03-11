@@ -17,7 +17,6 @@ package ohos.ace.adapter.capability.web;
 
 import android.view.MotionEvent;
 import android.webkit.WebBackForwardList;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import ohos.ace.adapter.ALog;
@@ -299,6 +298,11 @@ public abstract class AceWebBase {
         return id;
     }
 
+    /**
+     * This is called to set touch event.
+     *
+     * @param event is touch event.
+     */
     public abstract void setTouchEvent(MotionEvent event);
 
     /**
@@ -549,6 +553,7 @@ public abstract class AceWebBase {
      * This is called to file choose event.
      *
      * @param obj the jni object of this event.
+     * @return true if the event is handled, false otherwise.
      */
     public boolean firePageOnShowFileChooser(Object obj) {
         return this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
@@ -600,6 +605,7 @@ public abstract class AceWebBase {
      * This is called to fire prompt event.
      *
      * @param obj the jni object of this event.
+     * @return true if the event is handled, false otherwise.
      */
     public boolean fireJsPrompt(Object obj) {
         return this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
@@ -610,6 +616,7 @@ public abstract class AceWebBase {
      * This is called to fire alert event.
      *
      * @param obj the jni object of this event.
+     * @return true if the event is handled, false otherwise.
      */
     public boolean fireJsAlert(Object obj) {
         return this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
@@ -620,6 +627,7 @@ public abstract class AceWebBase {
      * This is called to fire confirm event.
      *
      * @param obj the jni object of this event.
+     * @return true if the event is handled, false otherwise.
      */
     public boolean fireJsConfirm(Object obj) {
         return this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
@@ -639,6 +647,7 @@ public abstract class AceWebBase {
      * This is called to fire beforeUnload event.
      *
      * @param obj the jni object of this event.
+     * @return true if the event is handled, false otherwise.
      */
     public boolean fireJsBeforeUnload(Object obj) {
         return this.nativeOnObjectEventWithBoolReturn(makeEventHash("onBeforeUnload"), "onBeforeUnload", obj);
@@ -903,22 +912,75 @@ public abstract class AceWebBase {
      */
     public abstract String imageAccess(Map<String, String> params);
 
+    /**
+     * javascriptAccess
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
     public abstract String javascriptAccess(Map<String, String> params);
 
+    /**
+     * minFontSize.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
     public abstract String minFontSize(Map<String, String> params);
 
+    /**
+     * horizontalScrollBarAccess.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
     public abstract String horizontalScrollBarAccess(Map<String, String> params);
 
+    /**
+     * verticalScrollBarAccess.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
     public abstract String verticalScrollBarAccess(Map<String, String> params);
 
+    /**
+     * backgroundColor.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
     public abstract String backgroundColor(Map<String, String> params);
 
+    /**
+     * mediaPlayGestureAccess.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
     public abstract String mediaPlayGestureAccess(Map<String, String> params);
 
+    /**
+     * loadUrl with header.
+     *
+     * @param url is url.
+     * @param header is header.
+     */
     public abstract void loadUrl(String url, Map<String, String> header);
 
+    /**
+     * Load the given URL.
+     *
+     * @return The result of the load operation.
+     */
     public abstract String getUrl();
 
+    /**
+     * Evaluates the given JavaScript code in the context of the current page.
+     *
+     * @param script The JavaScript code to be evaluated.
+     * @param asyncCallbackInfoId The ID of the asynchronous callback information.
+     */
     public abstract void evaluateJavascript(String script, long asyncCallbackInfoId);
 
     /**
@@ -929,34 +991,106 @@ public abstract class AceWebBase {
      */
     public abstract void evaluateJavascriptExt(String script, long asyncCallbackInfoId);
 
+    /**
+     * Load the given URL.
+     *
+     * @param url The URL to load.
+     */
     public abstract WebBackForwardList getBackForwardEntries();
 
+    /**
+     * Clear the cache.
+     *
+     * @param includeDiskFiles Whether to include disk files.
+     */
     public abstract void clearCache(boolean includeDiskFiles);
 
+    /**
+     * Go back or forward in the history stack.
+     *
+     * @param steps The number of steps to go back or forward.
+     */
     public abstract void goBackOrForward(int steps);
 
+    /**
+     * Get the title of the current page.
+     *
+     * @return The title of the current page.
+     */
     public abstract String getTitle();
 
+    /**
+     * Get the content height of the current page.
+     *
+     * @return The content height of the current page.
+     */
     public abstract int getContentHeight();
 
+    /**
+     * Scroll the page to the given position.
+     *
+     * @param params The position to scroll to.
+     * @return The result of the scroll operation.
+     */
     public abstract String scrollTo(Map<String, String> params);
 
+    /**
+     * Scroll the page by the given offset.
+     *
+     * @param params The offset to scroll by.
+     * @return The result of the scroll operation.
+     */
     public abstract String scrollBy(Map<String, String> params);
 
+    /**
+     * Set the user agent string.
+     *
+     * @param userAgent The user agent string to set.
+     */
     public abstract void setUserAgentString(String userAgent);
 
+    /**
+     * Get the user agent string.
+     *
+     * @return The user agent string.
+     */
     public abstract String getUserAgentString();
 
     private native void nativeOnObjectEvent(String id, String param, Object object);
 
     private native boolean nativeOnObjectEventWithBoolReturn(String id, String param, Object object);
 
+    /**
+     * createWebMessagePorts.
+     *
+     * @return result of call.
+     */
     public abstract String[] createWebMessagePorts();
 
+    /**
+     * postWebMessage.
+     *
+     * @param message is param String.
+     * @param ports is param String[].
+     * @param Uri is param String.
+     * @return result of call.
+     */
     public abstract void postWebMessage(String message, String[] ports, String Uri);
 
+    /**
+     * closeWebMessagePort.
+     *
+     * @param portHandle is param String.
+     */
     public abstract void closeWebMessagePort(String portHandle);
 
+    /**
+     * postMessageEvent.
+     *
+     * @param portHandle is param String.
+     * @param webMessageData is param String.
+     * @return result of call.
+     */
     public abstract int postMessageEvent(String portHandle, String webMessageData);
 
     /**
@@ -967,6 +1101,13 @@ public abstract class AceWebBase {
      */
     public abstract int postMessageEventExt(String portHandle, String webMessageData);
 
+    /**
+     * onWebMessagePortEvent.
+     *
+     * @param id is param long.
+     * @param portHandle is param String.
+     * @return result of call.
+     */
     public abstract int onWebMessagePortEvent(long id, String portHandle);
 
     /**
@@ -1024,6 +1165,7 @@ public abstract class AceWebBase {
      *
      * @param id Wevbiew id.
      * @param portHandle Message port handle.
+     * @return result of call.
      */
     public abstract int onWebMessagePortEventExt(long id, String portHandle);
 }
