@@ -54,21 +54,45 @@ public class WebDataBaseHelper extends SQLiteOpenHelper {
         super(context, "AceWebDatabase.db", null, 2);
     }
 
+    /**
+     * This method is used to create the database tables.
+     *
+     * @param db SQLite database object
+     */
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(SQL_CREATE_HTTPAUTH_TABLE);
         db.execSQL(SQL_CREATE_CREDENTIAL_TABLE);
     }
 
+    /**
+     * This method is used to upgrade the database tables.
+     *
+     * @param db SQLite database object
+     * @param oldVersion The old version of the database
+     * @param newVersion The new version of the database
+     */
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL(SQL_DELETE_HTTP_AUTH_TABLE);
         db.execSQL(SQL_DELETE_CREDENTIAL_TABLE);
         onCreate(db);
     }
 
+    /**
+     * This method is used to downgrade the database tables.
+     *
+     * @param db SQLite database object
+     * @param oldVersion The old version of the database
+     * @param newVersion The new version of the database
+     */
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         onUpgrade(db, oldVersion, newVersion);
     }
 
+    /**
+     * This method is used to clear all the tables in the database.
+     *
+     * @param db SQLite database object
+     */
     public void clearAllTables(SQLiteDatabase db) {
         db.execSQL(SQL_DELETE_HTTP_AUTH_TABLE);
         db.execSQL(SQL_DELETE_CREDENTIAL_TABLE);

@@ -17,7 +17,6 @@ package ohos.ace.adapter;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The environment for ACE runtime, the bridge between Java and C++
@@ -48,6 +47,7 @@ public final class AceEnv {
 
     /**
      * Get instance of current env
+     *
      * @return instance of current env
      */
     public static AceEnv getInstance() {

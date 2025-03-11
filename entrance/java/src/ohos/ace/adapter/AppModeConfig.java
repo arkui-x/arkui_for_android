@@ -17,10 +17,15 @@ package ohos.ace.adapter;
 
 /**
  * Configure application model
+ *
+ * @since 2023-08-06
  */
 public class AppModeConfig {
     private AppModeConfig() {}
 
+    /**
+     * Initialize application model
+     */
     public static void InitAppMode() {
         nativeInitAppMode();
     }

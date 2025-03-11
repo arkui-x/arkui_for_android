@@ -33,48 +33,166 @@ public class AceEventProcessorAosp {
 
     private static final int BYTES_PER_FIELD = 8;
 
+    private AceEventProcessorAosp() {
+    }
+
     private interface ActionType {
+        /**
+         * unknown action
+         */
         int UNKNOWN = -1;
+
+        /**
+         * cancel action
+         */
         int CANCEL = 0;
+
+        /**
+         * down action
+         */
         int ADD = 1;
+
+        /**
+         * remove action
+         */
         int REMOVE = 2;
+
+        /**
+         * move action
+         */
         int HOVER = 3;
+
+        /**
+         * down action
+         */
         int DOWN = 4;
+
+        /**
+         * up action
+         */
         int MOVE = 5;
+
+        /**
+         * up action
+         */
         int UP = 6;
     }
 
     private interface MouseActionType {
+        /**
+         * none action
+         */
         int NONE = 0;
+
+        /**
+         * press action
+         */
         int PRESS = 1;
+
+        /**
+         * release action
+         */
         int RELEASE = 2;
+
+        /**
+         * move action
+         */
         int MOVE = 3;
+
+        /**
+         * hover enter action
+         */
         int HOVER_ENTER = 4;
+
+        /**
+         * hover move action
+         */
         int HOVER_MOVE = 5;
+
+        /**
+         * hover exit action
+         */
         int HOVER_EXIT = 6;
     };
 
     private interface MouseActionButton {
+        /**
+         * none button
+         */
         int NONE_BUTTON = 0;
+
+        /**
+         * left button
+         */
         int LEFT_BUTTON = 1;
+
+        /**
+         * right button
+         */
         int RIGHT_BUTTON = 2;
+
+        /**
+         * middle button
+         */
         int MIDDLE_BUTTON = 4;
+
+        /**
+         * back button
+         */
         int BACK_BUTTON = 8;
+
+        /**
+         * forward button
+         */
         int FORWARD_BUTTON = 16;
     };
 
     private interface KeySourceType {
+        /**
+         * none
+         */
         int NONE = 0;
+
+        /**
+         * keyboard
+         */
         int MOUSE = 1;
+
+        /**
+         * touch
+         */
         int TOUCH = 2;
+
+        /**
+         * touchpad
+         */
         int TOUCH_PAD = 3;
+
+        /**
+         * keyboard
+         */
         int KEYBOARD = 4;
     };
 
     private interface CtrlKeysBit {
+        /**
+         * CTRL
+         */
         int CTRL = 1;
+
+        /**
+         * SHIFT
+         */
         int SHIFT = 2;
+
+        /**
+         * ALT
+         */
         int ALT = 4;
+
+        /**
+         * META
+         */
         int META = 8;
     };
 
@@ -90,9 +208,6 @@ public class AceEventProcessorAosp {
         int LENS = 8;
         int TOUCHPAD = 9;
     };
-
-    private AceEventProcessorAosp() {
-    }
 
     /**
      * Process system motion events
@@ -141,7 +256,7 @@ public class AceEventProcessorAosp {
         packet.putLong(event.getDownTime() * 1000);
         packet.putLong(event.getEventTime() * 1000);
         packet.putLong(eventSourceTransKeySource(event.getSource()));
-        packet.putLong(ToolTypeTransSourceTool(event.getToolType(actionIndex)));
+        packet.putLong(toolTypeTransSourceTool(event.getToolType(actionIndex)));
         int actionPoint = 1;
         if ((actionType == ActionType.UP || actionType == ActionType.DOWN) &&
             actionIndex != event.getActionIndex()) {
@@ -154,6 +269,9 @@ public class AceEventProcessorAosp {
      * Process system motion events
      *
      * @param event motion event from system
+     * @param actionKey action key
+     * @param lastX last x position
+     * @param lastY last y position
      * @return whether the event is handled
      */
     public static ByteBuffer processMouseEvent(MotionEvent event, int actionKey, float lastX, float lastY) {
@@ -192,6 +310,8 @@ public class AceEventProcessorAosp {
      * Process system motion events
      *
      * @param event motion event from system
+     * @param x x position
+     * @param y y position
      * @return whether the event is handled
      */
     public static ByteBuffer processMouseEvent(KeyEvent event, float x, float y) {
@@ -259,23 +379,29 @@ public class AceEventProcessorAosp {
         }
 
         long timeStamp = event.getEventTime() * 1000;
-        packet.putDouble(event.getX(actionIndex));                      // physicalX;
-        packet.putDouble(event.getY(actionIndex));                      // physicalY;
-        packet.putDouble(0.0);                                          // physicalZ;
-        packet.putDouble(event.getX(actionIndex) - lastX);              // deltaX;
-        packet.putDouble(event.getY(actionIndex) - lastY);              // deltaY;
-        packet.putDouble(0.0);                                          // deltaZ;
-        packet.putDouble(0.0);                                          // scrollDeltaX;
-        packet.putDouble(0.0);                                          // scrollDeltaY;
-        packet.putDouble(0.0);                                          // scrollDeltaZ;
-        packet.putLong(actionType);                                     // action;
-        packet.putLong(mouseKey);                                       // actionButton;
-        packet.putLong(event.getButtonState());                         // pressedButtons;
-        packet.putLong(timeStamp);                                      // timeStamp;
-        packet.putLong(event.getDeviceId());                            // deviceId;
-        packet.putLong(eventSourceTransKeySource(event.getSource()));   // deviceSource
+        packet.putDouble(event.getX(actionIndex));
+        packet.putDouble(event.getY(actionIndex));
+        packet.putDouble(0.0);
+        packet.putDouble(event.getX(actionIndex) - lastX);
+        packet.putDouble(event.getY(actionIndex) - lastY);
+        packet.putDouble(0.0);
+        packet.putDouble(0.0);
+        packet.putDouble(0.0);
+        packet.putDouble(0.0);
+        packet.putLong(actionType);
+        packet.putLong(mouseKey);
+        packet.putLong(event.getButtonState());
+        packet.putLong(timeStamp);
+        packet.putLong(event.getDeviceId());
+        packet.putLong(eventSourceTransKeySource(event.getSource()));
     }
 
+    /**
+     * Convert the event source to key source.
+     *
+     * @param eventSource the event source
+     * @return the key source
+     */
     public static int eventSourceTransKeySource(int eventSource) {
         int keySource = KeySourceType.NONE;
         switch (eventSource) {
@@ -304,7 +430,13 @@ public class AceEventProcessorAosp {
         return keySource;
     }
 
-    public static int ToolTypeTransSourceTool(int toolType) {
+    /**
+     * Convert the tool type to source tool.
+     *
+     * @param toolType the tool type
+     * @return the source tool
+     */
+    public static int toolTypeTransSourceTool(int toolType) {
         int sourceTool = SourceTool.UNKNOWN;
         switch (toolType) {
             case MotionEvent.TOOL_TYPE_ERASER:
@@ -325,6 +457,12 @@ public class AceEventProcessorAosp {
         return sourceTool;
     }
 
+    /**
+     * Get the modifier keys.
+     *
+     * @param event the key event
+     * @return the modifier keys
+     */
     public static int getModifierKeys(KeyEvent event) {
         boolean isCtrl = event.isCtrlPressed();
         boolean isShift = event.isShiftPressed();

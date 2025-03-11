@@ -16,10 +16,7 @@
 package ohos.ace.adapter.capability.video;
 
 import android.content.Context;
-import android.graphics.SurfaceTexture;
-import android.view.Surface;
 
-import ohos.ace.adapter.capability.texture.AceTexture;
 import ohos.ace.adapter.ALog;
 
 import java.util.Map;

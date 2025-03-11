@@ -47,7 +47,7 @@ public final class AceSurfaceHolder {
     /**
      * Add surface by id
      *
-     * @param id      id of surface
+     * @param instanceId id of surface
      * @param surface the surface object
      */
     public static void addSurface(int instanceId, long id, Surface surface) {

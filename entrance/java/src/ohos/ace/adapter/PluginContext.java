@@ -37,6 +37,7 @@ public class PluginContext {
      *
      * @param context context of the stageActivity.
      * @param bridgeManager bridgeManager of the stageActivity.
+     * @param moduleName name of module.
      * @since 11
      */
     public PluginContext(Context context, BridgeManager bridgeManager, String moduleName) {
@@ -48,6 +49,7 @@ public class PluginContext {
     /**
      * get context of the stageActivity.
      *
+     * @return context of the stageActivity.
      * @since 11
      */
     public Context getContext() {
@@ -57,6 +59,7 @@ public class PluginContext {
     /**
      * get BridgeManager of the stageActivity.
      *
+     * @return BridgeManager of the stageActivity.
      * @since 11
      */
     public BridgeManager getBridgeManager() {

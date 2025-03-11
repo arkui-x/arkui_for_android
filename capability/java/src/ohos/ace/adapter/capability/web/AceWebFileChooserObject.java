@@ -20,6 +20,11 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import ohos.ace.adapter.ALog;
 
+/**
+ * AceWebFileChooserObject class for file chooser.
+ *
+ * @since 2024-05-31
+ */
 public class AceWebFileChooserObject {
     private static final String LOG_TAG = "AceWebFileChooserObject";
 
@@ -32,6 +37,11 @@ public class AceWebFileChooserObject {
         this.fileChooserParams = fileChooserParams;
     }
 
+    /**
+     * Retrieves the title from file chooser parameters or a default.
+     *
+     * @return The title string or "open file" if none is set.
+     */
     public String getTitle() {
         if (this.fileChooserParams.getTitle() != null) {
             return this.fileChooserParams.getTitle().toString();
@@ -39,18 +49,38 @@ public class AceWebFileChooserObject {
         return "";
     }
 
+    /**
+     * get file mode.
+     *
+     * @return file mode.
+     */
     public int getMode() {
         return this.fileChooserParams.getMode();
     }
 
+    /**
+     * get accept type.
+     *
+     * @return accept type.
+     */
     public String[] getAcceptType() {
         return this.fileChooserParams.getAcceptTypes();
     }
 
+    /**
+     * Checks if capture is enabled.
+     *
+     * @return True if capture is enabled, false otherwise.
+     */
     public boolean isCapture() {
         return this.fileChooserParams.isCaptureEnabled();
     }
 
+    /**
+     * handle file list.
+     *
+     * @param fileList file list
+     */
     public void handleFileList(String[] fileList) {
         Uri[] uri = new Uri[fileList.length];
         for (int index = 0; index < fileList.length; ++index) {

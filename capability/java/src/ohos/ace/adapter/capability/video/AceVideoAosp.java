@@ -124,15 +124,6 @@ public class AceVideoAosp extends AceVideoBase
 
     private boolean isStoped = false;
 
-    public enum PlayState {
-        IDLE,
-        PREPARED,
-        STARTED,
-        PAUSED,
-        STOPPED,
-        PLAYBACK_COMPLETE
-    }
-
     /**
      * constructor of AceVideo on AOSP platform
      *
@@ -170,6 +161,18 @@ public class AceVideoAosp extends AceVideoBase
         } catch (IllegalStateException e) {
             ALog.e(LOG_TAG, "setAudioAttributes failed.");
         }
+    }
+
+    /**
+     * constructor of AceVideoAosp
+     */
+    public enum PlayState {
+        IDLE,
+        PREPARED,
+        STARTED,
+        PAUSED,
+        STOPPED,
+        PLAYBACK_COMPLETE
     }
 
     @Override

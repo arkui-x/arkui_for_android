@@ -19,7 +19,6 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Trace;
 import android.util.Log;
@@ -38,19 +37,17 @@ import ohos.ace.adapter.ArkUIXPluginRegistry;
 import ohos.ace.adapter.PluginContext;
 import ohos.ace.adapter.WindowView;
 import ohos.ace.adapter.capability.bridge.BridgeManager;
-import ohos.ace.adapter.capability.surface.AceSurfacePluginAosp;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginBase;
-import ohos.stage.ability.adapter.StageApplicationDelegate;
 
 /**
  * A base class for the Ability Cross-platform Environment of the stage model to
-* run on Android.
-* This class is inherited from android Fragment.
-*
-* @since 1
-*/
+ * run on Android.
+ * This class is inherited from android Fragment.
+ *
+ * @since 1
+ */
 public class StageFragment extends Fragment {
     private static final String LOG_TAG = "StageFragment";
 

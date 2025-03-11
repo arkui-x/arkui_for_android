@@ -19,6 +19,11 @@ import android.webkit.HttpAuthHandler;
 import ohos.ace.adapter.ALog;
 import android.content.Context;
 
+/**
+ * AceWebHttpAuthRequestObject class is used to handle http auth request.
+ *
+ * @since 2024-05-31
+ */
 public class AceWebHttpAuthRequestObject {
     private static final String LOG_TAG = "AceWebHttpAuthRequestObject";
 
@@ -50,6 +55,9 @@ public class AceWebHttpAuthRequestObject {
         return this.realm;
     }
 
+    /**
+     * Cancel the http auth request.
+     */
     public void cancel() {
         try {
             this.handler.cancel();
@@ -58,6 +66,13 @@ public class AceWebHttpAuthRequestObject {
         }
     }
 
+    /**
+     * Proceed the http auth request.
+     *
+     * @param username The username.
+     * @param password The password.
+     * @return boolean
+     */
     public boolean proceed(String username, String password) {
         try {
             this.handler.proceed(username, password);
@@ -67,6 +82,11 @@ public class AceWebHttpAuthRequestObject {
         return true;
     }
 
+    /**
+     * Check whether the http auth request is required.
+     *
+     * @return boolean
+     */
     public boolean useHttpAuthUsernamePassword() {
         try {
             boolean result = this.handler.useHttpAuthUsernamePassword();

@@ -22,10 +22,7 @@ import android.widget.FrameLayout;
 
 import ohos.ace.adapter.ALog;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -75,6 +72,7 @@ public class AceWebPluginAosp extends AceWebPluginBase {
      *
      * @return long the id number.
      */
+    @Override
     public long getAtomicId() {
         return nextMapid.getAndIncrement();
     }
@@ -83,6 +81,7 @@ public class AceWebPluginAosp extends AceWebPluginBase {
      * This is called to create AceWeb register.
      *
      * @param context the app context
+     * @param view the root view
      * @return web register plugin
      */
     public static AceWebPluginAosp createRegister(Context context, View view) {
@@ -137,25 +136,53 @@ public class AceWebPluginAosp extends AceWebPluginBase {
         ALog.w(LOG_TAG, "Creating a webview size is less than the the device screen size");
     }
 
+    /**
+     * This is called to getWebDebuggingAccess.
+     *
+     * @param logicalPixels logicalPixels value
+     * @return whether open webDebuggingAccess
+     */
     private int toPhysicalPixels(double logicalPixels) {
         float density = 1.0f;
         return (int) Math.round(logicalPixels * density);
     }
 
+    /**
+     * This is called to getHttpAuthCredentials.
+     *
+     * @return httpAuthCredentials value
+     */
     public boolean existHttpAuthCredentials() {
         return dataBase.existHttpAuthCredentials();
     }
 
+    /**
+     * This is called to deleteHttpAuthCredentials.
+     */
     public void deleteHttpAuthCredentials() {
         dataBase.deleteAllAuthCredentials();
     }
 
+    /**
+     * This is called to saveHttpAuthCredentials.
+     *
+     * @param host host value
+     * @param realm realm value
+     * @param username username value
+     * @param password password value
+     */
     public void saveHttpAuthCredentials(String host, String realm, String username, String password) {
         dataBase.saveHttpAuthCredential(host, realm, username, password);
     }
 
+    /**
+     * This is called to getHttpAuthCredentials.
+     *
+     * @param host host value
+     * @param realm realm value
+     * @return httpAuthCredentials value
+     */
     public Object getHttpAuthCredentials(String host, String realm) {
         return dataBase.getHttpAuthCredential(host, realm);
     }
-
 }

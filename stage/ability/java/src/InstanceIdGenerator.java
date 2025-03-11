@@ -27,6 +27,7 @@ public final class InstanceIdGenerator {
 
     /**
      * get the instance id, and increment self
+     *
      * @return the instance id
      */
     public static int getAndIncrement() {
@@ -35,6 +36,7 @@ public final class InstanceIdGenerator {
 
     /**
      * get the instance id
+     *
      * @return the instance id
      */
     public static int get() {

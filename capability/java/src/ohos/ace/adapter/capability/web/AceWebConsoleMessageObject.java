@@ -17,6 +17,11 @@ package ohos.ace.adapter.capability.web;
 
 import android.webkit.ConsoleMessage;
 
+/**
+ * AceWebConsoleMessageObject class is used to convert ConsoleMessage to Java Object for JS call back function.
+ *
+ * @since 2024-5-31
+ */
 public class AceWebConsoleMessageObject {
     private static final String LOG_TAG = "AceWebConsoleMessageObject";
 
@@ -28,10 +33,20 @@ public class AceWebConsoleMessageObject {
         this.consoleMessage = consoleMessage;
     }
 
+    /**
+     * Get line number of console message.
+     *
+     * @return line number
+     */
     public int getLineNumber() {
         return this.consoleMessage.lineNumber();
     }
 
+    /**
+     * Get message of console message.
+     *
+     * @return message
+     */
     public String getMessage() {
         if (this.consoleMessage.message() != null) {
             return this.consoleMessage.message().toString();
@@ -39,10 +54,20 @@ public class AceWebConsoleMessageObject {
         return "";
     }
 
+    /**
+     * Get message level of console message.
+     *
+     * @return message level
+     */
     public int getMessageLevel() {
         return this.consoleMessage.messageLevel().ordinal() + ONELEVEL;
     }
 
+    /**
+     * Get source id of console message.
+     *
+     * @return source id
+     */
     public String getSourceId() {
         if (this.consoleMessage.sourceId() != null) {
             return this.consoleMessage.sourceId().toString();

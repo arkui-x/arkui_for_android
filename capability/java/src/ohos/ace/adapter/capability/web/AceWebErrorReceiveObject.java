@@ -37,6 +37,12 @@ public class AceWebErrorReceiveObject implements IAceWebErrorReceiveObject {
         return "";
     }
 
+    /**
+     * Get error info
+     *
+     * @return error info
+     */
+    @Override
     public String getErrorInfo() {
         if (this.error.getDescription() != null) {
             return this.error.getDescription().toString();
@@ -44,6 +50,12 @@ public class AceWebErrorReceiveObject implements IAceWebErrorReceiveObject {
         return "";
     }
 
+    /**
+     * Get request url
+     *
+     * @return request url
+     */
+    @Override
     public int getErrorCode() {
         return this.error.getErrorCode();
     }

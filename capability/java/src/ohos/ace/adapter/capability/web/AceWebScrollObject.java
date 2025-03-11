@@ -15,6 +15,11 @@
 
 package ohos.ace.adapter.capability.web;
 
+/**
+ * AceWebScrollObject class is used to handle scroll events.
+ *
+ * @since 2024-05-31
+ */
 public class AceWebScrollObject {
     private int l;
     private int t;

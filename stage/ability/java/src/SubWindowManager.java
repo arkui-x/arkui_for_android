@@ -16,7 +16,6 @@ package ohos.stage.ability.adapter;
 
 import android.app.ActionBar;
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.provider.Settings;
@@ -27,21 +26,26 @@ import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.os.Build;
 import android.graphics.Rect;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
 /**
  * The type Sub window manager.
+ *
+ * @since 2023-08-06
  */
 public class SubWindowManager {
+    /**
+     * Gets ui options.
+     */
+    public static int uiOptionsStatic = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+
     private static final String TAG = "SubWindowManager";
     private static final int NO_HEIGHT = 0;
     private static final int LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES = 1;
@@ -52,13 +56,6 @@ public class SubWindowManager {
     private static final int API_29 = 29;
     private static final int API_30 = 30;
 
-    private static SubWindowManager _sinstance;
-    public static int uiOptionsStatic = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-
-    private Activity mRootActivity;
-    private Map<String, SubWindow> mSubWindowMap = new HashMap<>();
-    private int uiOptions_ = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-
     /*
      ** copy from native wm_common.h: enum class Orientation
      */
@@ -66,6 +63,12 @@ public class SubWindowManager {
     private static final int HORIZONTAL = 2;
     private static final int REVERSE_VERTICAL = 3;
     private static final int REVERSE_HORIZONTAL = 4;
+
+    private static SubWindowManager _sinstance;
+
+    private Activity mRootActivity;
+    private Map<String, SubWindow> mSubWindowMap = new HashMap<>();
+    private int uiOptions_ = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
     /**
      * Gets instance.
@@ -110,7 +113,7 @@ public class SubWindowManager {
      * Release activity.
      *
      */
-    public void ReleaseActivity() {
+    public void releaseActivity() {
         Log.d(TAG, "setActivity called.");
         mRootActivity = null;
     }
@@ -463,6 +466,7 @@ public class SubWindowManager {
     /**
      * Maintain the previous state after the application hot start.
      *
+     * @param stageActivity The activity to be maintained.
      */
     public static void keepSystemUiVisibility(Activity stageActivity) {
         if (stageActivity != null && Build.VERSION.SDK_INT < API_30) {
@@ -472,6 +476,11 @@ public class SubWindowManager {
         }
     }
 
+    /**
+     * Set the system UI visibility.
+     *
+     * @return Setting successful or failed.
+     */
     private boolean setSystemUiVisibilityInner() {
         if (mRootActivity != null) {
             Window window = mRootActivity.getWindow();
@@ -850,6 +859,7 @@ public class SubWindowManager {
     /**
      * Set fullScreen and hide systembar.
      *
+     * @param name   the name
      * @param status true or false.
      * @return Setting successful or failed.
      */
@@ -870,6 +880,7 @@ public class SubWindowManager {
      *
      * @param name   the name
      * @param status  if on top
+     * @return the boolean
      */
     public boolean setOnTop(String name, boolean status) {
         SubWindow subWindow = mSubWindowMap.get(name);
@@ -886,7 +897,7 @@ public class SubWindowManager {
      * Called by native to register Window Handle.
      *
      * @param name   the name
-     * @param windowHandle the handle of navive window
+     * @param subWindowHandle the handle of navive window
      * @return the boolean
      */
     public boolean registerSubWindow(String name, long subWindowHandle) {

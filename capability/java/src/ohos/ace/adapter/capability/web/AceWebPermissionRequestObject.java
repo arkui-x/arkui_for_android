@@ -15,11 +15,15 @@
 
 package ohos.ace.adapter.capability.web;
 
-import java.util.ArrayList;
 import android.net.Uri;
 import android.webkit.PermissionRequest;
 import ohos.ace.adapter.ALog;
 
+/**
+ * AceWebPermissionRequestObject is used to handle permission request from web.
+ *
+ * @since 2024-05-31
+ */
 public class AceWebPermissionRequestObject {
     private static final String LOG_TAG = "AceWebPermissionRequestObject";
     private static final int RESOURCESID_ONE = 1;
@@ -31,6 +35,9 @@ public class AceWebPermissionRequestObject {
         this.request = request;
     }
 
+    /**
+     * deny the permission request from web.
+     */
     public void deny() {
         try {
             this.request.deny();
@@ -39,6 +46,11 @@ public class AceWebPermissionRequestObject {
         }
     }
 
+    /**
+     * get the origin of the permission request from web.
+     *
+     * @return origin of the permission request from web.
+     */
     public String getOrigin() {
         Uri uri = this.request.getOrigin();
         if (uri != null) {
@@ -47,6 +59,11 @@ public class AceWebPermissionRequestObject {
         return "";
     }
 
+    /**
+     * get the resources of the permission request from web.
+     *
+     * @return resources of the permission request from web.
+     */
     public int getResources() {
         String[] strArray = this.request.getResources();
         int resourcesId = 0;
@@ -60,6 +77,11 @@ public class AceWebPermissionRequestObject {
         return resourcesId;
     }
 
+    /**
+     * grant the permission request from web.
+     *
+     * @param resourcesId the resourcesId of the permission request from web.
+     */
     public void grant(int resourcesId) {
         try {
             this.request.grant(this.request.getResources());

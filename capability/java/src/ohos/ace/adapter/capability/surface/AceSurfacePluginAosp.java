@@ -77,6 +77,7 @@ public class AceSurfacePluginAosp extends AceResourcePlugin {
      * @param id id of object
      * @return object or null if id not found
      */
+    @Override
     public Object getObject(long id) {
         return objectMap.get(id);
     }
@@ -87,6 +88,7 @@ public class AceSurfacePluginAosp extends AceResourcePlugin {
      * @param id id of object
      * @return result of release
      */
+    @Override
     public boolean release(long id) {
         if (objectMap.containsKey(id)) {
             AceSurfaceView aceSurface = objectMap.get(id);
@@ -102,6 +104,7 @@ public class AceSurfacePluginAosp extends AceResourcePlugin {
      * Release all AceSurfaceView objects.
      *
      */
+    @Override
     public void release() {
         for (Map.Entry<Long, AceSurfaceView> entry : objectMap.entrySet()) {
             entry.getValue().release();

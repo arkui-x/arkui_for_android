@@ -67,6 +67,7 @@ public abstract class AceVideoPluginBase extends AceResourcePlugin {
      * @param param calling param
      * @return resource id
      */
+    @Override
     public abstract long create(Map<String, String> param);
 
     /**
@@ -75,6 +76,7 @@ public abstract class AceVideoPluginBase extends AceResourcePlugin {
      * @param id id of object
      * @return object or null if id not found
      */
+    @Override
     public Object getObject(long id) {
         return objectMap.get(id);
     }
@@ -106,6 +108,7 @@ public abstract class AceVideoPluginBase extends AceResourcePlugin {
      * @param id id of object
      * @return result of release
      */
+    @Override
     public boolean release(long id) {
         if (objectMap.containsKey(id)) {
             AceVideoBase video = objectMap.get(id);
@@ -120,6 +123,7 @@ public abstract class AceVideoPluginBase extends AceResourcePlugin {
     /**
      * This is called to release all AceVideoBase.
      */
+    @Override
     public void release() {
         for (Map.Entry<Long, AceVideoBase> entry : objectMap.entrySet()) {
             entry.getValue().release();

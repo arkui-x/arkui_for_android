@@ -66,6 +66,7 @@ public abstract class AcePlatformViewPluginBase extends AceResourcePlugin {
      * @param param calling param
      * @return resource id
      */
+    @Override
     public abstract long create(Map<String, String> param);
 
     /**
@@ -81,6 +82,7 @@ public abstract class AcePlatformViewPluginBase extends AceResourcePlugin {
      * @param id id of object
      * @return object or null if id not found
      */
+    @Override
     public Object getObject(long id) {
         return objectMap.get(id);
     }
@@ -116,6 +118,7 @@ public abstract class AcePlatformViewPluginBase extends AceResourcePlugin {
      * @param id id of object
      * @return result of release
      */
+    @Override
     public boolean release(long id) {
         if (objectMap.containsKey(id)) {
             AcePlatformViewBase view = objectMap.get(id);
@@ -130,6 +133,7 @@ public abstract class AcePlatformViewPluginBase extends AceResourcePlugin {
     /**
      * This is called to release all AcePlatformViewBase.
      */
+    @Override
     public void release() {
         for (Map.Entry<Long, AcePlatformViewBase> entry : objectMap.entrySet()) {
             entry.getValue().release();

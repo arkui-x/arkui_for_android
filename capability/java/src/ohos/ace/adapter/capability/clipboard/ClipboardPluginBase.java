@@ -47,5 +47,8 @@ public abstract class ClipboardPluginBase {
      */
     public abstract void clear();
 
+    /**
+     * Initialize clipboard plugin
+     */
     protected native void nativeInit();
 }

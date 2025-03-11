@@ -33,6 +33,7 @@ public interface IArkUIXPlugin {
     /**
      * ArkUI-X plugin unregistry callback, called at unregistry.
      *
+     * @param pluginContext provides the resources that the plugin might need.
      * @since 11
      */
     void onUnRegistry(PluginContext pluginContext);

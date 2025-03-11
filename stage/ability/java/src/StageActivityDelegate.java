@@ -32,19 +32,40 @@ import java.util.ArrayList;
  */
 public class StageActivityDelegate {
     private static final String LOG_TAG = "StageActivityDelegate";
-
     private static final List<INTENTCALLBACK> intentCallbackList = new ArrayList<>();
 
+    /**
+     * The interface of intent callback.
+     */
     public interface INTENTCALLBACK {
+        /**
+         * Callback method when the intent is triggered.
+         *
+         * @param requestCode the request code.
+         * @param resultCode  the result code.
+         * @param intent      the intent.
+         */
         void onResult(int requestCode, int resultCode, Intent intent);
     }
 
+    /**
+     * Add intent callback.
+     *
+     * @param callback the intent callback.
+     */
     public static void addIntentCallback(INTENTCALLBACK callback) {
         if (callback != null) {
             intentCallbackList.add(callback);
         }
     }
 
+    /**
+     * Trigger the intent callback.
+     *
+     * @param requestCode the request code.
+     * @param resultCode  the result code.
+     * @param intent      the intent.
+     */
     public static void triggerIntentCallback(int requestCode, int resultCode, Intent intent) {
         if (intentCallbackList != null) {
             for (INTENTCALLBACK callback : intentCallbackList) {
@@ -93,7 +114,7 @@ public class StageActivityDelegate {
     public void dispatchOnDestroy(String instanceName) {
         Log.i(LOG_TAG, "dispatchOnDestroy called");
         nativeDispatchOnDestroy(instanceName);
-        SubWindowManager.getInstance().ReleaseActivity();
+        SubWindowManager.getInstance().releaseActivity();
     }
 
     /**
@@ -157,6 +178,7 @@ public class StageActivityDelegate {
      * @param requestCode the request code returned after the ability is started.
      * @param resultCode the result code returned after the ability is destroyed.
      * @param resultWantParams the data returned after the ability is destroyed.
+     * @param intent the intent returned after the ability is destroyed.
      */
     public void dispatchOnActivityResult(
         String instanceName, int requestCode, int resultCode, String resultWantParams, Intent intent) {

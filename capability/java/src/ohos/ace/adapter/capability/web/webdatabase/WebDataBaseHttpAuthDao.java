@@ -21,6 +21,11 @@ import android.database.sqlite.SQLiteDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * WebDataBaseHttpAuthDao class is used to operate the WebDataBaseHttpAuth table in the database.
+ *
+ * @since 2024-05-31
+ */
 public class WebDataBaseHttpAuthDao {
     WebDataBaseHelper dataBaseHelper;
     String[] columns = {
@@ -33,6 +38,12 @@ public class WebDataBaseHttpAuthDao {
         this.dataBaseHelper = dataBaseHelper;
     }
 
+    /**
+     * Insert a new WebDataBaseHttpAuth into the database.
+     *
+     * @param httpAuth the WebDataBaseHttpAuth to insert
+     * @return the row ID of the newly inserted row, or -1 if an error occurred
+     */
     public long insert(WebDataBaseHttpAuth httpAuth) {
         ContentValues httpAuthValues = new ContentValues();
         httpAuthValues.put(WebDataBaseColumns.EntryColumns.COLUMN_NAME_HOST, httpAuth.getHost());
@@ -42,6 +53,12 @@ public class WebDataBaseHttpAuthDao {
             WebDataBaseColumns.EntryColumns.TABLE_NAME_HTTPAUTH, null, httpAuthValues);
     };
 
+    /**
+     * Delete a WebDataBaseHttpAuth from the database.
+     *
+     * @param httpAuth the WebDataBaseHttpAuth to delete
+     * @return the number of rows affected if a whereClause is passed in, 0 otherwise
+     */
     public long delete(WebDataBaseHttpAuth httpAuth) {
         String whereClause = WebDataBaseColumns.EntryColumns._ID + " = ?";
         String[] whereArgs = {httpAuth.getId().toString()};
@@ -50,6 +67,13 @@ public class WebDataBaseHttpAuthDao {
             WebDataBaseColumns.EntryColumns.TABLE_NAME_HTTPAUTH, whereClause, whereArgs);
     }
 
+    /**
+     * Find a WebDataBaseHttpAuth from the database.
+     *
+     * @param host the host of the WebDataBaseHttpAuth
+     * @param realm the realm of the WebDataBaseHttpAuth
+     * @return the WebDataBaseHttpAuth if found, null otherwise
+     */
     public WebDataBaseHttpAuth find(String host, String realm) {
         SQLiteDatabase readableDatabase = dataBaseHelper.getReadableDatabase();
 
