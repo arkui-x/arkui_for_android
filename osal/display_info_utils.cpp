@@ -16,11 +16,15 @@
 #include "core/common/display_info_utils.h"
 
 #include "core/common/display_info.h"
+#include "core/pipeline_ng/pipeline_context.h"
 
 namespace OHOS::Previewer {
     class PreviewerDisplay;
 }
 namespace OHOS::Ace {
+
+constexpr Dimension SHEET_DEVICE_WIDTH_BREAKPOINT = 600.0_vp;
+
 DisplayInfoUtils& DisplayInfoUtils::GetInstance()
 {
     static DisplayInfoUtils instance;
@@ -42,6 +46,12 @@ bool DisplayInfoUtils::IsFoldable()
 
 FoldStatus DisplayInfoUtils::GetCurrentFoldStatus()
 {
+    auto context = NG::PipelineContext::GetCurrentContextSafely();
+    CHECK_NULL_RETURN(context, FoldStatus::UNKNOWN);
+    if (context->GetRootWidth() > SHEET_DEVICE_WIDTH_BREAKPOINT.ConvertToPx() &&
+        context->GetRootHeight() > SHEET_DEVICE_WIDTH_BREAKPOINT.ConvertToPx()) {
+        return FoldStatus::EXPAND;
+    }
     return FoldStatus::UNKNOWN;
 }
 } // namespace OHOS::Ace::DisplayInfoUtils
