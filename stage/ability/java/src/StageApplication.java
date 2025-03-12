@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -54,5 +54,23 @@ public class StageApplication extends Application {
             return;
         }
         appDelegate.onConfigurationChanged(newConfig);
+    }
+
+    /**
+     * Preload the abc file.
+     *
+     * @param moduleName Preload the name of module.
+     * @param abilityName Preload the name of ability.
+     */
+    public static void preloadEtsModule(String moduleName, String abilityName) {
+        if (moduleName == null || moduleName.isEmpty()) {
+            Log.e(LOG_TAG, "moduleName is null");
+            return;
+        }
+        if (abilityName == null || abilityName.isEmpty()) {
+            Log.e(LOG_TAG, "abilityName is null");
+            return;
+        }
+        StageApplicationDelegate.nativePreloadModule(moduleName, abilityName);
     }
 }

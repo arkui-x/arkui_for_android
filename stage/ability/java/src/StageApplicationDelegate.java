@@ -918,4 +918,12 @@ public class StageApplicationDelegate {
     private native void nativeDispatchApplicationOnForeground();
 
     private native void nativeDispatchApplicationOnBackground();
+
+    /**
+     * Native calls the Preload the abc file interface.
+     *
+     * @param moduleName Preload the name of module.
+     * @param abilityName Preload the name of ability.
+     */
+    protected static native void nativePreloadModule(String moduleName, String abilityName);
 }
