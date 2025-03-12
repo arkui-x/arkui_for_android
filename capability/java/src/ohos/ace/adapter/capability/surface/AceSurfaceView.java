@@ -215,7 +215,7 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                     ALog.i(LOG_TAG, "this surfaceview is window view.");
                     continue;
                 }
-                SurfaceView surfaceView = (SurfaceView)view;
+                SurfaceView surfaceView = (SurfaceView) view;
                 if (isFullScreen == 0) {
                     surfaceView.setVisibility(View.VISIBLE);
                 } else {

@@ -42,5 +42,5 @@ public interface AceEventCallback {
      *
      * @param color new status bar backgournd color
      */
-    public void onStatusBarBgColorChanged(int color);
+    void onStatusBarBgColorChanged(int color);
 }

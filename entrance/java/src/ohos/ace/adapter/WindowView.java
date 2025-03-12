@@ -21,7 +21,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import ohos.ace.adapter.capability.platformview.AcePlatformViewPluginBase;
 import ohos.ace.adapter.capability.platformview.AcePlatformViewBase;
-import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginBase;
 import ohos.ace.adapter.capability.web.AceWebBase;
 import android.view.InputDevice;
@@ -140,6 +139,7 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
 
     /**
      * Called by activity to notify keyboard height changed.
+     *
      * @param height the height of keyboard
      */
     public void keyboardHeightChanged(int height) {

@@ -296,7 +296,6 @@ public class StageApplicationDelegate {
      * Read the relative paths of all files in the assets folder of the android platform
      *
      * @param path the path under the assets folder
-     * @return result of method return
      */
     public String routerTraverseAssets(String path) {
         List<String> assetsList = new ArrayList<String>();
@@ -368,7 +367,7 @@ public class StageApplicationDelegate {
             Log.e(LOG_TAG, "stageApplication is null");
             return;
         }
-        int versionCode = GetAppVersionCode();
+        int versionCode = getAppVersionCode();
         if (versionCode == DEFAULT_VERSION_CODE) {
             Log.e(LOG_TAG, "Getting app version code failed.");
             return;
@@ -805,7 +804,7 @@ public class StageApplicationDelegate {
         }
     }
 
-    private int GetAppVersionCode() {
+    private int getAppVersionCode() {
         int appVersionCode = DEFAULT_VERSION_CODE;
         try {
             PackageInfo packageInfo = stageApplication.getApplicationContext()

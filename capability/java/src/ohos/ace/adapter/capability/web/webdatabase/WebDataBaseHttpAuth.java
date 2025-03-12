@@ -15,6 +15,11 @@
 
 package ohos.ace.adapter.capability.web;
 
+/**
+ * Http authentication information.
+ *
+ * @since 2024-05-31
+ */
 public class WebDataBaseHttpAuth {
     private Long id;
     private String host;

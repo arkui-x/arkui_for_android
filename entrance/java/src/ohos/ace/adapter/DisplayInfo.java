@@ -22,10 +22,18 @@ import android.util.Log;
 
 /**
  * The type Display info.
+ *
+ * @since 2023-08-06
  */
 public class DisplayInfo {
     private static final String TAG = "DisplayInfo";
     private static volatile DisplayInfo _sinstance;
+
+    private WindowManager mWindowManager;
+
+    private DisplayInfo() {
+        Log.d(TAG, "DisplayInfo created.");
+    }
 
     /**
      * Gets instance.
@@ -42,12 +50,6 @@ public class DisplayInfo {
         }
 
         return _sinstance;
-    }
-
-    private WindowManager mWindowManager;
-
-    private DisplayInfo() {
-        Log.d(TAG, "DisplayInfo created.");
     }
 
     /**
@@ -119,6 +121,11 @@ public class DisplayInfo {
         return defaultDisplay.getRefreshRate();
     }
 
+    /**
+     * Gets density pixels.
+     *
+     * @return the density pixels.
+     */
     public float getDensityPixels() {
         Log.d(TAG, "getDensityPixels called.");
         DisplayMetrics metrics = new DisplayMetrics();
@@ -126,6 +133,11 @@ public class DisplayInfo {
         return metrics.density;
     }
 
+    /**
+     * Gets density dpi.
+     *
+     * @return the density dpi.
+     */
     public int getDensityDpi() {
         Log.d(TAG, "getDensityDpi called.");
         DisplayMetrics metrics = new DisplayMetrics();
@@ -133,6 +145,11 @@ public class DisplayInfo {
         return metrics.densityDpi;
     }
 
+    /**
+     * Gets scaled density.
+     *
+     * @return the scaled density.
+     */
     public float getScaledDensity() {
         Log.d(TAG, "getScaledDensity called.");
         DisplayMetrics metrics = new DisplayMetrics();

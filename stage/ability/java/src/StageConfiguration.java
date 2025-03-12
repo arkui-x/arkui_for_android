@@ -55,6 +55,7 @@ public class StageConfiguration {
      * Convert configuration.
      *
      * @param config the configuration.
+     * @param diagonalSize the diagonal size.
      * @return the json object.
      */
     public static JSONObject convertConfiguration(Configuration config, double diagonalSize) {

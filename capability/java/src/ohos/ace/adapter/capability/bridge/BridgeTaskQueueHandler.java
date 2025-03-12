@@ -43,6 +43,7 @@ public class BridgeTaskQueueHandler implements BridgeTaskQueue {
      *
      * @param executorService context of the application.
      * @param tag name of bridge.
+     * @param taskOption task option of bridge.
      * @return BridgePlugin object.
      */
     public BridgeTaskQueueHandler(ExecutorService executorService, TaskTag tag, TaskOption taskOption) {

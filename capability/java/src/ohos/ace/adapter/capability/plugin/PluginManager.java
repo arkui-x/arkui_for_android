@@ -33,16 +33,29 @@ public class PluginManager {
 
     /**
      * constructor of PluginManager in AOSP platform
+     *
+     * @param context the context of application
      */
     public PluginManager(Context context) {
         this.context = context;
         nativeInit();
     }
 
+    /**
+     * Register the plugin.
+     *
+     * @param pluginRegisterFunc the plugin register function
+     * @param pluginPackageName the package name of plugin
+     */
     public void registerPlugin(long pluginRegisterFunc, String pluginPackageName) {
         nativeRegister(pluginRegisterFunc, pluginPackageName);
     }
 
+    /**
+     * Init the plugin.
+     *
+     * @param packageName the package name of plugin
+     */
     public void initPlugin(String packageName) {
         try {
             ALog.d(LOG_TAG, "init plugin: " + packageName);

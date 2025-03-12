@@ -15,10 +15,8 @@
 
 package ohos.ace.adapter.capability.platformview;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
-import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -26,23 +24,14 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Surface;
-import android.view.Window;
-import android.view.WindowManager;
-import android.util.SparseArray;
 import android.widget.FrameLayout;
 
-import ohos.ace.adapter.AceSurfaceHolder;
 import ohos.ace.adapter.AceTextureHolder;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.IAceOnResourceEvent;
 import ohos.ace.adapter.capability.platformview.IPlatformView;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -224,6 +213,9 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
         }
     }
 
+    /**
+     * Process touch event for platform view.
+     */
     public void processTouchEvent() {
         MotionEvent eventClone = getMotionEvent();
         if (eventClone != null) {
@@ -385,6 +377,11 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
         return surface;
     }
 
+    /**
+     * Get atomic id
+     *
+     * @return atomic id
+     */
     public long getAtomicId() {
         return viewId.getAndIncrement();
     }

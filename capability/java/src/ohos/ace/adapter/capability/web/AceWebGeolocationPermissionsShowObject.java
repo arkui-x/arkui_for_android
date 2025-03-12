@@ -33,6 +33,13 @@ public class AceWebGeolocationPermissionsShowObject {
         return this.origin;
     }
 
+    /**
+     * invoke method is used to call the callback method.
+     *
+     * @param origin The origin of the web page.
+     * @param allow Whether to allow geolocation permission.
+     * @param retain Whether to retain the geolocation permission.
+     */
     public void invoke(String origin, boolean allow, boolean retain) {
         try {
             this.callback.invoke(origin, allow, retain);

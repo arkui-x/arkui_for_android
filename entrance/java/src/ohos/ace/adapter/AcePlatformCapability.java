@@ -25,6 +25,11 @@ import ohos.ace.adapter.capability.storage.PersistentStorageAosp;
 import ohos.ace.adapter.capability.vibrator.VibratorAosp;
 import ohos.ace.adapter.DisplayInfo;
 
+/**
+ * AceAppPlatformPlugin class is used to provide platform capability
+ *
+ * @since 2024-06-24
+ */
 public class AcePlatformCapability {
     private static final String LOG_TAG = "AceAppPlatformPlugin";
 

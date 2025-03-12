@@ -20,7 +20,6 @@ import java.util.Map;
 
 import android.graphics.SurfaceTexture;
 import android.view.Surface;
-import android.view.SurfaceHolder;
 
 import ohos.ace.adapter.AceTextureHolder;
 import ohos.ace.adapter.ALog;
@@ -103,6 +102,7 @@ public class AceTexture {
     /**
      * constructor of AceTexture
      *
+     * @param instanceId instance id
      * @param id id of texture
      * @param textureImpl texture object
      * @param callback resource callback
@@ -119,9 +119,9 @@ public class AceTexture {
         this.callback = callback;
         this.callMethodMap = new HashMap<String, IAceOnCallResourceMethod>();
         IAceOnCallResourceMethod callSetTextureSize = new IAceOnCallResourceMethod() {
-
             /**
              * Set the size of the texture
+             *
              * @param params size params
              * @return result of setting texture size
              */
@@ -135,6 +135,7 @@ public class AceTexture {
         IAceOnCallResourceMethod callAttachToGLContext = new IAceOnCallResourceMethod() {
             /**
              * attatch to glcontext
+             *
              * @param params size params
              * @return result of attatch
              */
@@ -148,6 +149,7 @@ public class AceTexture {
         IAceOnCallResourceMethod callUpdateTextureImage = new IAceOnCallResourceMethod() {
             /**
              * update texture image
+             *
              * @param params size params
              * @return result of update
              */
@@ -339,7 +341,6 @@ public class AceTexture {
             setSurfaceTexture();
             hasRegisterTexture = true;
         }
-
         this.textureImpl.markTextureFrameAvailable(id);
         String param = "instanceId=" + instanceId + "&textureId=" + id;
         callback.onEvent(TEXTURE_FLAG + id + EVENT + PARAM_EQUALS + "markTextureAvailable" + PARAM_BEGIN, param);
