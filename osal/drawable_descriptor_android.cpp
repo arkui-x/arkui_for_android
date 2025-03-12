@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,18 +13,20 @@
  * limitations under the License.
  */
 
-#include "base/ressched/ressched_report.h"
+#include "adapter/android/osal/drawable_descriptor_android.h"
 
 namespace OHOS::Ace {
-
-ReportDataFunc LoadReportDataFunc()
+RefPtr<DrawableDescriptor> DrawableDescriptor::CreateDrawable(void* sptrAddr)
 {
     return nullptr;
 }
 
-ReportSyncEventFunc LoadReportSyncEventFunc()
+int32_t DrawableDescriptorAndroid::GetDrawableSrcType()
 {
-    return nullptr;
+    return -1;
 }
 
+void DrawableDescriptorAndroid::RegisterRedrawCallback(RedrawCallback&& callback) {}
+
+void DrawableDescriptorAndroid::Draw(RSCanvas& canvas, const NG::ImagePaintConfig& config) {}
 } // namespace OHOS::Ace
