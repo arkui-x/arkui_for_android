@@ -775,7 +775,7 @@ void UIContentImpl::NotifySurfaceCreated()
     ContainerScope scope(instanceId_);
     auto* window = pipeline->GetWindow();
     CHECK_NULL_VOID(window);
-    window->Init();
+    window->InitArkUI_X();
     window->RequestFrame();
 }
 
