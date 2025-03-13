@@ -27,6 +27,9 @@
 #include "base/log/log.h"
 #include "base/utils/string_utils.h"
 #include "native_module_manager.h"
+#include "nlohmann/json.hpp"
+
+using Json = nlohmann::json;
 
 namespace OHOS {
 namespace AbilityRuntime {
@@ -83,6 +86,13 @@ void StageAssetProvider::SetAssetsFileRelativePaths(const std::string& path)
     for (auto str : allFilePath_) {
         LOGI("SetAssetsFileRelativePaths::str : %{public}s", str.c_str());
     }
+}
+
+void StageAssetProvider::RemoveModuleFilePath(const std::string& moduleName)
+{
+    auto shouldRemove = [moduleName](const std::string& path) { return path.find(moduleName) != std::string::npos; };
+    auto removeIndex = std::remove_if(allFilePath_.begin(), allFilePath_.end(), shouldRemove);
+    allFilePath_.erase(removeIndex, allFilePath_.end());
 }
 
 void StageAssetProvider::SetAssetManager(JNIEnv* env, jobject assetManager)
@@ -779,6 +789,62 @@ std::vector<uint8_t> StageAssetProvider::GetAotBuffer(const std::string &fileNam
         buffer.assign(&moduleMap[0], &moduleMap[mapping->GetSize()]);
     }
     return buffer;
+}
+
+void StageAssetProvider::InitModuleVersionCode()
+{
+    auto moduleList = GetModuleJsonBufferList();
+    std::string moduleName = "";
+    int32_t versionCode = 0;
+    for (auto& buffer : moduleList) {
+        buffer.push_back('\0');
+        nlohmann::json moduleJson = nlohmann::json::parse(buffer.data(), nullptr, false);
+        if (moduleJson.is_discarded()) {
+            continue;
+        }
+        if (moduleJson.contains("app") && moduleJson["app"].contains("versionCode")) {
+            versionCode = moduleJson["app"]["versionCode"].get<int>();
+        }
+        if (moduleJson.contains("module") && moduleJson["module"].contains("name")) {
+            moduleName = moduleJson["module"]["name"].get<std::string>();
+        }
+        if (!moduleName.empty() && versionCode > 0) {
+            versionCodes_.emplace(moduleName, versionCode);
+        }
+    }
+}
+
+void StageAssetProvider::UpdateVersionCode(const std::string& moduleName, bool isNeedUpdate)
+{
+    bool isUpdate = false;
+    if (isNeedUpdate) {
+        auto modulePath = GetAppDataModuleDir() + '/' + moduleName + "/module.json";
+        auto dynamicModuleBuffer = GetBufferByAppDataPath(modulePath);
+        dynamicModuleBuffer.push_back('\0');
+        int32_t versionCode = 0;
+        nlohmann::json moduleJson = nlohmann::json::parse(dynamicModuleBuffer.data(), nullptr, false);
+        if (!moduleJson.is_discarded() && moduleJson.contains("app") && moduleJson["app"].contains("versionCode")) {
+            versionCode = moduleJson["app"]["versionCode"].get<int>();
+        }
+        if (versionCode > 0) {
+            auto it = versionCodes_.find(moduleName);
+            if (it == versionCodes_.end() || it->second < versionCode) {
+                isUpdate = true;
+                versionCodes_[moduleName] = versionCode;
+            }
+        }
+    }
+    moduleIsUpdates_[moduleName] = isUpdate;
+}
+
+bool StageAssetProvider::IsDynamicUpdateModule(const std::string& moduleName)
+{
+    bool isDynamicUpdate = false;
+    auto it = moduleIsUpdates_.find(moduleName);
+    if (it != moduleIsUpdates_.end()) {
+        isDynamicUpdate = it->second;
+    }
+    return isDynamicUpdate;
 }
 } // namespace Platform
 } // namespace AbilityRuntime
