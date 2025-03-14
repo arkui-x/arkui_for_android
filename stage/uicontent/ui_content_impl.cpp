@@ -364,6 +364,22 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
         container->GetSettings().SetUsingSharedRuntime(false);
     }
     container->SetPageProfile(pageProfile);
+
+    std::unique_ptr<Global::Resource::ResConfig> resConfig(Global::Resource::CreateResConfig());
+    auto resourceManager = context->GetResourceManager();
+    ColorMode colorMode = ColorMode::LIGHT;
+    if (resourceManager != nullptr) {
+        resourceManager->GetResConfig(*resConfig);
+        if (resConfig->GetColorMode() == OHOS::Global::Resource::ColorMode::DARK) {
+            colorMode = ColorMode::DARK;
+            LOGI("UIContent set dark mode");
+        } else {
+            colorMode = ColorMode::LIGHT;
+            LOGI("UIContent set light mode");
+        }
+    }
+    container->SetColorMode(colorMode);
+
     container->Initialize();
     ContainerScope Initializescope(instanceId_);
     auto front = container->GetFrontend();
@@ -377,7 +393,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     aceResCfg.SetOrientation(SystemProperties::GetDeviceOrientation());
     aceResCfg.SetDensity(density);
     aceResCfg.SetDeviceType(SystemProperties::GetDeviceType());
-    aceResCfg.SetColorMode(SystemProperties::GetColorMode());
+    aceResCfg.SetColorMode(container->GetColorMode());
     aceResCfg.SetDeviceAccess(SystemProperties::GetDeviceAccess());
     container->SetResourceConfiguration(aceResCfg);
     container->SetAssetManagerIfNull(assetManagerImpl);
@@ -390,7 +406,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     std::vector<std::string> resourcePaths;
     std::string sysResPath { "" };
     abilityContext->GetResourcePaths(resourcePaths, sysResPath);
-    container->SetResPaths(resourcePaths, sysResPath, SystemProperties::GetColorMode());
+    container->SetResPaths(resourcePaths, sysResPath, container->GetColorMode());
     AceTraceEnd();
 
     AceTraceBegin("CreateAndSetView");
@@ -472,13 +488,6 @@ void UIContentImpl::InitAceInfoFromResConfig()
         } else {
             LOGI("localeInfo is nullptr, set localeInfo to default");
             AceApplicationInfo::GetInstance().SetLocale("", "", "", "");
-        }
-        if (resConfig->GetColorMode() == OHOS::Global::Resource::ColorMode::DARK) {
-            SystemProperties::SetColorMode(ColorMode::DARK);
-            LOGI("UIContent set dark mode");
-        } else {
-            SystemProperties::SetColorMode(ColorMode::LIGHT);
-            LOGI("UIContent set light mode");
         }
         if (resConfig->GetDirection() == OHOS::Global::Resource::Direction::DIRECTION_VERTICAL) {
             SystemProperties::SetDeviceOrientation(ORIENTATION_PORTRAIT);
