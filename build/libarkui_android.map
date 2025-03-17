@@ -70,6 +70,8 @@
       "OHOS::Ace::SystemGridInfo::ToString() const";
       OHOS::Ace::ThemeConstants::*;
       "OHOS::Ace::ToRSColor(OHOS::Ace::LinearColor const&)";
+      "OHOS::Ace::TouchEventTarget::GetAttachedNode() const";
+      "OHOS::Ace::NG::NGGestureRecognizer::IsInResponseLinkRecognizers()";
       OHOS::Ace::MemoryMonitor::*;
       "OHOS::Ace::SystemProperties::colorMode_";
       "OHOS::Ace::SystemProperties::GetDebugEnabled()";
@@ -88,6 +90,7 @@
       OHOS::Rosen::Drawing::Pen::*;
       OHOS::Rosen::Drawing::ShaderEffect::*;
       OHOS::Rosen::Drawing::Brush::*;
+      "OHOS::Rosen::Occlusion::Region::OrSelf(OHOS::Rosen::Occlusion::Region&)";
       OHOS::Ace::ResourceManager::*;
       OHOS::Ace::SpringMotion::*;
       OHOS::Ace::ShadowTheme::*;
@@ -98,6 +101,7 @@
       "NapiErrorManager::NotifyUnhandledRejection(napi_env__*, napi_value__**, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, unsigned int)";
 
       virtual?thunk?to?OHOS::Ace::Animator::~Animator??;
+      virtual?thunk?to?OHOS::Ace::NG::LayoutProperty::~LayoutProperty??;
 
       vtable?for?OHOS::Ace::AceApplicationInfo;
       vtable?for?OHOS::Ace::Animator;

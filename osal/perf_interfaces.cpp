@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,18 +13,12 @@
  * limitations under the License.
  */
 
-#include "base/ressched/ressched_report.h"
+#include "base/perfmonitor/perf_interfaces.h"
 
 namespace OHOS::Ace {
 
-ReportDataFunc LoadReportDataFunc()
+void PerfInterfaces::SetScrollState(bool state)
 {
-    return nullptr;
-}
-
-ReportSyncEventFunc LoadReportSyncEventFunc()
-{
-    return nullptr;
 }
 
 } // namespace OHOS::Ace

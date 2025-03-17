@@ -27,6 +27,7 @@
 #include "core/common/platform_res_register.h"
 #include "core/event/key_event_recognizer.h"
 #include "core/event/touch_event.h"
+#include "core/pipeline_ng/pipeline_context.h"
 #ifdef ENABLE_ROSEN_BACKEND
 #include "core/common/thread_model_impl.h"
 #include "adapter/android/entrance/java/jni/virtual_rs_window.h"

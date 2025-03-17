@@ -24,6 +24,7 @@
 #include "base/thread/task_executor.h"
 #include "base/log/log.h"
 #include "base/utils/macros.h"
+#include "core/pipeline_ng/pipeline_context.h"
 #include "jni.h"
 
 namespace OHOS::Ace::Platform {
