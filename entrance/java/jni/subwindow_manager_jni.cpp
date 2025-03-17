@@ -105,8 +105,9 @@ void SubWindowManagerJni::SetupSubWindowManager(JNIEnv* env, jobject obj)
         env->GetMethodID(clazz, "setNavigationIndicatorStatus", "(Z)Z");
     subWindowManagerStruct_.getStatusBarHeightMethod = env->GetMethodID(clazz, "getStatusBarHeight", "()I");
     subWindowManagerStruct_.getCutoutBarHeightMethod = env->GetMethodID(clazz, "getCutoutBarHeight", "()I");
-    subWindowManagerStruct_.getNavigationBarHeightMethod = env->GetMethodID(clazz, "getNavigationBarHeight", "()I");
-    subWindowManagerStruct_.getGestureBarHeightMethod = env->GetMethodID(clazz, "getNavigationIndicatorHeight", "()I");
+    subWindowManagerStruct_.getNavigationBarStatusMethod = env->GetMethodID(clazz, "getNavigationBarStatus", "()Z");
+    subWindowManagerStruct_.getNavigationIndicatorStatusMethod =
+        env->GetMethodID(clazz, "getNavigationIndicatorStatus", "()Z");
     subWindowManagerStruct_.getScreenOrientationMethod = env->GetMethodID(clazz, "getScreenOrientation", "()I");
     subWindowManagerStruct_.getSafeAreaMethod = env->GetMethodID(clazz, "getSafeArea", "()Landroid/graphics/Rect;");
     subWindowManagerStruct_.hideMethod = env->GetMethodID(clazz, "hide", "(Ljava/lang/String;)Z");
@@ -528,28 +529,28 @@ uint32_t SubWindowManagerJni::GetCutoutBarHeight()
     return static_cast<uint32_t>(statusBarWidth);
 }
 
-uint32_t SubWindowManagerJni::GetNavigationBarHeight()
+bool SubWindowManagerJni::GetNavigationBarStatus()
 {
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
     if (env == nullptr) {
-        LOGE("SubWindowManagerJni::GetNavigationBarHeight: env is NULL");
-        return ERROR_ENV;
+        LOGE("SubWindowManagerJni::GetNavigationBarStatus: env is NULL");
+        return true;
     }
-    jint navigationBarHeight = env->CallIntMethod(
-        subWindowManagerStruct_.object, subWindowManagerStruct_.getNavigationBarHeightMethod);
-    return static_cast<uint32_t>(navigationBarHeight);
+    jboolean navigationBarIsShow =
+        env->CallBooleanMethod(subWindowManagerStruct_.object, subWindowManagerStruct_.getNavigationBarStatusMethod);
+    return static_cast<bool>(navigationBarIsShow);
 }
 
-uint32_t SubWindowManagerJni::GetNavigationIndicatorHeight()
+bool SubWindowManagerJni::GetNavigationIndicatorStatus()
 {
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
     if (env == nullptr) {
-        LOGE("SubWindowManagerJni::GetNavigationIndicatorHeight: env is NULL");
-        return ERROR_ENV;
+        LOGE("SubWindowManagerJni::GetNavigationIndicatorStatus: env is NULL");
+        return true;
     }
-    jint navigationBarWidth = env->CallIntMethod(
-        subWindowManagerStruct_.object, subWindowManagerStruct_.getGestureBarHeightMethod);
-    return static_cast<uint32_t>(navigationBarWidth);
+    jboolean navigationIndicatorIsShow = env->CallBooleanMethod(
+        subWindowManagerStruct_.object, subWindowManagerStruct_.getNavigationIndicatorStatusMethod);
+    return static_cast<bool>(navigationIndicatorIsShow);
 }
 
 int32_t SubWindowManagerJni::GetScreenOrientation()

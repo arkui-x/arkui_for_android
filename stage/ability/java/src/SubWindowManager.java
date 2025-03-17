@@ -680,6 +680,30 @@ public class SubWindowManager {
         return rect;
     }
 
+    private boolean systemUIStatus(int flag) {
+        boolean result = true;
+        if (mRootActivity != null) {
+            Window window = mRootActivity.getWindow();
+            if (window == null) {
+                Log.e(TAG, "Window is null for activity: " + mRootActivity.getClass().getSimpleName());
+                return result;
+            }
+
+            View decorView = window.getDecorView();
+            if (decorView == null) {
+                Log.e(TAG, "DecorView is null for activity: " + mRootActivity.getClass().getSimpleName());
+                return result;
+            }
+
+            int flags = decorView.getSystemUiVisibility();
+            result = (flags & flag) == 0;
+        } else {
+            Log.e(TAG, "mRootActivity is null");
+        }
+
+        return result;
+    }
+
     /**
      * Get the height of the StatusBar.
      *
@@ -713,34 +737,24 @@ public class SubWindowManager {
     }
 
     /**
-     * Get the height of the NavigationBar.
+     * Get the NavigationBar status.
      *
-     * @return NavigationBar height.
+     * @return True indicates show, false indicates hide.
      */
-    public int getNavigationBarHeight() {
-        int result = NO_HEIGHT;
-        if (mRootActivity != null) {
-            int resourceId = mRootActivity.getResources().getIdentifier("navigation_bar_height", "dimen", "android");
-            if (resourceId > NO_HEIGHT) {
-                result = mRootActivity.getResources().getDimensionPixelSize(resourceId);
-            }
-        } else {
-            Log.e(TAG, "The mRootActivity is null, getNavigationBarHeight failed.");
-        }
-        return result;
+    public boolean getNavigationBarStatus() {
+        return systemUIStatus(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
     }
 
     /**
-     * Get the height of the GestureBar.
+     * Get the GestureBar status.
      *
-     * @return GestureBar height.
+     * @return True indicates show, false indicates hide.
      */
-    public int getNavigationIndicatorHeight() {
+    public boolean getNavigationIndicatorStatus() {
         if (Build.VERSION.SDK_INT >= API_29) {
-            return getNavigationBarHeight();
+            return systemUIStatus(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         } else {
-            Log.e(TAG, "Not supported by the Android version.");
-            return NO_HEIGHT;
+            return false;
         }
     }
 
