@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -99,6 +99,7 @@ public:
     void SetAssetsFileRelativePaths(const std::string& appPath);
     void SetAssetManager(JNIEnv* env, jobject assetManager);
     jobject GetAssetManager();
+    std::vector<uint8_t> GetPkgJsonBuffer(const std::string& moduleName);
     std::list<std::vector<uint8_t>> GetModuleJsonBufferList();
     std::vector<uint8_t> GetModuleBuffer(const std::string& moduleName, std::string& modulePath, bool esmodule);
     std::vector<uint8_t> GetModuleAbilityBuffer(
