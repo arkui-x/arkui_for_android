@@ -127,6 +127,11 @@ bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
             .signature = "()V",
             .fnPtr = reinterpret_cast<void*>(&DispatchApplicationOnBackground),
         },
+        {
+            .name = "nativePreloadModule",
+            .signature = "(Ljava/lang/String;Ljava/lang/String;)V",
+            .fnPtr = reinterpret_cast<void*>(&PreloadModule),
+        }
     };
 
     if (!env) {
@@ -354,6 +359,24 @@ void StageApplicationDelegateJni::DispatchApplicationOnForeground(JNIEnv* env, j
 void StageApplicationDelegateJni::DispatchApplicationOnBackground(JNIEnv* env, jclass myclass)
 {
     AppMain::GetInstance()->NotifyApplicationBackground();
+}
+
+void StageApplicationDelegateJni::PreloadModule(JNIEnv* env, jclass myclass, jstring jModuleName, jstring jAbilityName)
+{
+    if (env == nullptr) {
+        LOGE("PreloadModule env is nullptr");
+        return;
+    }
+    auto moduleName = env->GetStringUTFChars(jModuleName, nullptr);
+    auto abilityName = env->GetStringUTFChars(jAbilityName, nullptr);
+    if (moduleName == nullptr || abilityName == nullptr) {
+        LOGE("PreloadModule moduleName or abilityName is nullptr");
+        return;
+    }
+
+    AppMain::GetInstance()->PreloadModule(moduleName, abilityName);
+    env->ReleaseStringUTFChars(jModuleName, moduleName);
+    env->ReleaseStringUTFChars(jAbilityName, abilityName);
 }
 } // namespace Platform
 } // namespace AbilityRuntime

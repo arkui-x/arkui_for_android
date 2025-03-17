@@ -47,6 +47,7 @@ public:
     static void NativeSetLogLevel(JNIEnv* env, jobject jobj, jint level);
     static void DispatchApplicationOnForeground(JNIEnv* env, jclass myclass);
     static void DispatchApplicationOnBackground(JNIEnv* env, jclass myclass);
+    static void PreloadModule(JNIEnv* env, jclass myclass, jstring jModuleName, jstring jAbilityName);
 };
 } // namespace Platform
 } // namespace AbilityRuntime
