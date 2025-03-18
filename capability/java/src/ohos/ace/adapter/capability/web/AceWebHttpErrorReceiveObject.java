@@ -18,6 +18,11 @@ package ohos.ace.adapter.capability.web;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebResourceRequest;
 
+/**
+ * AceWebHttpErrorReceiveObject is used to receive http error information
+ *
+ * @since 2024-11-24
+ */
 public class AceWebHttpErrorReceiveObject {
     private static final String LOG_TAG = "AceWebHttpErrorReceiveObject";
 
@@ -29,6 +34,11 @@ public class AceWebHttpErrorReceiveObject {
         this.response = response;
     }
 
+    /**
+     * Retrieves the URL of the request.
+     *
+     * @return A string representing the URL, or an empty string if the URL is not available.
+     */
     public String getRequestUrl() {
         if (this.request.getUrl() != null) {
             return this.request.getUrl().toString();

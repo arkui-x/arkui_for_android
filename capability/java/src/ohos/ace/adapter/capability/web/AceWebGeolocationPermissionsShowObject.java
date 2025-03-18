@@ -18,6 +18,11 @@ import ohos.ace.adapter.ALog;
 
 import android.webkit.GeolocationPermissions;
 
+/**
+ * AceWebGeolocationPermissionsShowObject is used to show the geolocation permissions.
+ *
+ * @since 2024-11-24
+ */
 public class AceWebGeolocationPermissionsShowObject {
     private static final String LOG_TAG = "AceWebGeolocationPermissionsShowObject";
 

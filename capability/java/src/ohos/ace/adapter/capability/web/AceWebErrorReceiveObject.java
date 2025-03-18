@@ -19,6 +19,11 @@ import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import ohos.ace.adapter.capability.web.IAceWebErrorReceiveObject;
 
+/**
+ * AceWebErrorReceiveObject class is used to receive web error
+ *
+ * @since 2024-11-22
+ */
 public class AceWebErrorReceiveObject implements IAceWebErrorReceiveObject {
     private static final String LOG_TAG = "AceWebErrorReceiveObject";
 
@@ -30,6 +35,12 @@ public class AceWebErrorReceiveObject implements IAceWebErrorReceiveObject {
         this.request = request;
     }
 
+    /**
+     * Get request url
+     *
+     * @return request url
+     */
+    @Override
     public String getRequestUrl() {
         if (this.request.getUrl() != null) {
             return this.request.getUrl().toString();

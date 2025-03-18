@@ -16,7 +16,6 @@
 package ohos.ace.adapter.capability.surface;
 
 import ohos.ace.adapter.AceResourcePlugin;
-import ohos.ace.adapter.ALog;
 
 import android.content.Context;
 

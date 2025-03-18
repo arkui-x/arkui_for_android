@@ -70,6 +70,11 @@ public class SubWindowManager {
     private Map<String, SubWindow> mSubWindowMap = new HashMap<>();
     private int uiOptions_ = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
+    private SubWindowManager() {
+        Log.d(TAG, "SubWindowManager created.");
+        nativeSetupSubWindowManager();
+    }
+
     /**
      * Gets instance.
      *
@@ -85,11 +90,6 @@ public class SubWindowManager {
         }
 
         return _sinstance;
-    }
-
-    private SubWindowManager() {
-        Log.d(TAG, "SubWindowManager created.");
-        nativeSetupSubWindowManager();
     }
 
     /**

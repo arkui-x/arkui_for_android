@@ -16,9 +16,7 @@
 package ohos.ace.adapter.capability.web;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.net.Uri;
@@ -199,6 +197,8 @@ public class AceWeb extends AceWebBase {
 
     /**
      * This is to get the ace page url which webview located.
+     *
+     * @return the page url of the current Ace app.
      */
     @Override
     public String getUrl() {
@@ -1080,6 +1080,7 @@ public class AceWeb extends AceWebBase {
      * get web message port
      *
      * @param port port name
+     * @return web message port
      */
     public WebMessagePort getWebMessagePort(String port) {
         if (webMessagePorts.isEmpty()) {

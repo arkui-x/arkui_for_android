@@ -19,6 +19,11 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+/**
+ * WebDataBaseHelper class for web database
+ *
+ * @since 2024-11-22
+ */
 public class WebDataBaseHelper extends SQLiteOpenHelper {
     private static final String SQL_CREATE_HTTPAUTH_TABLE =
         "CREATE TABLE " + WebDataBaseColumns.EntryColumns.TABLE_NAME_HTTPAUTH + " (" +

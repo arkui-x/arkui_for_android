@@ -17,6 +17,11 @@ package ohos.ace.adapter.capability.web;
 
 import android.webkit.WebResourceRequest;
 
+/**
+ * AceWebOverrideUrlObject class is used to override the url
+ *
+ * @since 2024-11-24
+ */
 public class AceWebOverrideUrlObject {
     private static final String LOG_TAG = "AceWebOverrideUrlObject";
 
@@ -26,6 +31,11 @@ public class AceWebOverrideUrlObject {
         this.request = request;
     }
 
+    /**
+     * Get the request url
+     *
+     * @return the request url
+     */
     public String getRequestUrl() {
         if (this.request.getUrl() != null) {
             return this.request.getUrl().toString();

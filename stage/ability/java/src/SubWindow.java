@@ -35,6 +35,23 @@ import java.util.Arrays;
 public class SubWindow {
     private static final String TAG = "SubWindow";
     private long nativeSubWindowPtr = 0L;
+    private String name;
+    private int windowId = InstanceIdGenerator.getAndIncrement();
+    private int parentId;
+    private int windowMode;
+    private int windowType;
+    private WindowParam windowParam;
+    private PopupSubWindow subWindowView;
+    private View contentView;
+    private Activity rootActivity;
+    private View rootView;
+    private boolean isFocusable = true;
+    private Rect[] hotAreas;
+    private boolean isFullScreen = false;
+    private View mainView;
+    private int mainWindowX;
+    private int mainWindowY;
+    private int windowTag;
 
     /**
      * Instantiates a new Sub window.
@@ -90,6 +107,9 @@ public class SubWindow {
         }
     }
 
+    /**
+     * The name of sub window.
+     */
     public class PopupSubWindow extends PopupWindow {
         private static final String TAG = "PopupSubWindow";
 
@@ -109,6 +129,9 @@ public class SubWindow {
             }
         }
 
+        /**
+         * Shutdown.
+         */
         public void shutdown() {
             super.dismiss();
         }
@@ -212,6 +235,9 @@ public class SubWindow {
 
     /**
      * Dispatch touch event to main window.
+     *
+     * @param event the event
+     * @return true if event is handled
      */
     public boolean dispatchTouchEventToMainWindow(MotionEvent event) {
         int touchX = (int) event.getX() + windowParam.x;
@@ -422,6 +448,7 @@ public class SubWindow {
      * set FullScreen.
      *
      * @param status the status
+     * @return the boolean
      */
     public boolean setFullScreen(boolean status) {
         if (status) {
@@ -450,23 +477,6 @@ public class SubWindow {
         }
     }
 
-    private String name;
-    private int windowId = InstanceIdGenerator.getAndIncrement();
-    private int parentId;
-    private int windowMode;
-    private int windowType;
-    private WindowParam windowParam;
-    private PopupSubWindow subWindowView;
-    private View contentView;
-    private Activity rootActivity;
-    private View rootView;
-    private boolean isFocusable = true;
-    private Rect[] hotAreas;
-    private boolean isFullScreen = false;
-    private View mainView;
-    private int mainWindowX;
-    private int mainWindowY;
-
     /**
      * Gets window tag.
      *
@@ -484,8 +494,6 @@ public class SubWindow {
     public void setWindowTag(int windowTag) {
         this.windowTag = windowTag;
     }
-
-    private int windowTag;
 
     /**
      * Gets sub window view.
@@ -670,7 +678,7 @@ public class SubWindow {
     /**
      * Called by native to register Window Handle.
      *
-     * @param windowHandle the handle of navive window
+     * @param subWindowHandle the sub window handle
      */
     public void registerSubWindow(long subWindowHandle) {
         nativeSubWindowPtr = subWindowHandle;
