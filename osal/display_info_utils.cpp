@@ -25,12 +25,6 @@ namespace OHOS::Ace {
 
 constexpr Dimension SHEET_DEVICE_WIDTH_BREAKPOINT = 600.0_vp;
 
-DisplayInfoUtils& DisplayInfoUtils::GetInstance()
-{
-    static DisplayInfoUtils instance;
-    return instance;
-}
-
 RefPtr<DisplayInfo> DisplayInfoUtils::GetDisplayInfo()
 {
     return AceType::MakeRefPtr<DisplayInfo>();
@@ -38,9 +32,9 @@ RefPtr<DisplayInfo> DisplayInfoUtils::GetDisplayInfo()
 
 void DisplayInfoUtils::InitIsFoldable() {}
 
-bool DisplayInfoUtils::IsFoldable()
+bool DisplayInfoUtils::GetIsFoldable()
 {
-    hasInitIsFoldable = true;
+    hasInitIsFoldable_ = true;
     return false;
 }
 
@@ -53,5 +47,11 @@ FoldStatus DisplayInfoUtils::GetCurrentFoldStatus()
         return FoldStatus::EXPAND;
     }
     return FoldStatus::UNKNOWN;
+}
+
+std::vector<Rect> DisplayInfoUtils::GetCurrentFoldCreaseRegion()
+{
+    hasInitFoldCreaseRegion_ = true;
+    return {};
 }
 } // namespace OHOS::Ace::DisplayInfoUtils
