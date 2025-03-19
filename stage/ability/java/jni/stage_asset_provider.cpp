@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -32,6 +32,7 @@ namespace OHOS {
 namespace AbilityRuntime {
 namespace Platform {
 namespace {
+const std::string PKG_CONTEXT_INFO_JSON = "pkgContextInfo.json";
 const std::string MODULE_JSON_NAME = "module.json";
 const std::string ABC_EXTENSION_NAME = ".abc";
 const std::string ABILITY_STAGE_ABC_NAME = "AbilityStage.abc";
@@ -94,6 +95,45 @@ void StageAssetProvider::SetAssetManager(JNIEnv* env, jobject assetManager)
 jobject StageAssetProvider::GetAssetManager()
 {
     return assetManager_.get();
+}
+
+std::vector<uint8_t> StageAssetProvider::GetPkgJsonBuffer(const std::string& moduleName)
+{
+    std::string foundPath;
+    std::string foundKey = moduleName + '/' + PKG_CONTEXT_INFO_JSON;
+    {
+        std::lock_guard<std::mutex> lock(allFilePathMutex_);
+        for (auto& path : allFilePath_) {
+            if (path.find(foundKey) != std::string::npos) {
+                foundPath = path;
+                break;
+            }
+        }
+    }
+
+    std::vector<uint8_t> pkgJsonBuffer = {};
+    if (foundPath.empty()) {
+        LOGE("Failed to find pkgContextInfo.json, moduleName is %{public}s", moduleName.c_str());
+        return pkgJsonBuffer;
+    }
+
+    auto lastPos = foundPath.find_last_of('/');
+    std::string fileName = foundPath.substr(lastPos + 1, foundPath.size());
+    std::string filePath = foundPath.substr(0, lastPos);
+
+    auto assetProvider = CreateAndFindAssetProvider(filePath);
+    auto mapping = assetProvider->GetAsMapping(fileName);
+    if (mapping == nullptr) {
+        LOGE("mapping is nullptr");
+        return pkgJsonBuffer;
+    }
+    auto mappingAsset = mapping->GetAsset();
+    if (mappingAsset == nullptr) {
+        LOGE("mappingAsset is nullptr");
+        return pkgJsonBuffer;
+    }
+    pkgJsonBuffer.assign(&mappingAsset[0], &mappingAsset[mapping->GetSize()]);
+    return pkgJsonBuffer;
 }
 
 std::list<std::vector<uint8_t>> StageAssetProvider::GetModuleJsonBufferList()
