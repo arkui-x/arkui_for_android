@@ -443,6 +443,8 @@ void SubwindowAndroid::ShowMenuNG(std::function<void()>&& buildFunc, std::functi
     overlay->ShowMenuInSubWindow(targetNode->GetId(), offset, menuNode);
 }
 
+void SubwindowAndroid::SetWindowTouchable(bool touchable){}
+
 void SubwindowAndroid::HideMenuNG(bool showPreviewAnimation, bool startDrag)
 {
     LOGI("Hide menu ng enter");

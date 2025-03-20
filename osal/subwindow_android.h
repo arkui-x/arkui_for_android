@@ -63,6 +63,8 @@ public:
         return false;
     }
 
+    void SetWindowTouchable(bool touchable) override;
+
     void HidePreviewNG() override {}
 
     void HideMenuNG(const RefPtr<NG::FrameNode>& menu, int32_t targetId) override;

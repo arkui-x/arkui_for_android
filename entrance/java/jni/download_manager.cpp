@@ -62,6 +62,11 @@ public:
         return false;
     }
 
+    bool fetchCachedResult(const std::string& url, std::string& result) override
+    {
+        return false;
+    }
+
     bool RemoveDownloadTask(const std::string& url, int32_t nodeId, bool isCancel = true) override
     {
         return false;
