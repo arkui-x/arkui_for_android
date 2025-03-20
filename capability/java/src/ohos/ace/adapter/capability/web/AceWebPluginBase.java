@@ -29,9 +29,19 @@ import java.util.concurrent.atomic.AtomicLong;
  * @since 1
  */
 public abstract class AceWebPluginBase extends AceResourcePlugin {
+    /**
+     * Initialize the webview.
+     */
+    protected static boolean richTextInit = false;
+
     private static final String LOG_TAG = "AceWebPluginBase";
 
     private static Map<Long, AceWebBase> objectMap;
+
+    /**
+     * Initialize the webview.
+     */
+    private static boolean hasInit = false;
 
     private final AtomicLong nextWebId = new AtomicLong(0L);
 
@@ -62,16 +72,6 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      */
     protected native static void onMessage(long webId, String portHandle, String result);
 
-    /**
-     * Initialize the webview.
-     */
-    private static boolean hasInit = false;
-
-    /**
-     * Initialize the webview.
-     */
-    protected static boolean richTextInit = false;
-    
     private static final int CAN_NOT_POST_MESSAGE = 17100010;
 
     private static final int CAN_NOT_REGISTER_MESSAGE_EVENT = 17100006;

@@ -310,7 +310,7 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
         if (aceWebPluginBase == null) {
             return;
         }
-        Map<Long, AceWebBase> webObjectMap = aceWebPluginBase.getObjectMap();
+        Map<Long, AceWebBase> webObjectMap = AceWebPluginBase.getObjectMap();
         if (webObjectMap != null) {
             for (Map.Entry<Long, AceWebBase> entry : webObjectMap.entrySet()) {
                 entry.getValue().setTouchEvent(event);

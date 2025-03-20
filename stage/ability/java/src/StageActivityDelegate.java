@@ -35,6 +35,13 @@ public class StageActivityDelegate {
     private static final List<INTENTCALLBACK> intentCallbackList = new ArrayList<>();
 
     /**
+     * Constructor.
+     */
+    public StageActivityDelegate() {
+        Log.i(LOG_TAG, "Constructor called.");
+    }
+
+    /**
      * The interface of intent callback.
      */
     public interface INTENTCALLBACK {
@@ -72,13 +79,6 @@ public class StageActivityDelegate {
                 callback.onResult(requestCode, resultCode, intent);
             }
         }
-    }
-
-    /**
-     * Constructor.
-     */
-    public StageActivityDelegate() {
-        Log.i(LOG_TAG, "Constructor called.");
     }
 
     /**

@@ -96,7 +96,7 @@ public class StageApplicationDelegate {
     private static final String ARCH_ARM64 = "arm64-v8a";
 
     private static final String ARCH_ARM = "armeabi-v7a";
-    
+
     private static final String ARCH_X86 = "x86_64";
 
     private static final String CACERT_FILE = "/cacert.ca";
@@ -167,7 +167,7 @@ public class StageApplicationDelegate {
             loadLibraryFromAppData();
         }
         Trace.beginSection("initApplication");
-        AppModeConfig.InitAppMode();
+        AppModeConfig.initAppMode();
 
         attachStageApplication();
 
@@ -296,6 +296,7 @@ public class StageApplicationDelegate {
      * Read the relative paths of all files in the assets folder of the android platform
      *
      * @param path the path under the assets folder
+     * @return the relative paths of all files in the assets folder
      */
     public String routerTraverseAssets(String path) {
         List<String> assetsList = new ArrayList<String>();
@@ -313,7 +314,6 @@ public class StageApplicationDelegate {
      *
      * @param assetsList accepts the files in the assets folder
      * @param path       the path under the assets folder
-     * @return result of method return
      */
     private void traverseAssets(List<String> assetsList, String path) {
         AssetManager assetManager = stageApplication.getAssets();

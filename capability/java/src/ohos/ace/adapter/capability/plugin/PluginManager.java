@@ -18,7 +18,6 @@ package ohos.ace.adapter.capability.plugin;
 import ohos.ace.adapter.ALog;
 
 import android.content.Context;
-import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 
 /**

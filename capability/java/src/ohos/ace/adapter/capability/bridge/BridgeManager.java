@@ -330,7 +330,7 @@ public class BridgeManager {
     /**
      * Other platforms call methods.
      *
-     * @param bridgeName Name of bridge.
+     * @param bridgePlugin Name of bridge.
      * @param methodName Name of method.
      * @param parameters Param of the method.
      */
@@ -808,6 +808,7 @@ public class BridgeManager {
      *
      * @param bridgeName Name of bridge.
      * @param methodData Method data.
+     * @return BridgeErrorCode.
      */
     public BridgeErrorCode platformCallMethodBinary(String bridgeName, MethodData methodData) {
         BridgeErrorCode errorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
@@ -852,6 +853,8 @@ public class BridgeManager {
      * @param bridgeName Name of bridge.
      * @param methodName Name of method.
      * @param result result of the method.
+     * @param errorCode Error code.
+     * @param errorMessage Error message.
      */
     public void jsSendMethodResultBinary(String bridgeName, String methodName, ByteBuffer result,
     int errorCode, String errorMessage) {

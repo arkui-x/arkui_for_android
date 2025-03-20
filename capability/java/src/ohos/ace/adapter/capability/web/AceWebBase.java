@@ -403,7 +403,7 @@ public abstract class AceWebBase {
     /**
      * This is called to refresh history.
      *
-     * @param obj the jni object.
+     * @param url the url of this page.
      */
     public void fireRefreshHistory(String url) {
         callback.onEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS + "onRefreshAccessedHistory" + PARAM_BEGIN, url);
@@ -413,6 +413,7 @@ public abstract class AceWebBase {
      * This is call to intercept load url.
      *
      * @param obj the jni object.
+     * @return result of call.
      */
     public boolean fireUrlLoadIntercept(Object obj) {
         return this.nativeOnObjectEventWithBoolReturn(makeEventHash("onLoadIntercept"), "onLoadIntercept", obj);
@@ -531,6 +532,7 @@ public abstract class AceWebBase {
      * This is called to console message event.
      *
      * @param obj the jni object of this event.
+     * @return true if the event is handled, false otherwise.
      */
     public boolean firePageOnConsoleMessage(Object obj) {
         return this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
@@ -796,6 +798,12 @@ public abstract class AceWebBase {
      */
     public abstract String updateLayout(Map<String, String> params);
 
+    /**
+     * zoom access.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
     public abstract String zoomAccess(Map<String, String> params);
 
     /**
@@ -871,6 +879,8 @@ public abstract class AceWebBase {
 
     /**
      * Load the given URL.
+     *
+     * @return The result of the load operation.
      */
     public abstract WebBackForwardList getBackForwardEntries();
 
@@ -949,7 +959,6 @@ public abstract class AceWebBase {
      * @param message is param String.
      * @param ports is param String[].
      * @param Uri is param String.
-     * @return result of call.
      */
     public abstract void postWebMessage(String message, String[] ports, String Uri);
 

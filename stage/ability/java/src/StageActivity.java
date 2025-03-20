@@ -63,7 +63,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     private static final String WANT_PARAMS = "params";
 
     private static final String TEST_PARAMS = "test";
-    
+
     private static final int ERR_INVALID_PARAMETERS = -1;
 
     private static final int ERR_OK = 0;

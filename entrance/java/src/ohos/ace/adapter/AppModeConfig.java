@@ -26,7 +26,7 @@ public class AppModeConfig {
     /**
      * Initialize application model
      */
-    public static void InitAppMode() {
+    public static void initAppMode() {
         nativeInitAppMode();
     }
 
