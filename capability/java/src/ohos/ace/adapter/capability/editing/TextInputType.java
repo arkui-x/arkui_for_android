@@ -30,7 +30,8 @@ public enum TextInputType {
     DATETIME(4),
     EMAIL_ADDRESS(5),
     URL(6),
-    VISIBLE_PASSWORD(7);
+    VISIBLE_PASSWORD(7),
+    NUMBER_PASSWORD(8);
 
     private int value = 0;
 
