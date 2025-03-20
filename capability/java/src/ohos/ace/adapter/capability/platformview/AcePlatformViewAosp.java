@@ -23,6 +23,7 @@ import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.Surface;
 import android.widget.FrameLayout;
 
@@ -112,6 +113,11 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
                 }
             }
         });
+        ViewParent parent = viewWrapper.getParent();
+        if (parent instanceof ViewGroup) {
+            ViewGroup viewGroup = (ViewGroup) parent;
+            viewGroup.removeView(viewWrapper);
+        }
     }
 
     @Override
