@@ -20,6 +20,7 @@
 #include <map>
 #include <mutex>
 #include <string>
+#include <unordered_map>
 #include "jni.h"
 #include "jni_environment.h"
 
@@ -97,6 +98,7 @@ public:
     static std::shared_ptr<StageAssetProvider> GetInstance();
     void SetAppPath(const std::string& appPath);
     void SetAssetsFileRelativePaths(const std::string& appPath);
+    void RemoveModuleFilePath(const std::string& moduleName);
     void SetAssetManager(JNIEnv* env, jobject assetManager);
     jobject GetAssetManager();
     std::vector<uint8_t> GetPkgJsonBuffer(const std::string& moduleName);
@@ -132,6 +134,9 @@ public:
     void CopyNativeLibToAppDataModuleDir(const std::string& bundleName);
     void SetNativeLibPaths(const std::string& bundleName, const std::vector<std::string>& moduleNames);
     std::vector<uint8_t> GetAotBuffer(const std::string &fileName);
+    void InitModuleVersionCode();
+    void UpdateVersionCode(const std::string& moduleName, bool isNeedUpdate);
+    bool IsDynamicUpdateModule(const std::string& moduleName);
 
 private:
     bool MakeMultipleDir(const std::string& path);
@@ -141,6 +146,8 @@ private:
     std::vector<std::string> allFilePath_;
     std::mutex allFilePathMutex_;
     std::map<std::string, Ace::RefPtr<AssetProvider>> assetProviders_;
+    std::unordered_map<std::string, int32_t> versionCodes_;
+    std::unordered_map<std::string, bool> moduleIsUpdates_;
     std::mutex assetProvidersMutex_;
     Ace::Platform::JniEnvironment::JavaGlobalRef assetManager_;
     std::string cacheDir_;
