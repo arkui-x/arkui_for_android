@@ -95,6 +95,8 @@ bool SystemProperties::taskPriorityAdjustmentEnable_ = false;
 
 int32_t SystemProperties::dragDropFrameworkStatus_ = 0;
 
+bool SystemProperties::pageTransitionFrzEnabled_ = false;
+
 bool SystemProperties::IsOpIncEnable()
 {
     return false;
@@ -344,5 +346,10 @@ bool SystemProperties::IsSuperFoldDisplayDevice()
 bool SystemProperties::GetContainerDeleteFlag()
 {
     return false;
+}
+
+bool SystemProperties::IsPageTransitionFreeze()
+{
+    return pageTransitionFrzEnabled_;
 }
 } // namespace OHOS::Ace
