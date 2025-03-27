@@ -65,6 +65,7 @@ template("ace_osal_android_source_set") {
       "mock/accessibility_event_info.cpp",
       "modal_ui_extension_impl.cpp",
       "mouse_style_android.cpp",
+      "navigation_route.cpp",
       "package_event_proxy_android.cpp",
       "page_url_checker_android.cpp",
       "perf_interfaces.cpp",

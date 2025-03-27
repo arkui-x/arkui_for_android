@@ -30,6 +30,7 @@
 #include "adapter/android/entrance/java/jni/pack_asset_provider.h"
 #include "adapter/android/osal/file_asset_provider.h"
 #include "adapter/android/osal/js_accessibility_manager.h"
+#include "adapter/android/osal/navigation_route.h"
 #include "adapter/android/osal/page_url_checker_android.h"
 #include "adapter/android/stage/uicontent/ace_container_sg.h"
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
@@ -402,6 +403,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     container->SetModuleName(moduleName);
     container->SetIsModule(info->compileMode == AppExecFwk::CompileMode::ES_MODULE);
     container->SetPageUrlChecker(AceType::MakeRefPtr<PageUrlCheckerAndroid>());
+    container->SetNavigationRoute(AceType::MakeRefPtr<NavigationRoute>(context->GetBundleName()));
 
     std::vector<std::string> resourcePaths;
     std::string sysResPath { "" };
