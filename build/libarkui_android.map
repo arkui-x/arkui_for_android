@@ -26,6 +26,7 @@
       OHOS::Ace::Alignment::*;
       OHOS::Ace::Animator::*;
       "OHOS::Ace::BaseId::BaseId()";
+      "OHOS::Ace::CheckThread(OHOS::Ace::TaskExecutor::TaskType)";
       OHOS::Ace::Color::*;
       OHOS::Ace::CommonNapiUtils::*;
       OHOS::Ace::Container::*;
@@ -462,6 +463,8 @@
       OHOS::Ace::NG::InputEventHub::*;
       OHOS::Ace::NG::InputEventActuator::*;
       "OHOS::Ace::LifeCycleCheckable::~LifeCycleCheckable()";
+      "OHOS::Ace::LifeCycleCheckable::OnDetectedObjDestroyInUse()";
+      "OHOS::Ace::Referenced::OnDetectedClaimDeathObj(bool)";
       
       OHOS::AppExecFwk::EventHandler::*;
       OHOS::AppExecFwk::EventRunner::*;
