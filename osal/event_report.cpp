@@ -92,4 +92,7 @@ void EventReport::ReportScrollableErrorEvent(
 {}
 
 void EventReport::ReportRichEditorInfo(const RichEditorInfo& richEditorInfo) {}
+
+void EventReport::FrameRateDurationsStatistics(int32_t expectedRate, const std::string& scene, NG::SceneStatus status)
+{}
 } // namespace OHOS::Ace
