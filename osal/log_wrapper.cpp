@@ -60,6 +60,9 @@ char LogWrapper::GetSeparatorCharacter()
 
 void LogWrapper::PrintLog(LogDomain domain, LogLevel level, AceLogTag tag, const char* fmt, va_list args)
 {
+    if (!OHOS::Ace::LogWrapper::JudgeLevel(level)) {
+        return;
+    }
     std::string newFmt(fmt);
     StripFormatString("{public}", newFmt);
     StripFormatString("{private}", newFmt);
