@@ -105,8 +105,8 @@ public class AceWebPluginAosp extends AceWebPluginBase {
             // Create AceWeb
             aceWeb = new AceWeb(id, context, rootView, getEventCallback());
             String webincognitoMode = param.get(INCOGNITO_MODE);
-            richTextInit = Integer.parseInt(param.get(RICH_TEXT_INIT)) == 1 ? true : false;
-            addResource(id, aceWeb);
+            boolean richTextInit = Integer.parseInt(param.get(RICH_TEXT_INIT)) == 1;
+            addResource(id, aceWeb, richTextInit);
             aceWeb.initWeb();
             aceWeb.setIncognitoMode(String.valueOf(webincognitoMode));
             aceWeb.setPageUrl(pageUrl);
@@ -119,7 +119,7 @@ public class AceWebPluginAosp extends AceWebPluginBase {
             FrameLayout.LayoutParams params = aceWeb.buildLayoutParams(physicalWidth, physicalHeight, left, top);
             aceWeb.setWebLayout(physicalWidth, physicalHeight, left, top);
             aceWeb.addWebToSurface(params);
-            addResourceStatic(id, aceWeb);
+            addResourceStatic(richTextInit);
             return id;
         } catch (NumberFormatException ignored) {
             ALog.e(LOG_TAG, "NumberFormatException");
