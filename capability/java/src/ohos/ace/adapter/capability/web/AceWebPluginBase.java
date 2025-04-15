@@ -42,11 +42,6 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      */
     private static boolean hasInit = false;
 
-    /**
-     * Initialize the webview.
-     */
-    protected static boolean richTextInit = false;
-
     private final AtomicLong nextWebId = new AtomicLong(0L);
 
     public AceWebPluginBase() {
@@ -155,8 +150,9 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      *
      * @param id web id
      * @param web web object
+     * @param richTextInit Whether richText init.
      */
-    public void addResource(long id, AceWebBase web) {
+    public void addResource(long id, AceWebBase web, boolean richTextInit) {
         objectMap.put(id, web);
         registerCallMethod(web.getCallMethod());
         if (!hasInit && !richTextInit) {
@@ -165,17 +161,17 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
             nativeInitWebDownloadItem();
             hasInit = true;
         }
-        richTextInit = false;
     }
 
     /**
      * This is called to add an static resource object to map.
      *
-     * @param id web id
-     * @param web web object
+     * @param richTextInit is richText init.
      */
-    public void addResourceStatic(long id, AceWebBase web) {
-        nativeInitStatic();
+    public void addResourceStatic(boolean richTextInit) {
+        if (!richTextInit) {
+            nativeInitStatic();
+        }
     }
 
     /**
