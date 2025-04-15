@@ -81,4 +81,6 @@ void EventReport::ReportPageShowMsg(const std::string& pageUrl, const std::strin
                                     const std::string& pageName) {}
 
 void EventReport::ReportDragInfo(const DragInfo& dragInfo) {}
+
+void EventReport::ReportRichEditorInfo(const RichEditorInfo& richEditorInfo) {}
 } // namespace OHOS::Ace
