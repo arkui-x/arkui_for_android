@@ -129,7 +129,7 @@ void PassLogMessage(LogDomain domain, LogLevel level, std::string newFmt, va_lis
 
 void LogWrapper::PrintLog(LogDomain domain, LogLevel level, AceLogTag tag, const char* fmt, va_list args)
 {
-    if (LogWrapper::GetLogLevel() > level) {
+    if (!OHOS::Ace::LogWrapper::JudgeLevel(level)) {
         return;
     }
     std::string newFmt(fmt);

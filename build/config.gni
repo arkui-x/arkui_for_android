@@ -103,3 +103,7 @@ if (defined(use_platform_font) && use_platform_font) {
 if (defined(enable_drag_framework) && enable_drag_framework) {
   defines += [ "ENABLE_DRAG_FRAMEWORK" ]
 }
+
+if (runtime_mode == "debug") {
+  defines += [ "ACE_DEBUG_LOG" ]
+}
