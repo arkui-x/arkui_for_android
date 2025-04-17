@@ -95,4 +95,6 @@ void EventReport::ReportRichEditorInfo(const RichEditorInfo& richEditorInfo) {}
 
 void EventReport::FrameRateDurationsStatistics(int32_t expectedRate, const std::string& scene, NG::SceneStatus status)
 {}
+
+void EventReport::ReportPageSlidInfo(NG::SlidInfo &slidInfo) {}
 } // namespace OHOS::Ace
