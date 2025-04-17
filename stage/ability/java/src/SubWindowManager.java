@@ -138,6 +138,10 @@ public class SubWindowManager {
             "createSubWindow called: " + String.format(Locale.ENGLISH,
                 "name=%s type=%d mode=%d tag=%d parentId=%d x=%d y=%d width=%d height=%d", name, type, mode, tag,
                 parentId, x, y, width, height));
+        if (mRootActivity == null) {
+            Log.e(TAG, "createSubWindow failed mRootActivity is invalid");
+            return false;
+        }
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow == null) {
             subWindow = new SubWindow(mRootActivity, name);
