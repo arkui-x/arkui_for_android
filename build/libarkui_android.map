@@ -60,6 +60,7 @@
       OHOS::Ace::NG::ModifierAdapter::*;
       "OHOS::Ace::NG::PanEventActuator::PanEventActuator(OHOS::Ace::WeakPtr<OHOS::Ace::NG::GestureEventHub> const&, OHOS::Ace::PanDirection, int, float)";
       "OHOS::Ace::NG::PipelineContext::GetCurrentContext()";
+      "OHOS::Ace::NG::PanRecognizer::GetDistance() const";
       OHOS::Ace::NG::ViewAbstract::*;
       OHOS::Ace::NG::ViewStackProcessor::*;
       OHOS::Ace::NG::UINode::*;
@@ -97,6 +98,10 @@
       OHOS::Ace::ShadowTheme::*;
       OHOS::Ace::PerfMonitor::*;
       WorkerManager::*;
+      "DataProtector::AutDecrypt(unsigned long, unsigned long) const";
+      "DataProtector::AutDecrypt(unsigned int, unsigned int) const";
+      "DataProtector::PacEncrypt(unsigned long, unsigned long)";
+      "DataProtector::PacEncrypt(unsigned int, unsigned int)";
       "NapiErrorManager::GetInstance()";
       "NapiErrorManager::NotifyUncaughtException(napi_env__*, napi_value__*, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, unsigned int)";
       "NapiErrorManager::NotifyUnhandledRejection(napi_env__*, napi_value__**, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, unsigned int)";
