@@ -433,13 +433,13 @@ public class SubWindowManager {
                     orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
                     break;
                 case HORIZONTAL:
-                    orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
                     break;
                 case REVERSE_VERTICAL:
                     orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
                     break;
                 case REVERSE_HORIZONTAL:
-                    orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
                     break;
                 default:
                     Log.e(TAG, "unspecified orientation: " + orientation);
