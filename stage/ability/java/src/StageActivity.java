@@ -143,6 +143,9 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         if (windowView != null) {
             windowView.keyboardHeightChanged(height);
         }
+        if (platformPlugin != null) {
+            platformPlugin.keyboardHeightChanged(height);
+        }
     }
 
     @Override
