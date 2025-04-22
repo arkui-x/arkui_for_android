@@ -69,7 +69,9 @@ void ResourceThemeStyle::ParseContent()
         "description_send_current_location",
         "description_relocation",
         "description_punch_in",
-        "description_current_position"
+        "description_current_position",
+        "common_cancel_text",
+        "common_ok_text"
     };
 
     for (auto& [attrName, attrValue] : rawAttrs_) {
