@@ -767,6 +767,10 @@ void SubwindowAndroid::HideEventColumn()
     manager->RemoveEventColumn();
 }
 
+void SubwindowAndroid::SetFollowParentWindowLayoutEnabled(bool enable)
+{
+}
+
 bool SubwindowAndroid::ShowSelectOverlay(const RefPtr<NG::FrameNode>& overlayNode)
 {
     return false;

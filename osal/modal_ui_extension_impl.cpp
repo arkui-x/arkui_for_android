@@ -32,4 +32,10 @@ void ModalUIExtension::SetBindModalCallback(const RefPtr<NG::FrameNode>& uiExtNo
     std::function<void()>&& bindModalCallback)
 {
 }
+
+bool ModalUIExtension::SendOverlayMaskInfoToUEA(const RefPtr<NG::FrameNode>& uiExtNode, const UECHostMaskInfo& info,
+    NG::UIContentBusinessCode code, NG::BusinessDataSendType type)
+{
+    return false;
+}
 } // namespace OHOS::Ace

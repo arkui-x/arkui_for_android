@@ -20,4 +20,9 @@ namespace OHOS::Ace {
 void TextShareAdapter::StartTextShareTask(
     const int32_t containerId, const NG::RectF& contentRect, const std::string& shareText) {}
 
+uint64_t TextShareAdapter::GetMaxTextShareLength()
+{
+    return 0;
+}
+
 } // namespace OHOS::Ace
