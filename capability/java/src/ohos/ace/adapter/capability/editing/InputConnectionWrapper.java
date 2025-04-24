@@ -16,14 +16,12 @@
 package ohos.ace.adapter.capability.editing;
 
 import android.content.Context;
-import android.graphics.Rect;
 import android.text.Editable;
 import android.text.Selection;
 import android.text.method.TextKeyListener;
 import android.text.SpannableString;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.ExtractedText;
@@ -37,10 +35,8 @@ import ohos.ace.adapter.ALog;
  *
  * @since 1
  */
-class InputConnectionWrapper extends BaseInputConnection implements ViewTreeObserver.OnGlobalLayoutListener {
+class InputConnectionWrapper extends BaseInputConnection {
     private static final String LOG_TAG = "Ace_IME";
-
-    private static final int MIN_HEIGHT = 300;
 
     private final View aceView;
 
@@ -81,29 +77,21 @@ class InputConnectionWrapper extends BaseInputConnection implements ViewTreeObse
         if (manager instanceof InputMethodManager) {
             this.imm = (InputMethodManager) manager;
         }
-
-        aceView.getViewTreeObserver().addOnGlobalLayoutListener(this);
-    }
-
-    @Override
-    public void onGlobalLayout() {
-        Rect r = new Rect();
-        aceView.getWindowVisibleDisplayFrame(r);
-        int heightDiff = aceView.getRootView().getHeight() - (r.bottom - r.top);
-        ALog.d(LOG_TAG, "onGlobalLayout: " + heightDiff);
-        if (!isSoftKeyboardOpened && heightDiff > MIN_HEIGHT) {
-            isSoftKeyboardOpened = true;
-        } else if (isSoftKeyboardOpened && heightDiff < MIN_HEIGHT) {
-            isSoftKeyboardOpened = false;
-            delegate.notifyKeyboardClosedByUser(clientId);
-        }
     }
 
     /**
-     * remove the listener of aceView
+     * notify keyboard height changed.
+     *
+     * @param height the height of keyboard
      */
-    public void removeListener() {
-        aceView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+    public void keyboardHeightChanged(int height) {
+        ALog.d(LOG_TAG, "keyboardHeightChanged height " + height);
+        if (height > 0) {
+            isSoftKeyboardOpened = true;
+        } else if (isSoftKeyboardOpened) {
+            isSoftKeyboardOpened = false;
+            delegate.notifyKeyboardClosedByUser(clientId);
+        }
     }
 
     @Override

@@ -54,6 +54,17 @@ public class AcePlatformPlugin implements InputConnectionClient {
     }
 
     /**
+     * notify keyboard height changed.
+     *
+     * @param height the height of keyboard
+     */
+    public void keyboardHeightChanged(int height) {
+        if (textInputPlugin != null) {
+            textInputPlugin.keyboardHeightChanged(height);
+        }
+    }
+
+    /**
      * Called to add resource plugin.
      *
      * @param plugin the plugin

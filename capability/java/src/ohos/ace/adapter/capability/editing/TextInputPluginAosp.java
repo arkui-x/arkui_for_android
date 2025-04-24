@@ -125,6 +125,17 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
         return wrapper;
     }
 
+    /**
+     * notify keyboard height changed.
+     *
+     * @param height the height of keyboard
+     */
+    public void keyboardHeightChanged(int height) {
+        if (wrapper != null) {
+            wrapper.keyboardHeightChanged(height);
+        }
+    }
+
     // Just for ensure that JNI is called from Ace UI thread.
     private void runOnUIThread(Runnable task) {
         if (Looper.myLooper() == Looper.getMainLooper()) {
@@ -240,9 +251,6 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
     public void release() {
         this.view = null;
         Delegate.release();
-        if (wrapper != null) {
-            wrapper.removeListener();
-        }
     }
 
     // Update selection to Editable.
