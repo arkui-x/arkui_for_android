@@ -44,6 +44,8 @@ import ohos.ace.adapter.capability.bridge.BridgeManager;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginBase;
+import ohos.ace.adapter.capability.platformview.PlatformViewFactory;
+import ohos.ace.adapter.capability.platformview.AcePlatformViewPluginAosp;
 
 /**
  * A base class for the Ability Cross-platform Environment of the stage model to
@@ -116,6 +118,8 @@ public class StageFragment extends Fragment {
     private PluginContext pluginContext = null;
 
     private boolean isToResume;
+
+    private AcePlatformViewPluginAosp platformViewPluginAosp = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -420,6 +424,24 @@ public class StageFragment extends Fragment {
     }
 
     /**
+     * Register the platformView to fragment
+     *
+     * @param platformViewFactory The platformViewFactory.
+     */
+    public void registerPlatformViewFactory(PlatformViewFactory platformViewFactory) {
+        if (platformViewPluginAosp == null) {
+            Log.w(LOG_TAG, "PlatformViewPluginAosp is null");
+            return;
+        }
+        if (platformViewFactory == null) {
+            Log.w(LOG_TAG, "PlatformViewFactory is null");
+            return;
+        }
+        platformViewPluginAosp.registerPlatformViewFactory(platformViewFactory);
+    }
+
+
+    /**
      * Initialize platform plugins
      *
      * @param context    Application context
@@ -437,6 +459,9 @@ public class StageFragment extends Fragment {
             windowView.setWebPlugin(web);
             platformPlugin.addResourcePlugin(web);
             platformPlugin.initSurfacePlugin(context, instanceId);
+            platformViewPluginAosp = AcePlatformViewPluginAosp.createRegister(context);
+            platformPlugin.addResourcePlugin(platformViewPluginAosp);
+            windowView.setPlatformViewPlugin(platformViewPluginAosp);
         }
         Trace.endSection();
     }
