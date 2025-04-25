@@ -154,7 +154,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         Log.i(LOG_TAG, "StageActivity onStart called");
         super.onStart();
         Trace.beginSection("StageActivity::onStart");
-        activityDelegate.dispatchOnForeground(getInstanceName());
+        activityDelegate.dispatchOnForeground(getInstanceName(), this);
         windowView.foreground();
         if (platformPlugin != null) {
             platformPlugin.notifyLifecycleChanged(false);
