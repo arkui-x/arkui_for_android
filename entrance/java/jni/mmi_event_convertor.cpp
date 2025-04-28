@@ -96,6 +96,7 @@ TouchEvent ConvertTouchEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEv
         .SetSourceTool(touchPoint.sourceTool)
         .SetTouchEventId(pointerEvent->GetId());
     event.pointerEvent = pointerEvent;
+    event.originalId = item.GetOriginPointerId();
     int32_t orgAction = pointerEvent->GetPointerAction();
     SetTouchEventType(orgAction, event);
     UpdateTouchEvent(pointerEvent, event);
@@ -204,6 +205,7 @@ void CreatePointerEventsFromBytes(
         pointerItem.SetHeight(static_cast<int32_t>(current->height_));
         pointerItem.SetPressure(current->pressure_);
         pointerItem.SetToolType(static_cast<int32_t>(current->toolType_));
+        pointerItem.SetOriginPointerId(static_cast<int32_t>(current->pointerId_));
         SetPointerItemPressed(current->actionType, pointerItem);
         actionPointMap[current->pointerId_] = current->actionPoint;
         current++;
