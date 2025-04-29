@@ -242,6 +242,16 @@ public class StageFragment extends Fragment {
     }
 
     /**
+     * called by nativeActivity when back pressed
+     *
+     * @return Returns true then nativeActivity should call super.onBackPressed()
+     */
+    public boolean onBackPressed() {
+        Log.i(LOG_TAG, "StageFragment onBackPressed called");
+        return !windowView.backPressed();
+    }
+
+    /**
      * Start a new activity.
      *
      * @param bundleName   the package name.
