@@ -40,6 +40,30 @@
 
 namespace OHOS::Ace::Platform {
 using UIEnvCallback = std::function<void(const OHOS::Ace::RefPtr<OHOS::Ace::PipelineContext>& context)>;
+
+struct ParsedConfig {
+    std::string colorMode;
+    std::string deviceAccess;
+    std::string languageTag;
+    std::string direction;
+    std::string densitydpi;
+    std::string themeTag;
+    std::string fontFamily;
+    std::string fontScale;
+    std::string fontWeightScale;
+    std::string colorModeIsSetByApp;
+    std::string mcc;
+    std::string mnc;
+    std::string preferredLanguage;
+    std::string fontId;
+    bool IsValid() const
+    {
+        return !(colorMode.empty() && deviceAccess.empty() && languageTag.empty() && direction.empty() &&
+                 densitydpi.empty() && themeTag.empty() && fontScale.empty() && fontWeightScale.empty() &&
+                 colorModeIsSetByApp.empty() && mcc.empty() && mnc.empty() && fontFamily.empty() &&
+                 preferredLanguage.empty() && fontId.empty());
+    }
+};
 // AceContainerSG is the instance which has its own pipeline and thread models, it can contain multiple pages.
 class AceContainerSG : public Container, public JsMessageDispatcher {
     DECLARE_ACE_TYPE(AceContainerSG, Container, JsMessageDispatcher);
@@ -260,8 +284,7 @@ public:
 
     void UpdateResourceConfiguration(const std::string& jsonStr) override {};
 
-    void UpdateConfiguration(const std::string& colorMode,
-        const std::string& direction, const std::string& densityDpi, const std::string& languageTag);
+    void UpdateConfiguration(Platform::ParsedConfig& parsedConfig);
 
     uintptr_t GetMutilModalPtr() const override
     {
@@ -351,6 +374,13 @@ private:
     void SetUIWindowInner(sptr<OHOS::Rosen::Window> uiWindow);
     sptr<OHOS::Rosen::Window> GetUIWindowInner() const;
     void RegisterStopDragCallback(int32_t pointerId, StopDragCallback&& stopDragCallback);
+    void SetFontAndScale(Platform::ParsedConfig& parsedConfig, ConfigurationChange configurationChange);
+    void SetLanguage(Platform::ParsedConfig& parsedConfig, ConfigurationChange configurationChange,
+        ResourceConfiguration resConfig);
+    void SetDirectionAndDensity(Platform::ParsedConfig& parsedConfig, ConfigurationChange configurationChange,
+        ResourceConfiguration resConfig);
+    void SetColor(Platform::ParsedConfig& parsedConfig, ConfigurationChange configurationChange,
+        ResourceConfiguration resConfig);
 
     AceView* aceView_ { nullptr };
     RefPtr<TaskExecutor> taskExecutor_;
