@@ -23,6 +23,34 @@ constexpr char COLOR_VALUE_PREFIX[] = "$color:";
 constexpr char RES_TAG[] = "resource:///";
 constexpr char MEDIA_VALUE_KEY_WORD[] = "/";
 constexpr char REF_ATTR_VALUE_KEY_WORD[] = "?theme:";
+static const std::set<std::string> stringAttrs = {
+    "attribute_text_font_family_regular",
+    "attribute_text_font_family_medium",
+    "description_current_location",
+    "description_add_location",
+    "description_select_location",
+    "description_share_location",
+    "description_send_location",
+    "description_locating",
+    "description_location",
+    "description_send_current_location",
+    "description_relocation",
+    "description_punch_in",
+    "description_current_position",
+    "common_cancel_text",
+    "common_ok_text",
+    "stepper_back",
+    "stepper_skip",
+    "stepper_start",
+    "stepper_next",
+    "text_overlay_menu_cut_label",
+    "text_overlay_menu_copy_label",
+    "text_overlay_menu_paste_label",
+    "text_overlay_menu_select_all_label",
+    "text_overlay_menu_translate_label",
+    "text_overlay_menu_share_label",
+    "text_overlay_menu_search_label"
+};
 
 double ParseDoubleUnit(const std::string& value, std::string& unit)
 {
@@ -56,24 +84,6 @@ DimensionUnit ParseDimensionUnit(const std::string& unit)
 
 void ResourceThemeStyle::ParseContent()
 {
-    static const std::set<std::string> stringAttrs = {
-        "attribute_text_font_family_regular",
-        "attribute_text_font_family_medium",
-        "description_current_location",
-        "description_add_location",
-        "description_select_location",
-        "description_share_location",
-        "description_send_location",
-        "description_locating",
-        "description_location",
-        "description_send_current_location",
-        "description_relocation",
-        "description_punch_in",
-        "description_current_position",
-        "common_cancel_text",
-        "common_ok_text"
-    };
-
     for (auto& [attrName, attrValue] : rawAttrs_) {
         if (attrName.empty() || attrValue.empty()) {
             LOGW("theme attr name:%{public}s or value:%{public}s is empty", attrName.c_str(), attrValue.c_str());
