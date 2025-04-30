@@ -44,7 +44,7 @@ class InteractionImpl : public InteractionInterface {
 public:
     int32_t UpdateShadowPic(const ShadowInfoCore& shadowInfo) override;
 
-    int32_t SetDragWindowVisible(bool visible) override;
+    int32_t SetDragWindowVisible(bool visible, const std::shared_ptr<Rosen::RSTransaction>& rSTransaction) override;
 
     int32_t SetMouseDragMonitorState(bool state) override;
 
