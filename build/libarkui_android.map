@@ -677,6 +677,7 @@
       "OHOS::HiviewDFX::NapiUtil::GetCbInfo(napi_env__*, napi_callback_info__*, napi_value__**, unsigned int)";
       "OHOS::HiviewDFX::NapiUtil::CreateInt64(napi_env__*, long long)";
       "OHOS::HiviewDFX::AppEventPack::AddParam(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, long long)";
+      OH_NativeWindow_CreateNativeWindowFromSurfaceId;
     };
   local:
     *;

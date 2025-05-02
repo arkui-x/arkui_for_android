@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -81,6 +81,8 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     private int surfaceHeight = 0;
 
     private boolean viewAdded = false;
+
+    private boolean isCreate = false;
 
     private int instanceId = 0;
 
@@ -284,12 +286,18 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         ALog.i(LOG_TAG, "Surface Created");
         surface = holder.getSurface();
         callback.onEvent(SURFACE_FLAG + id + EVENT + PARAM_EQUALS + "onCreate" + PARAM_BEGIN, "");
+        if (!isCreate) {
+            callback.onEvent(SURFACE_FLAG + id + EVENT + PARAM_EQUALS + "onCreate" + PARAM_BEGIN, "");
+            isCreate = true;
+        }
         AceSurfaceHolder.addSurface(instanceId, id, surface);
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         ALog.i(LOG_TAG, "Surface Changed, width:" + width + " height:" + height);
+        String param = "surfaceWidth=" + width + "&surfaceHeight=" + height;
+        callback.onEvent(SURFACE_FLAG + id + EVENT + PARAM_EQUALS + "onChanged" + PARAM_BEGIN, param);
         surfaceWidth = width;
         surfaceHeight = height;
     }
@@ -308,7 +316,6 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             int width = right - left;
             int height = bottom - top;
             String param = "surfaceWidth=" + width + "&surfaceHeight=" + height;
-            callback.onEvent(SURFACE_FLAG + id + EVENT + PARAM_EQUALS + "onChanged" + PARAM_BEGIN, param);
         }
     }
 
