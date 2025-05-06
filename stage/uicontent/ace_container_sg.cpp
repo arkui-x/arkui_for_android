@@ -671,72 +671,27 @@ std::string AceContainerSG::GetOldLanguageTag() const
     return oldLanguageTag;
 }
 
-void AceContainerSG::UpdateConfiguration(const std::string& colorMode, const std::string& direction,
-    const std::string& densityDpi, const std::string& languageTag)
+void AceContainerSG::UpdateConfiguration(Platform::ParsedConfig& parsedConfig)
 {
-    LOGI("AceContainerSG::UpdateConfiguration, colorMode:%{public}s, direction:%{public}s, densityDpi:%{public}s,"
-         "language:%{public}s",
-        colorMode.c_str(), direction.c_str(), densityDpi.c_str(), languageTag.c_str());
-    if (colorMode.empty() && direction.empty() && densityDpi.empty() && languageTag.empty()) {
-        LOGW("AceContainerSG::UpdateResourceConfiguration param is empty");
+    if (!parsedConfig.IsValid()) {
+        LOGW("AceContainerSG::OnConfigurationUpdated param is empty");
         return;
     }
+    LOGI("AceContainerSG::UpdateConfiguration, colorMode:%{public}s, direction:%{public}s, densityDpi:%{public}s,"
+         "language:%{public}s",
+         parsedConfig.colorMode.c_str(), parsedConfig.direction.c_str(), parsedConfig.densitydpi.c_str(),
+         parsedConfig.languageTag.c_str());
     CHECK_NULL_VOID(pipelineContext_);
     ContainerScope scope(instanceId_);
     auto themeManager = pipelineContext_->GetThemeManager();
     CHECK_NULL_VOID(themeManager);
     ConfigurationChange configurationChange;
     auto resConfig = GetResourceConfiguration();
-    if (!colorMode.empty()) {
-        configurationChange.colorModeUpdate = true;
-        if (colorMode == "dark") {
-            SetColorMode(ColorMode::DARK);
-            SetColorScheme(ColorScheme::SCHEME_DARK);
-            resConfig.SetColorMode(ColorMode::DARK);
-        } else {
-            SetColorMode(ColorMode::LIGHT);
-            SetColorScheme(ColorScheme::SCHEME_LIGHT);
-            resConfig.SetColorMode(ColorMode::LIGHT);
-        }
-        if (frontend_) {
-            frontend_->FlushReload();
-            frontend_->SetColorMode(resConfig.GetColorMode());
-        }
-    }
-    if (!direction.empty()) {
-        if (direction == "vertical") {
-            resConfig.SetOrientation(DeviceOrientation::PORTRAIT);
-        } else if (direction == "horizontal") {
-            resConfig.SetOrientation(DeviceOrientation::LANDSCAPE);
-        }
-        configurationChange.directionUpdate = true;
-
-        CHECK_NULL_VOID(pipelineContext_);
-        auto dragDropManager = AceType::DynamicCast<NG::PipelineContext>(pipelineContext_)->GetDragDropManager();
-        if (dragDropManager && dragDropManager->IsItemDragging()) {
-            dragDropManager->CancelItemDrag();
-        }
-    }
-    if (!densityDpi.empty()) {
-        double density = std::stoi(densityDpi) / DPI_BASE;
-        LOGI("resconfig density : %{public}f", density);
-        configurationChange.dpiUpdate = true;
-        resConfig.SetDensity(density);
-    }
-    if (!languageTag.empty()) {
-        std::string language;
-        std::string script;
-        std::string region;
-        ParseLocaleTag(languageTag, language, script, region);
-        LOGI("language:%{public}s, script:%{public}s, region:%{public}s", language.c_str(), script.c_str(),
-            region.c_str());
-        if (!language.empty() || !script.empty() || !region.empty()) {
-            if (languageTag != GetOldLanguageTag()) {
-                configurationChange.languageUpdate = true;
-            }
-            AceApplicationInfo::GetInstance().SetLocale(language, region, script, "");
-        }
-    }
+    SetColor(parsedConfig, configurationChange, resConfig);
+    SetDirectionAndDensity(parsedConfig, configurationChange, resConfig);
+    SetLanguage(parsedConfig, configurationChange, resConfig);
+    SetFontAndScale(parsedConfig, configurationChange);
+    SetResourceConfiguration(resConfig);
     SetResourceConfiguration(resConfig);
     themeManager->UpdateConfig(resConfig);
     if (SystemProperties::GetResourceDecoupling()) {
@@ -755,6 +710,86 @@ void AceContainerSG::UpdateConfiguration(const std::string& colorMode, const std
     pipelineContext_->FlushReload(configurationChange);
     pipelineContext_->FlushReloadTransition();
 }
+
+void AceContainerSG::SetColor(Platform::ParsedConfig& parsedConfig, ConfigurationChange configurationChange,
+    ResourceConfiguration resConfig)
+{
+    if (!parsedConfig.colorMode.empty()) {
+        configurationChange.colorModeUpdate = true;
+        if (parsedConfig.colorMode == "dark") {
+            SetColorMode(ColorMode::DARK);
+            SetColorScheme(ColorScheme::SCHEME_DARK);
+            resConfig.SetColorMode(ColorMode::DARK);
+        } else {
+            SetColorMode(ColorMode::LIGHT);
+            SetColorScheme(ColorScheme::SCHEME_LIGHT);
+            resConfig.SetColorMode(ColorMode::LIGHT);
+        }
+        if (frontend_) {
+            frontend_->FlushReload();
+            frontend_->SetColorMode(resConfig.GetColorMode());
+        }
+    }
+}
+
+void AceContainerSG::SetDirectionAndDensity(Platform::ParsedConfig& parsedConfig,
+    ConfigurationChange configurationChange, ResourceConfiguration resConfig)
+{
+    if (!parsedConfig.direction.empty()) {
+        if (parsedConfig.direction == "vertical") {
+            resConfig.SetOrientation(DeviceOrientation::PORTRAIT);
+        } else if (parsedConfig.direction == "horizontal") {
+            resConfig.SetOrientation(DeviceOrientation::LANDSCAPE);
+        }
+        configurationChange.directionUpdate = true;
+
+        CHECK_NULL_VOID(pipelineContext_);
+        auto dragDropManager = AceType::DynamicCast<NG::PipelineContext>(pipelineContext_)->GetDragDropManager();
+        if (dragDropManager && dragDropManager->IsItemDragging()) {
+            dragDropManager->CancelItemDrag();
+        }
+    }
+    if (!parsedConfig.densitydpi.empty()) {
+        double density = std::stoi(parsedConfig.densitydpi) / DPI_BASE;
+        LOGI("resconfig density : %{public}f", density);
+        configurationChange.dpiUpdate = true;
+        resConfig.SetDensity(density);
+    }
+}
+
+void AceContainerSG::SetLanguage(Platform::ParsedConfig& parsedConfig, ConfigurationChange configurationChange,
+    ResourceConfiguration resConfig)
+{
+    if (!parsedConfig.languageTag.empty()) {
+        std::string language;
+        std::string script;
+        std::string region;
+        ParseLocaleTag(parsedConfig.languageTag, language, script, region);
+        LOGI("language:%{public}s, script:%{public}s, region:%{public}s", language.c_str(), script.c_str(),
+            region.c_str());
+        if (!language.empty() || !script.empty() || !region.empty()) {
+            if (parsedConfig.languageTag != GetOldLanguageTag()) {
+                configurationChange.languageUpdate = true;
+            }
+            AceApplicationInfo::GetInstance().SetLocale(language, region, script, "");
+        }
+    }
+}
+
+void AceContainerSG::SetFontAndScale(Platform::ParsedConfig& parsedConfig, ConfigurationChange configurationChange)
+{
+    if (!parsedConfig.fontFamily.empty()) {
+        auto fontManager = pipelineContext_->GetFontManager();
+        CHECK_NULL_VOID(fontManager);
+        configurationChange.fontUpdate = true;
+        fontManager->SetAppCustomFont(parsedConfig.fontFamily);
+    }
+    if (!parsedConfig.fontScale.empty()) {
+        configurationChange.fontUpdate = true;
+        pipelineContext_->SetFontScale(std::stod(parsedConfig.fontScale));
+    }
+}
+
 
 void InitResourceAndThemeManager(const RefPtr<PipelineBase>& pipelineContext, const RefPtr<AssetManager>& assetManager,
     const ColorScheme& colorScheme, const ResourceInfo& resourceInfo, AceView* aceView,
