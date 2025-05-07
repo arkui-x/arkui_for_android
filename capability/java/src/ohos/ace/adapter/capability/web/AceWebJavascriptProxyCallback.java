@@ -42,23 +42,17 @@ import org.json.JSONObject;
 public class AceWebJavascriptProxyCallback {
     private static final String LOG_TAG = "AceWebJavascriptProxyCallback";
 
-    private static final long THREAD_TIME_OUT = 1000;
+    private static final long THREAD_TIME_OUT = 1000L;
 
     private Context mContext;
 
     private WebView mWebView;
-
-    private String mClassName;
-
-    private String mMethodName;
 
     private String mResult;
 
     AceWebJavascriptProxyCallback(Context context, WebView webView) {
         mContext = context;
         mWebView = webView;
-        mClassName = null;
-        mMethodName = null;
         mResult = null;
     }
 
@@ -103,7 +97,6 @@ public class AceWebJavascriptProxyCallback {
     @JavascriptInterface
     public String callSyncFunction(String className, String methodName, String param) {
         try {
-            CountDownLatch latch = new CountDownLatch(1);
             JSONArray args = new JSONArray(param);
             int validElementCount = 0;
             Object[] params = new Object[args.length()];
@@ -114,6 +107,7 @@ public class AceWebJavascriptProxyCallback {
                     validElementCount++;
                 }
             }
+            CountDownLatch latch = new CountDownLatch(1);
             Object[] validElements = Arrays.copyOfRange(params, 0, validElementCount);
             new Handler(Looper.getMainLooper()).post(() -> {
                 Object ret = AceWebPluginBase.onReceiveJavascriptExecuteCall(className, methodName, validElements);
