@@ -64,7 +64,7 @@ int32_t InteractionImpl::UpdateShadowPic(const OHOS::Ace::ShadowInfoCore& shadow
     return -1;
 }
 
-int32_t InteractionImpl::SetDragWindowVisible(bool visible)
+int32_t InteractionImpl::SetDragWindowVisible(bool visible, const std::shared_ptr<Rosen::RSTransaction>& rSTransaction)
 {
 #ifdef ENABLE_DRAG_FRAMEWORK
     return InteractionManager::GetInstance()->SetDragWindowVisible(visible);
@@ -215,18 +215,6 @@ int32_t InteractionImpl::UnRegisterCoordinationListener()
 {
     return -1;
 }
-
-int32_t InteractionImpl::SetDraggableState(bool state)
-{
-    return -1;
-}
-
-int32_t InteractionImpl::GetAppDragSwitchState(bool& state)
-{
-    return -1;
-}
-
-void InteractionImpl::SetDraggableStateAsync(bool state, int64_t downTime) {}
 
 #ifdef ENABLE_DRAG_FRAMEWORK
 Msdp::DeviceStatus::DragCursorStyle TranslateDragCursorStyle(OHOS::Ace::DragCursorStyleCore style)
