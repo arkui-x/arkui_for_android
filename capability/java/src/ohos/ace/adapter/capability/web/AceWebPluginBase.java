@@ -137,6 +137,17 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
     protected native static void onMessageEventExt(long webId, String portHandle, String result);
 
     /**
+     * Executes a JavaScript callback and returns the result.
+     *
+     * @param className The name of the class containing the JavaScript callback method.
+     * @param methodName The name of the JavaScript callback method.
+     * @param param The parameters to be passed to the JavaScript callback method.
+     * @return The result of the JavaScript callback execution.
+     */
+    protected native static Object onReceiveJavascriptExecuteCall(
+        String className, String methodName, Object[] param);
+
+    /**
      * This is called to get a atomic id.
      *
      * @return id
@@ -813,5 +824,35 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
             return webBase.onWebMessagePortEventExt(id, portHandle);
         }
         return CAN_NOT_REGISTER_MESSAGE_EVENT;
+    }
+
+    /**
+     * Registers a JavaScript proxy for a given object.
+     *
+     * @param id Wevbiew id.
+     * @param objectName The name of the object.
+     * @param methodList The list of synchronous methods.
+     * @param asyncMethodList The list of asynchronous methods.
+     * @param permission Configure JSBridge's permission control through this string.
+     */
+    public void registerJavaScriptProxy(
+        long id, String objectName, String[] methodList, String[] asyncMethodList, String permission) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.registerJavaScriptProxy(objectName, methodList, asyncMethodList, permission);
+        }
+    }
+
+    /**
+     * Deletes the JavaScript register with the specified ID and object name.
+     *
+     * @param id Wevbiew id.
+     * @param objectName The name of the object to delete.
+     */
+    public void deleteJavaScriptRegister(long id, String objectName) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.deleteJavaScriptRegister(objectName);
+        }
     }
 }
