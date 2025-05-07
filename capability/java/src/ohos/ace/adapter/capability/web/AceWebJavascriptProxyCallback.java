@@ -124,6 +124,7 @@ public class AceWebJavascriptProxyCallback {
             ALog.e(LOG_TAG, "callSyncFunction JSONException: " + e.getMessage());
             mResult = String.format("{\"value\": null}");
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             ALog.e(LOG_TAG, "callSyncFunction InterruptedException: " + e.getMessage());
             mResult = String.format("{\"value\": null}");
         }
