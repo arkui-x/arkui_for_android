@@ -44,6 +44,7 @@ std::thread g_logThread;
 std::queue<std::function<void()>> g_logTaskQueue;
 std::mutex g_logTaskQueueMutex;
 std::condition_variable g_logTaskQueueCondVar;
+std::mutex g_logThreadMutex;
 constexpr int LOG_LEVEL[] = { ANDROID_LOG_DEBUG, ANDROID_LOG_INFO, ANDROID_LOG_WARN, ANDROID_LOG_ERROR,
     ANDROID_LOG_FATAL };
 
@@ -92,19 +93,28 @@ void LogProcessingThread()
 
 void Platform::StartLogProcessingThread()
 {
+    std::lock_guard<std::mutex> threadLock(g_logThreadMutex);
     if (!g_logThreadRunning) {
         g_logThreadRunning = true;
         g_logThread = std::thread(LogProcessingThread);
-        pthread_setname_np(g_logThread.native_handle(), "LoggerThread");
+        if (g_logThread.joinable()) {
+            pthread_setname_np(g_logThread.native_handle(), "LoggerThread");
+        } else {
+            g_logThreadRunning = false;
+            __android_log_print(ANDROID_LOG_ERROR, "LogThread", "Failed to start log thread");
+        }
     }
 }
 
 void Platform::StopLogProcessingThread()
 {
+    std::lock_guard<std::mutex> threadLock(g_logThreadMutex);
     if (g_logThreadRunning) {
         g_logThreadRunning = false;
         g_logTaskQueueCondVar.notify_one();
-        g_logThread.join();
+        if (g_logThread.joinable()) {
+            g_logThread.join();
+        }
         std::lock_guard<std::mutex> lock(g_logTaskQueueMutex);
         std::queue<std::function<void()>> emptyQueue;
         std::swap(g_logTaskQueue, emptyQueue);
@@ -135,7 +145,14 @@ void LogWrapper::PrintLog(LogDomain domain, LogLevel level, AceLogTag tag, const
     std::string newFmt(fmt);
     StripFormatString("{public}", newFmt);
     StripFormatString("{private}", newFmt);
-    if (OHOS::Ace::Platform::LogInterfaceJni::logInterface_.logger && level >= LogLevel::ERROR) {
+    
+    bool uselogInterface_ = false;
+    {
+        std::lock_guard<std::mutex> lock(OHOS::Ace::Platform::g_logInterfaceJniLock);
+        uselogInterface_ = OHOS::Ace::Platform::LogInterfaceJni::logInterface_.logger && level >= LogLevel::ERROR;
+    }
+    
+    if (uselogInterface_) {
         PassLogMessage(domain, level, newFmt, args);
     } else {
         __android_log_vprint(
