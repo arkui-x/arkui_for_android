@@ -285,7 +285,6 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     public void surfaceCreated(SurfaceHolder holder) {
         ALog.i(LOG_TAG, "Surface Created");
         surface = holder.getSurface();
-        callback.onEvent(SURFACE_FLAG + id + EVENT + PARAM_EQUALS + "onCreate" + PARAM_BEGIN, "");
         if (!isCreate) {
             callback.onEvent(SURFACE_FLAG + id + EVENT + PARAM_EQUALS + "onCreate" + PARAM_BEGIN, "");
             isCreate = true;
