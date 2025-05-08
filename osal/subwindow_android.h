@@ -245,7 +245,10 @@ public:
         std::function<void(const float)>&& onWidthDidChange,
         std::function<void(const float)>&& onTypeDidChange,
         std::function<void()>&& sheetSpringBack, const RefPtr<NG::FrameNode>& targetNode) override;
-   
+
+    void ShowDialogMaskNG(const RefPtr<NG::FrameNode>& dialog) override;
+    void CloseDialogMaskNG(const RefPtr<NG::FrameNode>& dialog) override;
+
 private:
     void InitSubwindow(const RefPtr<Platform::AceContainerSG>& parentContainer);
     bool InitSubContainer(const RefPtr<Platform::AceContainerSG>& parentContainer) const;

@@ -820,4 +820,8 @@ void SubwindowAndroid::ShowBindSheetNG(bool isShow, std::function<void(const std
         std::move(onDetentsDidChange), std::move(onWidthDidChange), std::move(onTypeDidChange),
         std::move(sheetSpringBack), targetNode);
 }
+
+void SubwindowAndroid::ShowDialogMaskNG(const RefPtr<NG::FrameNode>& dialog) {}
+
+void SubwindowAndroid::CloseDialogMaskNG(const RefPtr<NG::FrameNode>& dialog) {}
 } // namespace Ace
