@@ -76,7 +76,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param value The value of the webview.
      * @param asyncCallbackInfoId The ID of the asynchronous callback information.
      */
-    protected native static void onReceiveValue(String value, long asyncCallbackInfoId);
+    protected static native void onReceiveValue(String value, long asyncCallbackInfoId);
 
     /**
      * Native method to handle the received JavaScript execution result.
@@ -84,7 +84,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param value The result value from the JavaScript execution.
      * @param asyncCallbackInfoId The ID of the asynchronous callback information.
      */
-    protected native static void onReceiveRunJavaScriptExtValue(String value, long asyncCallbackInfoId);
+    protected static native void onReceiveRunJavaScriptExtValue(String value, long asyncCallbackInfoId);
 
     /**
      * Native method to handle the received JavaScript execution result.
@@ -93,7 +93,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param portHandle The port handle for the message.
      * @param result The result of the message.
      */
-    protected native static void onMessage(long webId, String portHandle, String result);
+    protected static native void onMessage(long webId, String portHandle, String result);
 
     /**
      * Callback before start a download task.
@@ -101,7 +101,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param id Webview id.
      * @param object The object of download process data.
      */
-    protected native static void onBeforeDownloadObject(long id, Object object);
+    protected static native void onBeforeDownloadObject(long id, Object object);
 
     /**
      * Callback during the download process.
@@ -109,7 +109,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param id Webview id.
      * @param object The object of download process data.
      */
-    protected native static void onDownloadUpdatedObject(long id, Object object);
+    protected static native void onDownloadUpdatedObject(long id, Object object);
 
     /**
      * Callback when the download failed.
@@ -117,7 +117,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param id Webview id.
      * @param object The object of download process data.
      */
-    protected native static void onDownloadFailedObject(long id, Object object);
+    protected static native void onDownloadFailedObject(long id, Object object);
 
     /**
      * Callback when the download finished.
@@ -125,7 +125,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param id Webview id.
      * @param object The object of download process data.
      */
-    protected native static void onDownloadFinishObject(long id, Object object);
+    protected static native void onDownloadFinishObject(long id, Object object);
 
     /**
      * Handles the message event extension.
@@ -134,7 +134,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param portHandle The handle of the port through which the message is received.
      * @param result The result of the message event.
      */
-    protected native static void onMessageEventExt(long webId, String portHandle, String result);
+    protected static native void onMessageEventExt(long webId, String portHandle, String result);
 
     /**
      * Executes a JavaScript callback and returns the result.
@@ -144,7 +144,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param param The parameters to be passed to the JavaScript callback method.
      * @return The result of the JavaScript callback execution.
      */
-    protected native static Object onReceiveJavascriptExecuteCall(
+    protected static native Object onReceiveJavascriptExecuteCall(
         String className, String methodName, Object[] param);
 
     /**

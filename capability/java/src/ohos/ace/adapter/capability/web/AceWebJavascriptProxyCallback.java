@@ -82,7 +82,7 @@ public class AceWebJavascriptProxyCallback {
                 AceWebPluginBase.onReceiveJavascriptExecuteCall(className, methodName, validElements);
             });
         } catch (JSONException e) {
-            ALog.e(LOG_TAG, "callAsyncFunction JSONException: " + e.getMessage());
+            ALog.e(LOG_TAG, "callAsyncFunction JSONException error");
         }
     }
 
@@ -121,11 +121,10 @@ public class AceWebJavascriptProxyCallback {
                 mResult = String.format("{\"value\": null}");
             }
         } catch (JSONException e) {
-            ALog.e(LOG_TAG, "callSyncFunction JSONException: " + e.getMessage());
+            ALog.e(LOG_TAG, "callSyncFunction JSONException error");
             mResult = String.format("{\"value\": null}");
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            ALog.e(LOG_TAG, "callSyncFunction InterruptedException: " + e.getMessage());
+            ALog.e(LOG_TAG, "callSyncFunction InterruptedException error");
             mResult = String.format("{\"value\": null}");
         }
         return mResult;
@@ -169,7 +168,7 @@ public class AceWebJavascriptProxyCallback {
                 Object item = parseJsonElement(rawItem);
                 list.add(item);
             } catch (JSONException e) {
-                ALog.e(LOG_TAG, "parseJsonArray JSONException: " + e.getMessage());
+                ALog.e(LOG_TAG, "parseJsonArray JSONException error");
             }
         }
         return list;
@@ -185,7 +184,7 @@ public class AceWebJavascriptProxyCallback {
                 Object value = parseJsonElement(rawValue);
                 map.put(key, value);
             } catch (JSONException e) {
-                ALog.e(LOG_TAG, "parseJsonObject JSONException: " + e.getMessage());
+                ALog.e(LOG_TAG, "parseJsonObject JSONException error");
             }
         }
         return map;
@@ -207,7 +206,7 @@ public class AceWebJavascriptProxyCallback {
             }
             return jsonArray.toString();
         } catch (JSONException e) {
-            ALog.e(LOG_TAG, "convertListToJson error: " + e.getMessage());
+            ALog.e(LOG_TAG, "convertListToJson error");
             return "[]";
         }
     }
@@ -230,7 +229,7 @@ public class AceWebJavascriptProxyCallback {
             }
             return jsonObject.toString();
         } catch (JSONException e) {
-            ALog.e(LOG_TAG, "convertMapToJson error: " + e.getMessage());
+            ALog.e(LOG_TAG, "convertMapToJson error");
             return "{}";
         }
     }
