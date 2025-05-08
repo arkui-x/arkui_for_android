@@ -84,6 +84,7 @@ void LogInterfaceJni::PassLogMessage(const int32_t level, const std::string& dom
 {
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
+    std::lock_guard<std::mutex> lock(g_logInterfaceJniLock);
     CHECK_NULL_VOID(logInterface_.logger);
     jstring jDomain = env->NewStringUTF(domain.c_str());
     jstring jNewFmt = env->NewStringUTF(newFmt.c_str());
