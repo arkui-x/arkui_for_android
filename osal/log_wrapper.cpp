@@ -44,7 +44,6 @@ std::thread g_logThread;
 std::queue<std::function<void()>> g_logTaskQueue;
 std::mutex g_logTaskQueueMutex;
 std::condition_variable g_logTaskQueueCondVar;
-std::mutex g_logThreadMutex;
 constexpr int LOG_LEVEL[] = { ANDROID_LOG_DEBUG, ANDROID_LOG_INFO, ANDROID_LOG_WARN, ANDROID_LOG_ERROR,
     ANDROID_LOG_FATAL };
 
@@ -93,7 +92,6 @@ void LogProcessingThread()
 
 void Platform::StartLogProcessingThread()
 {
-    std::lock_guard<std::mutex> threadLock(g_logThreadMutex);
     if (!g_logThreadRunning) {
         g_logThreadRunning = true;
         g_logThread = std::thread(LogProcessingThread);
@@ -108,7 +106,6 @@ void Platform::StartLogProcessingThread()
 
 void Platform::StopLogProcessingThread()
 {
-    std::lock_guard<std::mutex> threadLock(g_logThreadMutex);
     if (g_logThreadRunning) {
         g_logThreadRunning = false;
         g_logTaskQueueCondVar.notify_one();
