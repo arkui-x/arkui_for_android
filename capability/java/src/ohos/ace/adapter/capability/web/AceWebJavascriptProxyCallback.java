@@ -21,7 +21,7 @@ import android.os.Looper;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.HashMap;
@@ -48,12 +48,9 @@ public class AceWebJavascriptProxyCallback {
 
     private WebView mWebView;
 
-    private String mResult;
-
     AceWebJavascriptProxyCallback(Context context, WebView webView) {
         mContext = context;
         mWebView = webView;
-        mResult = null;
     }
 
     /**
@@ -68,16 +65,14 @@ public class AceWebJavascriptProxyCallback {
     public void callAsyncFunction(String className, String methodName, String param) {
         try {
             JSONArray args = new JSONArray(param);
-            int validElementCount = 0;
-            Object[] params = new Object[args.length()];
+            List<Object> params = new ArrayList<>();
             for (int i = 0; i < args.length(); i++) {
                 Object element = args.get(i);
                 if (element != null && element != JSONObject.NULL) {
-                    params[validElementCount] = parseJsonElement(element);
-                    validElementCount++;
+                    params.add(parseJsonElement(element));
                 }
             }
-            Object[] validElements = Arrays.copyOfRange(params, 0, validElementCount);
+            Object[] validElements = params.toArray(new Object[0]);
             mWebView.post(() -> {
                 AceWebPluginBase.onReceiveJavascriptExecuteCall(className, methodName, validElements);
             });
@@ -96,65 +91,65 @@ public class AceWebJavascriptProxyCallback {
      */
     @JavascriptInterface
     public String callSyncFunction(String className, String methodName, String param) {
+        final AtomicReference<String> resultRef = new AtomicReference<>("{\"value\": null}");
         try {
             JSONArray args = new JSONArray(param);
-            int validElementCount = 0;
-            Object[] params = new Object[args.length()];
+            List<Object> params = new ArrayList<>();
             for (int i = 0; i < args.length(); i++) {
                 Object element = args.get(i);
                 if (element != null && element != JSONObject.NULL) {
-                    params[validElementCount] = parseJsonElement(element);
-                    validElementCount++;
+                    params.add(parseJsonElement(element));
                 }
             }
             CountDownLatch latch = new CountDownLatch(1);
-            Object[] validElements = Arrays.copyOfRange(params, 0, validElementCount);
+            Object[] validElements = params.toArray(new Object[0]);
             new Handler(Looper.getMainLooper()).post(() -> {
                 Object ret = AceWebPluginBase.onReceiveJavascriptExecuteCall(className, methodName, validElements);
-                splitJsonString(ret);
+                resultRef.set(splitJsonString(ret));
                 latch.countDown();
             });
 
-            boolean completed = latch.await(THREAD_TIME_OUT, TimeUnit.MILLISECONDS);
-            if (!completed) {
+            boolean isCompleted = latch.await(THREAD_TIME_OUT, TimeUnit.MILLISECONDS);
+            if (!isCompleted) {
                 ALog.e(LOG_TAG, "callSyncFunction timed out waiting for result.");
-                mResult = String.format("{\"value\": null}");
+                resultRef.set("{\"value\": null}");
             }
         } catch (JSONException e) {
             ALog.e(LOG_TAG, "callSyncFunction JSONException error");
-            mResult = String.format("{\"value\": null}");
+            resultRef.set("{\"value\": null}");
         } catch (InterruptedException e) {
             ALog.e(LOG_TAG, "callSyncFunction InterruptedException error");
-            mResult = String.format("{\"value\": null}");
+            resultRef.set("{\"value\": null}");
         }
-        return mResult;
+        return resultRef.get();
     }
 
-    private void splitJsonString(Object result) {
-        if (result != null) {
-            if (result instanceof String) {
-                mResult = String.format("{\"value\": \"%s\"}", (String) result);
-            } else if (result instanceof Integer || result instanceof Double || result instanceof Boolean) {
-                mResult = String.format("{\"value\": %s}", result.toString());
-            } else if (result instanceof List) {
-                mResult = String.format("{\"value\": %s}", convertListToJson((List<?>) result));
-            } else if (result instanceof Map) {
-                mResult = String.format("{\"value\": %s}", convertMapToJson((Map<?, ?>) result));
-            } else {
-                mResult = String.format("{\"value\": null}");
-            }
-        } else {
-            mResult = String.format("{\"value\": null}");
+    private String splitJsonString(Object result) {
+        if (result == null) {
+            return String.format("{\"value\": null}");
         }
+        String ret = null;
+        if (result instanceof String) {
+            ret = String.format("{\"value\": \"%s\"}", (String) result);
+        } else if (result instanceof Integer || result instanceof Double || result instanceof Boolean) {
+            ret = String.format("{\"value\": %s}", result.toString());
+        } else if (result instanceof List) {
+            ret = String.format("{\"value\": %s}", convertListToJson((List<?>) result));
+        } else if (result instanceof Map) {
+            ret = String.format("{\"value\": %s}", convertMapToJson((Map<?, ?>) result));
+        } else {
+            ret = String.format("{\"value\": null}");
+        }
+        return ret;
     }
 
     private Object parseJsonElement(Object element) {
-        if (element instanceof JSONArray) {
+        if (element == JSONObject.NULL || element == null) {
+            return null;
+        } else if (element instanceof JSONArray) {
             return parseJsonArray((JSONArray) element);
         } else if (element instanceof JSONObject) {
             return parseJsonObject((JSONObject) element);
-        } else if (element == JSONObject.NULL || element == null) {
-            return null;
         } else {
             return element;
         }
