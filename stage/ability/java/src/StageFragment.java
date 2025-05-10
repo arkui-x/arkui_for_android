@@ -39,7 +39,8 @@ import org.json.JSONException;
 import ohos.ace.adapter.AcePlatformPlugin;
 import ohos.ace.adapter.ArkUIXPluginRegistry;
 import ohos.ace.adapter.PluginContext;
-import ohos.ace.adapter.WindowView;
+import ohos.ace.adapter.WindowViewInterface;
+import ohos.ace.adapter.WindowViewBuilder;
 import ohos.ace.adapter.capability.bridge.BridgeManager;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginAosp;
@@ -103,7 +104,7 @@ public class StageFragment extends Fragment {
 
     private StageFragmentDelegate fragmentDelegate = null;
 
-    private WindowView windowView = null;
+    private WindowViewInterface windowView = null;
 
     private FrameLayout framelayout;
 
@@ -130,8 +131,8 @@ public class StageFragment extends Fragment {
         fragmentDelegate = new StageFragmentDelegate();
         fragmentDelegate.attachStageFragment(getInstanceName(), this);
         Trace.beginSection("createWindowView");
-        windowView = new WindowView(this.getActivity());
-        windowView.setId(instanceId);
+        windowView = WindowViewBuilder.makeWindowView(this.getActivity(), true);
+        windowView.setInstanceId(instanceId);
         Trace.endSection();
 
         fragmentDelegate.setWindowView(getInstanceName(), windowView);
@@ -158,7 +159,7 @@ public class StageFragment extends Fragment {
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT);
             framelayout.setLayoutParams(params);
-            framelayout.addView(windowView, 0);
+            framelayout.addView(windowView.getView(), 0);
         }
         return framelayout;
     }
@@ -458,14 +459,14 @@ public class StageFragment extends Fragment {
      * @param instanceId the instance id
      * @param windowView the window view
      */
-    private void initPlatformPlugin(Context context, int instanceId, WindowView windowView) {
+    private void initPlatformPlugin(Context context, int instanceId, WindowViewInterface windowView) {
         Trace.beginSection("StageFragment::initPlatformPlugin");
-        platformPlugin = new AcePlatformPlugin(context, instanceId, windowView);
+        platformPlugin = new AcePlatformPlugin(context, instanceId, windowView.getView());
         if (platformPlugin != null) {
             windowView.setInputConnectionClient(platformPlugin);
             platformPlugin.initTexturePlugin(instanceId);
             platformPlugin.addResourcePlugin(AceVideoPluginAosp.createRegister(context, moduleName));
-            AceWebPluginBase web = AceWebPluginAosp.createRegister(context, windowView);
+            AceWebPluginBase web = AceWebPluginAosp.createRegister(context, windowView.getView());
             windowView.setWebPlugin(web);
             platformPlugin.addResourcePlugin(web);
             platformPlugin.initSurfacePlugin(context, instanceId);

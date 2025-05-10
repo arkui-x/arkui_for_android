@@ -41,7 +41,7 @@ bool StageFragmentDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
         },
         {
             .name = "nativeSetWindowView",
-            .signature = "(Ljava/lang/String;Lohos/ace/adapter/WindowView;)V",
+            .signature = "(Ljava/lang/String;Lohos/ace/adapter/WindowViewInterface;)V",
             .fnPtr = reinterpret_cast<void*>(&SetWindowView),
         },
         {

@@ -18,7 +18,7 @@ package ohos.stage.ability.adapter;
 import android.os.Trace;
 import android.util.Log;
 
-import ohos.ace.adapter.WindowView;
+import ohos.ace.adapter.WindowViewInterface;
 
 import android.content.Intent;
 
@@ -153,7 +153,7 @@ public class StageActivityDelegate {
      * @param instanceName the activity instance name.
      * @param windowView   the window view.
      */
-    public void setWindowView(String instanceName, WindowView windowView) {
+    public void setWindowView(String instanceName, WindowViewInterface windowView) {
         Trace.beginSection("setWindowView");
         nativeSetWindowView(instanceName, windowView);
         Trace.endSection();
@@ -199,7 +199,7 @@ public class StageActivityDelegate {
 
     private native void nativeDispatchOnNewWant(String instanceName);
 
-    private native void nativeSetWindowView(String instanceName, WindowView windowView);
+    private native void nativeSetWindowView(String instanceName, WindowViewInterface windowView);
 
     private native void nativeCreateAbilityDelegator(String bundleName, String moduleName,
                                                         String testRunerName, String timeout);

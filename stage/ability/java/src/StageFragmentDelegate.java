@@ -19,7 +19,7 @@ import android.os.Trace;
 import android.util.Log;
 
 import ohos.ace.adapter.DisplayInfo;
-import ohos.ace.adapter.WindowView;
+import ohos.ace.adapter.WindowViewInterface;
 import ohos.stage.ability.adapter.StageFragment;
 import ohos.stage.ability.adapter.SubWindowManager;
 
@@ -58,7 +58,7 @@ public class StageFragmentDelegate {
      * @param instanceName the fragment instance name.
      * @param windowView   the window view.
      */
-    public void setWindowView(String instanceName, WindowView windowView) {
+    public void setWindowView(String instanceName, WindowViewInterface windowView) {
         Trace.beginSection("setWindowView");
         nativeSetWindowView(instanceName, windowView);
         Trace.endSection();
@@ -103,7 +103,7 @@ public class StageFragmentDelegate {
         nativeDispatchOnDestroy(instanceName);
     }
 
-    private native void nativeSetWindowView(String instanceName, WindowView windowView);
+    private native void nativeSetWindowView(String instanceName, WindowViewInterface windowView);
 
     private native void nativeDispatchOnCreate(String instanceName, String params);
 
