@@ -72,9 +72,8 @@ public class AceWebJavascriptProxyCallback {
                     params.add(parseJsonElement(element));
                 }
             }
-            Object[] validElements = params.toArray(new Object[0]);
             mWebView.post(() -> {
-                AceWebPluginBase.onReceiveJavascriptExecuteCall(className, methodName, validElements);
+                AceWebPluginBase.onReceiveJavascriptExecuteCall(className, methodName, params.toArray(new Object[0]));
             });
         } catch (JSONException e) {
             ALog.e(LOG_TAG, "callAsyncFunction JSONException error");
@@ -102,9 +101,9 @@ public class AceWebJavascriptProxyCallback {
                 }
             }
             CountDownLatch latch = new CountDownLatch(1);
-            Object[] validElements = params.toArray(new Object[0]);
             new Handler(Looper.getMainLooper()).post(() -> {
-                Object ret = AceWebPluginBase.onReceiveJavascriptExecuteCall(className, methodName, validElements);
+                Object ret = AceWebPluginBase.onReceiveJavascriptExecuteCall(
+                    className, methodName, params.toArray(new Object[0]));
                 resultRef.set(splitJsonString(ret));
                 latch.countDown();
             });
