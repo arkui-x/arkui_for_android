@@ -31,7 +31,7 @@ import ohos.ace.adapter.AceSurfaceHolder;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.IAceOnCallResourceMethod;
 import ohos.ace.adapter.IAceOnResourceEvent;
-import ohos.ace.adapter.WindowView;
+import ohos.ace.adapter.WindowViewSurface;
 
 /**
  * This class handles the lifecycle of a surface texture.
@@ -211,7 +211,7 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             for (int i = 0; i < viewGroup.getChildCount(); i++) {
                 View view = viewGroup.getChildAt(i);
                 ALog.i(LOG_TAG, "this surfaceview name:" + view.getClass().getName().toString());
-                if (view instanceof WindowView || view == this) {
+                if (view instanceof WindowViewSurface || view == this) {
                     ALog.i(LOG_TAG, "this surfaceview is window view.");
                     continue;
                 }

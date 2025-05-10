@@ -248,7 +248,7 @@ bool WindowViewJni::RegisterNatives(JNIEnv* env)
     }
 
     jclass myClass = nullptr;
-    myClass = env->FindClass("ohos/ace/adapter/WindowView");
+    myClass = env->FindClass("ohos/ace/adapter/WindowViewCommon");
     if (myClass == nullptr) {
         LOGE("Failed to find Activity WindowViewJni Class");
         return false;
@@ -256,18 +256,28 @@ bool WindowViewJni::RegisterNatives(JNIEnv* env)
 
     if (env->RegisterNatives(myClass, ANDROID_METHODS, ArraySize(ANDROID_METHODS)) != 0) {
         LOGE("Failed to register android platform natives");
+        env->DeleteLocalRef(myClass);
         return false;
     }
 
     if (!RegisterCommonNatives(env, myClass)) {
         LOGE("Failed to register common natives");
+        env->DeleteLocalRef(myClass);
         return false;
     }
 
-    gRegisterWindowMethodID = env->GetMethodID(myClass, "registerWindow", "(J)V");
-    gUnRegisterWindowMethodID = env->GetMethodID(myClass, "unRegisterWindow", "()V");
+    jclass cls = env->FindClass("ohos/ace/adapter/WindowViewInterface");
+    if (cls == nullptr) {
+        LOGE("Failed to find Activity WindowViewInterface Class");
+        env->DeleteLocalRef(myClass);
+        return false;
+    }
+
+    gRegisterWindowMethodID = env->GetMethodID(cls, "registerWindow", "(J)V");
+    gUnRegisterWindowMethodID = env->GetMethodID(cls, "unRegisterWindow", "()V");
 
     env->DeleteLocalRef(myClass);
+    env->DeleteLocalRef(cls);
     return true;
 }
 } // namespace OHOS::Ace::Platform

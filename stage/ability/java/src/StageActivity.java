@@ -47,13 +47,14 @@ import ohos.ace.adapter.AcePlatformPlugin;
 import ohos.ace.adapter.ArkUIXPluginRegistry;
 import ohos.ace.adapter.IArkUIXPlugin;
 import ohos.ace.adapter.PluginContext;
+import ohos.ace.adapter.WindowViewInterface;
+import ohos.ace.adapter.WindowViewAospInterface;
+import ohos.ace.adapter.WindowViewBuilder;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.capability.platformview.IPlatformView;
 import ohos.ace.adapter.capability.platformview.PlatformViewFactory;
 import ohos.ace.adapter.capability.platformview.AcePlatformViewPluginAosp;
-import ohos.ace.adapter.WindowView;
-import ohos.ace.adapter.WindowViewAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginBase;
 import ohos.ace.adapter.capability.bridge.BridgeManager;
 import ohos.ace.adapter.capability.grantresult.GrantResult;
@@ -122,7 +123,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     private StageActivityDelegate activityDelegate = null;
 
-    private WindowView windowView = null;
+    private WindowViewAospInterface windowView = null;
 
     private AcePlatformPlugin platformPlugin = null;
 
@@ -167,14 +168,14 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         activityDelegate.attachStageActivity(getInstanceName(), this);
         getIntentToCreateDelegator(intent);
         Trace.beginSection("createWindowView");
-        windowView = new WindowViewAosp(this, instanceId);
+        windowView = WindowViewBuilder.makeWindowViewAosp(this, instanceId, isUseSurfaceView());
         Trace.endSection();
-        windowView.setId(instanceId);
+        windowView.setInstanceId(instanceId);
         initPlatformPlugin(this, instanceId, windowView);
         initBridgeManager();
         initArkUIXPluginRegistry();
         Trace.beginSection("setContentView");
-        setContentView(windowView);
+        setContentView(windowView.getView());
         Trace.endSection();
         activityDelegate.setWindowView(getInstanceName(), windowView);
         activityDelegate.dispatchOnCreate(getInstanceName(), params);
@@ -182,7 +183,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
         keyboardHeightProvider = new KeyboardHeightProvider(this);
 
-        windowView.post(new Runnable() {
+        windowView.getView().post(new Runnable() {
             /**
              * Called from the thread that created the view hierarchy
              */
@@ -338,6 +339,15 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             Log.e(LOG_TAG, "Error creating JSON object: " + e.getMessage());
         }
         return resultJson.toString();
+    }
+
+    /**
+     * Set use surface view or texture view.
+     *
+     * @return If true create surface view else create texture view.
+     */
+    public boolean isUseSurfaceView() {
+        return true;
     }
 
     /**
@@ -643,14 +653,14 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      * @param instanceId the instance id
      * @param windowView the window view
      */
-    private void initPlatformPlugin(Context context, int instanceId, WindowView windowView) {
+    private void initPlatformPlugin(Context context, int instanceId, WindowViewInterface windowView) {
         Trace.beginSection("StageActivity::initPlatformPlugin");
-        platformPlugin = new AcePlatformPlugin(context, instanceId, windowView);
+        platformPlugin = new AcePlatformPlugin(context, instanceId, windowView.getView());
         if (platformPlugin != null) {
             windowView.setInputConnectionClient(platformPlugin);
             platformPlugin.initTexturePlugin(instanceId);
             platformPlugin.addResourcePlugin(AceVideoPluginAosp.createRegister(context, instanceName));
-            AceWebPluginBase web = AceWebPluginAosp.createRegister(context, windowView);
+            AceWebPluginBase web = AceWebPluginAosp.createRegister(context, windowView.getView());
             windowView.setWebPlugin(web);
             platformPlugin.addResourcePlugin(web);
             platformViewPluginAosp = AcePlatformViewPluginAosp.createRegister(context);

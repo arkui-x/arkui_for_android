@@ -50,6 +50,10 @@ import org.json.JSONArray;
  * @since 2024-11-29
  */
 public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider {
+    /**
+     * Invalid virtual view id.
+     */
+    public static final int INVALID_VIRTUAL_VIEW_ID = -1;
     private static final String TAG = "ArkUIAccessbilityProvider";
     private static FocusedNode currentFocusNode = null;
     private static final int ROOT_NODE_ID = 0;
@@ -1083,7 +1087,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
      * @param virtualViewId the virtual view id
      */
     public void sendAccessibilityFocusInvalidate(int virtualViewId) {
-        int invalidateId = -1;
+        int invalidateId = INVALID_VIRTUAL_VIEW_ID;
         if (virtualViewId >= 0) {
             invalidateId = virtualViewId;
         } else {
