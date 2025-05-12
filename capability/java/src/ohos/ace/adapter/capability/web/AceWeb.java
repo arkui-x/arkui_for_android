@@ -2307,28 +2307,30 @@ public class AceWeb extends AceWebBase {
     @Override
     public void registerJavaScriptProxy(
         String objectName, String[] methodList, String[] asyncMethodList, String permission) {
-        if (webView != null) {
-            webView.getSettings().setJavaScriptEnabled(true);
-            for (String method : methodList) {
-                String jsResult = String.format("window.%s = window.%s || {}; window.%s.%s = function(...args) {" +
-                "const paramsJson = JSON.stringify(args); " +
-                "let ret = AceWebJavascriptInterface.callSyncFunction('%s', '%s', paramsJson);" +
-                "const obj = JSON.parse(ret);" +
-                "return obj.value;" +
-                "};", objectName, objectName, objectName, method, objectName, method);
-                webView.evaluateJavascript(jsResult, null);
-            }
-
-            for (String asyncMethod : asyncMethodList) {
-                String jsResult = String.format("window.%s = window.%s || {}; window.%s.%s = function(...args) {" +
-                "const paramsJson = JSON.stringify(args); " +
-                "AceWebJavascriptInterface.callAsyncFunction('%s', '%s', paramsJson);" +
-                "};",
-                objectName, objectName, objectName, asyncMethod, objectName, asyncMethod);
-                webView.evaluateJavascript(jsResult, null);
-            }
+        if (webView == null) {
+            ALog.e(LOG_TAG, "registerJavaScriptProxy webView is null");
+            return;
         }
-    }
+        webView.getSettings().setJavaScriptEnabled(true);
+        for (String method : methodList) {
+            String jsResult = String.format("window.%s = window.%s || {}; window.%s.%s = function(...args) {" +
+            "const paramsJson = JSON.stringify(args); " +
+            "let ret = AceWebJavascriptInterface.callSyncFunction('%s', '%s', paramsJson);" +
+            "const obj = JSON.parse(ret);" +
+            "return obj.value;" +
+            "};", objectName, objectName, objectName, method, objectName, method);
+            webView.evaluateJavascript(jsResult, null);
+        }
+
+        for (String asyncMethod : asyncMethodList) {
+            String jsResult = String.format("window.%s = window.%s || {}; window.%s.%s = function(...args) {" +
+            "const paramsJson = JSON.stringify(args); " +
+            "AceWebJavascriptInterface.callAsyncFunction('%s', '%s', paramsJson);" +
+            "};",
+            objectName, objectName, objectName, asyncMethod, objectName, asyncMethod);
+            webView.evaluateJavascript(jsResult, null);
+        }
+	}
 
     /**
      * Deletes the JavaScript object registered with the given object name.
