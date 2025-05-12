@@ -2330,7 +2330,7 @@ public class AceWeb extends AceWebBase {
             objectName, objectName, objectName, asyncMethod, objectName, asyncMethod);
             webView.evaluateJavascript(jsResult, null);
         }
-	}
+    }
 
     /**
      * Deletes the JavaScript object registered with the given object name.
