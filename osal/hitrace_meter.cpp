@@ -191,7 +191,7 @@ ACE_FORCE_EXPORT void CountTraceWrapper(uint64_t tag, const char* name, int64_t 
 
 ACE_FORCE_EXPORT bool IsTagEnabled(uint64_t tag)
 {
-    return (tag > 0) || ATrace_isEnabled();
+    return (tag > 0) && ATrace_isEnabled();
 }
 
 ACE_FORCE_EXPORT void ParseTagBits(const uint64_t tag, std::string& bitStrs) {}
