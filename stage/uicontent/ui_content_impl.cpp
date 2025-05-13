@@ -674,6 +674,21 @@ bool UIContentImpl::ProcessKeyEvent(int32_t keyCode, int32_t keyAction, int32_t 
         { keyCode, keyAction, repeatTime, timeStamp, timeStampStart, metaKey, sourceDevice, deviceId, msg });
 }
 
+void BuildParsedConfig(ParsedConfig& parsedConfig,
+    const std::shared_ptr<OHOS::AbilityRuntime::Platform::Configuration>& config)
+{
+    parsedConfig.colorMode = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::SYSTEM_COLORMODE);
+    parsedConfig.direction = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_DIRECTION);
+    parsedConfig.densitydpi =
+                config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_DENSITYDPI);
+    parsedConfig.languageTag =
+                config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_LANGUAGE);
+    parsedConfig.fontFamily =
+                config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_FONT);
+    parsedConfig.fontScale =
+                config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::SYSTEM_FONT_SIZE_SCALE);
+}
+
 void UIContentImpl::UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRuntime::Platform::Configuration>& config)
 {
     LOGI("UIContentImpl: UpdateConfiguration called");
@@ -686,12 +701,9 @@ void UIContentImpl::UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRunti
         [weakContainer = WeakPtr<Platform::AceContainerSG>(container), config]() {
             auto container = weakContainer.Upgrade();
             CHECK_NULL_VOID(container);
-            auto colorMode = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::SYSTEM_COLORMODE);
-            auto direction = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_DIRECTION);
-            auto densityDpi =
-                config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_DENSITYDPI);
-            auto language = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_LANGUAGE);
-            container->UpdateConfiguration(colorMode, direction, densityDpi, language);
+            Platform::ParsedConfig parsedConfig;
+            BuildParsedConfig(parsedConfig, config);
+            container->UpdateConfiguration(parsedConfig);
         },
         TaskExecutor::TaskType::UI, "ArkUI-XUicontentUpdateConfiguration");
     LOGI("UIContentImpl: UpdateConfiguration called End");
