@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<familyset version="23">
+    <family name="HM SYMBOL" supportWeightAdjustment="true" honortag="true">
+        <font weight="400" style="normal" postScriptName="HYQiHei-EES">HMSymbolVF.ttf</font>
+        <font weight="500" style="normal" postScriptName="HYQiHei-FES">HMSymbolVF.ttf</font>
+        <font weight="700" style="normal" postScriptName="HYQiHei-FES">HMSymbolVF.ttf</font>
+		<font weight="900" style="normal" postScriptName="HYQiHei-FES">HMSymbolVF.ttf</font>
+    </family>
+</familyset>
