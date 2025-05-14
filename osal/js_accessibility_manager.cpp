@@ -950,7 +950,7 @@ void UpdateSupportAction(const RefPtr<NG::FrameNode>& node, AccessibilityElement
         }
     }
 
-    auto eventHub = node->GetEventHub<NG::EventHub>();
+    auto eventHub = node->GetOrCreateEventHub<NG::EventHub>();
     CHECK_NULL_VOID(eventHub);
     auto gestureEventHub = eventHub->GetGestureEventHub();
     CHECK_NULL_VOID(gestureEventHub);
@@ -1012,7 +1012,7 @@ void JsAccessibilityManager::UpdateAccessibilityElementInfoBase(const RefPtr<NG:
             nodeInfo.SetBlur(context->GetForeground()->propBlurRadius.value_or(Dimension(0)).ToString());
         }
     }
-    auto eventHub = node->GetEventHub<NG::EventHub>();
+    auto eventHub = node->GetOrCreateEventHub<NG::EventHub>();
     if (eventHub != nullptr) {
        nodeInfo.SetHitTestBehavior(NG::GestureEventHub::GetHitTestModeStr(eventHub->GetGestureEventHub()));
     }
@@ -1495,14 +1495,14 @@ bool LostFocus(const RefPtr<NG::FrameNode>& frameNode)
 
 bool ActClick(RefPtr<NG::FrameNode>& frameNode)
 {
-    auto gesture = frameNode->GetEventHub<NG::EventHub>()->GetGestureEventHub();
+    auto gesture = frameNode->GetOrCreateEventHub<NG::EventHub>()->GetGestureEventHub();
     CHECK_NULL_RETURN(gesture, false);
     return gesture->ActClick();
 }
 
 bool ActLongClick(RefPtr<NG::FrameNode>& frameNode)
 {
-    auto gesture = frameNode->GetEventHub<NG::EventHub>()->GetGestureEventHub();
+    auto gesture = frameNode->GetOrCreateEventHub<NG::EventHub>()->GetGestureEventHub();
     CHECK_NULL_RETURN(gesture, false);
     return gesture->ActLongClick();
 }
@@ -2937,7 +2937,7 @@ static OHOS::Ace::Platform::ComponentInfo SetComponentInfo(const RefPtr<NG::Fram
     componentInfo.width = rect.Width();
     componentInfo.left = rect.Left();
     componentInfo.height = rect.Height();
-    auto gestureEventHub = node->GetEventHub<NG::EventHub>()->GetGestureEventHub();
+    auto gestureEventHub = node->GetOrCreateEventHub<NG::EventHub>()->GetGestureEventHub();
     componentInfo.clickable = gestureEventHub ? gestureEventHub->IsAccessibilityClickable() : false;
     auto accessibilityProperty = node->GetAccessibilityProperty<NG::AccessibilityProperty>();
     componentInfo.checked = accessibilityProperty->IsChecked();
