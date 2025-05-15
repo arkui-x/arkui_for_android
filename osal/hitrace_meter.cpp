@@ -38,7 +38,7 @@ ACE_WEAK_SYM void ATrace_setCounter(const char *counterName, int64_t counterValu
 #endif
 
 namespace {
-std::atomic<int32_t> g_androidApiLevel_(-1);
+std::atomic<int32_t> g_androidApiLevel(-1);
 std::once_flag g_onceFlag;
 constexpr int ANDROID_API_29 = 29;
 constexpr int VAR_NAME_MAX_SIZE = 400;
@@ -60,9 +60,9 @@ inline std::string FormatTraceName(const char* name)
 inline int32_t GetAndroidApiLevel()
 {
     std::call_once(g_onceFlag, []() {
-        g_androidApiLevel_ = android_get_device_api_level();
+        g_androidApiLevel = android_get_device_api_level();
     });
-    return g_androidApiLevel_.load();
+    return g_androidApiLevel.load();
 }
 
 inline bool IsTraceLevelValid(HiTraceOutputLevel level)
@@ -206,8 +206,8 @@ ACE_FORCE_EXPORT int StopCaptureAppTrace(void)
     return 0;
 }
 
-ACE_FORCE_EXPORT HitracePerfScoped::HitracePerfScoped(bool isDebug, uint64_t tag, const std::string& name) :
-    mTag_(tag), mName_(name) {}
+ACE_FORCE_EXPORT HitracePerfScoped::HitracePerfScoped(bool isDebug, uint64_t tag, const std::string& name)
+    : mTag_(tag), mName_(name) {}
 
 ACE_FORCE_EXPORT HitracePerfScoped::~HitracePerfScoped() {}
 
