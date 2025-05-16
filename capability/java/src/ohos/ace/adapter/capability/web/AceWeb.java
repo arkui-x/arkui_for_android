@@ -79,6 +79,7 @@ import ohos.ace.adapter.capability.web.AceWebOverrideUrlObject;
 import ohos.ace.adapter.capability.web.AceWebRefreshAccessedHistoryObject;
 import ohos.ace.adapter.capability.web.AceWebFullScreenEnterObject;
 import ohos.ace.adapter.capability.web.AceWebFullScreenExitObject;
+import ohos.ace.adapter.capability.web.AceWebJavascriptProxyCallback;
 import java.util.Map;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -275,6 +276,11 @@ public class AceWeb extends AceWebBase {
         webView = new AceWebView(context);
         downloadExecutor_ = Executors.newFixedThreadPool(WEB_DOWNLOAD_TASK_NUM);
         registerWebviewReceiver(context);
+        if (webView != null) {
+            webView.getSettings().setJavaScriptEnabled(true);
+            webView.addJavascriptInterface(
+                new AceWebJavascriptProxyCallback(this.context, webView), "AceWebJavascriptInterface");
+        }
     }
 
     @Override
@@ -2288,5 +2294,54 @@ public class AceWeb extends AceWebBase {
             return SUCCESS_TAG;
         }
         return FAIL_TAG;
+    }
+
+    /**
+     * Registers a JavaScript proxy object with the specified methods.
+     *
+     * @param objectName The name of the JavaScript object.
+     * @param methodList An array of method names to be exposed in the JavaScript object.
+     * @param asyncMethodList An array of asynchronous method names to be exposed in the JavaScript object.
+     * @param permission Configure JSBridge's permission control through this string.
+     */
+    @Override
+    public void registerJavaScriptProxy(
+        String objectName, String[] methodList, String[] asyncMethodList, String permission) {
+        if (webView == null) {
+            ALog.e(LOG_TAG, "registerJavaScriptProxy webView is null");
+            return;
+        }
+        webView.getSettings().setJavaScriptEnabled(true);
+        for (String method : methodList) {
+            String jsResult = String.format("window.%s = window.%s || {}; window.%s.%s = function(...args) {" +
+            "const paramsJson = JSON.stringify(args); " +
+            "let ret = AceWebJavascriptInterface.callSyncFunction('%s', '%s', paramsJson);" +
+            "const obj = JSON.parse(ret);" +
+            "return obj.value;" +
+            "};", objectName, objectName, objectName, method, objectName, method);
+            webView.evaluateJavascript(jsResult, null);
+        }
+
+        for (String asyncMethod : asyncMethodList) {
+            String jsResult = String.format("window.%s = window.%s || {}; window.%s.%s = function(...args) {" +
+            "const paramsJson = JSON.stringify(args); " +
+            "AceWebJavascriptInterface.callAsyncFunction('%s', '%s', paramsJson);" +
+            "};",
+            objectName, objectName, objectName, asyncMethod, objectName, asyncMethod);
+            webView.evaluateJavascript(jsResult, null);
+        }
+    }
+
+    /**
+     * Deletes the JavaScript object registered with the given object name.
+     *
+     * @param objectName The name of the JavaScript object to be deleted.
+     */
+    @Override
+    public void deleteJavaScriptRegister(String objectName) {
+        if (webView != null) {
+            String jsResult = String.format("delete window.%s;", objectName);
+            webView.evaluateJavascript(jsResult, null);
+        }
     }
 }

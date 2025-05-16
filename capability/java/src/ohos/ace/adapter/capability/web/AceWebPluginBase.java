@@ -76,7 +76,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param value The value of the webview.
      * @param asyncCallbackInfoId The ID of the asynchronous callback information.
      */
-    protected native static void onReceiveValue(String value, long asyncCallbackInfoId);
+    protected static native void onReceiveValue(String value, long asyncCallbackInfoId);
 
     /**
      * Native method to handle the received JavaScript execution result.
@@ -84,7 +84,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param value The result value from the JavaScript execution.
      * @param asyncCallbackInfoId The ID of the asynchronous callback information.
      */
-    protected native static void onReceiveRunJavaScriptExtValue(String value, long asyncCallbackInfoId);
+    protected static native void onReceiveRunJavaScriptExtValue(String value, long asyncCallbackInfoId);
 
     /**
      * Native method to handle the received JavaScript execution result.
@@ -93,7 +93,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param portHandle The port handle for the message.
      * @param result The result of the message.
      */
-    protected native static void onMessage(long webId, String portHandle, String result);
+    protected static native void onMessage(long webId, String portHandle, String result);
 
     /**
      * Callback before start a download task.
@@ -101,7 +101,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param id Webview id.
      * @param object The object of download process data.
      */
-    protected native static void onBeforeDownloadObject(long id, Object object);
+    protected static native void onBeforeDownloadObject(long id, Object object);
 
     /**
      * Callback during the download process.
@@ -109,7 +109,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param id Webview id.
      * @param object The object of download process data.
      */
-    protected native static void onDownloadUpdatedObject(long id, Object object);
+    protected static native void onDownloadUpdatedObject(long id, Object object);
 
     /**
      * Callback when the download failed.
@@ -117,7 +117,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param id Webview id.
      * @param object The object of download process data.
      */
-    protected native static void onDownloadFailedObject(long id, Object object);
+    protected static native void onDownloadFailedObject(long id, Object object);
 
     /**
      * Callback when the download finished.
@@ -125,7 +125,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param id Webview id.
      * @param object The object of download process data.
      */
-    protected native static void onDownloadFinishObject(long id, Object object);
+    protected static native void onDownloadFinishObject(long id, Object object);
 
     /**
      * Handles the message event extension.
@@ -134,7 +134,18 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * @param portHandle The handle of the port through which the message is received.
      * @param result The result of the message event.
      */
-    protected native static void onMessageEventExt(long webId, String portHandle, String result);
+    protected static native void onMessageEventExt(long webId, String portHandle, String result);
+
+    /**
+     * Executes a JavaScript callback and returns the result.
+     *
+     * @param className The name of the class containing the JavaScript callback method.
+     * @param methodName The name of the JavaScript callback method.
+     * @param param The parameters to be passed to the JavaScript callback method.
+     * @return The result of the JavaScript callback execution.
+     */
+    protected static native Object onReceiveJavascriptExecuteCall(
+        String className, String methodName, Object[] param);
 
     /**
      * This is called to get a atomic id.
@@ -813,5 +824,35 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
             return webBase.onWebMessagePortEventExt(id, portHandle);
         }
         return CAN_NOT_REGISTER_MESSAGE_EVENT;
+    }
+
+    /**
+     * Registers a JavaScript proxy for a given object.
+     *
+     * @param id Wevbiew id.
+     * @param objectName The name of the object.
+     * @param methodList The list of synchronous methods.
+     * @param asyncMethodList The list of asynchronous methods.
+     * @param permission Configure JSBridge's permission control through this string.
+     */
+    public void registerJavaScriptProxy(
+        long id, String objectName, String[] methodList, String[] asyncMethodList, String permission) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.registerJavaScriptProxy(objectName, methodList, asyncMethodList, permission);
+        }
+    }
+
+    /**
+     * Deletes the JavaScript register with the specified ID and object name.
+     *
+     * @param id Wevbiew id.
+     * @param objectName The name of the object to delete.
+     */
+    public void deleteJavaScriptRegister(long id, String objectName) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.deleteJavaScriptRegister(objectName);
+        }
     }
 }

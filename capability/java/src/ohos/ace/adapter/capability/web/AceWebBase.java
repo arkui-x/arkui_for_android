@@ -1168,4 +1168,22 @@ public abstract class AceWebBase {
      * @return result of call.
      */
     public abstract int onWebMessagePortEventExt(long id, String portHandle);
+
+    /**
+     * Registers a JavaScript proxy object with the specified methods.
+     *
+     * @param objectName The name of the JavaScript object.
+     * @param methodList An array of method names to be exposed in the JavaScript object.
+     * @param asyncMethodList An array of asynchronous method names to be exposed in the JavaScript object.
+     * @param permission Configure JSBridge's permission control through this string.
+     */
+    public abstract void registerJavaScriptProxy(
+        String objectName, String[] methodList, String[] asyncMethodList, String permission);
+
+    /**
+     * Deletes the JavaScript register with the specified object name.
+     *
+     * @param objectName The name of the JavaScript object to be deleted.
+     */
+    public abstract void deleteJavaScriptRegister(String objectName);
 }
