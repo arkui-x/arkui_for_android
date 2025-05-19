@@ -117,6 +117,8 @@ public class StageApplicationDelegate {
 
     private AcePlatformCapability platformCapability = null;
 
+    private String assetsModulePath = "";
+
     /**
      * Constructor.
      */
@@ -184,8 +186,8 @@ public class StageApplicationDelegate {
 
         try {
             if (stageApplication.getAssets().list(ASSETS_SUB_PATH).length != 0) {
-                setAssetsFileRelativePath(getAssetsPath());
                 copyAllModuleResources();
+                setAssetsFileRelativePath(assetsModulePath);
             }
         } catch (Exception e) {
             Log.e(LOG_TAG, "get Assets path failed, error: " + e.getMessage());
@@ -261,7 +263,7 @@ public class StageApplicationDelegate {
         return uid;
     }
 
-    private String getAssetsPath() {
+    private String getAssetsPath(boolean isNewVersion) {
         if (stageApplication == null) {
             Log.e(LOG_TAG, "stageApplication is null");
             return "";
@@ -275,7 +277,7 @@ public class StageApplicationDelegate {
         }
 
         String path = sharedPreferences.getString(ASSETS_PATH_KEY, "");
-        if (!path.isEmpty()) {
+        if (!path.isEmpty() && !isNewVersion) {
             return path;
         }
 
@@ -385,11 +387,13 @@ public class StageApplicationDelegate {
             ", current version code is: " + versionCode +
             ", apk is debug: " + isDebug);
         if (!isDebug && oldVersionCode >= versionCode) {
+            assetsModulePath = getAssetsPath(false);
             Log.i(LOG_TAG, "The resource has been copied.");
             return;
         }
 
         isCopyNativeLibs = true;
+        assetsModulePath = getAssetsPath(true);
 
         Log.i(LOG_TAG, "Start copying resources.");
         AssetManager assets = stageApplication.getAssets();
