@@ -40,7 +40,7 @@ ACE_WEAK_SYM void ATrace_setCounter(const char *counterName, int64_t counterValu
 namespace {
 std::atomic<int32_t> g_androidApiLevel(-1);
 std::once_flag g_onceFlag;
-constexpr int ANDROID_API_29 = 29;
+constexpr int ANDROID_API_29 = 29; // ATrace section APIs are supported starting from Android API level 29
 constexpr int VAR_NAME_MAX_SIZE = 400;
 
 inline std::string FormatTraceName(const std::string& name)
