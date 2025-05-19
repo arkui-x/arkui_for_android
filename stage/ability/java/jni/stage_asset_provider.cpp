@@ -26,6 +26,7 @@
 
 #include "base/log/log.h"
 #include "base/utils/string_utils.h"
+#include "include/core/SkFontMgr.h"
 #include "native_module_manager.h"
 #include "nlohmann/json.hpp"
 
@@ -55,6 +56,7 @@ const std::string ARCH_ARM = "/armeabi-v7a";
 const std::string ARCH_X86 = "/x86_64";
 const std::string SO_SUFFIX = ".so";
 const std::string EXTERN_LIBS_DIR = "/libs";
+const std::string SYSTEM_FONT_DIR = "fonts";
 } // namespace
 std::shared_ptr<StageAssetProvider> StageAssetProvider::instance_ = nullptr;
 std::mutex StageAssetProvider::mutex_;
@@ -455,6 +457,10 @@ void StageAssetProvider::GetResIndexPath(
 void StageAssetProvider::SetResourcesFilePrefixPath(const std::string& resourcesFilePrefixPath)
 {
     resourcesFilePrefixPath_ = resourcesFilePrefixPath;
+    std::string runtimeOS = "ANDROID";
+    std::string fontPath("");
+    fontPath = resourcesFilePrefixPath_ + SEPARATOR + SYSTEM_RES_INDEX_NAME + SEPARATOR + SYSTEM_FONT_DIR + SEPARATOR;
+    SkFontMgr::SetFontMgrConfig(runtimeOS, fontPath);
 }
 
 std::string StageAssetProvider::GetAppDataModuleDir() const
