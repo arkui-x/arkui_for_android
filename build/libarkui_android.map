@@ -678,6 +678,25 @@
       "OHOS::HiviewDFX::NapiUtil::CreateInt64(napi_env__*, long long)";
       "OHOS::HiviewDFX::AppEventPack::AddParam(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, long long)";
       OH_NativeWindow_CreateNativeWindowFromSurfaceId;
+
+      "HitracePerfScoped::HitracePerfScoped(bool, unsigned long, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "HitracePerfScoped::HitracePerfScoped(bool, unsigned long long, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "HitracePerfScoped::~HitracePerfScoped()";
+      "HitraceMeterFmtScoped::HitraceMeterFmtScoped(unsigned long, char const*, ...)";
+      "HitraceMeterFmtScoped::HitraceMeterFmtScoped(unsigned long long, char const*, ...)";
+    };
+    extern "C" {
+      "StartTrace";
+      "StartTraceEx";
+      "FinishTrace";
+      "FinishTraceEx";
+      "StartAsyncTrace";
+      "StartAsyncTraceEx";
+      "FinishAsyncTrace";
+      "FinishAsyncTraceEx";
+      "CountTrace";
+      "CountTraceEx";
+      "IsTagEnabled";
     };
   local:
     *;

@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Copyright (c) 2022-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -54,6 +54,7 @@ template("ace_osal_android_source_set") {
       "file_uri_helper_android.cpp",
       "frame_report.cpp",
       "frame_trace_adapter_impl.cpp",
+      "hitrace_meter.cpp",
       "image_packer_android.cpp",
       "image_source_android.cpp",
       "input_manager.cpp",
@@ -103,6 +104,7 @@ template("ace_osal_android_source_set") {
       "$ace_root/frameworks/bridge/common/accessibility",
       "$ace_root/adapter/android/osal/mock",
       "//foundation/graphic/graphic_surface/interfaces/inner_api/surface",
+      "//base/hiviewdfx/hitrace/interfaces/native/innerkits/include/hitrace_meter",
     ]
 
     deps = [
