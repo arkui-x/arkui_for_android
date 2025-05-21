@@ -136,6 +136,7 @@
       VTT?for?OHOS::Ace::Framework::MediaQueryInfo;
       VTT?for?OHOS::Ace::Scheduler;
       VTT?for?OHOS::Ace::ThemeConstants;
+      VTT?for?OHOS::Ace::NG::Pattern;
 
       VTT?for?OHOS::Ace::NG::BoxLayoutAlgorithm;
       VTT?for?OHOS::Ace::NG::LayoutProperty;
@@ -157,6 +158,7 @@
       OHOS::Ace::Platform::BufferMapping::*;
       OHOS::Ace::SubwindowManager::*;
       OHOS::Ace::NG::UIObserverHandler::*;
+      "OHOS::Ace::NG::Pattern::OnColorModeChange(unsigned int)";
 
       "OHOS::AppExecFwk::AbilityDelegatorRegistry::GetAbilityDelegator()";
       "OHOS::AppExecFwk::AbilityDelegator::GetCurrentTopAbility()";

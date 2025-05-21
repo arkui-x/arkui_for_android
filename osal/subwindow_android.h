@@ -248,6 +248,10 @@ public:
 
     void ShowDialogMaskNG(const RefPtr<NG::FrameNode>& dialog) override;
     void CloseDialogMaskNG(const RefPtr<NG::FrameNode>& dialog) override;
+    void SwitchFollowParentWindowLayout(bool freeMultiWindowEnable) override;
+    bool NeedFollowParentWindowLayout() override;
+    void AddFollowParentWindowLayoutNode(int32_t nodeId) override;
+    void RemoveFollowParentWindowLayoutNode(int32_t nodeId) override;
 
 private:
     void InitSubwindow(const RefPtr<Platform::AceContainerSG>& parentContainer);

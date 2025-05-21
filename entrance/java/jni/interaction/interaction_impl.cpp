@@ -93,6 +93,11 @@ int32_t InteractionImpl::StartDrag(
     return 0;
 }
 
+int32_t InteractionImpl::GetDragBundleInfo(DragBundleInfo& dragBundleInfo)
+{
+    return -1;
+}
+
 int32_t InteractionImpl::UpdateDragStyle(OHOS::Ace::DragCursorStyleCore style, const int32_t eventId)
 {
 #ifdef ENABLE_DRAG_FRAMEWORK
@@ -354,7 +359,7 @@ void SurfaceNodeListener::OnSurfaceNodeChanged(int32_t width, int32_t height, fl
     if (g_dragging) {
         InteractionManager::GetInstance()->SetDragWindow(dragWindow_);
         Msdp::DeviceStatus::DragData msdpDragData { {}, dragData.buffer, dragData.udKey, dragData.extraInfo,
-            dragData.filterInfo, dragData.sourceType, dragData.dragNum, dragData.pointerId, dragData.toolType,
+            dragData.filterInfo, dragData.sourceType, dragData.dragNum, dragData.pointerId,
             dragData.displayX, dragData.displayY, dragData.displayId, dragData.mainWindow,
             dragData.hasCanceledAnimation, dragData.hasCoordinateCorrected, dragData.summarys };
         for (auto& shadowInfo : dragData.shadowInfos) {

@@ -37,4 +37,8 @@ bool DataDetectorAdapter::ShowAIEntityMenu(const AISpan& aiSpan, const NG::RectF
 void DataDetectorAdapter::ResponseBestMatchItem(const AISpan& aiSpan) {}
 
 void DataDetectorAdapter::GetAIEntityMenu() {}
+
+void DataDetectorAdapter::OnClickAIMenuOption(const AISpan& aiSpan,
+    const std::pair<std::string, FuncVariant>& menuOption, const RefPtr<NG::FrameNode>& targetNode)
+{}
 } // namespace OHOS::Ace

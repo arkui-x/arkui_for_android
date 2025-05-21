@@ -51,6 +51,8 @@ class EventHandler;
 namespace Rosen {
 class IWindowLifeCycle;
 class WindowOption;
+class RSUIContext;
+class RSUIDirector;
 using NotifyNativeWinDestroyFunc = std::function<void(std::string windowName)>;
 using OnCallback = std::function<void(int64_t, int64_t)>;
 struct VsyncCallback {
@@ -311,6 +313,22 @@ public:
     WMError SetTouchHotAreas(const std::vector<Rect>& rects);
     WMError SetFullScreen(bool status);
     WMError SetOnTop(bool status);
+
+    /**
+     * @brief Get the associated RSUIDirector instance
+     *
+     * @return std::shared_ptr<RSUIDirector> Shared pointer to the RSUIDirector instance,
+     *         or nullptr if RS client multi-instance is disabled.
+     */
+    virtual std::shared_ptr<RSUIDirector> GetRSUIDirector() const { return nullptr; }
+
+    /**
+     * @brief Get the associated RSUIContext instance
+     *
+     * @return std::shared_ptr<RSUIContext> Shared pointer to the RSUIContext instance,
+     *         or nullptr if RS client multi-instance is disabled.
+     */
+    virtual std::shared_ptr<RSUIContext> GetRSUIContext() const { return nullptr; }
 
 private:
     void SetWindowView(JNIEnv* env, jobject windowView);
