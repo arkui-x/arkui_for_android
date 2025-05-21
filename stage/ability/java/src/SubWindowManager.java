@@ -67,6 +67,7 @@ public class SubWindowManager {
     private static SubWindowManager _sinstance;
 
     private Activity mRootActivity;
+    private String mInstanceName;
     private Map<String, SubWindow> mSubWindowMap = new HashMap<>();
     private int uiOptions_ = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
@@ -95,11 +96,13 @@ public class SubWindowManager {
     /**
      * Sets activity.
      *
-     * @param activity the activity
+     * @param activity      the activity
+     * @param instanceName  the activity instance name.
      */
-    public void setActivity(Activity activity) {
-        Log.d(TAG, "setActivity called.");
+    public void setActivity(Activity activity, String instanceName) {
+        Log.d(TAG, "setActivity called, instanceName: " + instanceName);
         mRootActivity = activity;
+        mInstanceName = instanceName;
         if (mRootActivity != null) {
             Window window = mRootActivity.getWindow();
             View decorView = window.getDecorView();
@@ -112,10 +115,14 @@ public class SubWindowManager {
     /**
      * Release activity.
      *
+     * @param instanceName the activity instance name.
      */
-    public void releaseActivity() {
-        Log.d(TAG, "setActivity called.");
-        mRootActivity = null;
+    public void releaseActivity(String instanceName) {
+        Log.d(TAG, "releaseActivity called, instanceName: " + instanceName + ", mInstanceName: " + mInstanceName);
+        if (instanceName == mInstanceName) {
+            mRootActivity = null;
+        }
+        return;
     }
 
     /**
