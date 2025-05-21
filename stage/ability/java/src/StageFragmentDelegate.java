@@ -46,7 +46,7 @@ public class StageFragmentDelegate {
      */
     public void attachStageFragment(String instanceName, StageFragment fragment) {
         Trace.beginSection("attachStageFragment");
-        SubWindowManager.getInstance().setActivity(fragment.getActivity());
+        SubWindowManager.getInstance().setActivity(fragment.getActivity(), instanceName);
         DisplayInfo.getInstance().setContext(fragment.getActivity());
         nativeAttachFragment(instanceName, fragment);
         Trace.endSection();
@@ -80,8 +80,10 @@ public class StageFragmentDelegate {
      * Dispatch the onForeground lifecycle to native.
      *
      * @param instanceName the fragment instance name.
+     * @param fragment     currently fragment
      */
-    public void dispatchOnForeground(String instanceName) {
+    public void dispatchOnForeground(String instanceName, StageFragment fragment) {
+        SubWindowManager.getInstance().setActivity(fragment.getActivity(), instanceName);
         nativeDispatchOnForeground(instanceName);
     }
 
@@ -101,6 +103,7 @@ public class StageFragmentDelegate {
      */
     public void dispatchOnDestroy(String instanceName) {
         nativeDispatchOnDestroy(instanceName);
+        SubWindowManager.getInstance().releaseActivity(instanceName);
     }
 
     private native void nativeSetWindowView(String instanceName, WindowView windowView);

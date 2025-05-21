@@ -170,7 +170,7 @@ public class StageFragment extends Fragment {
         }
         isToResume = false;
         Trace.beginSection("StageFragment::onResume");
-        fragmentDelegate.dispatchOnForeground(getInstanceName());
+        fragmentDelegate.dispatchOnForeground(getInstanceName(), this);
         windowView.foreground();
         if (platformPlugin != null) {
             platformPlugin.notifyLifecycleChanged(false);
@@ -186,7 +186,7 @@ public class StageFragment extends Fragment {
             isToResume = false;
 
             Trace.beginSection("StageFragment::onHiddenChanged");
-            fragmentDelegate.dispatchOnForeground(getInstanceName());
+            fragmentDelegate.dispatchOnForeground(getInstanceName(), this);
             windowView.foreground();
             if (platformPlugin != null) {
                 platformPlugin.notifyLifecycleChanged(false);

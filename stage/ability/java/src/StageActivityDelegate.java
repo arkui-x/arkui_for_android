@@ -90,7 +90,7 @@ public class StageActivityDelegate {
     public void attachStageActivity(String instanceName, StageActivity object) {
         Trace.beginSection("attachStageActivity");
         nativeAttachStageActivity(instanceName, object);
-        SubWindowManager.getInstance().setActivity(object);
+        SubWindowManager.getInstance().setActivity(object, instanceName);
         Trace.endSection();
     }
 
@@ -114,7 +114,7 @@ public class StageActivityDelegate {
     public void dispatchOnDestroy(String instanceName) {
         Log.i(LOG_TAG, "dispatchOnDestroy called");
         nativeDispatchOnDestroy(instanceName);
-        SubWindowManager.getInstance().releaseActivity();
+        SubWindowManager.getInstance().releaseActivity(instanceName);
     }
 
     /**
@@ -131,10 +131,12 @@ public class StageActivityDelegate {
      * Dispatch the onforeground lifecycle to native.
      *
      * @param instanceName the activity instance name.
+     * @param object       the stage activity.
      */
-    public void dispatchOnForeground(String instanceName) {
+    public void dispatchOnForeground(String instanceName, StageActivity object) {
         Log.i(LOG_TAG, "DispatchOnForeground called");
         nativeDispatchOnForeground(instanceName);
+        SubWindowManager.getInstance().setActivity(object, instanceName);
     }
 
     /**
