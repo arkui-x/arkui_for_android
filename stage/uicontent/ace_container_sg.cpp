@@ -22,6 +22,7 @@
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
 #include "adapter/android/entrance/java/jni/jni_registry.h"
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
+#include "application_context.h"
 #include "base/i18n/localization.h"
 #include "base/log/ace_trace.h"
 #include "base/log/event_report.h"
@@ -254,7 +255,23 @@ void AceContainerSG::InitPiplineContext(std::unique_ptr<Window> window, double d
     pipelineContext_->SetWindowId(windowId);
     pipelineContext_->SetWindowModal(windowModal_);
     pipelineContext_->SetDrawDelegate(aceView_->GetDrawDelegate());
-    pipelineContext_->SetFontScale(resourceInfo_.GetResourceConfiguration().GetFontRatio());
+    auto applicationContext = AbilityRuntime::Platform::ApplicationContext::GetInstance();
+    if (applicationContext != nullptr) {
+        auto configuration = applicationContext->GetConfiguration();
+        if (configuration != nullptr) {
+            auto followSystem =
+                configuration->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APP_FONT_SIZE_SCALE);
+            bool bIsFollowSystem = (followSystem == "followSystem");
+            pipelineContext_->SetFollowSystem(bIsFollowSystem);
+            auto maxFontScale =
+                configuration->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APP_FONT_MAX_SCALE);
+            if (!maxFontScale.empty()) {
+                pipelineContext_->SetMaxAppFontScale(StringUtils::StringToFloat(maxFontScale));
+            }
+            float fontScaleValue = resourceInfo_.GetResourceConfiguration().GetFontRatio();
+            pipelineContext_->SetFontScale(fontScaleValue);
+        }
+    }
     pipelineContext_->SetIsJsCard(type_ == FrontendType::JS_CARD);
 
     if (uiWindow_) {
@@ -786,7 +803,7 @@ void AceContainerSG::SetFontAndScale(Platform::ParsedConfig& parsedConfig, Confi
     }
     if (!parsedConfig.fontScale.empty()) {
         configurationChange.fontUpdate = true;
-        pipelineContext_->SetFontScale(std::stod(parsedConfig.fontScale));
+        pipelineContext_->SetFontScale(std::stof(parsedConfig.fontScale));
     }
 }
 

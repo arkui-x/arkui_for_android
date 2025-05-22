@@ -33,6 +33,7 @@ import android.os.Bundle;
 import android.os.Build;
 import android.os.Process;
 import android.os.Trace;
+import android.provider.Settings;
 import android.util.Log;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
@@ -505,7 +506,10 @@ public class StageApplicationDelegate {
 
     private void initConfiguration() {
         Log.i(LOG_TAG, "StageApplication initConfiguration called");
+        float fontScale = Settings.System.getFloat(stageApplication.getContentResolver(), Settings.System.FONT_SCALE,
+            1.0f);
         Configuration cfg = stageApplication.getResources().getConfiguration();
+        cfg.fontScale = fontScale;
         double diagonalSize = getDeviceTypeByPhysicalSize();
         JSONObject json = StageConfiguration.convertConfiguration(cfg, diagonalSize);
         nativeInitConfiguration(json.toString());

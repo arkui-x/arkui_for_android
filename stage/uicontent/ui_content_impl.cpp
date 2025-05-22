@@ -396,6 +396,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     aceResCfg.SetDeviceType(SystemProperties::GetDeviceType());
     aceResCfg.SetColorMode(container->GetColorMode());
     aceResCfg.SetDeviceAccess(SystemProperties::GetDeviceAccess());
+    aceResCfg.SetFontRatio(SystemProperties::GetFontScale());
     container->SetResourceConfiguration(aceResCfg);
     container->SetAssetManagerIfNull(assetManagerImpl);
     container->SetBundlePath(context->GetBundleCodeDir());
@@ -509,6 +510,10 @@ void UIContentImpl::InitAceInfoFromResConfig()
             }
         }
         SystemProperties::SetResolution(density);
+        auto fontScale = config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::SYSTEM_FONT_SIZE_SCALE);
+        if (!fontScale.empty()) {
+            SystemProperties::SetFontScale(std::stof(fontScale));
+        }
     }
 }
 

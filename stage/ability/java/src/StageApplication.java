@@ -17,6 +17,9 @@ package ohos.stage.ability.adapter;
 
 import android.app.Application;
 import android.content.res.Configuration;
+import android.database.ContentObserver;
+import android.os.Handler;
+import android.provider.Settings;
 import android.util.Log;
 
 /**
@@ -28,6 +31,16 @@ public class StageApplication extends Application {
     private static final String LOG_TAG = "StageApplication";
     private StageApplicationDelegate appDelegate = null;
 
+    private ContentObserver fontScaleObserver = new ContentObserver(new Handler()) {
+        @Override
+        public void onChange(boolean selfChange) {
+            float fontScale = Settings.System.getFloat(getContentResolver(), Settings.System.FONT_SCALE, 1.0f);
+            Configuration config = getResources().getConfiguration();
+            config.fontScale = fontScale;
+            appDelegate.onConfigurationChanged(config);
+        }
+    };
+
     /**
      * Call when Application is created.
      */
@@ -38,6 +51,8 @@ public class StageApplication extends Application {
 
         appDelegate = new StageApplicationDelegate();
         appDelegate.initApplication(this);
+        getContentResolver().registerContentObserver(Settings.System.getUriFor(Settings.System.FONT_SCALE), true,
+            fontScaleObserver);
     }
 
     /**
@@ -53,6 +68,7 @@ public class StageApplication extends Application {
             Log.e(LOG_TAG, "appDelegate is null");
             return;
         }
+        newConfig.fontScale = Settings.System.getFloat(getContentResolver(), Settings.System.FONT_SCALE, 1.0f);
         appDelegate.onConfigurationChanged(newConfig);
     }
 
