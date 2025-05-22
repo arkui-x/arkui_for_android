@@ -111,6 +111,8 @@ public class StageApplicationDelegate {
 
     private static boolean isCopyNativeLibs = false;
 
+    private static boolean isCopyResources = false;
+
     private Application stageApplication = null;
 
     private volatile Activity topActivity = null;
@@ -118,8 +120,6 @@ public class StageApplicationDelegate {
     private AcePlatformCapability platformCapability = null;
 
     private String assetsModulePath = "";
-
-    private static boolean isCopyResources = false;
 
     /**
      * Constructor.
