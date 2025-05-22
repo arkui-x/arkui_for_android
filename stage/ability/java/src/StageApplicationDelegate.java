@@ -121,6 +121,8 @@ public class StageApplicationDelegate {
 
     private static boolean isCopyNativeLibs = false;
 
+    private static boolean isCopyResources = false;
+
     private Application stageApplication = null;
 
     private volatile Activity topActivity = null;
@@ -132,8 +134,6 @@ public class StageApplicationDelegate {
     private boolean isBackground = false;
 
     private String assetsModulePath = "";
-
-    private static boolean isCopyResources = false;
 
     /**
      * Constructor.
