@@ -17,9 +17,9 @@ package ohos.stage.ability.adapter;
 
 import android.os.Trace;
 import android.util.Log;
-
-import ohos.ace.adapter.DisplayInfo;
 import ohos.ace.adapter.WindowViewInterface;
+import ohos.ace.adapter.DisplayInfo;
+import ohos.ace.adapter.DisplayManagerAgent;
 import ohos.stage.ability.adapter.StageFragment;
 import ohos.stage.ability.adapter.SubWindowManager;
 
@@ -47,6 +47,7 @@ public class StageFragmentDelegate {
     public void attachStageFragment(String instanceName, StageFragment fragment) {
         Trace.beginSection("attachStageFragment");
         SubWindowManager.getInstance().setActivity(fragment.getActivity(), instanceName);
+        DisplayManagerAgent.getInstance().setActivity(fragment.getActivity());
         DisplayInfo.getInstance().setContext(fragment.getActivity());
         nativeAttachFragment(instanceName, fragment);
         Trace.endSection();

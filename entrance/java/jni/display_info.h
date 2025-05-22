@@ -47,6 +47,8 @@ public:
     float GetDensityPixels() const;
     float GetScaledDensity() const;
     int GetDensityDpi() const;
+    float GetXDpi() const;
+    float GetYDpi() const;
 
     void SetRefreshRate(float refreshRate);
     void SetDisplayId(DisplayId displayId);
@@ -57,6 +59,8 @@ public:
     void SetDensityPixels(float displayDensity);
     void SetScaledDensity(float scaledDensity);
     void SetDensityDpi(int dpi);
+    void SetXDpi(float xDpi);
+    void SetYDpi(float yDpi);
 
 private:
     DisplayId id_ { DISPLAY_ID_INVALID };
@@ -68,6 +72,8 @@ private:
     float displayDensity_ { 0.0 };
     float scaledDensity_ { 0.0 };
     int densityDpi_ { 0 };
+    float xDpi_ { 0.0 };
+    float yDpi_ { 0.0 };
 };
 } // namespace OHOS::Rosen
 #endif // FOUNDATION_DMSERVER_DISPLAY_INFO_H

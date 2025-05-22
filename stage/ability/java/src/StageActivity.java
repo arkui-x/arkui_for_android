@@ -29,11 +29,13 @@ import android.os.Bundle;
 import android.os.Trace;
 import android.util.Log;
 import android.view.View;
+import android.os.Build;
 
 import java.util.List;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicReference;
 
 import android.content.ClipData;
 import android.net.Uri;
@@ -62,6 +64,14 @@ import ohos.ace.adapter.capability.keyboard.KeyboardHeightObserver;
 import ohos.ace.adapter.capability.keyboard.KeyboardHeightProvider;
 import android.view.View;
 import android.content.res.Configuration;
+
+import ohos.ace.adapter.FoldManager;
+import androidx.core.util.Consumer;
+import androidx.window.java.layout.WindowInfoTrackerCallbackAdapter;
+import androidx.window.layout.DisplayFeature;
+import androidx.window.layout.FoldingFeature;
+import androidx.window.layout.WindowInfoTracker;
+import androidx.window.layout.WindowLayoutInfo;
 /**
  * A base class for the Ability Cross-platform Environment of the stage model to
  * run on Android.
@@ -109,6 +119,8 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     private static boolean isFrist = false;
 
+    private static final int ANDROID_API_31 = 31;
+
     private int requestCode = 0;
 
     private int instanceId = InstanceIdGenerator.getAndIncrement();
@@ -138,6 +150,10 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     private PluginContext pluginContext = null;
 
     private AcePlatformViewPluginAosp platformViewPluginAosp = null;
+
+    private WindowInfoTrackerCallbackAdapter foldWindowInfoCallback = null;
+
+    private Consumer<WindowLayoutInfo> foldConsumer = null;
 
     @Override
     public void onKeyboardHeightChanged(int height) {
@@ -256,6 +272,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         }
         super.onDestroy();
         Log.i(LOG_TAG, "StageActivity onDestroy end");
+        offFoldStatusChange();
     }
 
     @Override
@@ -756,4 +773,75 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             windowView.setWindowOrientation(true);
         }
     }
+
+private void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo) {
+    FoldManager foldManager = FoldManager.getInstance();
+    windowLayoutInfo.getDisplayFeatures().stream()
+        .filter(FoldingFeature.class::isInstance)
+        .map(FoldingFeature.class::cast)
+        .findFirst()
+        .ifPresent(feature -> {
+            foldManager.setFoldable(true);
+            int foldStatus = foldManager.getStatusFromFeature(this, feature);
+            foldManager.setFoldStatus(foldStatus);
+            activityDelegate.dispatchFoldStatusChange(getInstanceName(), foldStatus);
+        });
+}
+    private Consumer<WindowLayoutInfo> getfoldConsumer() {
+        if (foldConsumer != null) {
+            return foldConsumer;
+        }
+        foldConsumer = windowLayoutInfo -> {
+            this.runOnUiThread(() -> handleFoldStatusChange(windowLayoutInfo));
+        };
+        return foldConsumer;
+    }
+
+    /**
+     * Register the fold status change listener.
+     *
+     * @return the instance name.
+     */
+    public String onFoldStatusChange() {
+        if (Build.VERSION.SDK_INT < ANDROID_API_31) {
+            Log.e(LOG_TAG, "Android SDK needs to be greater than 31!");
+            return null;
+        }
+        if (foldWindowInfoCallback != null && foldConsumer != null) {
+            return instanceName;
+        }
+        try {
+            WindowInfoTracker windowInfoTracker = WindowInfoTracker.getOrCreate(this);
+            foldWindowInfoCallback = new WindowInfoTrackerCallbackAdapter(windowInfoTracker);
+            foldWindowInfoCallback.addWindowLayoutInfoListener(this, this::runOnUiThread, getfoldConsumer());
+        } catch (NoClassDefFoundError e) {
+            foldWindowInfoCallback = null;
+            foldConsumer = null;
+            Log.e(LOG_TAG, "androidx.window is not support!\n" + e.toString());
+            return null;
+        }
+        return instanceName;
+    }
+
+    /**
+     * close fold motoring.
+     *
+     */
+    public void offFoldStatusChange() {
+        if (foldWindowInfoCallback != null && foldConsumer != null) {
+            foldWindowInfoCallback.removeWindowLayoutInfoListener(foldConsumer);
+            foldConsumer = null;
+            foldWindowInfoCallback = null;
+        }
+    }
+
+    /**
+     * close fold motoring.
+     *
+     * @return foldWindowInfoCallback.
+     */
+    public WindowInfoTrackerCallbackAdapter getFoldWindowInfoCallback() {
+        return foldWindowInfoCallback;
+    }
+
 }

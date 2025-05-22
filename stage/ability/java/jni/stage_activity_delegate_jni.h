@@ -23,6 +23,12 @@
 namespace OHOS {
 namespace AbilityRuntime {
 namespace Platform {
+struct StageActivityStruct {
+    jobject object;
+    jclass clazz;
+    jmethodID onFoldStatusChangeMethod;
+    jmethodID offFoldStatusChangeMethod;
+};
 class StageActivityDelegateJni {
 public:
     StageActivityDelegateJni() = delete;
@@ -40,6 +46,12 @@ public:
         jstring jmoduleName, jstring jtestName, jstring timeout);
     static void DispatchOnAbilityResult(
         JNIEnv* env, jclass myclass, jstring str, jint requestCode, jint resultCode, jstring resultWantParams);
+    static void SetStageActivityStruct(JNIEnv* env, jobject object);
+    static std::string OnFoldStatusChange();
+    static void OffFoldStatusChange();
+    static void FoldStatusChangeCallback(JNIEnv* env, jclass myclass, jstring jinstanceName, jint foldStatus);
+private:
+    static StageActivityStruct stageActivityStruct_;
 };
 } // namespace Platform
 } // namespace AbilityRuntime

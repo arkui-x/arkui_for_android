@@ -21,10 +21,14 @@
 
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/utils/utils.h"
+#include "display_manager_agent_jni.h"
 
+using namespace OHOS::Ace::Platform;
 namespace OHOS {
 namespace AbilityRuntime {
 namespace Platform {
+StageActivityStruct StageActivityDelegateJni::stageActivityStruct_;
+
 bool StageActivityDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
     LOGI("StageActivityDelegateJni register start.");
@@ -74,6 +78,11 @@ bool StageActivityDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
             .signature = "(Ljava/lang/String;IILjava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&DispatchOnAbilityResult),
         },
+        {
+            .name = "nativeFoldStatusChangeCallback",
+            .signature = "(Ljava/lang/String;I)V",
+            .fnPtr = reinterpret_cast<void*>(&FoldStatusChangeCallback),
+        },
     };
     if (!env) {
         LOGE("JNI StageActivityDelegate: null java env");
@@ -104,6 +113,8 @@ void StageActivityDelegateJni::AttachStageActivity(JNIEnv* env, jclass myclass, 
     }
     AbilityContextAdapter::GetInstance()->AddStageActivity(instanceName, object);
     env->ReleaseStringUTFChars(jinstanceName, instanceName);
+
+    SetStageActivityStruct(env, object);
 }
 
 void StageActivityDelegateJni::DispatchOnCreate(JNIEnv* env, jclass myclass, jstring str, jstring params)
@@ -234,6 +245,63 @@ void StageActivityDelegateJni::DispatchOnAbilityResult(
         env->ReleaseStringUTFChars(resultWantParams, parameters);
     }
 }
+
+void StageActivityDelegateJni::SetStageActivityStruct(JNIEnv* env, jobject object)
+{
+    jclass clazz = env->GetObjectClass(object);
+    stageActivityStruct_.object = env->NewGlobalRef(object);
+    stageActivityStruct_.clazz = (jclass)env->NewGlobalRef(clazz);
+    stageActivityStruct_.onFoldStatusChangeMethod = env->GetMethodID(clazz,
+        "onFoldStatusChange", "()Ljava/lang/String;");
+    stageActivityStruct_.offFoldStatusChangeMethod = env->GetMethodID(clazz, "offFoldStatusChange", "()V");
+}
+
+std::string StageActivityDelegateJni::OnFoldStatusChange()
+{
+    JNIEnv* env = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("StageActivityDelegateJni:: env is NULL");
+    }
+    jstring instanceName = static_cast<jstring>(env->CallObjectMethod(stageActivityStruct_.object,
+        stageActivityStruct_.onFoldStatusChangeMethod));
+    if (env->ExceptionCheck()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
+    const char *instance = env->GetStringUTFChars(instanceName, nullptr);
+    if (instance == nullptr) {
+        return "";
+    }
+    std::string instanceStr(instance);
+    env->ReleaseStringUTFChars(instanceName, instance);
+    return instanceStr;
+}
+
+void StageActivityDelegateJni::OffFoldStatusChange()
+{
+    JNIEnv* env = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("StageActivityDelegateJni:: env is NULL");
+    }
+    env->CallVoidMethod(stageActivityStruct_.object, stageActivityStruct_.offFoldStatusChangeMethod);
+    if (env->ExceptionCheck()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
+}
+
+void StageActivityDelegateJni::FoldStatusChangeCallback(JNIEnv* env, jclass myclass,
+                                                        jstring jinstanceName, jint foldStatus)
+{
+    auto instanceName = env->GetStringUTFChars(jinstanceName, nullptr);
+    if (instanceName == nullptr) {
+        LOGE("instanceName is nullptr");
+        return;
+    }
+    DisplayManagerAgentJni::FoldStatusChangeCallback(instanceName, (int32_t)foldStatus);
+    env->ReleaseStringUTFChars(jinstanceName, instanceName);
+}
+
 } // namespace Platform
 } // namespace AbilityRuntime
 } // namespace OHOS

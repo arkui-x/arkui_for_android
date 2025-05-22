@@ -64,7 +64,7 @@ public class SubWindowManager {
     private static final int REVERSE_VERTICAL = 3;
     private static final int REVERSE_HORIZONTAL = 4;
 
-    private static SubWindowManager _sinstance;
+    private static SubWindowManager sinstance;
 
     private Activity mRootActivity;
     private String mInstanceName;
@@ -82,15 +82,15 @@ public class SubWindowManager {
      * @return the instance
      */
     public static final SubWindowManager getInstance() {
-        if (_sinstance == null) {
+        if (sinstance == null) {
             synchronized (SubWindowManager.class) {
-                if (_sinstance == null) {
-                    _sinstance = new SubWindowManager();
+                if (sinstance == null) {
+                    sinstance = new SubWindowManager();
                 }
             }
         }
 
-        return _sinstance;
+        return sinstance;
     }
 
     /**

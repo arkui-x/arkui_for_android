@@ -36,9 +36,11 @@ DisplayInfo::DisplayInfo()
     float densityPixels = DisplayInfoJni::getDensityPixels();
     float scaledDensity = DisplayInfoJni::getScaledDensity();
     int dpi = DisplayInfoJni::getDensityDpi();
+    float xDpi = DisplayInfoJni::getXDpi();
+    float yDpi = DisplayInfoJni::getYDpi();
 
-    LOGI("DisplayInfo:: displayId=%d orentation=%d with=%d height=%d refreshRate=%.3f", displayId, orentation, width,
-        height, refreshRate);
+    LOGD("DisplayInfo:: displayId=%d orentation=%d with=%d height=%d refreshRate=%.3f xDpi=%.3f yDpi=%.3f",
+        displayId, orentation, width, height, refreshRate, xDpi, yDpi);
 
     SetDisplayId(displayId);
     SetWidth(width);
@@ -47,6 +49,8 @@ DisplayInfo::DisplayInfo()
     SetDensityPixels(densityPixels);
     SetScaledDensity(scaledDensity);
     SetDensityDpi(dpi);
+    SetXDpi(xDpi);
+    SetYDpi(yDpi);
 
     DisplayOrientation arkOrientation = DisplayOrientation::PORTRAIT;
     switch (orentation) {
@@ -116,6 +120,16 @@ float DisplayInfo::GetRefreshRate() const
     return refreshRate_;
 }
 
+float DisplayInfo::GetXDpi() const
+{
+    return xDpi_;
+}
+
+float DisplayInfo::GetYDpi() const
+{
+    return yDpi_;
+}
+
 void DisplayInfo::SetDisplayId(DisplayId displayId)
 {
     id_ = displayId;
@@ -155,6 +169,16 @@ void DisplayInfo::SetScaledDensity(float scaledDensity)
 void DisplayInfo::SetDensityDpi(int dpi)
 {
     densityDpi_ = dpi;
+}
+
+void DisplayInfo::SetXDpi(float xDpi)
+{
+    xDpi_ = xDpi;
+}
+
+void DisplayInfo::SetYDpi(float yDpi)
+{
+    yDpi_ = yDpi;
 }
 
 } // namespace OHOS::Rosen

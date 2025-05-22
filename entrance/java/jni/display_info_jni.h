@@ -33,6 +33,8 @@ struct DisplayInfoStruct {
     jmethodID getDensityPixelsMethod;
     jmethodID getDensityDpiMethod;
     jmethodID getScaledDensityMethod;
+    jmethodID getXDpiMethod;
+    jmethodID getYDpiMethod;
 };
 
 class DisplayInfoJni {
@@ -46,6 +48,8 @@ public:
     static float getDensityPixels();
     static int getDensityDpi();
     static float getScaledDensity();
+    static float getXDpi();
+    static float getYDpi();
 
 private:
     static DisplayInfoStruct displayInfoStruct_;
