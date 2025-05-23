@@ -897,8 +897,8 @@ bool StageAssetProvider::IsDynamicUpdateModule(const std::string& moduleName)
 
 std::vector<uint8_t> StageAssetProvider::GetFontConfigJsonBuffer(const std::string& moduleName)
 {
-    std::string congfigJsonValue;
-    std::string congfigJsonEnd;
+    std::string configJsonValue;
+    std::string configJsonEnd;
     auto moduleList = GetModuleJsonBufferList();
     std::vector<uint8_t> buffer;
     if (!moduleList.empty()) {
@@ -910,17 +910,17 @@ std::vector<uint8_t> StageAssetProvider::GetFontConfigJsonBuffer(const std::stri
     if (!buffer.empty()) {
         nlohmann::json moduleJson = nlohmann::json::parse(buffer.data(), nullptr, false);
         if (!moduleJson.is_discarded() && moduleJson.contains("app") && moduleJson["app"].contains("configuration")) {
-            congfigJsonValue = moduleJson["app"]["configuration"].get<std::string>();
+            configJsonValue = moduleJson["app"]["configuration"].get<std::string>();
         }
     }
-    if (!congfigJsonValue.empty()) {
-        auto delimiterPos = congfigJsonValue.find(':');
+    if (!configJsonValue.empty()) {
+        auto delimiterPos = configJsonValue.find(':');
         if (delimiterPos != std::string::npos) {
-            congfigJsonEnd = congfigJsonValue.substr(delimiterPos + 1) + ".json";
+            configJsonEnd = configJsonValue.substr(delimiterPos + 1) + ".json";
         }
     }
     std::string sourcePath = GetAppDataModuleDir() + SEPARATOR + moduleName + SEPARATOR + RESOURCES_DIR_NAME +
-                             BASE_DIR + PROFILE_DIR + SEPARATOR + congfigJsonEnd;
+                             BASE_DIR + PROFILE_DIR + SEPARATOR + configJsonEnd;
     return GetBufferByAppDataPath(sourcePath);
 }
 } // namespace Platform
