@@ -177,6 +177,11 @@ bool SystemProperties::IsSyscapExist(const char* cap)
     return false;
 }
 
+bool SystemProperties::IsApiVersionGreaterOrEqual(int majorVersion, int minorVersion, int patchVersion)
+{
+    return false;
+}
+
 std::string SystemProperties::GetLanguage()
 {
     return UNDEFINED_PARAM;
@@ -350,5 +355,15 @@ bool SystemProperties::GetContainerDeleteFlag()
 bool SystemProperties::IsPageTransitionFreeze()
 {
     return pageTransitionFrzEnabled_;
+}
+
+bool SystemProperties::GetMultiInstanceEnabled()
+{
+    return false;
+}
+
+bool SystemProperties::ConfigChangePerform()
+{
+    return false;
 }
 } // namespace OHOS::Ace

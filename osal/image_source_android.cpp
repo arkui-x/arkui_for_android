@@ -33,9 +33,8 @@ RefPtr<ImageSource> ImageSource::Create(int32_t fd)
     return MakeRefPtr<ImageSourceAndroid>(std::move(src));
 }
 
-RefPtr<ImageSource> ImageSource::Create(const uint8_t* data, uint32_t size)
+RefPtr<ImageSource> ImageSource::Create(const uint8_t* data, uint32_t size, uint32_t& errorCode)
 {
-    uint32_t errorCode;
     Media::SourceOptions options;
     auto src = Media::ImageSource::CreateImageSource(data, size, options, errorCode);
     if (errorCode != Media::SUCCESS) {
@@ -79,19 +78,18 @@ std::string ImageSourceAndroid::GetProperty(const std::string& key)
 }
 
 RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap(
-    const Size& size, AIImageQuality imageQuality, bool isHdrDecoderNeed, PixelFormat photoDecodeFormat)
+    const Size& size, uint32_t& errorCode, const PixelMapConfig& pixelMapConfig)
 {
-    return CreatePixelMap(0, size, imageQuality);
+    return CreatePixelMap(0, size, errorCode, pixelMapConfig);
 }
 
 RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap(
-    uint32_t index, const Size& size, AIImageQuality imageQuality, bool isHdrDecoderNeed, PixelFormat photoDecodeFormat)
+    uint32_t index, const Size& size, uint32_t& errorCode, const PixelMapConfig& pixelMapConfig)
 {
     Media::DecodeOptions options;
     if (size.first > 0 && size.second > 0) {
         options.desiredSize = { size.first, size.second };
     }
-    uint32_t errorCode;
     auto pixmap = imageSource_->CreatePixelMapEx(index, options, errorCode);
     if (errorCode != Media::SUCCESS) {
         LOGW("create PixelMap from ImageSource failed, index = %{public}u, errorCode = %{public}u", index, errorCode);
