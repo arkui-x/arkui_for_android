@@ -27,7 +27,7 @@ import android.util.Log;
  */
 public class DisplayInfo {
     private static final String TAG = "DisplayInfo";
-    private static volatile DisplayInfo _sinstance;
+    private static volatile DisplayInfo sInstance;
 
     private WindowManager mWindowManager;
 
@@ -41,15 +41,15 @@ public class DisplayInfo {
      * @return the instance
      */
     public static final DisplayInfo getInstance() {
-        if (_sinstance == null) {
+        if (sInstance == null) {
             synchronized (DisplayInfo.class) {
-                if (_sinstance == null) {
-                    _sinstance = new DisplayInfo();
+                if (sInstance == null) {
+                    sInstance = new DisplayInfo();
                 }
             }
         }
 
-        return _sinstance;
+        return sInstance;
     }
 
     /**
@@ -155,6 +155,36 @@ public class DisplayInfo {
         DisplayMetrics metrics = new DisplayMetrics();
         mWindowManager.getDefaultDisplay().getMetrics(metrics);
         return metrics.scaledDensity;
+    }
+
+    /**
+     * Gets dpi in horizontal direction.
+     *
+     * @return the dpi in horizontal direction.
+     */
+    public float getXDpi() {
+        Log.d(TAG, "getXDpi called.");
+        if (mWindowManager == null) {
+            return 0.0f;
+        }
+        DisplayMetrics metrics = new DisplayMetrics();
+        mWindowManager.getDefaultDisplay().getMetrics(metrics);
+        return metrics.xdpi;
+    }
+
+    /**
+     * Gets dpi in vertical direction.
+     *
+     * @return the dpi in vertical direction.
+     */
+    public float getYDpi() {
+        Log.d(TAG, "getYDpi called.");
+        if (mWindowManager == null) {
+            return 0.0f;
+        }
+        DisplayMetrics metrics = new DisplayMetrics();
+        mWindowManager.getDefaultDisplay().getMetrics(metrics);
+        return metrics.ydpi;
     }
 
     private native void nativeSetupDisplayInfo();

@@ -18,10 +18,9 @@ package ohos.stage.ability.adapter;
 import android.os.Trace;
 import android.util.Log;
 
-import ohos.ace.adapter.WindowViewInterface;
-
+import ohos.ace.adapter.DisplayManagerAgent;
 import android.content.Intent;
-
+import ohos.ace.adapter.WindowViewInterface;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -91,6 +90,7 @@ public class StageActivityDelegate {
         Trace.beginSection("attachStageActivity");
         nativeAttachStageActivity(instanceName, object);
         SubWindowManager.getInstance().setActivity(object, instanceName);
+        DisplayManagerAgent.getInstance().setActivity(object);
         Trace.endSection();
     }
 
@@ -189,6 +189,16 @@ public class StageActivityDelegate {
         nativeDispatchOnAbilityResult(instanceName, requestCode, resultCode, resultWantParams);
     }
 
+    /**
+     * dispatch fold status change event
+     *
+     * @param instanceName the activity instance name.
+     * @param foldStatus the fold status.
+     */
+    public void dispatchFoldStatusChange(String instanceName, int foldStatus) {
+        nativeFoldStatusChangeCallback(instanceName, foldStatus);
+    }
+
     private native void nativeAttachStageActivity(String instanceName, StageActivity object);
 
     private native void nativeDispatchOnCreate(String instanceName, String params);
@@ -208,4 +218,6 @@ public class StageActivityDelegate {
 
     private native void nativeDispatchOnAbilityResult(
         String instanceName, int requestCode, int resultCode, String resultWantParams);
+
+    private native void nativeFoldStatusChangeCallback(String instanceName, int foldStatus);
 }

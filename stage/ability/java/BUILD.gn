@@ -42,6 +42,8 @@ java_library("stage_platform_android_java") {
     "//prebuilts/androidx/lifecycle_viewmodel-2.5.1/classes.jar",
     "//prebuilts/androidx/savedstate-1.2.0/classes.jar",
     "//prebuilts/androidx/lifecycle_common-2.5.1/lifecycle_common.jar",
+    "//prebuilts/androidx/window-1.0.0/classes.jar",
+    "//prebuilts/androidx/window-java-1.0.0/classes.jar",
   ]
   subsystem_name = "arkui"
   part_name = "ace_engine_cross"
