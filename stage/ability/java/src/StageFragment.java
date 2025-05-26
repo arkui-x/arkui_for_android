@@ -42,6 +42,7 @@ import ohos.ace.adapter.PluginContext;
 import ohos.ace.adapter.WindowViewInterface;
 import ohos.ace.adapter.WindowViewBuilder;
 import ohos.ace.adapter.capability.bridge.BridgeManager;
+import ohos.ace.adapter.capability.grantresult.GrantResult;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginBase;
@@ -475,6 +476,20 @@ public class StageFragment extends Fragment {
             windowView.setPlatformViewPlugin(platformViewPluginAosp);
         }
         Trace.endSection();
+    }
+
+    /**
+     * Callback for the result from requesting permissions.
+     *
+     * @param requestCode  The request code passed in {@link #requestPermissions(String[], int)}.
+     * @param permissions  permissions The requested permissions. Never null.
+     * @param grantResults grantResults The grant results for the corresponding permissions.
+     */
+    public synchronized void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        Log.i(LOG_TAG, "onRequestPermissionsResult");
+        Context context = getActivity().getApplicationContext();
+        GrantResult grantResultsClass = new GrantResult(context);
+        grantResultsClass.onRequestPremissionCallback(permissions, grantResults);
     }
 
     private void initBridgeManager() {
