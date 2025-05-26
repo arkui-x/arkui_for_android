@@ -118,7 +118,7 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
         }
         outAttrs.imeOptions |= enterAction;
 
-        final TextInputDelegate delegate = new Delegate();
+        final TextInputDelegate delegate = new Delegate(clientId(), this.editable.toString());
         outAttrs.initialSelStart = Selection.getSelectionStart(editable);
         outAttrs.initialSelEnd = Selection.getSelectionEnd(editable);
         wrapper = new InputConnectionWrapper(view, clientId(), delegate, editable, hint);

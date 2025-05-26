@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "adapter/preview/entrance/clipboard/multiType_record_impl.h"
+#include "adapter/android/capability/java/jni/clipboard/multiType_record_impl.h"
 
 namespace OHOS::Ace {
 

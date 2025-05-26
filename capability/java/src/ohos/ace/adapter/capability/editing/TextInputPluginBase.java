@@ -52,6 +52,13 @@ public abstract class TextInputPluginBase {
     public static class Delegate implements TextInputDelegate {
         private static Map<Integer, String> lastValueMap = new HashMap<>();
 
+        private boolean isSelected = false;
+        private String needUpdatedText = null;
+
+        public Delegate(int clientID, String initData) {
+            Delegate.lastValueMap.put(clientID, initData);
+        }
+
         @Override
         public void updateEditingState(int clientId, String text, int selectionStart, int selectionEnd,
             int composingStart, int composingEnd) {
@@ -69,6 +76,11 @@ public abstract class TextInputPluginBase {
                 String lastValue = lastValueMap.get(clientId);
                 if (lastValue != null && text.length() < lastValue.length()) {
                     json.put("isDelete", true);
+                } else if (isSelected && needUpdatedText != null) {
+                    json.put("isDelete", false);
+                    json.put("appendText", needUpdatedText);
+                    isSelected = false;
+                    needUpdatedText = null;
                 } else {
                     json.put("isDelete", false);
                     String appendText = getNewInputStr(lastValue, text, selectionEnd);
@@ -123,6 +135,12 @@ public abstract class TextInputPluginBase {
         @Override
         public void notifyKeyboardClosedByUser(int clientId) {
             TextInputPluginBase.notifyKeyboardClosedByUser(clientId);
+        }
+
+        @Override
+        public void setSelectedState(boolean isSelected, CharSequence text) {
+            this.isSelected = isSelected;
+            this.needUpdatedText = text.toString();
         }
     }
 
