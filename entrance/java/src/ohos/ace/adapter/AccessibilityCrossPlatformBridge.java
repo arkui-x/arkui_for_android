@@ -114,7 +114,6 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
     };
 
     private final AccessibilityManager accessibilityManager;
-    private final ContentResolver contentResolver;
     private View arkuiRootAccessibilityView = null;
     private long jsAccessibilityStateObserverPtr = 0L;
     private int windowId = 0;
@@ -313,7 +312,6 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
     public AccessibilityCrossPlatformBridge(AccessibilityManager accessibilityManager, ContentResolver contentResolver,
             View arkuiRootAccessibilityView, int windowId) {
         this.accessibilityManager = accessibilityManager;
-        this.contentResolver = contentResolver;
         this.arkuiRootAccessibilityView = arkuiRootAccessibilityView;
         this.accessibilityManager.addTouchExplorationStateChangeListener(touchExplorationStateChangeListener);
         this.accessibilityManager.addAccessibilityStateChangeListener(stateChangeListener);
@@ -357,6 +355,10 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
 
         arkUiframeNodes.clear();
         arkUiAccFocusRouteNodes.clear();
+        if (arkuiRootAccessibilityView != null) {
+            arkuiRootAccessibilityView.removeCallbacks(updateNodeIds);
+            arkuiRootAccessibilityView = null;
+        }
     }
 
     /**

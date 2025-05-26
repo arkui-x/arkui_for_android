@@ -289,6 +289,9 @@ public class AceWeb extends AceWebBase {
             removeWebFromSurface(webView);
             webView.destroy();
         }
+        if (webviewBroadcastReceive_ != null) {
+            context.unregisterReceiver(webviewBroadcastReceive_);
+        }
     }
 
     public WebView getWebview() {

@@ -692,7 +692,6 @@ void AceContainerSG::UpdateConfiguration(Platform::ParsedConfig& parsedConfig)
     SetLanguage(parsedConfig, configurationChange, resConfig);
     SetFontAndScale(parsedConfig, configurationChange);
     SetResourceConfiguration(resConfig);
-    SetResourceConfiguration(resConfig);
     themeManager->UpdateConfig(resConfig);
     if (SystemProperties::GetResourceDecoupling()) {
         ResourceManager::GetInstance().UpdateResourceConfig(resConfig);
