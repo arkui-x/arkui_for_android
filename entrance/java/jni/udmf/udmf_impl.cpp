@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,9 +22,11 @@
 #include <mutex>
 #include <string>
 
+#include "application_defined_record.h"
 #include "error_code.h"
 #include "js_native_api_types.h"
 #include "native_engine/native_engine.h"
+#include "plain_text.h"
 #include "summary_napi.h"
 #include "unified_data_napi.h"
 
@@ -213,7 +215,15 @@ void UdmfClientImpl::AddPixelMapRecord(
 
 void UdmfClientImpl::AddImageRecord(const RefPtr<UnifiedData>& unifiedData, const std::string& uri) {}
 
-void UdmfClientImpl::AddPlainTextRecord(const RefPtr<UnifiedData>& unifiedData, const std::string& selectedStr) {}
+void UdmfClientImpl::AddPlainTextRecord(const RefPtr<UnifiedData>& unifiedData, const std::string& selectedStr)
+{
+    auto record = std::make_shared<UDMF::PlainText>(selectedStr, "");
+
+    auto udData = AceType::DynamicCast<UnifiedDataImpl>(unifiedData);
+    CHECK_NULL_VOID(udData);
+    CHECK_NULL_VOID(udData->GetUnifiedData());
+    udData->GetUnifiedData()->AddRecord(record);
+}
 
 std::string UdmfClientImpl::GetSinglePlainTextRecord(const RefPtr<UnifiedData>& unifiedData)
 {
@@ -222,7 +232,20 @@ std::string UdmfClientImpl::GetSinglePlainTextRecord(const RefPtr<UnifiedData>& 
 
 std::vector<std::string> UdmfClientImpl::GetPlainTextRecords(const RefPtr<UnifiedData>& unifiedData)
 {
-    return {};
+    std::vector<std::string> textRecords;
+    auto udData = AceType::DynamicCast<UnifiedDataImpl>(unifiedData);
+    CHECK_NULL_RETURN(udData, textRecords);
+    CHECK_NULL_RETURN(udData->GetUnifiedData(), textRecords);
+    auto records = udData->GetUnifiedData()->GetRecords();
+    for (const auto& record : records) {
+        UDMF::UDType type = record->GetType();
+        if (type == UDMF::UDType::PLAIN_TEXT) {
+            UDMF::PlainText* plainText = reinterpret_cast<UDMF::PlainText*>(record.get());
+            std::string str = plainText->GetContent();
+            textRecords.emplace_back(str);
+        }
+    }
+    return textRecords;
 }
 
 int32_t UdmfClientImpl::GetVideoRecordUri(const RefPtr<UnifiedData>& unifiedData, std::string& uri)
@@ -266,12 +289,31 @@ int32_t UdmfClientImpl::getGroupId()
 void UdmfClientImpl::AddSpanStringRecord(
     const RefPtr<UnifiedData>& unifiedData, std::vector<uint8_t>& data)
 {
-    return;
+    auto udData = AceType::DynamicCast<UnifiedDataImpl>(unifiedData);
+    CHECK_NULL_VOID(udData);
+    CHECK_NULL_VOID(udData->GetUnifiedData());
+    auto record = std::make_shared<UDMF::ApplicationDefinedRecord>("OPENHARMONY_STYLED_STRING_UDMF", data);
+    udData->GetUnifiedData()->AddRecord(record);
 }
 
 std::vector<uint8_t> UdmfClientImpl::GetSpanStringRecord(const RefPtr<UnifiedData>& unifiedData)
 {
-    return {};
+    std::vector<uint8_t> arr;
+    auto udData = AceType::DynamicCast<UnifiedDataImpl>(unifiedData);
+    CHECK_NULL_RETURN(udData, arr);
+    CHECK_NULL_RETURN(udData->GetUnifiedData(), arr);
+    auto records = udData->GetUnifiedData()->GetRecords();
+    for (auto record: records) {
+        UDMF::UDType type = record->GetType();
+        if (type == UDMF::UDType::APPLICATION_DEFINED_RECORD) {
+            UDMF::ApplicationDefinedRecord* app = reinterpret_cast<UDMF::ApplicationDefinedRecord*>(record.get());
+            if (app->GetApplicationDefinedType() == "OPENHARMONY_STYLED_STRING_UDMF") {
+                arr = app->GetRawData();
+                return arr;
+            }
+        }
+    }
+    return arr;
 }
 
 int32_t UdmfClientImpl::StartAsyncDataRetrieval(napi_env env, napi_value napiValue, const std::string& key)
