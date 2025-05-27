@@ -261,14 +261,17 @@ void AceContainerSG::InitPiplineContext(std::unique_ptr<Window> window, double d
         if (configuration != nullptr) {
             auto followSystem =
                 configuration->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APP_FONT_SIZE_SCALE);
+            float fontScaleValue = resourceInfo_.GetResourceConfiguration().GetFontRatio();
             bool bIsFollowSystem = (followSystem == "followSystem");
             pipelineContext_->SetFollowSystem(bIsFollowSystem);
+            if (!bIsFollowSystem) {
+                fontScaleValue = 1.0f;
+            }
             auto maxFontScale =
                 configuration->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APP_FONT_MAX_SCALE);
             if (!maxFontScale.empty()) {
                 pipelineContext_->SetMaxAppFontScale(StringUtils::StringToFloat(maxFontScale));
             }
-            float fontScaleValue = resourceInfo_.GetResourceConfiguration().GetFontRatio();
             pipelineContext_->SetFontScale(fontScaleValue);
         }
     }
@@ -800,7 +803,7 @@ void AceContainerSG::SetFontAndScale(Platform::ParsedConfig& parsedConfig, Confi
         configurationChange.fontUpdate = true;
         fontManager->SetAppCustomFont(parsedConfig.fontFamily);
     }
-    if (!parsedConfig.fontScale.empty()) {
+    if (pipelineContext_->IsFollowSystem() && !parsedConfig.fontScale.empty()) {
         configurationChange.fontUpdate = true;
         pipelineContext_->SetFontScale(std::stof(parsedConfig.fontScale));
     }
