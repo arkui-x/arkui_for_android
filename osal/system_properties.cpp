@@ -87,6 +87,7 @@ float SystemProperties::dragStartDampingRatio_ = 0.2f;
 float SystemProperties::dragStartPanDisThreshold_ = 10.0f;
 bool SystemProperties::accessTraceEnable_ = true;
 uint32_t SystemProperties::canvasDebugMode_ = 0;
+float SystemProperties::fontScale_ = 1.0f;
 
 std::pair<float, float> SystemProperties::brightUpPercent_ = {};
 
@@ -95,6 +96,11 @@ bool SystemProperties::taskPriorityAdjustmentEnable_ = false;
 int32_t SystemProperties::dragDropFrameworkStatus_ = 0;
 
 bool SystemProperties::pageTransitionFrzEnabled_ = false;
+
+ACE_WEAK_SYM float SystemProperties::GetFontScale()
+{
+    return fontScale_;
+}
 
 bool SystemProperties::IsOpIncEnable()
 {

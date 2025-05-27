@@ -137,7 +137,8 @@ public:
     void InitModuleVersionCode();
     void UpdateVersionCode(const std::string& moduleName, bool isNeedUpdate);
     bool IsDynamicUpdateModule(const std::string& moduleName);
-
+    std::vector<uint8_t> GetFontConfigJsonBuffer(const std::string& moduleName);
+    
 private:
     bool MakeMultipleDir(const std::string& path);
     bool CopyBufferToFile(std::vector<uint8_t>& buffer, const std::string& newFile);

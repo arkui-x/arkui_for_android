@@ -57,6 +57,8 @@ const std::string ARCH_X86 = "/x86_64";
 const std::string SO_SUFFIX = ".so";
 const std::string EXTERN_LIBS_DIR = "/libs";
 const std::string SYSTEM_FONT_DIR = "fonts";
+const std::string BASE_DIR = "/base";
+const std::string PROFILE_DIR = "/profile";
 } // namespace
 std::shared_ptr<StageAssetProvider> StageAssetProvider::instance_ = nullptr;
 std::mutex StageAssetProvider::mutex_;
@@ -891,6 +893,35 @@ bool StageAssetProvider::IsDynamicUpdateModule(const std::string& moduleName)
         isDynamicUpdate = it->second;
     }
     return isDynamicUpdate;
+}
+
+std::vector<uint8_t> StageAssetProvider::GetFontConfigJsonBuffer(const std::string& moduleName)
+{
+    std::string configJsonValue;
+    std::string configJsonEnd;
+    auto moduleList = GetModuleJsonBufferList();
+    std::vector<uint8_t> buffer;
+    if (!moduleList.empty()) {
+        buffer = moduleList.front();
+    } else {
+        auto modulePath = GetAppDataModuleDir() + SEPARATOR + moduleName + SEPARATOR + MODULE_JSON_NAME;
+        buffer = GetBufferByAppDataPath(modulePath);
+    }
+    if (!buffer.empty()) {
+        nlohmann::json moduleJson = nlohmann::json::parse(buffer.data(), nullptr, false);
+        if (!moduleJson.is_discarded() && moduleJson.contains("app") && moduleJson["app"].contains("configuration")) {
+            configJsonValue = moduleJson["app"]["configuration"].get<std::string>();
+        }
+    }
+    if (!configJsonValue.empty()) {
+        auto delimiterPos = configJsonValue.find(':');
+        if (delimiterPos != std::string::npos) {
+            configJsonEnd = configJsonValue.substr(delimiterPos + 1) + ".json";
+        }
+    }
+    std::string sourcePath = GetAppDataModuleDir() + SEPARATOR + moduleName + SEPARATOR + RESOURCES_DIR_NAME +
+                             BASE_DIR + PROFILE_DIR + SEPARATOR + configJsonEnd;
+    return GetBufferByAppDataPath(sourcePath);
 }
 } // namespace Platform
 } // namespace AbilityRuntime

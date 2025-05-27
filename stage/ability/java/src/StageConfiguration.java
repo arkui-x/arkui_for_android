@@ -53,6 +53,19 @@ public class StageConfiguration {
 
     private static final String SYSTEM_FONT_SIZE_SCALE = "system.font.size.scale";
 
+    private static float fontscale = 1.0f;
+
+    private static void setFontScale(float configFontScale, JSONObject json) {
+        try {
+            if (Float.compare(configFontScale, fontscale) != 0) {
+                fontscale = configFontScale;
+                json.put(SYSTEM_FONT_SIZE_SCALE, String.valueOf(fontscale));
+            }
+        } catch (JSONException e) {
+            Log.w(LOG_TAG, "Same Backup FontScale");
+        }
+    }
+
     /**
      * Convert configuration.
      *
@@ -90,8 +103,6 @@ public class StageConfiguration {
             int den = config.densityDpi;
             json.put(DENSITY_KEY, String.valueOf(den));
             json.put(LANGUAGE_MODE_KEY, config.locale);
-            float fontSizeScale = config.fontScale;
-            json.put(SYSTEM_FONT_SIZE_SCALE, String.valueOf(fontSizeScale));
             int minScreenWidth = config.smallestScreenWidthDp;
             if (minScreenWidth == Configuration.SMALLEST_SCREEN_WIDTH_DP_UNDEFINED) {
                 if (diagonalSize <= 6.9 && diagonalSize >= 0) {
@@ -104,6 +115,7 @@ public class StageConfiguration {
             } else {
                 json.put(DEVICE_TYPE, DEVICE_TYPE_PHONE);
             }
+            setFontScale(config.fontScale, json);
         } catch (JSONException ignored) {
             Log.e(LOG_TAG, "convertConfiguration parse Configuration failed");
             return json;
