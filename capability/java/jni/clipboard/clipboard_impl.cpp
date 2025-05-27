@@ -163,6 +163,9 @@ void ClipboardImpl::ProcessSpanStringData(std::vector<std::vector<uint8_t>>& arr
             if (!recordText.empty()) {
                 text.append(recordText);
             }
+        } else {
+            text.append("");
+            LOGW("ClipboardImpl::ProcessSpanStringData: Unsupported data type.");
         }
     }
 }

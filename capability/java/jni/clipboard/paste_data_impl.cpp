@@ -116,7 +116,7 @@ std::string PasteData::ToJsonString()
                 jsonRecord->Put(CLIPBOARD_RECORD_TYPE_TYPE, CLIPBOARD_URI_TYPE.c_str());
                 jsonRecord->Put(CLIPBOARD_RECORD_TYPE_DATA, record->GetUri().c_str());
             }
-        } else if (!record->IsMultiType()) {
+        } else {
             jsonRecord->Put(CLIPBOARD_RECORD_TYPE_ISMULTI, false);
             if (record->GetType() == CLIPBOARD_TEXT_TYPE) {
                 jsonRecord->Put(CLIPBOARD_RECORD_TYPE_TYPE, CLIPBOARD_TEXT_TYPE.c_str());
@@ -128,6 +128,9 @@ std::string PasteData::ToJsonString()
             } else if (record->GetType() == CLIPBOARD_URI_TYPE) {
                 jsonRecord->Put(CLIPBOARD_RECORD_TYPE_TYPE, CLIPBOARD_URI_TYPE.c_str());
                 jsonRecord->Put(CLIPBOARD_RECORD_TYPE_DATA, record->GetUri().c_str());
+            } else {
+                LOGW("PasteData::ToJsonString: Unsupported data type.");
+                continue;
             }
         }
         jsonArray->Put(jsonRecord);
@@ -159,6 +162,9 @@ void PasteData::FromJsonString(std::string jsonString)
             } else if (jsonRecord->GetString(CLIPBOARD_RECORD_TYPE_TYPE) == CLIPBOARD_URI_TYPE) {
                 pasteDataRecord->AddType(CLIPBOARD_URI_TYPE);
                 pasteDataRecord->SetUri(jsonRecord->GetString(CLIPBOARD_RECORD_TYPE_DATA));
+            } else {
+                LOGW("PasteData::FromJsonString: Unsupported data type.");
+                continue;
             }
         } else {
             pasteDataRecord->SetIsMulti(false);
@@ -172,6 +178,9 @@ void PasteData::FromJsonString(std::string jsonString)
             } else if (jsonRecord->GetString(CLIPBOARD_RECORD_TYPE_TYPE) == CLIPBOARD_URI_TYPE) {
                 pasteDataRecord->AddType(CLIPBOARD_URI_TYPE);
                 pasteDataRecord->SetUri(jsonRecord->GetString(CLIPBOARD_RECORD_TYPE_DATA));
+            } else {
+                LOGW("PasteData::FromJsonString: Unsupported data type.");
+                continue;
             }
         }
         this->pasteDataRecords_.emplace_back(pasteDataRecord);

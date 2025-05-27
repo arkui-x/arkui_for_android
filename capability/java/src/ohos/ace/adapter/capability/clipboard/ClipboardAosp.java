@@ -86,6 +86,8 @@ public class ClipboardAosp extends ClipboardPluginBase {
                     MULTI_TYPE_DATA_RECORDS_TYPE_TEXT.equals(
                         recordObject.getString(MULTI_TYPE_DATA_RECORDS_TYPE))) {
                     itemText.append(recordObject.getString(MULTI_TYPE_DATA_RECORDS_TEXT));
+                } else {
+                    ALog.w(LOG_TAG, "Unsupported data type.");
                 }
             }
             return itemText.toString();
@@ -153,6 +155,9 @@ public class ClipboardAosp extends ClipboardPluginBase {
             ClipData clipData = clipManager.getPrimaryClip();
             if (clipData != null) {
                 ClipDescription clipDescription = clipData.getDescription();
+                if (clipDescription == null) {
+                    return false;
+                }
                 if (clipDescription.hasMimeType(MULTI_TYPE_DATA_MIME)) {
                     return true;
                 }
@@ -185,6 +190,8 @@ public class ClipboardAosp extends ClipboardPluginBase {
         if (clipManager != null) {
             ClipData clipData = clipManager.getPrimaryClip();
             CharSequence charSequence = null;
+            // To be compatible with the existing clipboard functionality,
+            // the clipboard data of multiple data types is stored in the second record.
             if (clipData != null && clipData.getItemCount() > 1) {
                 charSequence = clipData.getItemAt(1).getText();
             }
