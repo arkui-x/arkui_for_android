@@ -27,10 +27,11 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Build;
+import android.os.LocaleList;
 import android.os.Process;
 import android.os.Trace;
 import android.provider.Settings;
@@ -103,6 +104,10 @@ public class StageApplicationDelegate {
     private static final String ARCH_X86 = "x86_64";
 
     private static final String CACERT_FILE = "/cacert.ca";
+
+    private static final String LANGUAGE_SHARE_PREFERENC = "language_prefs";
+
+    private static final String KEY_LANGUAGE = "app_language";
 
     private static final int ERR_INVALID_PARAMETERS = -1;
 
@@ -772,12 +777,19 @@ public class StageApplicationDelegate {
     }
 
     private void setLocaleInfo() {
-        String language;
+        Locale locale;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            language = Resources.getSystem().getConfiguration().getLocales().get(0).getLanguage();
+            locale = Resources.getSystem().getConfiguration().getLocales().get(0);
         } else {
-            language = Locale.getDefault().getLanguage();
+            locale = Locale.getDefault();
         }
+        Context context = stageApplication.getApplicationContext();
+        SharedPreferences prefs = context.getSharedPreferences(LANGUAGE_SHARE_PREFERENC, Context.MODE_PRIVATE);
+        String savedLang = prefs.getString(KEY_LANGUAGE, null);
+        if (savedLang != null && !savedLang.isEmpty()) {
+            locale = Locale.forLanguageTag(savedLang);
+        }
+        String language = locale.getLanguage();
         Log.i(LOG_TAG, "language: " + language);
         String script;
         switch (language) {
@@ -790,11 +802,11 @@ public class StageApplicationDelegate {
                 break;
             }
             default: {
-                script = Locale.getDefault().getScript();
+                script = locale.getScript();
                 break;
             }
         }
-        setLocale(language, Locale.getDefault().getCountry(), script);
+        setLocale(language, locale.getCountry(), script);
     }
 
     private void readFile(BufferedWriter writer, File file) {
@@ -905,6 +917,39 @@ public class StageApplicationDelegate {
             nativeSetLogLevel(logLevel);
         } catch (UnsatisfiedLinkError e) {
             Log.e(LOG_TAG, "logInterface: JNI is not registered.");
+        }
+    }
+
+    /**
+     * Get Application Locale.
+     *
+     * @param context the application context.
+     * @return Context after attach the language
+     */
+    public static Context attachLanguageContext(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(LANGUAGE_SHARE_PREFERENC, Context.MODE_PRIVATE);
+        String savedLang = prefs.getString(KEY_LANGUAGE, null);
+        if (savedLang == null || savedLang.isEmpty()) {
+            return context;
+        }
+        Resources resources = context.getResources();
+        if (resources == null) {
+            return context;
+        }
+        Locale locale = Locale.forLanguageTag(savedLang);
+        Configuration configuration;
+        int buildVersion = Build.VERSION.SDK_INT;
+        if (buildVersion <= Build.VERSION_CODES.N_MR1) {
+            configuration = resources.getConfiguration();
+            configuration.setLocale(locale);
+            configuration.setLocales(new LocaleList(locale));
+            resources.updateConfiguration(configuration, resources.getDisplayMetrics());
+            return context;
+        } else {
+            configuration = new Configuration();
+            configuration.setLocale(locale);
+            configuration.setLocales(new LocaleList(locale));
+            return context.createConfigurationContext(configuration);
         }
     }
 
