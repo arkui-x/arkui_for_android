@@ -16,6 +16,7 @@
 package ohos.stage.ability.adapter;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.util.Log;
 
@@ -54,6 +55,16 @@ public class StageApplication extends Application {
             return;
         }
         appDelegate.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    public void attachBaseContext(Context context) {
+        Log.i(LOG_TAG, "StageApplication attachBaseContext called");
+        if (context == null) {
+            Log.e(LOG_TAG, "context is null");
+            return;
+        }
+        super.attachBaseContext(StageApplicationDelegate.attachLanguageContext(context));
     }
 
     /**
