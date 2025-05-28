@@ -1160,7 +1160,6 @@ jobject WebAdapterJni::ConvertMapToJavaMap(JNIEnv* env, const std::map<std::stri
         env->DeleteLocalRef(hashMapClass);
         return nullptr;
     }
-
     jobject hashMap = env->NewObject(hashMapClass, hashMapConstructor);
     for (const auto& entry : headersMap) {
         jstring key = env->NewStringUTF(entry.first.c_str());
@@ -1177,28 +1176,24 @@ jobject WebAdapterJni::ConvertWebResponseToJObject(JNIEnv* env, const RefPtr<OHO
 {
     CHECK_NULL_RETURN(env, nullptr);
     CHECK_NULL_RETURN(webResponse, nullptr);
-
     jclass webResourceResponseClass = env->FindClass("android/webkit/WebResourceResponse");
     if (webResourceResponseClass == nullptr) {
-        LOGE("ConvertWebResponseToJObject FindClass android/webkit/WebResourceResponse failed");
+        LOGE("ConvertWebResponseToJObject FindClass WebResourceResponse failed");
         return nullptr;
     }
-
     jmethodID constructor = env->GetMethodID(webResourceResponseClass, "<init>",
         "(Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/util/Map;Ljava/io/InputStream;)V");
     if (constructor == nullptr) {
-        LOGE("ConvertWebResponseToJObject android/webkit/WebResourceResponse constructor failed");
+        LOGE("ConvertWebResponseToJObject WebResourceResponse constructor failed");
         env->DeleteLocalRef(webResourceResponseClass);
         return nullptr;
     }
-
     jclass byteArrayInputStreamClass = env->FindClass("java/io/ByteArrayInputStream");
     if (byteArrayInputStreamClass == nullptr) {
         LOGE("ConvertWebResponseToJObject FindClass java/io/ByteArrayInputStream failed");
         env->DeleteLocalRef(webResourceResponseClass);
         return nullptr;
     }
-
     jmethodID byteArrayInputStreamConstructor = env->GetMethodID(byteArrayInputStreamClass, "<init>", "([B)V");
     if (byteArrayInputStreamConstructor == nullptr) {
         LOGE("ConvertWebResponseToJObject java/io/ByteArrayInputStream init failed");
@@ -1206,11 +1201,9 @@ jobject WebAdapterJni::ConvertWebResponseToJObject(JNIEnv* env, const RefPtr<OHO
         env->DeleteLocalRef(webResourceResponseClass);
         return nullptr;
     }
-
     jbyteArray byteArray = env->NewByteArray(webResponse->GetData().size());
     env->SetByteArrayRegion(
         byteArray, 0, webResponse->GetData().size(), reinterpret_cast<const jbyte*>(webResponse->GetData().c_str()));
-
     jstring mimeType = env->NewStringUTF(webResponse->GetMimeType().c_str());
     jstring encoding = env->NewStringUTF(webResponse->GetEncoding().c_str());
     jint statusCode = webResponse->GetStatusCode();
