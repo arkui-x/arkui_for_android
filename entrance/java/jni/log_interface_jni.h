@@ -18,7 +18,7 @@
 
 #include <atomic>
 #include <jni.h>
-#include <mutex>
+#include <shared_mutex>
 
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/log/log.h"
@@ -26,7 +26,7 @@
 #include "base/utils/utils.h"
 
 namespace OHOS::Ace::Platform {
-extern std::mutex g_logInterfaceJniLock;
+extern std::shared_mutex g_logInterfaceJniLock;
 struct LogInterface {
     jobject logger;
     jmethodID d;
