@@ -586,6 +586,17 @@ public class AceWeb extends AceWebBase {
                 AceWebHttpAuthRequestObject object = new AceWebHttpAuthRequestObject(handler, host, realm, context);
                 AceWeb.this.fireHttpAuthRequestReceive(object);
             }
+
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                AceWebResourceRequestObject object = new AceWebResourceRequestObject(request);
+                Object response = AceWeb.this.fireShouldInterceptRequest(object);
+                if (response instanceof WebResourceResponse) {
+                    return (WebResourceResponse) response;
+                } else {
+                    return null;
+                }
+            }
         });
         webView.setWebChromeClient(new WebChromeClient() {
             @Override

@@ -431,6 +431,17 @@ public abstract class AceWebBase {
     }
 
     /**
+     * This is call to intercept request.
+     *
+     * @param obj the jni object.
+     * @return Object is WebResourceResponse.
+     */
+    public Object fireShouldInterceptRequest(Object obj) {
+        return this.nativeOnObjectEventWithObjectReturn(
+            makeEventHash("onInterceptRequest"), "onInterceptRequest", obj);
+    }
+
+    /**
      * This is call to exit the render.
      *
      * @param reasonCode the reason code.
@@ -1059,6 +1070,8 @@ public abstract class AceWebBase {
     private native void nativeOnObjectEvent(String id, String param, Object object);
 
     private native boolean nativeOnObjectEventWithBoolReturn(String id, String param, Object object);
+
+    private native Object nativeOnObjectEventWithObjectReturn(String id, String param, Object object);
 
     /**
      * createWebMessagePorts.

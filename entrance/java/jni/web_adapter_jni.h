@@ -20,6 +20,7 @@
 
 #include "jni.h"
 #include "base/memory/ace_type.h"
+#include "core/components/web/web_event.h"
 
 namespace OHOS::Ace::Platform {
 namespace JNI_TOOL {
@@ -40,6 +41,11 @@ public:
         JNIEnv* env, jobject clazz, jstring enventId, jstring param, jobject object);
     static bool NativeOnObjectEventWithBoolReturn(
         JNIEnv* env, jobject clazz, jstring enventId, jstring param, jobject object);
+    static jobject NativeOnObjectEventWithObjectReturn(
+        JNIEnv* env, jobject clazz, jstring enventId, jstring param, jobject object);
+private:
+    static jobject ConvertMapToJavaMap(JNIEnv* env, const std::map<std::string, std::string>& headersMap);
+    static jobject ConvertWebResponseToJObject(JNIEnv* env, const RefPtr<OHOS::Ace::WebResponse>& webResponse);
 };
 }
 #endif
