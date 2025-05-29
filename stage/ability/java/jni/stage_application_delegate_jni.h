@@ -30,6 +30,7 @@ public:
 
     static bool Register(const std::shared_ptr<JNIEnv>& env);
     static void SetNativeAssetManager(JNIEnv* env, jclass myclass, jobject assetManager);
+    static void SetIsDynamicLoadLibs(JNIEnv* env, jclass clazz, jboolean isDynamic);
     static void SetHapPath(JNIEnv* env, jclass myclass, jstring str);
     static void SetAssetsFileRelativePath(JNIEnv* env, jclass myclass, jstring str);
     static void LaunchApplication(JNIEnv* env, jclass clazz, jboolean isCopyNativeLibs);

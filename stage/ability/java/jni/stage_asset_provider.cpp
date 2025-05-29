@@ -43,7 +43,7 @@ const std::string ABILITY_STAGE_ABC_NAME = "AbilityStage.abc";
 const std::string MODULE_STAGE_ABC_NAME = "modules.abc";
 const std::string TEMP_DIR = "/temp";
 const std::string FILES_DIR = "/files";
-const std::string ARKUI_X_ASSETS_DIR = "/arkui-x";
+const std::string ARKUI_X_DIR = "/arkui-x";
 const std::string PREFERENCE_DIR = "/preference";
 const std::string DATABASE_DIR = "/database";
 const std::string ASSETS_DIR = "/assets";
@@ -390,17 +390,17 @@ void StageAssetProvider::SetFileDir(const std::string& filesRootDir)
     filesDir_ = filesRootDir + FILES_DIR;
     preferenceDir_ = filesRootDir + PREFERENCE_DIR;
     databaseDir_ = filesRootDir + DATABASE_DIR;
-    arkuiXAssetsDir_ = filesRootDir + ARKUI_X_ASSETS_DIR;
+    arkuiXAssetsDir_ = filesRootDir + ARKUI_X_DIR;
     size_t lastSlashPos = appLibDir_.find_last_of('/');
     if (lastSlashPos != std::string::npos) {
         if (appLibDir_.substr(lastSlashPos) == "/arm64") {
-            appDataLibDir_ = filesRootDir + ARKUI_X_ASSETS_DIR + EXTERN_LIBS_DIR + ARCH_ARM64;
+            appDataLibDir_ = filesRootDir + ARKUI_X_DIR + EXTERN_LIBS_DIR + ARCH_ARM64;
             architecture_ = ARCH_ARM64;
         } else if (appLibDir_.substr(lastSlashPos) == "/arm") {
-            appDataLibDir_ = filesRootDir + ARKUI_X_ASSETS_DIR + EXTERN_LIBS_DIR + ARCH_ARM;
+            appDataLibDir_ = filesRootDir + ARKUI_X_DIR + EXTERN_LIBS_DIR + ARCH_ARM;
             architecture_ = ARCH_ARM;
         } else {
-            appDataLibDir_ = filesRootDir + ARKUI_X_ASSETS_DIR + EXTERN_LIBS_DIR + ARCH_X86;
+            appDataLibDir_ = filesRootDir + ARKUI_X_DIR + EXTERN_LIBS_DIR + ARCH_X86;
             architecture_ = ARCH_X86;
         }
     }
@@ -720,8 +720,8 @@ void StageAssetProvider::CopyNativeLibToAppDataModuleDir(const std::string& bund
         std::vector<uint8_t> buffer;
         buffer.assign(&moduleMap[0], &moduleMap[mapping->GetSize()]);
 
-        auto beginPos = filePath.find(ARKUI_X_ASSETS_DIR);
-        auto endPath = filePath.substr(beginPos + ARKUI_X_ASSETS_DIR.length() + 1, filePath.size() - 1);
+        auto beginPos = filePath.find(ARKUI_X_DIR);
+        auto endPath = filePath.substr(beginPos + ARKUI_X_DIR.length() + 1, filePath.size() - 1);
         auto endPos = endPath.find_first_of(SEPARATOR);
         auto moduleName = endPath.substr(0, endPos);
 
@@ -837,6 +837,16 @@ std::vector<uint8_t> StageAssetProvider::GetAotBuffer(const std::string &fileNam
         buffer.assign(&moduleMap[0], &moduleMap[mapping->GetSize()]);
     }
     return buffer;
+}
+
+void StageAssetProvider::SetIsDynamicLoadLibs(bool isDynamic)
+{
+    isDynamicLibs_ = isDynamic;
+}
+
+bool StageAssetProvider::IsDynamicLoadLibs()
+{
+    return isDynamicLibs_;
 }
 
 void StageAssetProvider::InitModuleVersionCode()
