@@ -23,7 +23,6 @@
 #include "stage_asset_provider.h"
 
 #include "adapter/android/entrance/java/jni/jni_environment.h"
-#include "adapter/android/entrance/java/jni/log_interface_jni.h"
 #include "base/log/log.h"
 #include "base/utils/utils.h"
 
@@ -31,7 +30,7 @@ namespace OHOS {
 namespace AbilityRuntime {
 namespace Platform {
 namespace {
-std::mutex g_logInterfaceJniLock;
+OHOS::Ace::LogLevel g_currentLogLevel = OHOS::Ace::LogLevel::ERROR;
 } // namespace
 bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
@@ -358,8 +357,9 @@ void StageApplicationDelegateJni::NativeSetLogLevel(JNIEnv* env, jobject jobj, j
         LOGE("JNI JniStageApplicationDelegate: null java env");
         return;
     }
-    std::lock_guard<std::mutex> lock(g_logInterfaceJniLock);
+    std::unique_lock<std::shared_mutex> lock(OHOS::Ace::Platform::g_logInterfaceJniLock);
     OHOS::Ace::LogWrapper::SetLogLevel(static_cast<OHOS::Ace::LogLevel>(level));
+    g_currentLogLevel = static_cast<OHOS::Ace::LogLevel>(level);
 }
 
 void StageApplicationDelegateJni::DispatchApplicationOnForeground(JNIEnv* env, jclass myclass)
@@ -388,6 +388,12 @@ void StageApplicationDelegateJni::PreloadModule(JNIEnv* env, jclass myclass, jst
     AppMain::GetInstance()->PreloadModule(moduleName, abilityName);
     env->ReleaseStringUTFChars(jModuleName, moduleName);
     env->ReleaseStringUTFChars(jAbilityName, abilityName);
+}
+
+OHOS::Ace::LogLevel StageApplicationDelegateJni::GetCurrentLogLevel()
+{
+    std::shared_lock<std::shared_mutex> lock(OHOS::Ace::Platform::g_logInterfaceJniLock);
+    return g_currentLogLevel;
 }
 } // namespace Platform
 } // namespace AbilityRuntime

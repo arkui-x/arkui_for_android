@@ -18,6 +18,7 @@
 
 #include <memory>
 
+#include "log_interface_jni.h"
 #include "jni.h"
 
 namespace OHOS {
@@ -49,6 +50,7 @@ public:
     static void DispatchApplicationOnForeground(JNIEnv* env, jclass myclass);
     static void DispatchApplicationOnBackground(JNIEnv* env, jclass myclass);
     static void PreloadModule(JNIEnv* env, jclass myclass, jstring jModuleName, jstring jAbilityName);
+    static OHOS::Ace::LogLevel GetCurrentLogLevel();
 };
 } // namespace Platform
 } // namespace AbilityRuntime

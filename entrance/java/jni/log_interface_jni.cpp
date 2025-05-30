@@ -41,13 +41,13 @@ static const char START_F[] = "f";
 static const char START_F_PARAM[] = "(Ljava/lang/String;Ljava/lang/String;)V";
 
 } // namespace
-std::mutex g_logInterfaceJniLock;
+std::shared_mutex g_logInterfaceJniLock;
 LogInterface LogInterfaceJni::logInterface_;
 
 void LogInterfaceJni::SetLogger(JNIEnv* env, jobject jobjLogger)
 {
     CHECK_NULL_VOID(env);
-    std::lock_guard<std::mutex> lock(g_logInterfaceJniLock);
+    std::unique_lock<std::shared_mutex> lock(g_logInterfaceJniLock);
     if (jobjLogger != nullptr) {
         logInterface_.logger = env->NewGlobalRef(jobjLogger);
         CHECK_NULL_VOID(logInterface_.logger);
@@ -84,6 +84,7 @@ void LogInterfaceJni::PassLogMessage(const int32_t level, const std::string& dom
 {
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
+    std::shared_lock<std::shared_mutex> lock(g_logInterfaceJniLock);
     CHECK_NULL_VOID(logInterface_.logger);
     jstring jDomain = env->NewStringUTF(domain.c_str());
     jstring jNewFmt = env->NewStringUTF(newFmt.c_str());
