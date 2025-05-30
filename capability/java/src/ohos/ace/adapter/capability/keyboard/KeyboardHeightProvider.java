@@ -77,6 +77,7 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
                 @Override
                 public void run() {
                     handleOnGlobalLayout();
+                    notifySafeAreaChanged();
                 }
             });
         }
@@ -186,6 +187,12 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
     private void notifyKeyboardHeightChanged(int height) {
         if (observer != null) {
             observer.onKeyboardHeightChanged(height);
+        }
+    }
+
+    private void notifySafeAreaChanged() {
+        if (observer != null) {
+            observer.onAvoidAreaChanged();
         }
     }
 

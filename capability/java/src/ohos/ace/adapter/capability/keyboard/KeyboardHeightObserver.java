@@ -27,4 +27,9 @@ public interface KeyboardHeightObserver {
      * @param height new keyboard height
      */
     void onKeyboardHeightChanged(int height);
+
+    /**
+     * called when avoid area has changed.
+     */
+    void onAvoidAreaChanged();
 }

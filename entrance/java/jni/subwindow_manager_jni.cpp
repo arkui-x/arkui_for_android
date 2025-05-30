@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -124,6 +124,9 @@ void SubWindowManagerJni::SetupSubWindowManager(JNIEnv* env, jobject obj)
         env->GetMethodID(clazz, "registerSubWindow", "(Ljava/lang/String;J)Z");
     subWindowManagerStruct_.unregisterSubWindowMethod =
         env->GetMethodID(clazz, "unregisterSubWindow", "(Ljava/lang/String;)Z");
+    subWindowManagerStruct_.setStatusBarMethod = env->GetMethodID(clazz, "setStatusBar", "(IIZ)Z");
+    subWindowManagerStruct_.setNavigationBarMethod = env->GetMethodID(clazz, "setNavigationBar", "(IIZ)Z");
+    subWindowManagerStruct_.setWindowPrivacyModeMethod = env->GetMethodID(clazz, "setWindowPrivacyMode", "(Z)Z");
 }
 
 void SubWindowManagerJni::OnWindowTouchOutside(JNIEnv* env, jobject obj, jlong window)
@@ -788,6 +791,70 @@ bool SubWindowManagerJni::UnregisterSubWindow(const std::string& name)
         return true;
     } else {
         LOGI("SubWindowManagerJni::UnregisterSubWindow: failed");
+        return false;
+    }
+}
+
+bool SubWindowManagerJni::SetStatusBar(uint32_t backgroundColor, uint32_t contentColor, bool enable)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("SubWindowManagerJni::SetStatusBar: env is NULL");
+        return false;
+    }
+
+    jboolean result = env->CallBooleanMethod(subWindowManagerStruct_.object,
+        subWindowManagerStruct_.setStatusBarMethod, (int)backgroundColor, (int)contentColor, enable);
+    if (env->ExceptionCheck()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return false;
+    }
+    bool conversionResult = static_cast<bool>(result);
+    LOGI("SubWindowManagerJni::SetStatusBar: result:%{public}d", conversionResult);
+    return conversionResult;
+}
+
+bool SubWindowManagerJni::SetNavigationBar(uint32_t backgroundColor, uint32_t contentColor, bool enable)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("SubWindowManagerJni::SetNavigationBar: env is NULL");
+        return false;
+    }
+
+    jboolean result = env->CallBooleanMethod(subWindowManagerStruct_.object,
+        subWindowManagerStruct_.setNavigationBarMethod, (int)backgroundColor, (int)contentColor, enable);
+    if (env->ExceptionCheck()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return false;
+    }
+    bool conversionResult = static_cast<bool>(result);
+    LOGI("SubWindowManagerJni::SetNavigationBar: result:%{public}d", conversionResult);
+    return conversionResult;
+}
+
+bool SubWindowManagerJni::SetWindowPrivacyMode(bool isPrivacyMode)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("SubWindowManagerJni::SetWindowPrivacyMode: env is NULL");
+        return false;
+    }
+
+    jboolean ret = env->CallBooleanMethod(subWindowManagerStruct_.object,
+        subWindowManagerStruct_.setWindowPrivacyModeMethod, isPrivacyMode ? JNI_TRUE : JNI_FALSE);
+    if (env->ExceptionCheck()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return false;
+    }
+    if (ret == JNI_TRUE) {
+        LOGI("SubWindowManagerJni::SetWindowPrivacyMode: success");
+        return true;
+    } else {
+        LOGI("SubWindowManagerJni::SetWindowPrivacyMode: failed");
         return false;
     }
 }
