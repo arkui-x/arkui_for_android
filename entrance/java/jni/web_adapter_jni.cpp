@@ -1081,6 +1081,12 @@ bool WebAdapterJni::Register(const std::shared_ptr<JNIEnv>& env)
                 "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)Z",
             .fnPtr = reinterpret_cast<void*>(&NativeOnObjectEventWithBoolReturn),
         },
+        {
+            .name = "nativeOnObjectEventWithObjectReturn",
+            .signature =
+                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;",
+            .fnPtr = reinterpret_cast<void*>(&NativeOnObjectEventWithObjectReturn),
+        },
     };
 
     if (!env) {
@@ -1140,5 +1146,101 @@ bool WebAdapterJni::NativeOnObjectEventWithBoolReturn(
         env->ReleaseStringUTFChars(param, paramStr);
     }
     return WebObjectEventManager::GetInstance().OnObjectEventWithBoolReturn(eventId, eventParam, (void*)&object);
+}
+
+jobject WebAdapterJni::ConvertMapToJavaMap(JNIEnv* env, const std::map<std::string, std::string>& headersMap)
+{
+    CHECK_NULL_RETURN(env, nullptr);
+    jclass hashMapClass = env->FindClass("java/util/HashMap");
+    CHECK_NULL_RETURN(hashMapClass, nullptr);
+    jmethodID hashMapConstructor = env->GetMethodID(hashMapClass, "<init>", "()V");
+    jmethodID hashMapPut =
+        env->GetMethodID(hashMapClass, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+    if (hashMapConstructor == nullptr || hashMapPut == nullptr) {
+        env->DeleteLocalRef(hashMapClass);
+        return nullptr;
+    }
+    jobject hashMap = env->NewObject(hashMapClass, hashMapConstructor);
+    for (const auto& entry : headersMap) {
+        jstring key = env->NewStringUTF(entry.first.c_str());
+        jstring value = env->NewStringUTF(entry.second.c_str());
+        env->CallObjectMethod(hashMap, hashMapPut, key, value);
+        env->DeleteLocalRef(key);
+        env->DeleteLocalRef(value);
+    }
+    env->DeleteLocalRef(hashMapClass);
+    return hashMap;
+}
+
+jobject WebAdapterJni::ConvertWebResponseToJObject(JNIEnv* env, const RefPtr<OHOS::Ace::WebResponse>& webResponse)
+{
+    CHECK_NULL_RETURN(env, nullptr);
+    CHECK_NULL_RETURN(webResponse, nullptr);
+    jclass webResourceResponseClass = env->FindClass("android/webkit/WebResourceResponse");
+    if (webResourceResponseClass == nullptr) {
+        LOGE("ConvertWebResponseToJObject FindClass WebResourceResponse failed");
+        return nullptr;
+    }
+    jmethodID constructor = env->GetMethodID(webResourceResponseClass, "<init>",
+        "(Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/util/Map;Ljava/io/InputStream;)V");
+    if (constructor == nullptr) {
+        LOGE("ConvertWebResponseToJObject WebResourceResponse constructor failed");
+        env->DeleteLocalRef(webResourceResponseClass);
+        return nullptr;
+    }
+    jclass byteArrayInputStreamClass = env->FindClass("java/io/ByteArrayInputStream");
+    if (byteArrayInputStreamClass == nullptr) {
+        LOGE("ConvertWebResponseToJObject FindClass java/io/ByteArrayInputStream failed");
+        env->DeleteLocalRef(webResourceResponseClass);
+        return nullptr;
+    }
+    jmethodID byteArrayInputStreamConstructor = env->GetMethodID(byteArrayInputStreamClass, "<init>", "([B)V");
+    if (byteArrayInputStreamConstructor == nullptr) {
+        LOGE("ConvertWebResponseToJObject java/io/ByteArrayInputStream init failed");
+        env->DeleteLocalRef(byteArrayInputStreamClass);
+        env->DeleteLocalRef(webResourceResponseClass);
+        return nullptr;
+    }
+    jbyteArray byteArray = env->NewByteArray(webResponse->GetData().size());
+    env->SetByteArrayRegion(
+        byteArray, 0, webResponse->GetData().size(), reinterpret_cast<const jbyte*>(webResponse->GetData().c_str()));
+    jstring mimeType = env->NewStringUTF(webResponse->GetMimeType().c_str());
+    jstring encoding = env->NewStringUTF(webResponse->GetEncoding().c_str());
+    jint statusCode = webResponse->GetStatusCode();
+    jstring reasonPhrase = env->NewStringUTF(webResponse->GetReason().c_str());
+    std::map<std::string, std::string> headersMap = webResponse->GetHeaders();
+    jobject headers = ConvertMapToJavaMap(env, headersMap);
+    jobject inputStream = env->NewObject(byteArrayInputStreamClass, byteArrayInputStreamConstructor, byteArray);
+    jobject webResourceResponse = env->NewObject(
+        webResourceResponseClass, constructor, mimeType, encoding, statusCode, reasonPhrase, headers, inputStream);
+    env->DeleteLocalRef(mimeType);
+    env->DeleteLocalRef(encoding);
+    env->DeleteLocalRef(reasonPhrase);
+    env->DeleteLocalRef(byteArray);
+    env->DeleteLocalRef(inputStream);
+    env->DeleteLocalRef(byteArrayInputStreamClass);
+    env->DeleteLocalRef(webResourceResponseClass);
+    return webResourceResponse;
+}
+
+jobject WebAdapterJni::NativeOnObjectEventWithObjectReturn(
+    JNIEnv* env, jobject clazz, jstring id, jstring param, jobject object)
+{
+    CHECK_NULL_RETURN(env, nullptr);
+    std::string eventId;
+    std::string eventParam;
+    auto idStr = env->GetStringUTFChars(id, nullptr);
+    if (idStr != nullptr) {
+        eventId = idStr;
+        env->ReleaseStringUTFChars(id, idStr);
+    }
+    auto paramStr = env->GetStringUTFChars(param, nullptr);
+    if (paramStr != nullptr) {
+        eventParam = paramStr;
+        env->ReleaseStringUTFChars(param, paramStr);
+    }
+    RefPtr<OHOS::Ace::WebResponse> response =
+        WebObjectEventManager::GetInstance().OnObjectEventWithResponseReturn(eventId, eventParam, (void*)&object);
+    return ConvertWebResponseToJObject(env, response);
 }
 } // namespace OHOS::Ace
