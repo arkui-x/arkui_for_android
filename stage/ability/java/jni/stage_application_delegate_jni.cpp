@@ -47,6 +47,11 @@ bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
             .fnPtr = reinterpret_cast<void*>(&SetNativeAssetManager),
         },
         {
+            .name = "nativeSetIsDynamicLoadLibs",
+            .signature = "(Z)V",
+            .fnPtr = reinterpret_cast<void*>(&SetIsDynamicLoadLibs),
+        },
+        {
             .name = "nativeSetHapPath",
             .signature = "(Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&SetHapPath),
@@ -157,6 +162,12 @@ void StageApplicationDelegateJni::SetNativeAssetManager(JNIEnv* env, jclass mycl
     }
 
     StageAssetProvider::GetInstance()->SetAssetManager(env, assetManager);
+}
+
+void StageApplicationDelegateJni::SetIsDynamicLoadLibs(JNIEnv* env, jclass clazz, jboolean isDynamic)
+{
+    CHECK_NULL_VOID(env);
+    StageAssetProvider::GetInstance()->SetIsDynamicLoadLibs(isDynamic);
 }
 
 void StageApplicationDelegateJni::SetHapPath(JNIEnv* env, jclass myclass, jstring str)
