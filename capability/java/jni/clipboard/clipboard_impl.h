@@ -18,7 +18,9 @@
 
 #include <functional>
 #include <string>
+#include <vector>
 
+#include "adapter/android/capability/java/jni/clipboard/paste_data_impl.h"
 #include "base/memory/referenced.h"
 #include "base/thread/task_executor.h"
 #include "base/utils/macros.h"
@@ -62,6 +64,11 @@ public:
     RefPtr<PasteDataMix> CreatePasteDataMix() override;
 
 private:
+    void GetSpanStringDataHelper(
+        const std::function<void(std::vector<std::vector<uint8_t>>&, const std::string&, bool&)>& callback,
+        bool syncMode);
+    void ProcessSpanStringData(std::vector<std::vector<uint8_t>>& arrays, const PasteData& pasteData, std::string& text,
+        bool& isMultiTypeRecord);
     CallbackSetClipboardPixmapData callbackSetClipboardPixmapData_;
     CallbackGetClipboardPixmapData callbackGetClipboardPixmapData_;
     ACE_DISALLOW_COPY_AND_MOVE(ClipboardImpl);

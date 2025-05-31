@@ -138,6 +138,10 @@ class InputConnectionWrapper extends BaseInputConnection {
 
     @Override
     public boolean commitText(CharSequence text, int newCursorPosition) {
+        boolean isSelected = Selection.getSelectionEnd(editable) - Selection.getSelectionStart(editable) > 0;
+        if (isSelected) {
+            delegate.setSelectedState(isSelected, text);
+        }
         boolean result = super.commitText(text, newCursorPosition);
         onStateUpdated();
         return result;

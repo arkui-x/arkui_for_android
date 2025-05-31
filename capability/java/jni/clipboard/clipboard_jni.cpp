@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,11 +36,17 @@ static const char METHOD_SET_DATA[] = "setData";
 static const char METHOD_GET_DATA[] = "getData";
 static const char METHOD_HAS_DATA[] = "hasData";
 static const char METHOD_CLEAR[] = "clear";
+static const char METHOD_IS_MULTI_TYPE_DATA[] = "isMultiTypeData";
+static const char METHOD_SET_MULTI_TYPE_DATA[] = "setMultiTypeData";
+static const char METHOD_GET_MULTI_TYPE_DATA[] = "getMultiTypeData";
 
 static const char SIGNATURE_SET_DATA[] = "(Ljava/lang/String;)V";
 static const char SIGNATURE_GET_DATA[] = "()Ljava/lang/String;";
 static const char SIGNATURE_HAS_DATA[] = "()Z";
 static const char SIGNATURE_CLEAR[] = "()V";
+static const char SIGNATURE_IS_MULTI_TYPE_DATA[] = "()Z";
+static const char SIGNATURE_SET_MULTI_TYPE_DATA[] = "(Ljava/lang/String;)V";
+static const char SIGNATURE_GET_MULTI_TYPE_DATA[] = "()Ljava/lang/String;";
 
 JniEnvironment::JavaGlobalRef g_clipboardObj(nullptr, nullptr);
 
@@ -49,6 +55,9 @@ struct {
     jmethodID getData;
     jmethodID hasData;
     jmethodID clear;
+    jmethodID isMultiTypeData;
+    jmethodID setMultiTypeData;
+    jmethodID getMultiTypeData;
 } g_pluginMethods;
 
 } // namespace
@@ -115,6 +124,22 @@ void ClipboardJni::NativeInit(JNIEnv* env, jobject object)
         LOGW("Clipborad JNI Init: clear method not found");
     }
 
+    g_pluginMethods.isMultiTypeData = env->GetMethodID(clazz, METHOD_IS_MULTI_TYPE_DATA, SIGNATURE_IS_MULTI_TYPE_DATA);
+    if (!g_pluginMethods.isMultiTypeData) {
+        LOGW("Clipborad JNI Init: isMultiTypeData method not found");
+    }
+
+    g_pluginMethods.setMultiTypeData =
+        env->GetMethodID(clazz, METHOD_SET_MULTI_TYPE_DATA, SIGNATURE_SET_MULTI_TYPE_DATA);
+    if (!g_pluginMethods.setMultiTypeData) {
+        LOGW("Clipborad JNI Init: setMultiTypeData method not found");
+    }
+
+    g_pluginMethods.getMultiTypeData =
+        env->GetMethodID(clazz, METHOD_GET_MULTI_TYPE_DATA, SIGNATURE_GET_MULTI_TYPE_DATA);
+    if (!g_pluginMethods.getMultiTypeData) {
+        LOGW("Clipborad JNI Init: getMultiTypeData method not found");
+    }
     env->DeleteLocalRef(clazz);
 }
 
@@ -186,6 +211,32 @@ bool ClipboardJni::GetData(
     return true;
 }
 
+std::string ClipboardJni::GetData()
+{
+    auto env = JniEnvironment::GetInstance().GetJniEnv();
+    CHECK_NULL_RETURN(env, "");
+    CHECK_NULL_RETURN(g_clipboardObj, "");
+    CHECK_NULL_RETURN(g_pluginMethods.getData, "");
+    std::string result = "";
+    jstring jData = static_cast<jstring>(env->CallObjectMethod(g_clipboardObj.get(), g_pluginMethods.getData));
+    if (env->ExceptionCheck()) {
+        LOGE("Clipborad JNI: call getData has exception");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return "";
+    }
+    const char* content = env->GetStringUTFChars(jData, nullptr);
+    if (content != nullptr) {
+        result.assign(content);
+        env->ReleaseStringUTFChars(jData, content);
+    }
+    if (jData != nullptr) {
+        env->DeleteLocalRef(jData);
+    }
+
+    return result;
+}
+
 bool ClipboardJni::HasData(const std::function<void(const bool)>& callback, const WeakPtr<TaskExecutor>& taskExecutor)
 {
     auto env = JniEnvironment::GetInstance().GetJniEnv();
@@ -219,6 +270,24 @@ bool ClipboardJni::HasData(const std::function<void(const bool)>& callback, cons
     return true;
 }
 
+bool ClipboardJni::HasPasteData()
+{
+    auto env = JniEnvironment::GetInstance().GetJniEnv();
+    CHECK_NULL_RETURN(env, false);
+    CHECK_NULL_RETURN(g_clipboardObj, false);
+    CHECK_NULL_RETURN(g_pluginMethods.hasData, false);
+
+    bool jResult = static_cast<bool>(env->CallBooleanMethod(g_clipboardObj.get(), g_pluginMethods.hasData));
+    if (env->ExceptionCheck()) {
+        LOGE("Clipborad JNI: call HasPasteData has exception");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return false;
+    }
+
+    return jResult;
+}
+
 bool ClipboardJni::Clear()
 {
     auto env = JniEnvironment::GetInstance().GetJniEnv();
@@ -241,4 +310,65 @@ bool ClipboardJni::Clear()
     return true;
 }
 
+bool ClipboardJni::IsMultiTypeData()
+{
+    auto env = JniEnvironment::GetInstance().GetJniEnv();
+    CHECK_NULL_RETURN(env, false);
+    CHECK_NULL_RETURN(g_clipboardObj, false);
+    CHECK_NULL_RETURN(g_pluginMethods.isMultiTypeData, false);
+    bool jResult = static_cast<bool>(env->CallBooleanMethod(g_clipboardObj.get(), g_pluginMethods.isMultiTypeData));
+    if (env->ExceptionCheck()) {
+        LOGE("Clipborad JNI: call IsMultiTypeData has exception");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return false;
+    }
+
+    return jResult;
+}
+
+std::string ClipboardJni::GetMultiTypeData()
+{
+    auto env = JniEnvironment::GetInstance().GetJniEnv();
+    CHECK_NULL_RETURN(env, "");
+    CHECK_NULL_RETURN(g_clipboardObj, "");
+    CHECK_NULL_RETURN(g_pluginMethods.getMultiTypeData, "");
+    std::string result = "";
+    jstring jData = static_cast<jstring>(env->CallObjectMethod(g_clipboardObj.get(), g_pluginMethods.getMultiTypeData));
+    if (env->ExceptionCheck()) {
+        LOGE("Clipborad JNI: call GetMultiTypeData has exception");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return "";
+    }
+    const char* content = env->GetStringUTFChars(jData, nullptr);
+    if (content != nullptr) {
+        result.assign(content);
+        env->ReleaseStringUTFChars(jData, content);
+    }
+    if (jData != nullptr) {
+        env->DeleteLocalRef(jData);
+    }
+
+    return result;
+}
+
+void ClipboardJni::SetMultiTypeData(const std::string& data)
+{
+    auto env = JniEnvironment::GetInstance().GetJniEnv();
+    CHECK_NULL_VOID(env);
+    CHECK_NULL_VOID(g_clipboardObj);
+    CHECK_NULL_VOID(g_pluginMethods.setMultiTypeData);
+    jstring jData = env->NewStringUTF(data.c_str());
+    env->CallVoidMethod(g_clipboardObj.get(), g_pluginMethods.setMultiTypeData, jData);
+    if (jData != nullptr) {
+        env->DeleteLocalRef(jData);
+    }
+    if (env->ExceptionCheck()) {
+        LOGE("Clipborad JNI: call SetMultiTypeData has exception");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return;
+    }
+}
 } // namespace OHOS::Ace::Platform
