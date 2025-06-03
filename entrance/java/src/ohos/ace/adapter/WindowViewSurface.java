@@ -143,6 +143,14 @@ public class WindowViewSurface extends SurfaceView implements SurfaceHolder.Call
     }
 
     /**
+     * To notify avoid area changed.
+     */
+    @Override
+    public void avoidAreaChanged() {
+        windowViewCommon.avoidAreaChanged();
+    }
+
+    /**
      * Called when the surface  created.
      *
      * @param holder surface holder

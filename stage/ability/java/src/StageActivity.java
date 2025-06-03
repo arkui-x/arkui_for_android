@@ -165,6 +165,12 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         }
     }
 
+    public void onAvoidAreaChanged() {
+        if (windowView != null) {
+            windowView.avoidAreaChanged();
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(LOG_TAG, "StageActivity onCreate called");

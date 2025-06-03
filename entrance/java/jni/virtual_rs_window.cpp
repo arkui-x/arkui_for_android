@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -181,6 +181,8 @@ std::map<uint32_t, std::vector<sptr<IWindowLifeCycle>>> Window::lifecycleListene
 std::map<uint32_t, std::vector<sptr<IWindowChangeListener>>> Window::windowChangeListeners_;
 std::map<uint32_t, std::vector<sptr<ITouchOutsideListener>>> Window::touchOutsideListeners_;
 std::map<uint32_t, std::vector<sptr<IWindowSurfaceNodeListener>>> Window::surfaceNodeListeners_;
+std::map<uint32_t, std::vector<sptr<IAvoidAreaChangedListener>>> Window::avoidAreaChangeListeners_;
+std::map<uint32_t, std::vector<sptr<IWindowStatusChangeListener>>> Window::windowStatusChangeListeners_;
 std::recursive_mutex Window::globalMutex_;
 std::recursive_mutex g_sysBarPropMapMutex;
 uint32_t g_KeyboardHeight = 0;
@@ -294,7 +296,23 @@ std::shared_ptr<Window> Window::Create(
     }
     window->IncStrongRef(window.get());
     AddToWindowMap(window);
+    AvoidAreaMapInit(window);
     return window;
+}
+
+void Window::AvoidAreaMapInit(std::shared_ptr<Window> window)
+{
+    for (auto type : {
+        AvoidAreaType::TYPE_SYSTEM,
+        AvoidAreaType::TYPE_CUTOUT,
+        AvoidAreaType::TYPE_SYSTEM_GESTURE,
+        AvoidAreaType::TYPE_KEYBOARD,
+        AvoidAreaType::TYPE_NAVIGATION_INDICATOR
+    }) {
+        auto avoidArea  = std::make_shared<Rosen::AvoidArea>();
+        window->GetAvoidAreaByType(type, *avoidArea);
+        window->avoidAreaMap_.insert(std::make_pair(type, *avoidArea));
+    }
 }
 
 std::shared_ptr<Window> Window::CreateDragWindow(std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> context)
@@ -347,6 +365,7 @@ std::shared_ptr<Window> Window::CreateSubWindow(
         window->IncStrongRef(window.get());
         AddToSubWindowMap(window);
         AddToWindowMap(window);
+        AvoidAreaMapInit(window);
 
         window->SetSubWindowView(env, view);
 
@@ -527,6 +546,7 @@ WMError Window::MoveWindowTo(int32_t x, int32_t y)
 
     bool result = SubWindowManagerJni::MoveWindowTo(this->GetWindowName(), x, y);
     if (result) {
+        AvoidAreaChange();
         NotifySizeChange(rect_);
         return WMError::WM_OK;
     } else {
@@ -546,6 +566,7 @@ WMError Window::ResizeWindowTo(int32_t width, int32_t height)
     rect_.height_ = height;
     bool result = SubWindowManagerJni::ResizeWindowTo(this->GetWindowName(), width, height);
     if (result) {
+        AvoidAreaChange();
         NotifySizeChange(rect_);
         return WMError::WM_OK;
     } else {
@@ -697,6 +718,7 @@ void Window::ClearListenersById(uint32_t winId)
 {
     std::lock_guard<std::recursive_mutex> lock(globalMutex_);
     ClearUselessListeners(lifecycleListeners_, winId);
+    ClearUselessListeners(avoidAreaChangeListeners_, winId);
 }
 
 WMError Window::RegisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener)
@@ -739,6 +761,36 @@ WMError Window::UnregisterSurfaceNodeListener(const sptr<IWindowSurfaceNodeListe
     LOGI("Start unregister SurfaceNodeListener");
     std::lock_guard<std::recursive_mutex> lock(globalMutex_);
     return UnregisterListener(surfaceNodeListeners_[GetWindowId()], listener);
+}
+
+WMError Window::RegisterAvoidAreaChangeListener(const sptr<IAvoidAreaChangedListener>& listener)
+{
+    LOGI("Start register AvoidAreaChangeListener");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    WMError ret = RegisterListener(avoidAreaChangeListeners_[GetWindowId()], listener);
+    return ret;
+}
+
+WMError Window::UnregisterAvoidAreaChangeListener(const sptr<IAvoidAreaChangedListener>& listener)
+{
+    LOGI("Start unregister AvoidAreaChangeListener");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    WMError ret = UnregisterListener(avoidAreaChangeListeners_[GetWindowId()], listener);
+    return ret;
+}
+
+WMError Window::RegisterWindowStatusChangeListener(const sptr<IWindowStatusChangeListener>& listener)
+{
+    LOGI("Start register WindowChangeListener");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return WMError::WM_ERROR_DEVICE_NOT_SUPPORT;
+}
+
+WMError Window::UnregisterWindowStatusChangeListener(const sptr<IWindowStatusChangeListener>& listener)
+{
+    LOGI("Start unregister WindowChangeListener");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return WMError::WM_ERROR_DEVICE_NOT_SUPPORT;
 }
 
 template<typename T>
@@ -870,6 +922,7 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
 void Window::NotifyKeyboardHeightChanged(int32_t height)
 {
     g_KeyboardHeight = height;
+    AvoidAreaChange();
     auto occupiedAreaChangeListeners = GetListeners<IOccupiedAreaChangeListener>();
     for (auto& listener : occupiedAreaChangeListeners) {
         if (listener != nullptr) {
@@ -885,6 +938,34 @@ void Window::NotifySizeChange(Rect rect)
     for (auto& listener : windowChangeListeners) {
         if (listener != nullptr) {
             listener->OnSizeChange(rect);
+        }
+    }
+}
+
+void Window::UpdateAvoidArea(const std::shared_ptr<Rosen::AvoidArea>& avoidArea, AvoidAreaType type)
+{
+    LOGD("UpdateAvoidArea WindowId:%{public}d, type:%{public}d, top:{%{public}d,%{public}d,%{public}d,%{public}d}, "
+        "left:{%{public}d,%{public}d,%{public}d,%{public}d}, right:{%{public}d,%{public}d,%{public}d,%{public}d}, "
+        "bottom:{%{public}d,%{public}d,%{public}d,%{public}d}", GetWindowId(),
+        type, avoidArea->topRect_.posX_, avoidArea->topRect_.posY_, avoidArea->topRect_.width_,
+        avoidArea->topRect_.height_, avoidArea->leftRect_.posX_, avoidArea->leftRect_.posY_,
+        avoidArea->leftRect_.width_, avoidArea->leftRect_.height_, avoidArea->rightRect_.posX_,
+        avoidArea->rightRect_.posY_, avoidArea->rightRect_.width_, avoidArea->rightRect_.height_,
+        avoidArea->bottomRect_.posX_, avoidArea->bottomRect_.posY_, avoidArea->bottomRect_.width_,
+        avoidArea->bottomRect_.height_);
+
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    avoidAreaMap_[type] = *avoidArea;
+    NotifyAvoidAreaChange(avoidArea, type);
+}
+
+void Window::NotifyAvoidAreaChange(const std::shared_ptr<AvoidArea>& avoidArea, AvoidAreaType type)
+{
+    auto avoidAreaChangeListeners = GetListeners<IAvoidAreaChangedListener>();
+    for (auto& listener : avoidAreaChangeListeners) {
+        if (listener != nullptr) {
+            LOGD("type=%{public}u", type);
+            listener->OnAvoidAreaChanged(*avoidArea, type);
         }
     }
 }
@@ -1268,8 +1349,14 @@ WMError Window::GetAvoidAreaByType(AvoidAreaType type, AvoidArea& avoidArea)
     avoidArea.leftRect_ = EMPTY_RECT;
     avoidArea.rightRect_ = EMPTY_RECT;
     avoidArea.bottomRect_ = EMPTY_RECT;
-    auto WMErrorCode = WMError::WM_OK;
+    auto errorCode = WMError::WM_OK;
     const Rect safeAreaRect = SubWindowManagerJni::GetSafeArea();
+
+    if (IsSubWindow()) {
+        if (isFullScreen_ == false) {
+            return errorCode;
+        }
+    }
 
     switch (type) {
         case AvoidAreaType::TYPE_SYSTEM:
@@ -1297,10 +1384,93 @@ WMError Window::GetAvoidAreaByType(AvoidAreaType type, AvoidArea& avoidArea)
             break;
         default:
             LOGE("Window::GetAvoidAreaByType, Set Invalid AvoidAreaByType. The type is %{public}d", type);
-            WMErrorCode = WMError::WM_ERROR_INVALID_PARAM;
+            errorCode = WMError::WM_ERROR_INVALID_PARAM;
             break;
     }
-    return WMErrorCode;
+    return errorCode;
+}
+
+void Window::AvoidAreaChange()
+{
+    std::shared_ptr<Rosen::AvoidArea> avoidArea = std::make_shared<Rosen::AvoidArea>();
+    auto WMErrorCode = WMError::WM_OK;
+    LOGE("AvoidAreaChange is calling.");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    for (const auto& [type, avoidArea_] : avoidAreaMap_) {
+        WMErrorCode = GetAvoidAreaByType(type, *avoidArea);
+        if (WMErrorCode != WMError::WM_OK) {
+            LOGE("Window::AvoidAreaChange, GetAvoidAreaByType failed. The type is %{public}d", type);
+            return;
+        }
+        LOGE("GetAvoidAreaByType is over.");
+        if (avoidArea_ != *avoidArea) {
+            UpdateAvoidArea(avoidArea, type);
+            LOGE("UpdateAvoidArea is over.");
+        }
+    }
+}
+
+WMError Window::UpdateSystemBarProperties(
+    const std::unordered_map<WindowType, SystemBarProperty>& systemBarProperties,
+    const std::unordered_map<WindowType, SystemBarPropertyFlag>& systemBarPropertyFlags)
+{
+    if (IsSubWindow()) {
+        return WMError::WM_OK;
+    }
+    for (auto& [systemBarType, systemBarPropertyFlag] : systemBarPropertyFlags) {
+        if (systemBarProperties.find(systemBarType) == systemBarProperties.end()) {
+            LOGI("Window::UpdateSystemBarProperties system bar type is invalid");
+            return WMError::WM_DO_NOTHING;
+        }
+        auto property = GetSystemBarPropertyByType(systemBarType);
+        property.enable_ = systemBarPropertyFlag.enableFlag ?
+            systemBarProperties.at(systemBarType).enable_ : property.enable_;
+        
+        property.backgroundColor_ = systemBarPropertyFlag.backgroundColorFlag ?
+            systemBarProperties.at(systemBarType).backgroundColor_ : property.backgroundColor_;
+        property.contentColor_ = systemBarPropertyFlag.contentColorFlag ?
+            systemBarProperties.at(systemBarType).contentColor_ : property.contentColor_;
+        property.enableAnimation_ = systemBarPropertyFlag.enableAnimationFlag ?
+            systemBarProperties.at(systemBarType).enableAnimation_ : property.enableAnimation_;
+        if (systemBarPropertyFlag.enableFlag) {
+            property.settingFlag_ |= SystemBarSettingFlag::ENABLE_SETTING;
+        }
+        if (systemBarPropertyFlag.backgroundColorFlag || systemBarPropertyFlag.contentColorFlag) {
+            property.settingFlag_ |= SystemBarSettingFlag::COLOR_SETTING;
+        }
+        if (systemBarPropertyFlag.enableFlag || systemBarPropertyFlag.backgroundColorFlag ||
+            systemBarPropertyFlag.contentColorFlag || systemBarPropertyFlag.enableAnimationFlag) {
+            if (systemBarType == WindowType::WINDOW_TYPE_STATUS_BAR) {
+                SubWindowManagerJni::SetStatusBar(
+                    property.backgroundColor_, property.contentColor_, property.enable_);
+            } else if (systemBarType == WindowType::WINDOW_TYPE_NAVIGATION_BAR) {
+                SubWindowManagerJni::SetNavigationBar(
+                    property.backgroundColor_, property.contentColor_, property.enable_);
+            } else {
+                LOGE("The WindowType is not set to UpdateSystemBarProperties. The WindowType is %{public}d",
+                    systemBarType);
+            }
+        }
+        std::lock_guard<std::recursive_mutex> lock(g_sysBarPropMapMutex);
+        sysBarPropMap_[systemBarType] = property;
+    }
+    return WMError::WM_OK;
+}
+
+WMError Window::SetWindowPrivacyMode(bool isPrivacyMode)
+{
+    if (IsSubWindow()) {
+        return WMError::WM_OK;
+    }
+    LOGI("Window::SetWindowPrivacyMode called. isPrivacyMode=%d", isPrivacyMode);
+
+    bool result = SubWindowManagerJni::SetWindowPrivacyMode(isPrivacyMode);
+    if (result) {
+        return WMError::WM_OK;
+    } else {
+        LOGI("Window::SetWindowPrivacyMode: failed");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
 }
 
 WMError Window::Hide()
