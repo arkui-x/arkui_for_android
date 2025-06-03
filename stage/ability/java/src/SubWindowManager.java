@@ -59,6 +59,7 @@ public class SubWindowManager {
     /*
      ** copy from native wm_common.h: enum class Orientation
      */
+    private static final int UNSPECIFIED = 0;
     private static final int VERTICAL = 1;
     private static final int HORIZONTAL = 2;
     private static final int REVERSE_VERTICAL = 3;
@@ -430,6 +431,9 @@ public class SubWindowManager {
             int orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 
             switch (direction) {
+                case UNSPECIFIED:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                break;
                 case VERTICAL:
                     orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
                     break;
