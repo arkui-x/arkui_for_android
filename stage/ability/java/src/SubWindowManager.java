@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -63,7 +63,8 @@ public class SubWindowManager {
     private static final int HORIZONTAL = 2;
     private static final int REVERSE_VERTICAL = 3;
     private static final int REVERSE_HORIZONTAL = 4;
-
+    private static final int UI_DARK_COLOR = 0x66000000;
+    private static final int UI_LIGHT_COLOR = 0xE5FFFFFF;
     private static SubWindowManager sinstance;
 
     private Activity mRootActivity;
@@ -959,6 +960,93 @@ public class SubWindowManager {
 
         subWindow.unregisterSubWindow();
         return true;
+    }
+
+    /**
+     * Set status bar property.
+     *
+     * @param backgroundColor Status bar background color.
+     * @param contentColor Status bar content color.
+     * @param enable Status bar hide or show.
+     * @return Setting successful or failed.
+     */
+    public boolean setStatusBar(int backgroundColor, int contentColor, boolean enable) {
+        Log.d(TAG, "setStatusBar called: backgroundColor=" + backgroundColor + ", contentColor=" + contentColor);
+
+        if (mRootActivity != null) {
+            Window window = mRootActivity.getWindow();
+            View decorView = window.getDecorView();
+            int flags = decorView.getSystemUiVisibility();
+            if (contentColor == UI_DARK_COLOR) {
+                flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR; // dark color
+            } else if (contentColor == UI_LIGHT_COLOR) {
+                flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR; // light color
+            }
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            decorView.setSystemUiVisibility(flags);
+            window.setStatusBarColor(backgroundColor);
+            setStatusBarStatus(enable);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Set navigation bar property.
+     *
+     * @param backgroundColor Navigation bar background color.
+     * @param contentColor Navigation bar content color.
+     * @param enable Navigation bar hide or show.
+     * @return Setting successful or failed.
+     */
+    public boolean setNavigationBar(int backgroundColor, int contentColor, boolean enable) {
+        Log.d(TAG, "setNavigationBar called: backgroundColor=" + backgroundColor + ", contentColor=" + contentColor);
+
+        if (mRootActivity != null) {
+            Window window = mRootActivity.getWindow();
+            if (window == null) {
+                return false;
+            }
+            View decorView = window.getDecorView();
+            if (decorView == null) {
+                return false;
+            }
+            int flags = decorView.getSystemUiVisibility();
+            if (contentColor == UI_DARK_COLOR) {
+                flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR; // dark color
+            } else if (contentColor == UI_LIGHT_COLOR) {
+                flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR; // light color
+            }
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            decorView.setSystemUiVisibility(flags);
+            window.setNavigationBarColor(backgroundColor);
+            setNavigationBarStatus(enable);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Sets whether is private mode or not.
+     *
+     * @param isPrivacyMode privacy mode
+     * @return Set privacy mode success or not
+     */
+    public boolean setWindowPrivacyMode(boolean isPrivacyMode) {
+        Log.d(TAG, "setWindowPrivacyMode called: windowPrivacyMode=" + isPrivacyMode);
+
+        if (mRootActivity != null) {
+            Window window = mRootActivity.getWindow();
+            if (window != null) {
+                if (isPrivacyMode) {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+                } else {
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     private native void nativeSetupSubWindowManager();
