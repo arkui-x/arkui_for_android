@@ -143,6 +143,14 @@ public class WindowViewTexture extends TextureView implements TextureView.Surfac
     }
 
     /**
+     * To notify avoid area changed.
+     */
+    @Override
+    public void avoidAreaChanged() {
+        windowViewCommon.avoidAreaChanged();
+    }
+
+    /**
      * Called when surface texture is available.
      *
      * @param surface surface texture
