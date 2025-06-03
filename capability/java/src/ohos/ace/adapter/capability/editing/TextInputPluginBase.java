@@ -74,13 +74,13 @@ public abstract class TextInputPluginBase {
                 json.put("composingEnd", composingEnd);
 
                 String lastValue = lastValueMap.get(clientId);
-                if (lastValue != null && text.length() < lastValue.length()) {
-                    json.put("isDelete", true);
-                } else if (isSelected && needUpdatedText != null) {
+                if (isSelected && needUpdatedText != null) {
                     json.put("isDelete", false);
                     json.put("appendText", needUpdatedText);
                     isSelected = false;
                     needUpdatedText = null;
+                } else if (lastValue != null && text.length() < lastValue.length()) {
+                    json.put("isDelete", true);
                 } else {
                     json.put("isDelete", false);
                     String appendText = getNewInputStr(lastValue, text, selectionEnd);
