@@ -56,4 +56,12 @@ public interface TextInputDelegate {
      * @param clientId The client identifier
      */
     void notifyKeyboardClosedByUser(int clientId);
+
+    /**
+     * Called when the selected text is submitted.
+     *
+     * @param isSelected The selected state
+     * @param text The selected text content
+     */
+    void setSelectedState(boolean isSelected, CharSequence text);
 }

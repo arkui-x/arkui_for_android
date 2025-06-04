@@ -73,6 +73,11 @@ public interface WindowViewInterface {
     void keyboardHeightChanged(int height);
 
     /**
+     * To notify avoid area changed.
+     */
+    void avoidAreaChanged();
+
+    /**
      * Convert action and button state to action key.
      *
      * @param event Action and button state.

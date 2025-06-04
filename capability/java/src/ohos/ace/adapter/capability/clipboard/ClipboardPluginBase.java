@@ -48,6 +48,27 @@ public abstract class ClipboardPluginBase {
     public abstract void clear();
 
     /**
+     * Check if clipboard is multi type data
+     *
+     *  @return true if clipboard has multi type data
+     */
+    public abstract boolean isMultiTypeData();
+
+    /**
+     * Set multitype data to clipboard
+     *
+     * @param data data to set
+     */
+    public abstract void setMultiTypeData(String data);
+
+    /**
+     * Get multitype data in clipboard
+     *
+     * @return text in clipboard
+     */
+    public abstract String getMultiTypeData();
+
+    /**
      * Initialize clipboard plugin
      */
     protected native void nativeInit();

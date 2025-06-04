@@ -39,7 +39,17 @@ public:
 
     static bool HasData(const std::function<void(const bool)>& callback, const WeakPtr<TaskExecutor>& taskExecutor);
 
+    static bool HasPasteData();
+
+    static std::string GetData();
+
     static bool Clear();
+
+    static bool IsMultiTypeData();
+
+    static std::string GetMultiTypeData();
+
+    static void SetMultiTypeData(const std::string& data);
 
     ClipboardJni() = delete;
 

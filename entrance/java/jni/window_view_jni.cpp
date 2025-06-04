@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -90,6 +90,11 @@ static const JNINativeMethod COMMON_METHODS[] = {
         .signature = "(JIIIJJIII)Z",
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::DispatchKeyEvent),
     },
+    {
+        .name = "nativeAvoidAreaChanged",
+        .signature = "(J)V",
+        .fnPtr = reinterpret_cast<void*>(&WindowViewJni::AvoidAreaChange),
+    },
 };
 } // namespace
 
@@ -108,6 +113,15 @@ void WindowViewJni::SurfaceChanged(
     auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
     if (windowPtr != nullptr) {
         windowPtr->NotifySurfaceChanged(width, height, density);
+    }
+}
+
+void WindowViewJni::AvoidAreaChange(JNIEnv* env, jobject myObject, jlong window)
+{
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
+    if (windowPtr != nullptr) {
+        LOGE("AvoidAreaChange windowPtr is calling.");
+        windowPtr->AvoidAreaChange();
     }
 }
 

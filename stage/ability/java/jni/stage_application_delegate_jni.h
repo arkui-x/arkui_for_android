@@ -18,6 +18,7 @@
 
 #include <memory>
 
+#include "log_interface_jni.h"
 #include "jni.h"
 
 namespace OHOS {
@@ -30,6 +31,7 @@ public:
 
     static bool Register(const std::shared_ptr<JNIEnv>& env);
     static void SetNativeAssetManager(JNIEnv* env, jclass myclass, jobject assetManager);
+    static void SetIsDynamicLoadLibs(JNIEnv* env, jclass clazz, jboolean isDynamic);
     static void SetHapPath(JNIEnv* env, jclass myclass, jstring str);
     static void SetAssetsFileRelativePath(JNIEnv* env, jclass myclass, jstring str);
     static void LaunchApplication(JNIEnv* env, jclass clazz, jboolean isCopyNativeLibs);
@@ -48,6 +50,7 @@ public:
     static void DispatchApplicationOnForeground(JNIEnv* env, jclass myclass);
     static void DispatchApplicationOnBackground(JNIEnv* env, jclass myclass);
     static void PreloadModule(JNIEnv* env, jclass myclass, jstring jModuleName, jstring jAbilityName);
+    static OHOS::Ace::LogLevel GetCurrentLogLevel();
 };
 } // namespace Platform
 } // namespace AbilityRuntime

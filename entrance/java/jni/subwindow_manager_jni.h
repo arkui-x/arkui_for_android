@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -64,6 +64,9 @@ struct SubWindowManagerStruct {
     jmethodID setOnTopMethod;
     jmethodID registerSubWindowMethod;
     jmethodID unregisterSubWindowMethod;
+    jmethodID setStatusBarMethod;
+    jmethodID setNavigationBarMethod;
+    jmethodID setWindowPrivacyModeMethod;
 };
 
 class SubWindowManagerJni {
@@ -103,6 +106,9 @@ public:
     static bool SetOnTop(const std::string& name, bool status);
     static bool RegisterSubWindow(const std::string& name, void* subWindow);
     static bool UnregisterSubWindow(const std::string& name);
+    static bool SetStatusBar(uint32_t baclgroundColor, uint32_t contentColor, bool enable);
+    static bool SetNavigationBar(uint32_t baclgroundColor, uint32_t contentColor, bool enable);
+    static bool SetWindowPrivacyMode(bool isPrivacyMode);
 
 private:
     static SubWindowManagerStruct subWindowManagerStruct_;

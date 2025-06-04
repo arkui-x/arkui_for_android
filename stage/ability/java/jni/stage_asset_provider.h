@@ -134,6 +134,8 @@ public:
     void CopyNativeLibToAppDataModuleDir(const std::string& bundleName);
     void SetNativeLibPaths(const std::string& bundleName, const std::vector<std::string>& moduleNames);
     std::vector<uint8_t> GetAotBuffer(const std::string &fileName);
+    void SetIsDynamicLoadLibs(bool isDynamic);
+    bool IsDynamicLoadLibs();
     void InitModuleVersionCode();
     void UpdateVersionCode(const std::string& moduleName, bool isNeedUpdate);
     bool IsDynamicUpdateModule(const std::string& moduleName);
@@ -161,6 +163,7 @@ private:
     std::string preferenceDir_;
     std::string resourcesFilePrefixPath_;
     std::string architecture_;
+    bool isDynamicLibs_ = false;
     static std::shared_ptr<StageAssetProvider> instance_;
     static std::mutex mutex_;
 };

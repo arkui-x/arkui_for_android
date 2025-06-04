@@ -16,6 +16,7 @@
 package ohos.stage.ability.adapter;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.os.Handler;
@@ -70,6 +71,16 @@ public class StageApplication extends Application {
         }
         newConfig.fontScale = Settings.System.getFloat(getContentResolver(), Settings.System.FONT_SCALE, 1.0f);
         appDelegate.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    public void attachBaseContext(Context context) {
+        Log.i(LOG_TAG, "StageApplication attachBaseContext called");
+        if (context == null) {
+            Log.e(LOG_TAG, "context is null");
+            return;
+        }
+        super.attachBaseContext(StageApplicationDelegate.attachLanguageContext(context));
     }
 
     /**

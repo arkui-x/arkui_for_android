@@ -197,6 +197,18 @@ public class WindowViewCommon {
     }
 
     /**
+     * To notify avoid area changed.
+     */
+    public void avoidAreaChanged() {
+        ALog.i(TAG, "avoidAreaChanged call");
+        if (nativeWindowPtr == 0L) {
+            ALog.w(TAG, "avoidAreaChanged nativeWindow not ready.");
+        } else {
+            nativeAvoidAreaChanged(nativeWindowPtr);
+        }
+    }
+
+    /**
      * Called when the windowfocus changed.
      *
      * @param hasWindowFocus has focus or not
@@ -588,4 +600,6 @@ public class WindowViewCommon {
 
     private native boolean nativeDispatchKeyEvent(long windowPtr, int keyCode, int action, int repeatTime,
             long timeStamp, long timeStampStart, int source, int deviceId, int metaKey);
+
+    private native void nativeAvoidAreaChanged(long windowPtr);
 }
