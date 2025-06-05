@@ -246,12 +246,12 @@ public:
         std::function<void(const float)>&& onTypeDidChange,
         std::function<void()>&& sheetSpringBack, const RefPtr<NG::FrameNode>& targetNode) override;
 
-    void ShowDialogMaskNG(const RefPtr<NG::FrameNode>& dialog) override;
-    void CloseDialogMaskNG(const RefPtr<NG::FrameNode>& dialog) override;
     void SwitchFollowParentWindowLayout(bool freeMultiWindowEnable) override;
     bool NeedFollowParentWindowLayout() override;
     void AddFollowParentWindowLayoutNode(int32_t nodeId) override;
     void RemoveFollowParentWindowLayoutNode(int32_t nodeId) override;
+    void SetNodeId(int32_t nodeId) override;
+    int32_t GetNodeId() const override;
 
 private:
     void InitSubwindow(const RefPtr<Platform::AceContainerSG>& parentContainer);

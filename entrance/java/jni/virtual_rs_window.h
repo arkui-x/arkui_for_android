@@ -133,6 +133,8 @@ public:
 
     virtual void NotifyExtensionTimeout(int32_t errorCode)  {}
 
+    virtual void NotifySnapshotUpdate() {}
+
     virtual uint32_t GetStatusBarHeight() const
     {
         return 0;

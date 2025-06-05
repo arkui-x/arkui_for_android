@@ -51,6 +51,9 @@
       "OHOS::Ace::NG::DragControllerFuncWrapper::CreatePreviewNode(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode>&, OHOS::Ace::NG::PreparedInfoForDrag&, OHOS::Ace::NG::PreparedAsyncCtxForAnimate&)";
       "OHOS::Ace::NG::DragControllerFuncWrapper::GetOriginNodeOffset(OHOS::Ace::NG::PreparedInfoForDrag&, OHOS::Ace::NG::PreparedAsyncCtxForAnimate&)";
       "OHOS::Ace::NG::DragControllerFuncWrapper::HideDragPreviewWindow(int)";
+      "OHOS::Ace::ElementRegister::GetInstance()";
+      "OHOS::Ace::ElementRegister::GetUINodeById(int)";
+      "OHOS::Ace::Subwindow::CreateSubwindow(int)";
       OHOS::Ace::NG::GestureEventHub::*;
       OHOS::Ace::NG::FrameNode::*;
       OHOS::Ace::NG::LayoutProperty::*;
@@ -58,6 +61,11 @@
       "OHOS::Ace::NG::MinusPaddingToSize(OHOS::Ace::NG::PaddingPropertyT<float> const&, OHOS::Ace::NG::SizeT<float>&)";
       OHOS::Ace::NG::Modifier::*;
       OHOS::Ace::NG::ModifierAdapter::*;
+      "OHOS::Ace::NG::NodeRenderStatusMonitor::IsRegisterNodeRenderStateChangeCallbackExceedLimit()";
+      "OHOS::Ace::NG::Inspector::GetFrameNodeByKey(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, bool, bool)";
+      "OHOS::Ace::NG::NodeRenderStatusMonitor::RegisterNodeRenderStatusListener(OHOS::Ace::NG::FrameNode*, std::__ndk1::function<void (OHOS::Ace::NG::FrameNode*, OHOS::Ace::NG::NodeRenderState, OHOS::Ace::NG::RenderMonitorReason)>&&, OHOS::Ace::NG::MonitorSourceType)";
+      "OHOS::Ace::NG::NodeRenderStatusMonitor::GetNodeCurrentRenderState(OHOS::Ace::NG::FrameNode*)";
+      "OHOS::Ace::NG::NodeRenderStatusMonitor::UnRegisterNodeRenderStatusListener(OHOS::Ace::NG::FrameNode*, int)";
       "OHOS::Ace::NG::PanEventActuator::PanEventActuator(OHOS::Ace::WeakPtr<OHOS::Ace::NG::GestureEventHub> const&, OHOS::Ace::PanDirection, int, float)";
       "OHOS::Ace::NG::PipelineContext::GetCurrentContext()";
       "OHOS::Ace::NG::PanRecognizer::GetDistance() const";
@@ -84,6 +92,9 @@
       OHOS::Ace::V2::PATTERN_LOCK_ETS_TAG;
       OHOS::Ace::V2::QRCODE_ETS_TAG;
       OHOS::Ace::V2::RELATIVE_CONTAINER_ETS_TAG;
+      OHOS::Ace::V2::ROOT_ETS_TAG;
+      OHOS::Ace::V2::STAGE_ETS_TAG;
+      OHOS::Ace::V2::PAGE_ETS_TAG;
       OHOS::Ace::ViewAbstractModel::*;
       OHOS::Media::PixelMapNapi::*;
       "OHOS::Media::StrToULL(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, unsigned long&)";

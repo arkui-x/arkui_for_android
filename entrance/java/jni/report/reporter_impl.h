@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,23 +13,18 @@
  * limitations under the License.
  */
 
-#include "core/common/modal_ui_extension.h"
+#ifndef FOUNDATION_ACE_ADAPTER_PREVIEW_ENTRANCE_REPORTER_IMPL_H
+#define FOUNDATION_ACE_ADAPTER_PREVIEW_ENTRANCE_REPORTER_IMPL_H
 
-namespace OHOS::Ace {
+#include "frameworks/core/common/reporter/reporter.h"
+#include "frameworks/core/components_ng/manager/event/json_report.h"
 
-RefPtr<NG::FrameNode> ModalUIExtension::Create(const AAFwk::Want& want, const ModalUIExtensionCallbacks& callbacks,
-    const NG::InnerModalUIExtensionConfig& config)
-{
-    return nullptr;
-}
+namespace OHOS::Ace::NG {
+class ReporterImpl : public Reporter {
+    DECLARE_ACE_TYPE(ReporterImpl, Reporter);
 
-int32_t ModalUIExtension::GetSessionId(const RefPtr<NG::FrameNode>& uiExtNode)
-{
-    return 0;
-}
-
-void ModalUIExtension::SetBindModalCallback(const RefPtr<NG::FrameNode>& uiExtNode,
-    std::function<void()>&& bindModalCallback)
-{
-}
-} // namespace OHOS::Ace
+public:
+    void HandleUISessionReporting(const JsonReport& report) const override;
+};
+} // namespace OHOS::Ace::NG
+#endif

@@ -30,6 +30,7 @@ public:
     void SetPlainText(const std::string plainText);
     void SetUri(const std::string uri);
     void SetPixelMap(RefPtr<PixelMap> pixelMap);
+    void SetHtmlText(const std::string& htmlText);
     const RefPtr<PixelMap> GetPixelMap();
     const std::string GetPlainText();
     const std::string GetUri();
@@ -39,6 +40,7 @@ private:
     RefPtr<PixelMap> pixelMap_;
     std::string plainText_;
     std::string uri_;
+    std::string htmlText_;
     std::vector<uint8_t> spanStringBuffer_;
 };
 
