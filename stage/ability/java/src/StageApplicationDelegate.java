@@ -110,7 +110,7 @@ public class StageApplicationDelegate {
 
     private static final String ARKUIX_JSON = "arkui-x.json";
 
-    private static final String LANGUAGE_SHARE_PREFERENC = "language_prefs";
+    private static final String LANGUAGE_SHARE_PREFERENCE = "language_prefs";
 
     private static final String KEY_LANGUAGE = "app_language";
 
@@ -810,10 +810,9 @@ public class StageApplicationDelegate {
             locale = Locale.getDefault();
         }
         Context context = stageApplication.getApplicationContext();
-        SharedPreferences prefs = context.getSharedPreferences(LANGUAGE_SHARE_PREFERENC, Context.MODE_PRIVATE);
-        String savedLang = prefs.getString(KEY_LANGUAGE, null);
-        if (savedLang != null && !savedLang.isEmpty()) {
-            locale = Locale.forLanguageTag(savedLang);
+        String preferredLanguage = getAppPreferredLanguage(context);
+        if (!preferredLanguage.isEmpty()) {
+            locale = Locale.forLanguageTag(preferredLanguage);
         }
         String language = locale.getLanguage();
         Log.i(LOG_TAG, "language: " + language);
@@ -1050,22 +1049,18 @@ public class StageApplicationDelegate {
     }
 
     /**
-     * Get Application Locale.
+     * Attach language to context.
      *
      * @param context the application context.
      * @return Context after attach the language
      */
     public static Context attachLanguageContext(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(LANGUAGE_SHARE_PREFERENC, Context.MODE_PRIVATE);
-        String savedLang = prefs.getString(KEY_LANGUAGE, null);
-        if (savedLang == null || savedLang.isEmpty()) {
-            return context;
-        }
+        String preferredLanguage = getAppPreferredLanguage(context);
         Resources resources = context.getResources();
-        if (resources == null) {
+        if (resources == null || preferredLanguage.isEmpty()) {
             return context;
         }
-        Locale locale = Locale.forLanguageTag(savedLang);
+        Locale locale = Locale.forLanguageTag(preferredLanguage);
         Configuration configuration;
         int buildVersion = Build.VERSION.SDK_INT;
         if (buildVersion <= Build.VERSION_CODES.N_MR1) {
@@ -1080,6 +1075,15 @@ public class StageApplicationDelegate {
             configuration.setLocales(new LocaleList(locale));
             return context.createConfigurationContext(configuration);
         }
+    }
+
+    private static String getAppPreferredLanguage(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(LANGUAGE_SHARE_PREFERENCE, Context.MODE_PRIVATE);
+        String savedLang = prefs.getString(KEY_LANGUAGE, null);
+        if (savedLang == null || savedLang.isEmpty()) {
+            return "";
+        }
+        return savedLang;
     }
 
     private native void nativeSetAssetManager(Object assetManager);

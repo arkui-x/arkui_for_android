@@ -62,6 +62,7 @@
 #include "frameworks/bridge/common/utils/engine_helper.h"
 #include "frameworks/bridge/js_frontend/engine/common/js_engine_loader.h"
 #include "frameworks/bridge/js_frontend/js_frontend.h"
+#include "unicode/locid.h"
 
 namespace OHOS::Ace::Platform {
 namespace {
@@ -80,6 +81,16 @@ void ParseLocaleTag(const std::string& localeTag, std::string& language, std::st
     if (localeTag.empty()) {
         return;
     }
+
+    UErrorCode status = U_ZERO_ERROR;
+    icu::Locale locale = icu::Locale::forLanguageTag(icu::StringPiece(localeTag), status);
+    if (status == U_ZERO_ERROR && !locale.isBogus()) {
+        language = locale.getLanguage();
+        script = locale.getScript();
+        region = locale.getCountry();
+        return;
+    }
+
     std::size_t previous = 0;
     std::size_t current = localeTag.find('_');
     std::vector<std::string> elems;
