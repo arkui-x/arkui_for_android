@@ -830,6 +830,22 @@ private void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo) {
     }
 
     /**
+     * get FoldingFeature though listener, it is used by getFoldStatus.
+     *
+     * @return FoldingFeature.
+     */
+    public FoldingFeature getFoldingFeatureFromListener() {
+        AtomicReference<FoldingFeature> foldingFeature = new AtomicReference<>();
+        if (foldWindowInfoCallback != null) {
+            Consumer<WindowLayoutInfo> consumerWindowLayout = FoldManager.getInstance()
+                                                            .getConsumerWindowLayout(this, foldingFeature);
+            foldWindowInfoCallback.addWindowLayoutInfoListener(this, this::runOnUiThread, consumerWindowLayout);
+            foldWindowInfoCallback.removeWindowLayoutInfoListener(consumerWindowLayout);
+        }
+        return foldingFeature.get();
+    }
+
+    /**
      * close fold motoring.
      *
      */
@@ -842,7 +858,7 @@ private void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo) {
     }
 
     /**
-     * close fold motoring.
+     * get fold WindowInfo callback.
      *
      * @return foldWindowInfoCallback.
      */

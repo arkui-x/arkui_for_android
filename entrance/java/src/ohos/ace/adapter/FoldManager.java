@@ -83,10 +83,12 @@ public class FoldManager {
         if (Build.VERSION.SDK_INT < ANDROID_API_31) {
             return false;
         }
+        FoldingFeature foldingFeature = null;
         if (isOpenFoldListener(activity)) {
-            return foldable;
+            foldingFeature = getFoldingFeatureInvoke(activity);
+        } else {
+            foldingFeature = getFoldingFeature(activity);
         }
-        FoldingFeature foldingFeature = getFoldingFeature(activity);
         return foldingFeature != null;
     }
 
@@ -100,10 +102,12 @@ public class FoldManager {
         if (Build.VERSION.SDK_INT < ANDROID_API_31) {
             return FoldInfo.FOLD_STATUS_UNKNOWN;
         }
+        FoldingFeature foldingFeature = null;
         if (isOpenFoldListener(activity)) {
-            return foldStatus;
+            foldingFeature = getFoldingFeatureInvoke(activity);
+        } else {
+            foldingFeature = getFoldingFeature(activity);
         }
-        FoldingFeature foldingFeature = getFoldingFeature(activity);
         return getStatusFromFeature(activity, foldingFeature);
     }
 
@@ -167,14 +171,44 @@ public class FoldManager {
             Object result = getFoldMethod.invoke(activity);
             return result != null;
         } catch (InvocationTargetException e) {
-            Log.e(TAG, "invoke WindowInfoCallback fail \n" + e.toString());
+            Log.e(TAG, "invoke WindowInfoCallback fail:" + e.getMessage());
             return false;
         } catch (NoSuchMethodException e) {
-            Log.e(TAG, "invoke WindowInfoCallback fail \n" + e.toString());
+            Log.e(TAG, "invoke WindowInfoCallback fail:" + e.getMessage());
             return false;
         } catch (IllegalAccessException e) {
-            Log.e(TAG, "invoke WindowInfoCallback fail \n" + e.toString());
+            Log.e(TAG, "invoke WindowInfoCallback fail:" + e.getMessage());
             return false;
+        }
+    }
+
+    /** 
+     * get FoldingFeature of fold motoring in activity
+     *
+     * @param activity the activity
+     * @return FoldingFeature
+     */
+    public FoldingFeature getFoldingFeatureInvoke(Activity activity) {
+        try {
+            Class<?> clazz = activity.getClass();
+            Method getFoldMethod = clazz.getMethod("getFoldingFeatureFromListener");
+            Object result = getFoldMethod.invoke(activity);
+            if (result == null) {
+                return null;
+            }
+            if (result instanceof FoldingFeature) {
+                return (FoldingFeature) result;
+            }
+            return null;
+        } catch (InvocationTargetException e) {
+            Log.e(TAG, "invoke getFoldingFeature fail:" + e.getMessage());
+            return null;
+        } catch (NoSuchMethodException e) {
+            Log.e(TAG, "invoke getFoldingFeature fail:" + e.getMessage());
+            return null;
+        } catch (IllegalAccessException e) {
+            Log.e(TAG, "invoke getFoldingFeature fail:" + e.getMessage());
+            return null;
         }
     }
 
@@ -196,7 +230,14 @@ public class FoldManager {
         foldStatus = newFoldStatus;
     }
 
-    private Consumer<WindowLayoutInfo> getConsumerWindowLayout(Activity activity,
+    /**
+     * get an instance of windowLayoutInfo
+     *
+     * @param activity the activity
+     * @param foldingFeature the folding feature
+     * @return Consumer<WindowLayoutInfo>
+     */
+    public Consumer<WindowLayoutInfo> getConsumerWindowLayout(Activity activity,
         AtomicReference<FoldingFeature> foldingFeature) {
         return windowLayoutInfo -> {
                 activity.runOnUiThread(() -> {
@@ -204,6 +245,7 @@ public class FoldManager {
                 });
             };
     }
+
     private void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo,
         AtomicReference<FoldingFeature> foldingFeature) {
         FoldManager foldManager = FoldManager.getInstance();
