@@ -374,13 +374,13 @@ private:
     void SetUIWindowInner(sptr<OHOS::Rosen::Window> uiWindow);
     sptr<OHOS::Rosen::Window> GetUIWindowInner() const;
     void RegisterStopDragCallback(int32_t pointerId, StopDragCallback&& stopDragCallback);
-    void SetFontAndScale(Platform::ParsedConfig& parsedConfig, ConfigurationChange configurationChange);
-    void SetLanguage(Platform::ParsedConfig& parsedConfig, ConfigurationChange configurationChange,
-        ResourceConfiguration resConfig);
-    void SetDirectionAndDensity(Platform::ParsedConfig& parsedConfig, ConfigurationChange configurationChange,
-        ResourceConfiguration resConfig);
-    void SetColor(Platform::ParsedConfig& parsedConfig, ConfigurationChange configurationChange,
-        ResourceConfiguration resConfig);
+    void SetFontAndScale(Platform::ParsedConfig& parsedConfig, ConfigurationChange& configurationChange);
+    void SetLanguage(Platform::ParsedConfig& parsedConfig, ConfigurationChange& configurationChange,
+        ResourceConfiguration& resConfig);
+    void SetDirectionAndDensity(Platform::ParsedConfig& parsedConfig, ConfigurationChange& configurationChange,
+        ResourceConfiguration& resConfig);
+    void SetColor(Platform::ParsedConfig& parsedConfig, ConfigurationChange& configurationChange,
+        ResourceConfiguration& resConfig);
 
     AceView* aceView_ { nullptr };
     RefPtr<TaskExecutor> taskExecutor_;
