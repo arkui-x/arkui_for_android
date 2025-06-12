@@ -24,4 +24,15 @@ std::string HtmlUtils::ToHtml(const SpanString* str)
     return "";
 }
 
+std::string HtmlUtils::ToHtml(const std::list<RefPtr<NG::SpanItem>>& spanItems)
+{
+    return "";
+}
+
+std::string HtmlUtils::ToHtmlForNormalType(const NG::FontStyle& fontStyle,
+    const NG::TextLineStyle& textLineStyle, const std::u16string& contentStr)
+{
+    return "";
+}
+
 } // namespace OHOS::Ace

@@ -821,10 +821,6 @@ void SubwindowAndroid::ShowBindSheetNG(bool isShow, std::function<void(const std
         std::move(sheetSpringBack), targetNode);
 }
 
-void SubwindowAndroid::ShowDialogMaskNG(const RefPtr<NG::FrameNode>& dialog) {}
-
-void SubwindowAndroid::CloseDialogMaskNG(const RefPtr<NG::FrameNode>& dialog) {}
-
 void SubwindowAndroid::SwitchFollowParentWindowLayout(bool freeMultiWindowEnable) {}
 
 bool SubwindowAndroid::NeedFollowParentWindowLayout()
@@ -835,4 +831,11 @@ bool SubwindowAndroid::NeedFollowParentWindowLayout()
 void SubwindowAndroid::AddFollowParentWindowLayoutNode(int32_t nodeId) {}
 
 void SubwindowAndroid::RemoveFollowParentWindowLayoutNode(int32_t nodeId) {}
+
+void SubwindowAndroid::SetNodeId(int32_t nodeId) {}
+
+int32_t SubwindowAndroid::GetNodeId() const
+{
+    return -1;
+}
 } // namespace Ace

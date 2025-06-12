@@ -24,6 +24,7 @@ namespace {
 constexpr int32_t ORIENTATION_PORTRAIT = 1;
 constexpr int32_t ORIENTATION_LANDSCAPE = 2;
 constexpr char UNDEFINED_PARAM[] = "undefined parameter";
+constexpr int32_t DEFAULT_FORM_SHARED_IMAGE_CACHE_THRESHOLD = 20;
 
 } // namespace
 
@@ -101,6 +102,8 @@ ACE_WEAK_SYM float SystemProperties::GetFontScale()
 {
     return fontScale_;
 }
+
+int32_t SystemProperties::formSharedImageCacheThreshold_ = DEFAULT_FORM_SHARED_IMAGE_CACHE_THRESHOLD;
 
 bool SystemProperties::IsOpIncEnable()
 {
@@ -371,5 +374,10 @@ bool SystemProperties::GetMultiInstanceEnabled()
 bool SystemProperties::ConfigChangePerform()
 {
     return false;
+}
+
+int32_t SystemProperties::getFormSharedImageCacheThreshold()
+{
+    return formSharedImageCacheThreshold_;
 }
 } // namespace OHOS::Ace
