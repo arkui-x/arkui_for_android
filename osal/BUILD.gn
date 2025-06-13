@@ -56,6 +56,7 @@ template("ace_osal_android_source_set") {
       "frame_trace_adapter_impl.cpp",
       "hitrace_meter.cpp",
       "image_packer_android.cpp",
+      "image_perf_android.cpp",
       "image_source_android.cpp",
       "input_manager.cpp",
       "input_method_manager_android.cpp",

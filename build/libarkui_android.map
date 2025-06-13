@@ -69,6 +69,9 @@
       "OHOS::Ace::NG::PanEventActuator::PanEventActuator(OHOS::Ace::WeakPtr<OHOS::Ace::NG::GestureEventHub> const&, OHOS::Ace::PanDirection, int, float)";
       "OHOS::Ace::NG::PipelineContext::GetCurrentContext()";
       "OHOS::Ace::NG::PanRecognizer::GetDistance() const";
+      "OHOS::Ace::RoundToMaxPrecision(double)";
+      "OHOS::Ace::NG::SwiperPattern::IsAtStart() const";
+      "OHOS::Ace::NG::SwiperPattern::IsAtEnd() const";
       OHOS::Ace::NG::ViewAbstract::*;
       OHOS::Ace::NG::ViewStackProcessor::*;
       OHOS::Ace::NG::UINode::*;

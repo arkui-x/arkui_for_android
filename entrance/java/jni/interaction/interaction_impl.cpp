@@ -233,6 +233,11 @@ int32_t InteractionImpl::GetAppDragSwitchState(bool& state)
 
 void InteractionImpl::SetDraggableStateAsync(bool state, int64_t downTime) {}
 
+int32_t InteractionImpl::EnableInternalDropAnimation(const std::string& animationInfo)
+{
+    return -1;
+}
+
 #ifdef ENABLE_DRAG_FRAMEWORK
 Msdp::DeviceStatus::DragCursorStyle TranslateDragCursorStyle(OHOS::Ace::DragCursorStyleCore style)
 {

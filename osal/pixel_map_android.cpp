@@ -269,7 +269,7 @@ void PixelMapAndroid::Scale(float xAxis, float yAxis, const AceAntiAliasingOptio
     }
 }
 
-void PixelMapAndroid::SavePixelMapToFile(const std::string& dst) const
-{
-}
+void PixelMapAndroid::SavePixelMapToFile(const std::string& dst) const {}
+
+void PixelMapAndroid::SetMemoryName(std::string pixelMapName) const {}
 } // namespace OHOS::Ace
