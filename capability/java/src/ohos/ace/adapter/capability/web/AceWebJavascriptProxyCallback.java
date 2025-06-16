@@ -63,6 +63,8 @@ public class AceWebJavascriptProxyCallback {
      */
     @JavascriptInterface
     public void callAsyncFunction(String className, String methodName, String param) {
+        ALog.i(LOG_TAG, "callAsyncFunction className: " + className
+            + ", methodName: " + methodName + ", param: " + param);
         try {
             JSONArray args = new JSONArray(param);
             List<Object> params = new ArrayList<>();
@@ -90,6 +92,8 @@ public class AceWebJavascriptProxyCallback {
      */
     @JavascriptInterface
     public String callSyncFunction(String className, String methodName, String param) {
+        ALog.i(LOG_TAG, "callSyncFunction className: " + className
+            + ", methodName: " + methodName + ", param: " + param);
         final AtomicReference<String> resultRef = new AtomicReference<>("{\"value\": null}");
         try {
             JSONArray args = new JSONArray(param);

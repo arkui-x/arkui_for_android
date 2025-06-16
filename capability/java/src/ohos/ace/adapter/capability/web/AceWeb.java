@@ -252,6 +252,14 @@ public class AceWeb extends AceWebBase {
 
     private ExecutorService downloadExecutor_;
 
+    private boolean isJavaScriptEnabled = false;
+
+    private String jsObjectName;
+
+    private String[] jsSyncMethod;
+
+    private String[] jsAsyncMethod;
+
     private List<WebMessagePort> webMessagePorts = new ArrayList<WebMessagePort>();
     private int videoWidth = 0;
     private int videoHeight = 0;
@@ -505,6 +513,10 @@ public class AceWeb extends AceWebBase {
 
             @Override
             public void onPageFinished(WebView view, String url) {
+                if (!isJavaScriptEnabled && jsObjectName != null && (jsSyncMethod != null || jsAsyncMethod != null)) {
+                    registerJavaScriptProxy(jsObjectName, jsSyncMethod, jsAsyncMethod, "");
+                    isJavaScriptEnabled = true;
+                }
                 AceWeb.this.onPageLoaded(url);
                 if (url != null && (url.startsWith("http") || url.startsWith("https"))) {
                     ThreadPoolExecutor executorService = new ThreadPoolExecutor(
@@ -2321,6 +2333,12 @@ public class AceWeb extends AceWebBase {
     @Override
     public void registerJavaScriptProxy(
         String objectName, String[] methodList, String[] asyncMethodList, String permission) {
+        ALog.i(LOG_TAG, "registerJavaScriptProxy objectName: " + objectName);
+        if (!isJavaScriptEnabled) {
+            jsObjectName = objectName;
+            jsSyncMethod = methodList;
+            jsAsyncMethod = asyncMethodList;
+        }
         if (webView == null) {
             ALog.e(LOG_TAG, "registerJavaScriptProxy webView is null");
             return;
@@ -2353,9 +2371,13 @@ public class AceWeb extends AceWebBase {
      */
     @Override
     public void deleteJavaScriptRegister(String objectName) {
+        ALog.i(LOG_TAG, "deleteJavaScriptRegister objectName: " + objectName);
         if (webView != null) {
             String jsResult = String.format("delete window.%s;", objectName);
             webView.evaluateJavascript(jsResult, null);
         }
+        jsObjectName = null;
+        jsSyncMethod = null;
+        jsAsyncMethod = null;
     }
 }
