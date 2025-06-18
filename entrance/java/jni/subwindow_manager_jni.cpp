@@ -124,8 +124,8 @@ void SubWindowManagerJni::SetupSubWindowManager(JNIEnv* env, jobject obj)
         env->GetMethodID(clazz, "registerSubWindow", "(Ljava/lang/String;J)Z");
     subWindowManagerStruct_.unregisterSubWindowMethod =
         env->GetMethodID(clazz, "unregisterSubWindow", "(Ljava/lang/String;)Z");
-    subWindowManagerStruct_.setStatusBarMethod = env->GetMethodID(clazz, "setStatusBar", "(IIZ)Z");
-    subWindowManagerStruct_.setNavigationBarMethod = env->GetMethodID(clazz, "setNavigationBar", "(IIZ)Z");
+    subWindowManagerStruct_.setStatusBarMethod = env->GetMethodID(clazz, "setStatusBar", "(II)Z");
+    subWindowManagerStruct_.setNavigationBarMethod = env->GetMethodID(clazz, "setNavigationBar", "(II)Z");
     subWindowManagerStruct_.setWindowPrivacyModeMethod = env->GetMethodID(clazz, "setWindowPrivacyMode", "(Z)Z");
 }
 
@@ -795,7 +795,7 @@ bool SubWindowManagerJni::UnregisterSubWindow(const std::string& name)
     }
 }
 
-bool SubWindowManagerJni::SetStatusBar(uint32_t backgroundColor, uint32_t contentColor, bool enable)
+bool SubWindowManagerJni::SetStatusBar(uint32_t backgroundColor, uint32_t contentColor)
 {
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
     if (env == nullptr) {
@@ -804,7 +804,7 @@ bool SubWindowManagerJni::SetStatusBar(uint32_t backgroundColor, uint32_t conten
     }
 
     jboolean result = env->CallBooleanMethod(subWindowManagerStruct_.object,
-        subWindowManagerStruct_.setStatusBarMethod, (int)backgroundColor, (int)contentColor, enable);
+        subWindowManagerStruct_.setStatusBarMethod, (int)backgroundColor, (int)contentColor);
     if (env->ExceptionCheck()) {
         env->ExceptionDescribe();
         env->ExceptionClear();
@@ -815,7 +815,7 @@ bool SubWindowManagerJni::SetStatusBar(uint32_t backgroundColor, uint32_t conten
     return conversionResult;
 }
 
-bool SubWindowManagerJni::SetNavigationBar(uint32_t backgroundColor, uint32_t contentColor, bool enable)
+bool SubWindowManagerJni::SetNavigationBar(uint32_t backgroundColor, uint32_t contentColor)
 {
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
     if (env == nullptr) {
@@ -824,7 +824,7 @@ bool SubWindowManagerJni::SetNavigationBar(uint32_t backgroundColor, uint32_t co
     }
 
     jboolean result = env->CallBooleanMethod(subWindowManagerStruct_.object,
-        subWindowManagerStruct_.setNavigationBarMethod, (int)backgroundColor, (int)contentColor, enable);
+        subWindowManagerStruct_.setNavigationBarMethod, (int)backgroundColor, (int)contentColor);
     if (env->ExceptionCheck()) {
         env->ExceptionDescribe();
         env->ExceptionClear();

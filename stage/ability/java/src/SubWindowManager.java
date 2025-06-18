@@ -971,25 +971,22 @@ public class SubWindowManager {
      *
      * @param backgroundColor Status bar background color.
      * @param contentColor Status bar content color.
-     * @param enable Status bar hide or show.
      * @return Setting successful or failed.
      */
-    public boolean setStatusBar(int backgroundColor, int contentColor, boolean enable) {
+    public boolean setStatusBar(int backgroundColor, int contentColor) {
         Log.d(TAG, "setStatusBar called: backgroundColor=" + backgroundColor + ", contentColor=" + contentColor);
 
         if (mRootActivity != null) {
             Window window = mRootActivity.getWindow();
             View decorView = window.getDecorView();
-            int flags = decorView.getSystemUiVisibility();
             if (contentColor == UI_DARK_COLOR) {
-                flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR; // dark color
+                this.uiOptions_ |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR; // dark color
             } else if (contentColor == UI_LIGHT_COLOR) {
-                flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR; // light color
+                this.uiOptions_ &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR; // light color
             }
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            decorView.setSystemUiVisibility(flags);
+            decorView.setSystemUiVisibility(this.uiOptions_);
             window.setStatusBarColor(backgroundColor);
-            setStatusBarStatus(enable);
             return true;
         }
         return false;
@@ -1000,10 +997,9 @@ public class SubWindowManager {
      *
      * @param backgroundColor Navigation bar background color.
      * @param contentColor Navigation bar content color.
-     * @param enable Navigation bar hide or show.
      * @return Setting successful or failed.
      */
-    public boolean setNavigationBar(int backgroundColor, int contentColor, boolean enable) {
+    public boolean setNavigationBar(int backgroundColor, int contentColor) {
         Log.d(TAG, "setNavigationBar called: backgroundColor=" + backgroundColor + ", contentColor=" + contentColor);
 
         if (mRootActivity != null) {
@@ -1015,16 +1011,14 @@ public class SubWindowManager {
             if (decorView == null) {
                 return false;
             }
-            int flags = decorView.getSystemUiVisibility();
             if (contentColor == UI_DARK_COLOR) {
-                flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR; // dark color
+                this.uiOptions_ |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR; // dark color
             } else if (contentColor == UI_LIGHT_COLOR) {
-                flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR; // light color
+                this.uiOptions_ &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR; // light color
             }
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            decorView.setSystemUiVisibility(flags);
+            decorView.setSystemUiVisibility(this.uiOptions_);
             window.setNavigationBarColor(backgroundColor);
-            setNavigationBarStatus(enable);
             return true;
         }
         return false;

@@ -106,8 +106,8 @@ public:
     static bool SetOnTop(const std::string& name, bool status);
     static bool RegisterSubWindow(const std::string& name, void* subWindow);
     static bool UnregisterSubWindow(const std::string& name);
-    static bool SetStatusBar(uint32_t baclgroundColor, uint32_t contentColor, bool enable);
-    static bool SetNavigationBar(uint32_t baclgroundColor, uint32_t contentColor, bool enable);
+    static bool SetStatusBar(uint32_t baclgroundColor, uint32_t contentColor);
+    static bool SetNavigationBar(uint32_t baclgroundColor, uint32_t contentColor);
     static bool SetWindowPrivacyMode(bool isPrivacyMode);
 
 private:

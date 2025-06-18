@@ -1442,10 +1442,10 @@ WMError Window::UpdateSystemBarProperties(
             systemBarPropertyFlag.contentColorFlag || systemBarPropertyFlag.enableAnimationFlag) {
             if (systemBarType == WindowType::WINDOW_TYPE_STATUS_BAR) {
                 SubWindowManagerJni::SetStatusBar(
-                    property.backgroundColor_, property.contentColor_, property.enable_);
+                    property.backgroundColor_, property.contentColor_);
             } else if (systemBarType == WindowType::WINDOW_TYPE_NAVIGATION_BAR) {
                 SubWindowManagerJni::SetNavigationBar(
-                    property.backgroundColor_, property.contentColor_, property.enable_);
+                    property.backgroundColor_, property.contentColor_);
             } else {
                 LOGE("The WindowType is not set to UpdateSystemBarProperties. The WindowType is %{public}d",
                     systemBarType);
