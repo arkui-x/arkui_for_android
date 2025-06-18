@@ -47,7 +47,6 @@ using namespace JNI_TOOL;
 namespace JNI_TOOL {
 std::string GetStringFromJNI(const jobject& obj, std::string funcName)
 {
-    LOGI("jni call %{public}s", funcName.c_str());
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     if (!env) {
         LOGE("jni env not ready, env is null");
@@ -73,7 +72,6 @@ std::string GetStringFromJNI(const jobject& obj, std::string funcName)
 
 int GetIntFromJNI(const jobject& obj, std::string funcName)
 {
-    LOGI("jni call %{public}s", funcName.c_str());
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     if (!env) {
         LOGE("jni env not ready, env is null");
@@ -95,7 +93,6 @@ int GetIntFromJNI(const jobject& obj, std::string funcName)
 
 long GetLongFromJNI(const jobject& obj, std::string funcName)
 {
-    LOGI("jni call %{public}s", funcName.c_str());
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     if (!env) {
         LOGE("jni env not ready, env is null");
@@ -117,7 +114,6 @@ long GetLongFromJNI(const jobject& obj, std::string funcName)
 
 float GetFloatFromJNI(const jobject& obj, std::string funcName)
 {
-    LOGI("jni call %{public}s", funcName.c_str());
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     if (!env) {
         LOGE("jni env not ready, env is null");
@@ -139,7 +135,6 @@ float GetFloatFromJNI(const jobject& obj, std::string funcName)
 
 bool GetBoolFromJNI(const jobject& obj, std::string funcName)
 {
-    LOGI("jni call %{public}s", funcName.c_str());
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     if (!env) {
         LOGE("jni env not ready, env is null");
@@ -161,7 +156,6 @@ bool GetBoolFromJNI(const jobject& obj, std::string funcName)
 
 std::map<std::string, std::string> GetStringMapFromJNI(const jobject& obj, std::string funcName)
 {
-    LOGI("jni call %{public}s", funcName.c_str());
     std::map<std::string, std::string> returnMap;
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     if (!env) {
@@ -222,7 +216,6 @@ std::map<std::string, std::string> GetStringMapFromJNI(const jobject& obj, std::
 
 std::vector<std::string> GetStringVectorFromJNI(const jobject& obj, std::string funcName)
 {
-    LOGI("jni call %{public}s", funcName.c_str());
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     if (!env) {
         LOGE("jni env not ready, env is null");
@@ -254,7 +247,6 @@ std::vector<std::string> GetStringVectorFromJNI(const jobject& obj, std::string 
 
 void CallVoidMethodFromJNI(const jobject& obj, std::string funcName)
 {
-    LOGI("jni call %{public}s", funcName.c_str());
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     if (!env) {
         LOGE("jni env not ready, env is null");

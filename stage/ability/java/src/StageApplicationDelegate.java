@@ -555,7 +555,6 @@ public class StageApplicationDelegate {
     }
 
     private void initPlatformCapability(Context context) {
-        Log.i(LOG_TAG, "StageApplication initPlatformCapability called");
         platformCapability = new AcePlatformCapability(context);
     }
 
@@ -586,7 +585,6 @@ public class StageApplicationDelegate {
      * @return class RunningProcessInfo in List
      */
     public Object getRunningProcessInfo() {
-        Log.i(LOG_TAG, "Get running process info called");
         List<RunningProcessInfo> processInfos = new ArrayList<RunningProcessInfo>();
 
         ActivityManager activityMgr =
@@ -633,7 +631,6 @@ public class StageApplicationDelegate {
      * @return Return the ability name.
      */
     public String getTopActivity() {
-        Log.i(LOG_TAG, "Get top activity called");
         String topAbility = null;
         if (topActivity != null) {
             if (topActivity instanceof StageActivity) {
@@ -641,19 +638,6 @@ public class StageApplicationDelegate {
             }
         }
         return topAbility;
-    }
-
-    /**
-     * Print message.
-     *
-     * @param msg the log msg.
-     */
-    public void print(String msg) {
-        if (msg.length() <= 1000) {
-            Log.i(LOG_TAG, "print message: " + msg);
-        } else {
-            Log.w(LOG_TAG, "print: The total length of the message exceed 1000 characters.");
-        }
     }
 
     /**
