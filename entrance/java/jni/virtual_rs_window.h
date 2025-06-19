@@ -382,11 +382,11 @@ private:
     static void DeleteFromSubWindowMap(std::shared_ptr<Window> window);
     GraphicColorGamut GetSurfaceGamutFromColorSpace(ColorSpace colorSpace) const;
     ColorSpace GetColorSpaceFromSurfaceGamut(GraphicColorGamut colorGamut) const;
-    Rect GetTopRect(const Rect& safeAreaRect);
-    Rect GetLeftRect(const Rect& safeAreaRect);
-    Rect GetRightRect(const Rect& safeAreaRect);
-    Rect GetBottomRect(const Rect& safeAreaRect);
-    void GetCutoutRect(const Rect& safeAreaRect, AvoidArea& avoidArea);
+    Rect GetTopRect(const Rect& safeAreaRect, const Rect& surfaceRect);
+    Rect GetLeftRect(const Rect& safeAreaRect, const Rect& surfaceRect);
+    Rect GetRightRect(const Rect& safeAreaRect, const Rect& surfaceRect);
+    Rect GetBottomRect(const Rect& safeAreaRect, const Rect& surfaceRect);
+    void GetCutoutRect(const Rect& safeAreaRect, const Rect& surfaceRect, AvoidArea& avoidArea);
 
     int32_t surfaceWidth_ = 0;
     int32_t surfaceHeight_ = 0;

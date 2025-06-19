@@ -24,6 +24,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.view.Gravity;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.WindowManager;
@@ -84,7 +85,13 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
     }
 
     private int getScreenOrientation() {
-        return activity.getResources().getConfiguration().orientation;
+        DisplayMetrics metrics = new DisplayMetrics();
+        activity.getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
+        int orientation = Configuration.ORIENTATION_PORTRAIT;
+        if (metrics.widthPixels > metrics.heightPixels) {
+            orientation = Configuration.ORIENTATION_LANDSCAPE;
+        }
+        return orientation;
     }
 
     private void handleOnGlobalLayout() {

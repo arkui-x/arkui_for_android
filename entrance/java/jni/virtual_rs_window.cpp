@@ -1269,66 +1269,57 @@ WMError Window::SetSpecificBarProperty(WindowType type, const SystemBarProperty&
     }
 }
 
-Rect Window::GetTopRect(const Rect& safeAreaRect)
+Rect Window::GetTopRect(const Rect& safeAreaRect, const Rect& surfaceRect)
 {
-    auto statusBarHeight = SubWindowManagerJni::GetStatusBarHeight();
-    if (g_IsFullScreen && g_IsStatusBarHide || statusBarHeight == 0) {
-        return EMPTY_RECT;
-    }
-
     Rect rect = EMPTY_RECT;
-    auto orientationType = SubWindowManagerJni::GetScreenOrientation();
-    if (orientationType == ORIENTATION_PORTRAIT) {
-        rect.width_ = safeAreaRect.width_;
-        rect.height_ = statusBarHeight;
-    } else if (!g_IsStatusBarHide) {
-        rect.width_ = (safeAreaRect.posX_ > 0) ? (safeAreaRect.width_ + safeAreaRect.posX_) : safeAreaRect.width_;
-        rect.height_ = statusBarHeight;
+    if (safeAreaRect.posY_ > surfaceRect.posY_) {
+        rect.posX_ = surfaceRect.posX_;
+        rect.posY_ = surfaceRect.posY_;
+        rect.width_ = surfaceRect.width_;
+        rect.height_ = safeAreaRect.posY_ - surfaceRect.posY_;
     }
     return rect;
 }
 
-Rect Window::GetLeftRect(const Rect& safeAreaRect)
+Rect Window::GetLeftRect(const Rect& safeAreaRect, const Rect& surfaceRect)
 {
     Rect rect = EMPTY_RECT;
-    if (safeAreaRect.posX_ > 0) {
-        rect.width_ = safeAreaRect.posX_;
-        rect.height_ = DisplayInfoJni::getDisplayHeight();
+    if (safeAreaRect.posX_ > surfaceRect.posX_) {
+        rect.posX_ = surfaceRect.posX_;
+        rect.posY_ = surfaceRect.posY_;
+        rect.width_ = safeAreaRect.posX_ - surfaceRect.posX_;
+        rect.height_ = surfaceRect.height_;
     }
     return rect;
 }
 
-Rect Window::GetRightRect(const Rect& safeAreaRect)
+Rect Window::GetRightRect(const Rect& safeAreaRect, const Rect& surfaceRect)
 {
     Rect rect = EMPTY_RECT;
-    auto displayWidth = DisplayInfoJni::getDisplayWidth();
     auto sumWidth = safeAreaRect.posX_ + safeAreaRect.width_;
-    if (sumWidth < displayWidth) {
+    if (sumWidth < surfaceRect.posX_ + surfaceRect.width_) {
         rect.posX_ = sumWidth;
-        rect.width_ = displayWidth - sumWidth;
-        rect.height_ = DisplayInfoJni::getDisplayHeight();
+        rect.posY_= surfaceRect.posY_;
+        rect.width_ = surfaceRect.posX_ + surfaceRect.width_ - sumWidth;
+        rect.height_ = surfaceRect.height_;
     }
     return rect;
 }
 
-Rect Window::GetBottomRect(const Rect& safeAreaRect)
+Rect Window::GetBottomRect(const Rect& safeAreaRect, const Rect& surfaceRect)
 {
-    if (!SubWindowManagerJni::GetNavigationBarStatus()) {
-        return EMPTY_RECT;
-    }
-
     Rect rect = EMPTY_RECT;
-    auto displayHeight = DisplayInfoJni::getDisplayHeight();
     auto sumHeight = safeAreaRect.posY_ + safeAreaRect.height_;
-    if (sumHeight < displayHeight) {
+    if (sumHeight < surfaceRect.posY_ + surfaceRect.height_) {
+        rect.posX_ = surfaceRect.posX_;
         rect.posY_ = sumHeight;
-        rect.width_ = surfaceWidth_;
-        rect.height_ = displayHeight - sumHeight;
+        rect.width_ = surfaceRect.width_;
+        rect.height_ = surfaceRect.posY_ + surfaceRect.height_ - sumHeight;
     }
     return rect;
 }
 
-void Window::GetCutoutRect(const Rect& safeAreaRect, AvoidArea& avoidArea)
+void Window::GetCutoutRect(const Rect& safeAreaRect, const Rect& surfaceRect, AvoidArea& avoidArea)
 {
     auto cutoutBarHeight = SubWindowManagerJni::GetCutoutBarHeight();
     if (cutoutBarHeight == 0) {
@@ -1336,10 +1327,10 @@ void Window::GetCutoutRect(const Rect& safeAreaRect, AvoidArea& avoidArea)
     }
     auto orientationType = SubWindowManagerJni::GetScreenOrientation();
     if (orientationType == ORIENTATION_PORTRAIT) {
-        avoidArea.topRect_ = GetTopRect(safeAreaRect);
+        avoidArea.topRect_ = GetTopRect(safeAreaRect, surfaceRect);
     } else {
-        orientationType == ORIENTATION_LANDSCAPE ? avoidArea.leftRect_ = GetLeftRect(safeAreaRect)
-                                                 : avoidArea.rightRect_ = GetRightRect(safeAreaRect);
+        orientationType == ORIENTATION_LANDSCAPE ? avoidArea.leftRect_ = GetLeftRect(safeAreaRect, surfaceRect)
+                                                 : avoidArea.rightRect_ = GetRightRect(safeAreaRect, surfaceRect);
     }
 }
 
@@ -1351,7 +1342,7 @@ WMError Window::GetAvoidAreaByType(AvoidAreaType type, AvoidArea& avoidArea)
     avoidArea.bottomRect_ = EMPTY_RECT;
     auto errorCode = WMError::WM_OK;
     const Rect safeAreaRect = SubWindowManagerJni::GetSafeArea();
-
+    const Rect surfaceRect = SubWindowManagerJni::GetSurfaceRect();
     if (IsSubWindow()) {
         if (isFullScreen_ == false) {
             return errorCode;
@@ -1360,13 +1351,13 @@ WMError Window::GetAvoidAreaByType(AvoidAreaType type, AvoidArea& avoidArea)
 
     switch (type) {
         case AvoidAreaType::TYPE_SYSTEM:
-            avoidArea.topRect_ = GetTopRect(safeAreaRect);
-            avoidArea.leftRect_ = GetLeftRect(safeAreaRect);
-            avoidArea.rightRect_ = GetRightRect(safeAreaRect);
-            avoidArea.bottomRect_ = GetBottomRect(safeAreaRect);
+            avoidArea.topRect_ = GetTopRect(safeAreaRect, surfaceRect);
+            avoidArea.leftRect_ = GetLeftRect(safeAreaRect, surfaceRect);
+            avoidArea.rightRect_ = GetRightRect(safeAreaRect, surfaceRect);
+            avoidArea.bottomRect_ = GetBottomRect(safeAreaRect, surfaceRect);
             break;
         case AvoidAreaType::TYPE_CUTOUT:
-            GetCutoutRect(safeAreaRect, avoidArea);
+            GetCutoutRect(safeAreaRect, surfaceRect, avoidArea);
             break;
         case AvoidAreaType::TYPE_SYSTEM_GESTURE:
             break;
@@ -1379,7 +1370,7 @@ WMError Window::GetAvoidAreaByType(AvoidAreaType type, AvoidArea& avoidArea)
             break;
         case AvoidAreaType::TYPE_NAVIGATION_INDICATOR:
             if (SubWindowManagerJni::GetNavigationIndicatorStatus()) {
-                avoidArea.bottomRect_ = GetBottomRect(safeAreaRect);
+                avoidArea.bottomRect_ = GetBottomRect(safeAreaRect, surfaceRect);
             }
             break;
         default:
