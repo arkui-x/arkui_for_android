@@ -227,6 +227,8 @@ public:
         isToastWindow_ = isToastWindow;
     }
 
+    void SetFollowParentWindowLayoutEnabled(bool enable) override;
+
     bool ShowSelectOverlay(const RefPtr<NG::FrameNode>& overlayNode) override;
 
     MenuWindowState GetAttachState() override;
@@ -243,6 +245,11 @@ public:
         std::function<void(const float)>&& onWidthDidChange,
         std::function<void(const float)>&& onTypeDidChange,
         std::function<void()>&& sheetSpringBack, const RefPtr<NG::FrameNode>& targetNode) override;
+        
+    void SwitchFollowParentWindowLayout(bool freeMultiWindowEnable) override;
+    bool NeedFollowParentWindowLayout() override;
+    void AddFollowParentWindowLayoutNode(int32_t nodeId) override;
+    void RemoveFollowParentWindowLayoutNode(int32_t nodeId) override;
    
 private:
     void InitSubwindow(const RefPtr<Platform::AceContainerSG>& parentContainer);

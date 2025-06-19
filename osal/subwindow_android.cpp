@@ -767,6 +767,10 @@ void SubwindowAndroid::HideEventColumn()
     manager->RemoveEventColumn();
 }
 
+void SubwindowAndroid::SetFollowParentWindowLayoutEnabled(bool enable)
+{
+}
+
 bool SubwindowAndroid::ShowSelectOverlay(const RefPtr<NG::FrameNode>& overlayNode)
 {
     return false;
@@ -816,4 +820,15 @@ void SubwindowAndroid::ShowBindSheetNG(bool isShow, std::function<void(const std
         std::move(onDetentsDidChange), std::move(onWidthDidChange), std::move(onTypeDidChange),
         std::move(sheetSpringBack), targetNode);
 }
+
+void SubwindowAndroid::SwitchFollowParentWindowLayout(bool freeMultiWindowEnable) {}
+
+bool SubwindowAndroid::NeedFollowParentWindowLayout()
+{
+    return false;
+}
+
+void SubwindowAndroid::AddFollowParentWindowLayoutNode(int32_t nodeId) {}
+
+void SubwindowAndroid::RemoveFollowParentWindowLayoutNode(int32_t nodeId) {}
 } // namespace Ace
