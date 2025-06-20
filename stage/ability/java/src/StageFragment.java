@@ -194,6 +194,7 @@ public class StageFragment extends Fragment {
             }
             Trace.endSection();
         }
+        windowView.setHide(isHidden);
     }
 
     @Override
