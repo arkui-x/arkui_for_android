@@ -70,9 +70,24 @@ RefPtr<UnifiedData> UdmfClientImpl::TransformUnifiedDataForNative(void* rawData)
     return nullptr;
 }
 
+RefPtr<DataLoadParams> UdmfClientImpl::TransformDataLoadParamsForNative(void* rawData)
+{
+    return nullptr;
+}
+
 void* UdmfClientImpl::TransformUnifiedDataPtr(RefPtr<UnifiedData>& unifiedData)
 {
     return nullptr;
+}
+
+RefPtr<DataLoadParams> UdmfClientImpl::TransformDataLoadParams(napi_env env, napi_value napiValue)
+{
+    return nullptr;
+}
+
+int32_t UdmfClientImpl::SetDelayInfo(RefPtr<DataLoadParams> dataLoadParams, std::string& key)
+{
+    return -1;
 }
 
 napi_value UdmfClientImpl::TransformUdmfUnifiedData(RefPtr<UnifiedData>& UnifiedData)

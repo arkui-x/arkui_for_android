@@ -21,4 +21,81 @@ void PerfInterfaces::SetScrollState(bool state)
 {
 }
 
+void PerfInterfaces::RecordInputEvent(PerfActionType type, PerfSourceType sourceType, int64_t time)
+{
+}
+
+int64_t PerfInterfaces::GetInputTime(const std::string& sceneId, PerfActionType type, const std::string& note)
+{
+    return 0;
+}
+
+void PerfInterfaces::NotifyAppJankStatsBegin()
+{
+}
+
+void PerfInterfaces::NotifyAppJankStatsEnd()
+{
+}
+
+void PerfInterfaces::SetPageUrl(const std::string& pageUrl)
+{
+}
+
+std::string PerfInterfaces::GetPageUrl()
+{
+    return {};
+}
+
+void PerfInterfaces::SetPageName(const std::string& pageName)
+{
+}
+
+std::string PerfInterfaces::GetPageName()
+{
+    return {};
+}
+
+void PerfInterfaces::SetAppForeground(bool isShow)
+{
+}
+
+void PerfInterfaces::SetAppStartStatus()
+{
+}
+
+bool PerfInterfaces::IsScrollJank(const std::string& sceneId)
+{
+    return false;
+}
+
+void PerfInterfaces::Start(const std::string& sceneId, PerfActionType type, const std::string& note)
+{
+}
+
+void PerfInterfaces::End(const std::string& sceneId, bool isRsRender)
+{
+}
+
+void PerfInterfaces::StartCommercial(const std::string& sceneId, PerfActionType type, const std::string& note)
+{
+}
+
+void PerfInterfaces::EndCommercial(const std::string& sceneId, bool isRsRender)
+{
+}
+
+void PerfInterfaces::SetFrameTime(int64_t vsyncTime, int64_t duration, double jank, const std::string& windowName)
+{
+}
+
+void PerfInterfaces::ReportJankFrameApp(double jank, int32_t jankThreshold)
+{
+}
+
+void PerfInterfaces::ReportPageShowMsg(const std::string& pageUrl, const std::string& bundleName,
+    const std::string& pageName)
+{
+}
+
 } // namespace OHOS::Ace

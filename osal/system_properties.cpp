@@ -97,6 +97,7 @@ bool SystemProperties::taskPriorityAdjustmentEnable_ = false;
 int32_t SystemProperties::dragDropFrameworkStatus_ = 0;
 
 bool SystemProperties::pageTransitionFrzEnabled_ = false;
+bool SystemProperties::softPagetransition_ = false;
 
 ACE_WEAK_SYM float SystemProperties::GetFontScale()
 {
@@ -367,6 +368,11 @@ bool SystemProperties::GetContainerDeleteFlag()
 bool SystemProperties::IsPageTransitionFreeze()
 {
     return pageTransitionFrzEnabled_;
+}
+
+bool SystemProperties::IsSoftPageTransition()
+{
+    return softPagetransition_;
 }
 
 bool SystemProperties::GetMultiInstanceEnabled()

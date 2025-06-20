@@ -56,16 +56,6 @@ void EventReport::JankFrameReport(int64_t startTime, int64_t duration, const std
 
 void EventReport::SendEventInner(const EventInfo& eventInfo) {}
 
-void EventReport::ReportEventComplete(DataBase& data) {}
-
-void EventReport::ReportEventJankFrame(DataBase& data) {}
-
-void EventReport::ReportJankFrameApp(JankInfo& info) {}
-
-void EventReport::ReportJankFrameFiltered(JankInfo& info) {}
-
-void EventReport::ReportJankFrameUnFiltered(JankInfo& info) {}
-
 void EventReport::ReportDoubleClickTitle(int32_t stateChange) {}
 
 void EventReport::ReportClickTitleMaximizeMenu(int32_t maxMenuItem, int32_t stateChange) {}
@@ -75,9 +65,6 @@ void EventReport::ReportPageNodeOverflow(const std::string& pageUrl, int32_t nod
 void EventReport::ReportPageDepthOverflow(const std::string& pageUrl, int32_t depth, int32_t threshold) {}
 
 void EventReport::ReportFunctionTimeout(const std::string& functionName, int64_t time, int32_t threshold) {}
-
-void EventReport::ReportPageShowMsg(const std::string& pageUrl, const std::string& bundleName,
-                                    const std::string& pageName) {}
 
 void EventReport::ReportUiExtensionTransparentEvent(const std::string& pageUrl, const std::string& bundleName,
     const std::string& moduleName) {}
