@@ -238,6 +238,15 @@ public class WindowViewTexture extends TextureView implements TextureView.Surfac
     }
 
     /**
+     * Set whether the surfaceView is hide.
+     *
+     * @param isHide whether the surfaceView is hide
+     */
+    @Override
+    public void setHide(boolean isHide) {
+    }
+
+    /**
      * Notify nativeWindow foreground.
      */
     @Override

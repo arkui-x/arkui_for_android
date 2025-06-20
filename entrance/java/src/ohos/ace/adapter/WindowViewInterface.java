@@ -47,6 +47,13 @@ public interface WindowViewInterface {
     void destroy();
 
     /**
+     * Set whether the surfaceView is hide.
+     *
+     * @param isHide whether the surfaceView is hide
+     */
+    void setHide(boolean isHide);
+
+    /**
      * Notify nativeWindow foreground.
      */
     void foreground();

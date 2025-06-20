@@ -225,6 +225,16 @@ public class WindowViewSurface extends SurfaceView implements SurfaceHolder.Call
     }
 
     /**
+     * Set whether the surfaceView is hide.
+     *
+     * @param isHide whether the surfaceView is hide
+     */
+    @Override
+    public void setHide(boolean isHide) {
+        setZOrderOnTop(!isHide);
+    }
+
+    /**
      * Notify nativeWindow foreground.
      */
     @Override
