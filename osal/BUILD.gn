@@ -27,7 +27,9 @@ template("ace_osal_android_source_set") {
   ohos_source_set(target_name) {
     defines += invoker.defines
     libs = [ "log" ]
-
+    if (defined(ace_engine_feature_enable_upgrade_skia) && ace_engine_feature_enable_upgrade_skia) {
+      defines += [ "USE_NEW_SKIA" ]
+    }
     sources = [
       "accessibility_type_convertor.cpp",
       "ace_checker.cpp",

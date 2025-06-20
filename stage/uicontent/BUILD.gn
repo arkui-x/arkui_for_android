@@ -72,14 +72,7 @@ template("ace_uicontent_android_source_set") {
       "$ability_runtime_cross_platform_path/interfaces/inner_api/jsruntime:jsruntime_config",
     ]
 
-    if (ace_use_new_skia) {
       deps += [ "$ace_flutter_engine_root:flutter_for_ng" ]
-    } else {
-      deps += [
-        "$ace_flutter_engine_root:third_party_flutter_engine_$platform",
-        "$ace_flutter_engine_root/skia:ace_skia_$platform",
-      ]
-    }
 
     defines += [ "ANDROID_PLATFORM" ]
   }
