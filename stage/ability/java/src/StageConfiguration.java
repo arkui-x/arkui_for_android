@@ -90,8 +90,6 @@ public class StageConfiguration {
             int den = config.densityDpi;
             json.put(DENSITY_KEY, String.valueOf(den));
             json.put(LANGUAGE_MODE_KEY, config.locale);
-            float fontSizeScale = config.fontScale;
-            json.put(SYSTEM_FONT_SIZE_SCALE, String.valueOf(fontSizeScale));
             int minScreenWidth = config.smallestScreenWidthDp;
             if (minScreenWidth == Configuration.SMALLEST_SCREEN_WIDTH_DP_UNDEFINED) {
                 if (diagonalSize <= 6.9 && diagonalSize >= 0) {
