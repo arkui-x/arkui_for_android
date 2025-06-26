@@ -23,8 +23,9 @@ namespace OHOS::Ace::Platform {
 StorageImpl::StorageImpl() : Storage()
 {
     auto pipelineContext = NG::PipelineContext::GetCurrentContext();
+    CHECK_NULL_VOID(pipelineContext);
     RefPtr<TaskExecutor> taskExecutor = pipelineContext->GetTaskExecutor();
-    taskExecutor_=taskExecutor;
+    taskExecutor_ = taskExecutor;
 }
 
 void StorageImpl::SetString(const std::string& key, const std::string& value)
