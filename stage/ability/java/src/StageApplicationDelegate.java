@@ -641,6 +641,19 @@ public class StageApplicationDelegate {
     }
 
     /**
+     * Print message.
+     *
+     * @param msg the log msg.
+     */
+    public void print(String msg) {
+        if (msg.length() <= 1000) {
+            Log.i(LOG_TAG, "print message: " + msg);
+        } else {
+            Log.w(LOG_TAG, "print: The total length of the message exceed 1000 characters.");
+        }
+    }
+
+    /**
      * Start a new activity.
      *
      * @param bundleName   the package name.
