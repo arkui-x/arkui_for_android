@@ -55,6 +55,10 @@ void ImageAnalyzerManager::UpdateAnalyzerUIConfig(const RefPtr<NG::GeometryNode>
 {
 }
 
+void ImageAnalyzerManager::UpdateKeyEvent(KeyEvent keyEvent)
+{
+}
+
 void ImageAnalyzerManager::SetImageAnalyzerConfig(void* config)
 {
 }

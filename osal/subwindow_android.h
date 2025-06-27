@@ -227,7 +227,7 @@ public:
         isToastWindow_ = isToastWindow;
     }
 
-    void SetFollowParentWindowLayoutEnabled(bool enable) override;
+    bool SetFollowParentWindowLayoutEnabled(bool enable) override;
 
     bool ShowSelectOverlay(const RefPtr<NG::FrameNode>& overlayNode) override;
 
