@@ -182,9 +182,9 @@ uint32_t PixelMapAndroid::WritePixels(const WritePixelsOptions& opts)
     return 0;
 }
 
-bool PixelMapAndroid::GetIsWideColorGamut() const
+uint32_t PixelMapAndroid::GetInnerColorGamut() const
 {
-    return false;
+    return 0;
 }
 
 RefPtr<PixelMap> PixelMap::CreatePixelMap(void* rawPtr)

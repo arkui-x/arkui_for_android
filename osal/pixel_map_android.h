@@ -48,7 +48,7 @@ public:
     RefPtr<PixelMap> GetCropPixelMap(const Rect& srcRect) override;
     bool EncodeTlv(std::vector<uint8_t>& buff) override;
     uint32_t WritePixels(const WritePixelsOptions& opts) override;
-    bool GetIsWideColorGamut() const override;
+    uint32_t GetInnerColorGamut() const override;
     void SetMemoryName(std::string pixelMapName) const override;
 private:
     std::shared_ptr<Media::PixelMap> pixmap_;

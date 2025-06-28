@@ -98,4 +98,12 @@ void PerfInterfaces::ReportPageShowMsg(const std::string& pageUrl, const std::st
 {
 }
 
+void PerfInterfaces::SetApplicationInfo()
+{
+}
+
+void PerfInterfaces::SetSubHealthInfo(const std::string& info, const std::string& reason, const int32_t duration)
+{
+}
+
 } // namespace OHOS::Ace

@@ -389,4 +389,24 @@ int32_t SystemProperties::getFormSharedImageCacheThreshold()
 {
     return formSharedImageCacheThreshold_;
 }
+
+bool SystemProperties::IsWhiteBlockEnabled()
+{
+    return false;
+}
+
+bool SystemProperties::IsWhiteBlockIdleChange()
+{
+    return false;
+}
+
+int32_t SystemProperties::GetWhiteBlockIndexValue()
+{
+    return 0;
+}
+
+int32_t SystemProperties::GetWhiteBlockCacheCountValue()
+{
+    return 0;
+}
 } // namespace OHOS::Ace
