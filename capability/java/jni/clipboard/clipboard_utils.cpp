@@ -14,7 +14,12 @@
  */
 #include "adapter/android/capability/java/jni/clipboard/clipboard_utils.h"
 
+#ifdef USE_M133_SKIA
+#include "src/base/SkBase64.h"
+#else
 #include "include/utils/SkBase64.h"
+#endif
+
 namespace OHOS::Ace {
 std::vector<uint8_t> ClipBoardUtils::DecodeCustomData(const std::string& encodedStr)
 {
