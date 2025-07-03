@@ -88,6 +88,8 @@ public:
 
     int32_t EnableInternalDropAnimation(const std::string& animationInfo) override;
 
+    bool IsDragStart() const override;
+
     int32_t UpdatePointAction(const std::shared_ptr<MMI::PointerEvent>& pointerEvent);
     
     int32_t GetPointerId()
