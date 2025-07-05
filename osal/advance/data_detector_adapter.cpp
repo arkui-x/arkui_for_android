@@ -39,12 +39,11 @@ void DataDetectorAdapter::ResponseBestMatchItem(const AISpan& aiSpan) {}
 void DataDetectorAdapter::GetAIEntityMenu() {}
 
 void DataDetectorAdapter::OnClickAIMenuOption(const AISpan& aiSpan,
-    const std::pair<std::string, FuncVariant>& menuOption, const RefPtr<NG::FrameNode>& targetNode,
-    const std::function<void()>& onMenuDisappear, bool isFirst)
+    const std::pair<std::string, FuncVariant>& menuOption, const RefPtr<NG::FrameNode>& targetNode)
 {}
 
-RefPtr<NG::FrameNode> DataDetectorAdapter::CreateAIEntityMenu(const AISpan& aiSpan,
-    const RefPtr<NG::FrameNode>& targetNode, AIMenuInfo info, const std::function<void()>& onMenuDisappear)
+RefPtr<NG::FrameNode> DataDetectorAdapter::CreateAIEntityMenu(
+    const AISpan& aiSpan, const RefPtr<NG::FrameNode>& targetNode, AIMenuInfo info)
 {
     return nullptr;
 }

@@ -238,6 +238,14 @@ int32_t InteractionImpl::EnableInternalDropAnimation(const std::string& animatio
     return -1;
 }
 
+bool InteractionImpl::IsDragStart() const
+{
+#if defined(ENABLE_DRAG_FRAMEWORK)
+    return InteractionManager::GetInstance()->IsDragStart();
+#endif
+    return false;
+}
+
 #ifdef ENABLE_DRAG_FRAMEWORK
 Msdp::DeviceStatus::DragCursorStyle TranslateDragCursorStyle(OHOS::Ace::DragCursorStyleCore style)
 {
