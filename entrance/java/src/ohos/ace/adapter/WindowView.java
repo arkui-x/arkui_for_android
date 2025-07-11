@@ -29,6 +29,7 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.os.Build;
 
 import java.nio.ByteBuffer;
 
@@ -219,7 +220,11 @@ public class WindowView extends SurfaceView implements SurfaceHolder.Callback {
      * @param isHide whether the surfaceView is hide
      */
     public void setHide(boolean isHide) {
-        setZOrderOnTop(!isHide);
+        if (Build.VERSION.SDK_INT < 30) {
+            setZOrderMediaOverlay(!isHide);
+        } else {
+            setZOrderOnTop(!isHide);
+        }
     }
 
     /**
