@@ -25,6 +25,7 @@ import android.view.Surface;
 import android.view.View;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.os.Build;
 
 import ohos.ace.adapter.capability.platformview.AcePlatformViewPluginBase;
 import ohos.ace.adapter.capability.web.AceWebPluginBase;
@@ -231,7 +232,11 @@ public class WindowViewSurface extends SurfaceView implements SurfaceHolder.Call
      */
     @Override
     public void setHide(boolean isHide) {
-        setZOrderOnTop(!isHide);
+        if (Build.VERSION.SDK_INT < 30) {
+            setZOrderMediaOverlay(!isHide);
+        } else {
+            setZOrderOnTop(!isHide);
+        }
     }
 
     /**
