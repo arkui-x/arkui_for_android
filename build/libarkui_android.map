@@ -588,6 +588,8 @@
       "NapiValueToLocalValue(napi_value__*)";
 
       "panda::os::thread::GetCurrentThreadId()";
+      "panda::os::thread::GetNativeHandle()";
+      "panda::os::thread::SetThreadName(long, char const*)";
       "panda::GetStacktrace()";
       "panda::PrintStack(std::__ndk1::vector<unsigned long, std::__ndk1::allocator<unsigned long> > const&, std::__ndk1::basic_ostream<char, std::__ndk1::char_traits<char> >&)";
       "panda::time::GetCurrentTimeInMillis(bool)";

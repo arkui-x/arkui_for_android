@@ -839,4 +839,6 @@ int32_t SubwindowAndroid::GetNodeId() const
 {
     return -1;
 }
+
+void SubwindowAndroid::SetWindowAnchorInfo(const NG::OffsetF& offset, SubwindowType type, int32_t nodeId) {}
 } // namespace Ace
