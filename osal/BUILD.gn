@@ -27,7 +27,8 @@ template("ace_osal_android_source_set") {
   ohos_source_set(target_name) {
     defines += invoker.defines
     libs = [ "log" ]
-    if (defined(ace_engine_feature_enable_upgrade_skia) && ace_engine_feature_enable_upgrade_skia) {
+    if (defined(ace_engine_feature_enable_upgrade_skia) &&
+        ace_engine_feature_enable_upgrade_skia) {
       defines += [ "USE_NEW_SKIA" ]
     }
     sources = [
@@ -45,6 +46,7 @@ template("ace_osal_android_source_set") {
       "advance/text_share_adapter.cpp",
       "advance/text_translation_adapter.cpp",
       "app_bar_helper_impl.cpp",
+      "cpu_boost.cpp",
       "display_info_utils.cpp",
       "display_manager_android.cpp",
       "drag_window.cpp",

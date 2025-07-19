@@ -72,6 +72,7 @@ bool SystemProperties::extSurfaceEnabled_ = true;
 uint32_t SystemProperties::dumpFrameCount_ = 0;
 std::atomic<bool> SystemProperties::layoutTraceEnable_(false);
 bool SystemProperties::buildTraceEnable_ = false;
+bool SystemProperties::dynamicDetectionTraceEnable_ = false;
 bool SystemProperties::enableScrollableItemPool_ = false;
 bool SystemProperties::navigationBlurEnabled_ = true;
 bool SystemProperties::gridCacheEnabled_ = false;

@@ -252,6 +252,7 @@ public:
     void RemoveFollowParentWindowLayoutNode(int32_t nodeId) override;
     void SetNodeId(int32_t nodeId) override;
     int32_t GetNodeId() const override;
+    void SetWindowAnchorInfo(const NG::OffsetF& offset, SubwindowType type, int32_t nodeId) override;
 
 private:
     void InitSubwindow(const RefPtr<Platform::AceContainerSG>& parentContainer);
