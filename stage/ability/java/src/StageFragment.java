@@ -164,13 +164,19 @@ public class StageFragment extends Fragment {
     public void onResume() {
         Log.i(LOG_TAG, "OnResume called, instance name:" + getInstanceName());
         super.onResume();
+    }
+
+    @Override
+    public void onStart() {
+        Log.i(LOG_TAG, "onStart called, instance name:" + getInstanceName());
+        super.onStart();
         if (isHidden()) {
-            Log.i(LOG_TAG, "OnResume called, isHidden");
+            Log.i(LOG_TAG, "onStart called, isHidden");
             isToResume = true;
             return;
         }
         isToResume = false;
-        Trace.beginSection("StageFragment::onResume");
+        Trace.beginSection("StageFragment::onStart");
         fragmentDelegate.dispatchOnForeground(getInstanceName(), this);
         windowView.foreground();
         if (platformPlugin != null) {
@@ -251,6 +257,16 @@ public class StageFragment extends Fragment {
     public boolean onBackPressed() {
         Log.i(LOG_TAG, "StageFragment onBackPressed called");
         return !windowView.backPressed();
+    }
+
+    /**
+     * called when other view covers fragment
+     *
+     * @param isTop fragment is the top view
+     */
+    public void setWindowOnTop(boolean isTop) {
+        Log.i(LOG_TAG, "setWindowOnTop " + isTop);
+        windowView.setHide(!isTop);
     }
 
     /**
