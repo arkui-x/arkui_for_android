@@ -25,6 +25,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -218,6 +219,10 @@ public class AceWeb extends AceWebBase {
     private static final int CACHE_MODE_OH_DEFAULT_VALUE = 0;
 
     private static final int CACHE_MODE_DEFAULT_VALUE = -1;
+
+    private static final int RECEIVER_NOT_EXPORTED = 0x4;
+
+    private static final int ANDROID_VERSION_TIRAMISU = 33;
 
     private static String currentPageUrl;
 
@@ -2011,7 +2016,11 @@ public class AceWeb extends AceWebBase {
         itFilter.addAction(WEB_DOWNLOAD_UPDATE_EVENT);
         itFilter.addAction(WEB_DOWNLOAD_START_EVENT);
         itFilter.addAction(WEB_DOWNLOAD_FAILED_EVENT);
-        context.registerReceiver(webviewBroadcastReceive_, itFilter);
+        if (Build.VERSION.SDK_INT >= ANDROID_VERSION_TIRAMISU) {
+            context.registerReceiver(webviewBroadcastReceive_, itFilter, RECEIVER_NOT_EXPORTED);
+        } else {
+            context.registerReceiver(webviewBroadcastReceive_, itFilter);
+        }
     }
 
     private void sendWebviewDownloadBroadcastByKey(String eventName, String guid) {
