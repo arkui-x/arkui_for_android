@@ -40,37 +40,11 @@ public class FoldManager {
 
     private static final int ANDROID_API_31 = 31;
 
-    private static volatile FoldManager instance;
+    private static boolean foldAble = false;
 
-    private WindowInfoTrackerCallbackAdapter foldWindowInfoCallback;
-
-    private Consumer<WindowLayoutInfo> foldConsumer;
-
-    private WindowInfoTrackerCallbackAdapter displayModeWindowInfoCallback;
-
-    private Consumer<WindowLayoutInfo> displayModeConsumer;
-
-    private boolean foldable = false;
-
-    private int foldStatus = FoldInfo.FOLD_STATUS_UNKNOWN;
+    private static int foldStatus = FoldInfo.FOLD_STATUS_UNKNOWN;
 
     private FoldManager() {
-    }
-
-    /** 
-     * get the shared instance of FoldManager.
-     *
-     * @return the shared instance of FoldManager.
-     */
-    public static FoldManager getInstance() {
-        if (instance == null) {
-            synchronized (FoldManager.class) {
-                if (instance == null) {
-                    instance = new FoldManager();
-                }
-            }
-        }
-        return instance;
     }
 
     /**
@@ -79,7 +53,7 @@ public class FoldManager {
      * @param activity the activity
      * @return true if foldable
      */
-    public boolean isFoldable(Activity activity) {
+    public static boolean isFoldable(Activity activity) {
         if (Build.VERSION.SDK_INT < ANDROID_API_31) {
             return false;
         }
@@ -98,7 +72,7 @@ public class FoldManager {
      * @param activity the activity
      * @return fold status
      */
-    public int getFoldStatus(Activity activity) {
+    public static int getFoldStatus(Activity activity) {
         if (Build.VERSION.SDK_INT < ANDROID_API_31) {
             return FoldInfo.FOLD_STATUS_UNKNOWN;
         }
@@ -118,7 +92,7 @@ public class FoldManager {
      * @param foldingFeature the folding feature
      * @return fold status
      */
-    public int getStatusFromFeature(Activity activity, FoldingFeature foldingFeature) {
+    public static int getStatusFromFeature(Activity activity, FoldingFeature foldingFeature) {
         if (foldingFeature == null) {
             Log.e(TAG, "foldingFeature is null.");
             return FoldInfo.FOLD_STATUS_UNKNOWN;
@@ -138,7 +112,7 @@ public class FoldManager {
      * @param activity the activity
      * @return FoldingFeature
      */
-    public FoldingFeature getFoldingFeature(Activity activity) {
+    public static FoldingFeature getFoldingFeature(Activity activity) {
         if (activity == null) {
             return null;
         }
@@ -164,7 +138,7 @@ public class FoldManager {
      * @param activity the activity
      * @return open or not
      */
-    public boolean isOpenFoldListener(Activity activity) {
+    public static boolean isOpenFoldListener(Activity activity) {
         try {
             Class<?> clazz = activity.getClass();
             Method getFoldMethod = clazz.getMethod("getFoldWindowInfoCallback");
@@ -188,7 +162,7 @@ public class FoldManager {
      * @param activity the activity
      * @return FoldingFeature
      */
-    public FoldingFeature getFoldingFeatureInvoke(Activity activity) {
+    public static FoldingFeature getFoldingFeatureInvoke(Activity activity) {
         try {
             Class<?> clazz = activity.getClass();
             Method getFoldMethod = clazz.getMethod("getFoldingFeatureFromListener");
@@ -217,8 +191,8 @@ public class FoldManager {
      *
      * @param foldable is ture or false
      */
-    public void setFoldable(boolean foldable) {
-        this.foldable = foldable;
+    public static void setFoldable(boolean foldable) {
+        foldAble = foldable;
     }
 
     /**
@@ -226,7 +200,7 @@ public class FoldManager {
      *
      * @param newFoldStatus fold status
      */
-    public void setFoldStatus(int newFoldStatus) {
+    public static void setFoldStatus(int newFoldStatus) {
         foldStatus = newFoldStatus;
     }
 
@@ -237,7 +211,7 @@ public class FoldManager {
      * @param foldingFeature the folding feature
      * @return Consumer<WindowLayoutInfo>
      */
-    public Consumer<WindowLayoutInfo> getConsumerWindowLayout(Activity activity,
+    public static Consumer<WindowLayoutInfo> getConsumerWindowLayout(Activity activity,
         AtomicReference<FoldingFeature> foldingFeature) {
         return windowLayoutInfo -> {
                 activity.runOnUiThread(() -> {
@@ -246,9 +220,8 @@ public class FoldManager {
             };
     }
 
-    private void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo,
+    private static void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo,
         AtomicReference<FoldingFeature> foldingFeature) {
-        FoldManager foldManager = FoldManager.getInstance();
         windowLayoutInfo.getDisplayFeatures().stream()
             .filter(FoldingFeature.class::isInstance)
             .map(FoldingFeature.class::cast)

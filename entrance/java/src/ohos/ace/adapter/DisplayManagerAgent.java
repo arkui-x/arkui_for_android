@@ -73,7 +73,7 @@ public class DisplayManagerAgent {
     public boolean isFoldable() {
         Log.d(TAG, "isFoldable called.");
         if (this.activity != null) {
-            return FoldManager.getInstance().isFoldable(this.activity);
+            return FoldManager.isFoldable(this.activity);
         } else {
             Log.e(TAG, "activity is null");
             return false;
@@ -88,7 +88,7 @@ public class DisplayManagerAgent {
     public int getFoldStatus() {
         Log.d(TAG, "getFoldStatus called.");
         if (this.activity != null) {
-            return FoldManager.getInstance().getFoldStatus(this.activity);
+            return FoldManager.getFoldStatus(this.activity);
         } else {
             Log.e(TAG, "activity is null");
             return FoldInfo.FOLD_STATUS_UNKNOWN;

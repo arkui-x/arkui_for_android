@@ -781,15 +781,14 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     }
 
 private void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo) {
-    FoldManager foldManager = FoldManager.getInstance();
     windowLayoutInfo.getDisplayFeatures().stream()
         .filter(FoldingFeature.class::isInstance)
         .map(FoldingFeature.class::cast)
         .findFirst()
         .ifPresent(feature -> {
-            foldManager.setFoldable(true);
-            int foldStatus = foldManager.getStatusFromFeature(this, feature);
-            foldManager.setFoldStatus(foldStatus);
+            FoldManager.setFoldable(true);
+            int foldStatus = FoldManager.getStatusFromFeature(this, feature);
+            FoldManager.setFoldStatus(foldStatus);
             activityDelegate.dispatchFoldStatusChange(getInstanceName(), foldStatus);
         });
 }
@@ -837,7 +836,7 @@ private void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo) {
     public FoldingFeature getFoldingFeatureFromListener() {
         AtomicReference<FoldingFeature> foldingFeature = new AtomicReference<>();
         if (foldWindowInfoCallback != null) {
-            Consumer<WindowLayoutInfo> consumerWindowLayout = FoldManager.getInstance()
+            Consumer<WindowLayoutInfo> consumerWindowLayout = FoldManager
                                                             .getConsumerWindowLayout(this, foldingFeature);
             foldWindowInfoCallback.addWindowLayoutInfoListener(this, this::runOnUiThread, consumerWindowLayout);
             foldWindowInfoCallback.removeWindowLayoutInfoListener(consumerWindowLayout);
