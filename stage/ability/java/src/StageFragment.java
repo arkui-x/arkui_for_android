@@ -40,6 +40,7 @@ import ohos.ace.adapter.AcePlatformPlugin;
 import ohos.ace.adapter.ArkUIXPluginRegistry;
 import ohos.ace.adapter.PluginContext;
 import ohos.ace.adapter.WindowViewInterface;
+import ohos.ace.adapter.WindowViewAospInterface;
 import ohos.ace.adapter.WindowViewBuilder;
 import ohos.ace.adapter.capability.bridge.BridgeManager;
 import ohos.ace.adapter.capability.grantresult.GrantResult;
@@ -105,7 +106,7 @@ public class StageFragment extends Fragment {
 
     private StageFragmentDelegate fragmentDelegate = null;
 
-    private WindowViewInterface windowView = null;
+    private WindowViewAospInterface windowView = null;
 
     private FrameLayout framelayout;
 
@@ -132,7 +133,7 @@ public class StageFragment extends Fragment {
         fragmentDelegate = new StageFragmentDelegate();
         fragmentDelegate.attachStageFragment(getInstanceName(), this);
         Trace.beginSection("createWindowView");
-        windowView = WindowViewBuilder.makeWindowView(this.getActivity(), true);
+        windowView = WindowViewBuilder.makeWindowViewAosp(this.getActivity(), instanceId, true);
         windowView.setInstanceId(instanceId);
         Trace.endSection();
 
