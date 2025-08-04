@@ -62,6 +62,7 @@ public class WindowViewAospCommon {
         } else {
             this.windowViewAospInterface = null;
         }
+        accessibilityCrossPlatformBridgeInit();
     }
 
     private void accessibilityCrossPlatformBridgeInit() {
