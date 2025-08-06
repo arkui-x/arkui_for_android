@@ -159,8 +159,7 @@ int32_t UdmfClientImpl::GetData(const RefPtr<UnifiedData>& unifiedData, const st
     return UDMF::E_OK;
 }
 
-int32_t UdmfClientImpl::GetSummary(std::string& key, std::map<std::string, int64_t>& summaryMap,
-    std::map<std::string, int64_t>& detailedSummaryMap)
+int32_t UdmfClientImpl::GetSummary(std::string& key, DragSummaryInfo& dragSummaryInfo)
 {
     if (key.empty()) {
         LOGE("GetSummary Failed, Invalid key");
@@ -187,7 +186,11 @@ int32_t UdmfClientImpl::GetSummary(std::string& key, std::map<std::string, int64
         }
         summary.totalSize += recordSize;
     }
-    summaryMap = summary.summary;
+    dragSummaryInfo.summary = summary.summary;
+    dragSummaryInfo.detailedSummary = summary.specificSummary;
+    dragSummaryInfo.summaryFormat = summary.summaryFormat;
+    dragSummaryInfo.version = summary.version;
+    dragSummaryInfo.totalSize = summary.totalSize;
     return UDMF::E_OK;
 }
 
@@ -365,7 +368,7 @@ std::vector<uint8_t> UdmfClientImpl::GetSpanStringEntry(const RefPtr<UnifiedData
     return {};
 }
 
-bool UdmfClientImpl::IsBelongsTo(const std::string& summary, const std::string& allowDropType)
+bool UdmfClientImpl::IsAppropriateType(DragSummaryInfo& dragSummaryInfo, const std::set<std::string>& allowTypes)
 {
     return false;
 }

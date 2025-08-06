@@ -26,6 +26,8 @@ constexpr int32_t ORIENTATION_LANDSCAPE = 2;
 constexpr char UNDEFINED_PARAM[] = "undefined parameter";
 constexpr int32_t DEFAULT_FORM_SHARED_IMAGE_CACHE_THRESHOLD = 20;
 
+constexpr int32_t DEFAULT_VELOCITY_TRACKER_POINTNUMBER_VALUE = 20;
+
 } // namespace
 
 bool SystemProperties::isRound_ = false;
@@ -75,6 +77,8 @@ bool SystemProperties::buildTraceEnable_ = false;
 bool SystemProperties::dynamicDetectionTraceEnable_ = false;
 bool SystemProperties::enableScrollableItemPool_ = false;
 bool SystemProperties::navigationBlurEnabled_ = true;
+bool SystemProperties::forceSplitIgnoreOrientationEnabled_ = false;
+std::optional<bool> SystemProperties::arkUIHookEnabled_;
 bool SystemProperties::gridCacheEnabled_ = false;
 bool SystemProperties::sideBarContainerBlurEnable_ = false;
 std::atomic<bool> SystemProperties::acePerformanceMonitorEnable_(false);
@@ -109,6 +113,10 @@ int32_t SystemProperties::formSharedImageCacheThreshold_ = DEFAULT_FORM_SHARED_I
 WidthLayoutBreakPoint SystemProperties::widthLayoutBreakpoints_ = WidthLayoutBreakPoint();
 HeightLayoutBreakPoint SystemProperties::heightLayoutBreakpoints_ = HeightLayoutBreakPoint();
 bool SystemProperties::syncLoadEnabled_ = false;
+
+int32_t SystemProperties::velocityTrackerPointNumber_ = DEFAULT_VELOCITY_TRACKER_POINTNUMBER_VALUE;
+bool SystemProperties::isVelocityWithinTimeWindow_ = true;
+bool SystemProperties::isVelocityWithoutUpPoint_ = true;
 
 bool SystemProperties::IsOpIncEnable()
 {
@@ -271,6 +279,16 @@ bool SystemProperties::GetCacheNavigationNodeEnable()
     return false;
 }
 
+bool SystemProperties::GetForceSplitIgnoreOrientationEnabled()
+{
+    return forceSplitIgnoreOrientationEnabled_;
+}
+
+std::optional<bool> SystemProperties::GetArkUIHookEnabled()
+{
+    return arkUIHookEnabled_;
+}
+
 bool SystemProperties::GetGridCacheEnabled()
 {
     return gridCacheEnabled_;
@@ -309,6 +327,21 @@ float SystemProperties::GetDragStartDampingRatio()
 float SystemProperties::GetDragStartPanDistanceThreshold()
 {
     return dragStartPanDisThreshold_;
+}
+
+int32_t SystemProperties::GetVelocityTrackerPointNumber()
+{
+    return velocityTrackerPointNumber_;
+}
+
+bool SystemProperties::IsVelocityWithinTimeWindow()
+{
+    return isVelocityWithinTimeWindow_;
+}
+
+bool SystemProperties::IsVelocityWithoutUpPoint()
+{
+    return isVelocityWithoutUpPoint_;
 }
 
 bool SystemProperties::IsSmallFoldProduct()

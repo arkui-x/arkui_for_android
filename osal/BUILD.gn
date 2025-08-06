@@ -54,6 +54,7 @@ template("ace_osal_android_source_set") {
       "drawing_color_filter_android.cpp",
       "drawing_lattice_android.cpp",
       "event_report.cpp",
+      "feature_param.cpp",
       "file_asset_provider.cpp",
       "file_uri_helper_android.cpp",
       "frame_report.cpp",
