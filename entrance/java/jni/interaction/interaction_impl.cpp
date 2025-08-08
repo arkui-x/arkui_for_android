@@ -151,10 +151,22 @@ int32_t InteractionImpl::GetShadowOffset(ShadowOffsetData& shadowOffsetData)
     return -1;
 }
 
-int32_t InteractionImpl::GetDragSummary(std::map<std::string, int64_t>& summary)
+int32_t InteractionImpl::GetDragSummary(std::map<std::string, int64_t>& summary,
+    std::map<std::string, int64_t>& detailedSummary, std::map<std::string, std::vector<int32_t>>& summaryFormat,
+    int32_t& version, int64_t& totalSize)
 {
 #ifdef ENABLE_DRAG_FRAMEWORK
-    return InteractionManager::GetInstance()->GetDragSummary(summary);
+    Msdp::DeviceStatus::DragSummaryInfo dragSummary;
+    auto ret = InteractionManager::GetInstance()->GetDragSummaryInfo(dragSummary);
+    if (ret != 0) {
+        return ret;
+    }
+    summary = dragSummary.summarys;
+    detailedSummary = dragSummary.detailedSummarys;
+    summaryFormat = dragSummary.summaryFormat;
+    version = dragSummary.version;
+    totalSize = dragSummary.totalSize;
+    return ret;
 #endif
     return -1;
 }

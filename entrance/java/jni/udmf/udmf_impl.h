@@ -42,8 +42,7 @@ public:
     RefPtr<UnifiedData> CreateUnifiedData() override;
     int32_t SetData(const RefPtr<UnifiedData>& unifiedData, std::string& key) override;
     int32_t GetData(const RefPtr<UnifiedData>& unifiedData, const std::string& key) override;
-    int32_t GetSummary(std::string& key, std::map<std::string, int64_t>& summaryMap,
-        std::map<std::string, int64_t>& detailedSummaryMap) override;
+    int32_t GetSummary(std::string& key, DragSummaryInfo& dragSummaryInfo) override;
     bool GetRemoteStatus(std::string& key) override;
     void AddFormRecord(
         const RefPtr<UnifiedData>& unifiedData, int32_t formId, const RequestFormInfo& cardInfo) override;
@@ -82,7 +81,7 @@ private:
     void GetLinkEntry(const RefPtr<UnifiedData>& unifiedData, std::string& url, std::string& description) override;
     bool GetFileUriEntry(const RefPtr<UnifiedData>& unifiedData, std::vector<std::string>& uri) override;
     std::vector<uint8_t> GetSpanStringEntry(const RefPtr<UnifiedData>& unifiedData) override;
-    bool IsBelongsTo(const std::string& summary, const std::string& allowDropType) override;
+    bool IsAppropriateType(DragSummaryInfo& dragSummaryInfo, const std::set<std::string>& allowTypes) override;
 };
 
 class UnifiedDataImpl : public UnifiedData {
