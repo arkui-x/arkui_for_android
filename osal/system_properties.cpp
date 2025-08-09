@@ -348,7 +348,7 @@ bool SystemProperties::IsNeedResampleTouchPoints()
 
 bool SystemProperties::IsNeedSymbol()
 {
-    return false;
+    return true;
 }
 
 int32_t SystemProperties::GetDragDropFrameworkStatus()
