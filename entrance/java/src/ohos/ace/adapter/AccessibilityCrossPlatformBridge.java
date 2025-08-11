@@ -786,7 +786,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         for (int index = 0; index < jsonArray.length(); index++) {
             int actionTemp = jsonArray.getInt(index);
             AccessibilityNodeInfo.AccessibilityAction customAction = new AccessibilityNodeInfo.AccessibilityAction(
-                    actionTemp, "ace");
+                    actionTemp, "");
             result.addAction(customAction);
             switch (actionTemp) {
                 case AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY:
