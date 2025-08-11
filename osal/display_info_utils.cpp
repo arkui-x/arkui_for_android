@@ -24,6 +24,11 @@ constexpr Dimension SHEET_DEVICE_WIDTH_BREAKPOINT = 600.0_vp;
 
 RefPtr<DisplayInfo> DisplayInfoUtils::GetDisplayInfo(int32_t displayId)
 {
+    if (displayInfo_) {
+        displayInfo_->SetWidth(SystemProperties::GetDeviceHeight());
+        displayInfo_->SetHeight(SystemProperties::GetDeviceHeight());
+        return displayInfo_;
+    }
     return AceType::MakeRefPtr<DisplayInfo>();
 }
 
