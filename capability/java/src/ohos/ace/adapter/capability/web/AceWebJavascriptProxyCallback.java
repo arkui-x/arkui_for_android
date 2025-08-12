@@ -69,9 +69,7 @@ public class AceWebJavascriptProxyCallback {
             List<Object> params = new ArrayList<>();
             for (int i = 0; i < args.length(); i++) {
                 Object element = args.get(i);
-                if (element != null && element != JSONObject.NULL) {
-                    params.add(parseJsonElement(element));
-                }
+                params.add(parseJsonElement(element));
             }
             mWebView.post(() -> {
                 AceWebPluginBase.onReceiveJavascriptExecuteCall(className, methodName, params.toArray(new Object[0]));
@@ -98,9 +96,7 @@ public class AceWebJavascriptProxyCallback {
             List<Object> params = new ArrayList<>();
             for (int i = 0; i < args.length(); i++) {
                 Object element = args.get(i);
-                if (element != null && element != JSONObject.NULL) {
-                    params.add(parseJsonElement(element));
-                }
+                params.add(parseJsonElement(element));
             }
             CountDownLatch latch = new CountDownLatch(1);
             new Handler(Looper.getMainLooper()).post(() -> {
