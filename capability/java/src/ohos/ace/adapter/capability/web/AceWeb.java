@@ -292,7 +292,7 @@ public class AceWeb extends AceWebBase {
         if (webView != null) {
             webView.getSettings().setJavaScriptEnabled(true);
             webView.addJavascriptInterface(
-                new AceWebJavascriptProxyCallback(this.context, webView), "AceWebJavascriptInterface");
+                new AceWebJavascriptProxyCallback(this.context, webView), "AceWebHandler");
         }
     }
 
@@ -2356,7 +2356,7 @@ public class AceWeb extends AceWebBase {
         for (String method : methodList) {
             String jsResult = String.format("window.%s = window.%s || {}; window.%s.%s = function(...args) {" +
             "const paramsJson = JSON.stringify(args); " +
-            "let ret = AceWebJavascriptInterface.callSyncFunction('%s', '%s', paramsJson);" +
+            "let ret = AceWebHandler.callSyncFunction('%s', '%s', paramsJson);" +
             "const obj = JSON.parse(ret);" +
             "return obj.value;" +
             "};", objectName, objectName, objectName, method, objectName, method);
@@ -2366,7 +2366,7 @@ public class AceWeb extends AceWebBase {
         for (String asyncMethod : asyncMethodList) {
             String jsResult = String.format("window.%s = window.%s || {}; window.%s.%s = function(...args) {" +
             "const paramsJson = JSON.stringify(args); " +
-            "AceWebJavascriptInterface.callAsyncFunction('%s', '%s', paramsJson);" +
+            "AceWebHandler.callAsyncFunction('%s', '%s', paramsJson);" +
             "};",
             objectName, objectName, objectName, asyncMethod, objectName, asyncMethod);
             webView.evaluateJavascript(jsResult, null);
