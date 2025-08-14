@@ -206,6 +206,7 @@ public class StageFragment extends Fragment {
             }
             Trace.endSection();
         }
+        setWindowOnTop(!isHidden);
     }
 
     @Override
@@ -271,7 +272,9 @@ public class StageFragment extends Fragment {
      */
     public void setWindowOnTop(boolean isTop) {
         Log.i(LOG_TAG, "setWindowOnTop " + isTop);
-        windowView.setHide(!isTop);
+        if (windowView != null) {
+            windowView.setHide(!isTop);
+        }
     }
 
     /**
