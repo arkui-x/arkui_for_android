@@ -725,7 +725,7 @@ void AceContainerSG::UpdateConfiguration(Platform::ParsedConfig& parsedConfig)
     SetResourceConfiguration(resConfig);
     themeManager->UpdateConfig(resConfig);
     if (SystemProperties::GetResourceDecoupling()) {
-        ResourceManager::GetInstance().UpdateResourceConfig(resConfig);
+        ResourceManager::GetInstance().UpdateResourceConfig(GetBundleName(), GetModuleName(), instanceId_, resConfig);
     }
     themeManager->LoadResourceThemes();
     themeManager->ParseSystemTheme();
