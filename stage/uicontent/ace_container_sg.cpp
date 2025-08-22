@@ -814,8 +814,11 @@ void AceContainerSG::SetFontAndScale(Platform::ParsedConfig& parsedConfig, Confi
         configurationChange.fontUpdate = true;
         fontManager->SetAppCustomFont(parsedConfig.fontFamily);
     }
-    if (pipelineContext_->IsFollowSystem() && !parsedConfig.fontScale.empty()) {
+    if (!parsedConfig.fontScale.empty()) {
         configurationChange.fontUpdate = true;
+        float fontScale = StringUtils::StringToFloat(parsedConfig.fontScale);
+        float maxFontScale = pipelineContext_->GetMaxAppFontScale();
+        fontScale = std::min(fontScale, maxFontScale);
         pipelineContext_->SetFontScale(std::stof(parsedConfig.fontScale));
     }
 }
