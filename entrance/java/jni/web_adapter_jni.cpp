@@ -24,7 +24,7 @@
 #include "base/utils/utils.h"
 
 #include "jni_environment.h"
-#include "core/components_ng/pattern/web/cross_platform/web_object_event.h"
+#include "core/components_ng/pattern/web/web_object_event.h"
 
 namespace OHOS::Ace::Platform {
 class WebObject : public AceType {

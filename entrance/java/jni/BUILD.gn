@@ -103,6 +103,7 @@ template("ace_common_jni_source_set") {
       "//foundation/arkui/ace_engine/adapter/android/osal/mock",
       "//foundation/graphic/graphic_surface/interfaces/inner_api/surface",
       "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/inner_api/base",
+      "//foundation/appframework/arkui",
       "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
     ]
 
