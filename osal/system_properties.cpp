@@ -245,6 +245,11 @@ bool SystemProperties::GetResourceDecoupling()
     return false;
 }
 
+bool SystemProperties::IsPCMode()
+{
+    return false;
+}
+
 int32_t SystemProperties::GetJankFrameThreshold()
 {
     return 0;
@@ -443,5 +448,10 @@ int32_t SystemProperties::GetWhiteBlockIndexValue()
 int32_t SystemProperties::GetWhiteBlockCacheCountValue()
 {
     return 0;
+}
+
+int32_t SystemProperties::GetPreviewStatus()
+{
+    return -1;
 }
 } // namespace OHOS::Ace
