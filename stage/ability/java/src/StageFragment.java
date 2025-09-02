@@ -124,6 +124,8 @@ public class StageFragment extends Fragment {
 
     private AcePlatformViewPluginAosp platformViewPluginAosp = null;
 
+    private boolean isBackground = true;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.i(LOG_TAG, "OnCreate called, instance name:" + getInstanceName());
@@ -170,6 +172,13 @@ public class StageFragment extends Fragment {
     public void onResume() {
         Log.i(LOG_TAG, "OnResume called, instance name:" + getInstanceName());
         super.onResume();
+        if (isHidden()) {
+            Log.i(LOG_TAG, "onResume called, isHidden");
+            isToResume = true;
+            return;
+        }
+        isToResume = false;
+        foreground();
     }
 
     @Override
@@ -182,7 +191,15 @@ public class StageFragment extends Fragment {
             return;
         }
         isToResume = false;
-        Trace.beginSection("StageFragment::onStart");
+        foreground();
+    }
+
+    private void foreground() {
+        if (!isBackground) {
+            return;
+        }
+        isBackground = false;
+        Trace.beginSection("StageFragment::foreground");
         fragmentDelegate.dispatchOnForeground(getInstanceName(), this);
         windowView.foreground();
         if (platformPlugin != null) {
@@ -234,6 +251,21 @@ public class StageFragment extends Fragment {
     public void onStop() {
         Log.i(LOG_TAG, "OnStop called, instance name:" + getInstanceName());
         super.onStop();
+        background();
+    }
+
+    @Override
+    public void onPause() {
+        Log.i(LOG_TAG, "onPause called, instance name:" + getInstanceName());
+        super.onPause();
+        background();
+    }
+
+    private void background() {
+        if (isBackground) {
+            return;
+        }
+        isBackground = true;
         fragmentDelegate.dispatchOnBackground(getInstanceName());
         windowView.background();
         if (platformPlugin != null) {
