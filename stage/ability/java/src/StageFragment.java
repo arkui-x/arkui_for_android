@@ -29,6 +29,8 @@ import android.widget.FrameLayout;
 
 import androidx.fragment.app.Fragment;
 
+import java.io.FileDescriptor;
+import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,6 +38,7 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.AcePlatformPlugin;
 import ohos.ace.adapter.ArkUIXPluginRegistry;
 import ohos.ace.adapter.PluginContext;
@@ -285,6 +288,12 @@ public class StageFragment extends Fragment {
             platformPlugin.release();
             Log.i(LOG_TAG, "StageFragment onDestroy releseResRegister called");
         }
+    }
+
+    @Override
+    public void dump(String prefix, FileDescriptor fd, PrintWriter writer, String[] args) {
+        Log.i(LOG_TAG, "StageFragment dump called");
+        AceEnv.dump(instanceId, prefix, fd, writer, args);
     }
 
     /**
