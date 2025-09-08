@@ -20,6 +20,10 @@
 #include "base/log/ace_trace.h"
 #include "jni_app_mode_config.h"
 
+#ifndef ARKUI_X_VERSION
+#define ARKUI_X_VERSION "0.0.0.0"
+#endif
+
 namespace {
 
 template<typename T>
@@ -38,6 +42,7 @@ jint JNI_OnLoad(JavaVM* vm, void*)
         return RET_FAIL;
     }
 
+    LOGI("Current ArkUI-X version is %s, platform is Android.", ARKUI_X_VERSION);
     OHOS::Ace::AceScopedTrace aceScopedTrace("JNI_OnLoad");
     std::shared_ptr<JavaVM> javaVm(vm, DummyRelease<JavaVM>);
     if (!OHOS::Ace::Platform::JniEnvironment::GetInstance().Initialize(javaVm)) {
