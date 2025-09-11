@@ -39,6 +39,7 @@ public:
     void* GetPixelManager() const override;
     void* GetRawPixelMapPtr() const override;
     std::string GetId() override;
+    uint32_t GetUniqueId() override;
     std::string GetModifyId() override;
     std::shared_ptr<Media::PixelMap> GetPixelMapSharedPtr() override;
     void* GetWritablePixels() const override;
