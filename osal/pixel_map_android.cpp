@@ -157,6 +157,12 @@ std::string PixelMapAndroid::GetId()
     return strm.str();
 }
 
+uint32_t PixelMapAndroid::GetUniqueId()
+{
+    CHECK_NULL_RETURN(pixmap_, -1);
+    return pixmap_->GetUniqueId();
+}
+
 std::string PixelMapAndroid::GetModifyId()
 {
     return std::string();

@@ -50,7 +50,6 @@ template("ace_osal_android_source_set") {
       "display_info_utils.cpp",
       "display_manager_android.cpp",
       "drag_window.cpp",
-      "drawable_descriptor_android.cpp",
       "drawing_color_filter_android.cpp",
       "drawing_lattice_android.cpp",
       "event_report.cpp",

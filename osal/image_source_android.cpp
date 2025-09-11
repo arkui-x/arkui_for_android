@@ -111,6 +111,11 @@ RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap()
     return PixelMap::Create(std::move(pixelMap));
 }
 
+RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap(const DecodeOptions& options)
+{
+    return nullptr;
+}
+
 ImageSource::Size ImageSourceAndroid::GetImageSize()
 {
     Media::ImageInfo info;

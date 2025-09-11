@@ -17,4 +17,9 @@
 
 namespace OHOS::Ace {
 void LayoutInspector::SupportInspector() {}
+
+bool LayoutInspector::GetEnableNodeTrace()
+{
+    return false;
+}
 } // namespace OHOS::Ace
