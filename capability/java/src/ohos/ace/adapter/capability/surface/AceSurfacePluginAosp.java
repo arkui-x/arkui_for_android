@@ -19,6 +19,7 @@ import ohos.ace.adapter.AceResourcePlugin;
 import ohos.ace.adapter.ALog;
 
 import android.content.Context;
+import android.view.View;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,31 +42,37 @@ public class AceSurfacePluginAosp extends AceResourcePlugin {
 
     private int instanceId = 0;
 
-    private AceSurfacePluginAosp(Context context, IAceSurface surfaceImpl, int instanceId) {
+    private final View rootView;
+
+    private AceSurfacePluginAosp(Context context, View view, IAceSurface surfaceImpl, int instanceId) {
         // plugin name is texture, version is 1.0.
         super("surface", 1.0f);
         this.objectMap = new HashMap<Long, AceSurfaceView>();
         this.surfaceImpl = surfaceImpl;
         this.context = context;
         this.instanceId = instanceId;
+        this.rootView = view;
     }
 
     /**
      * Create a surface resource register.
      *
      * @param context the context of host activity
+     * @param view the root view
      * @param surfaceImpl the interface of ace surface
      * @param instanceId the id of the instance
      * @return surface plugin
      */
-    public static AceSurfacePluginAosp createRegister(Context context, IAceSurface surfaceImpl, int instanceId) {
-        return new AceSurfacePluginAosp(context, surfaceImpl, instanceId);
+    public static AceSurfacePluginAosp createRegister(Context context, View view, IAceSurface surfaceImpl,
+        int instanceId) {
+        return new AceSurfacePluginAosp(context, view, surfaceImpl, instanceId);
     }
 
     @Override
     public long create(Map<String, String> param) {
         AceSurfaceView aceSurface = new AceSurfaceView(this.context, nextSurfaceId.get(),
                 getEventCallback(), param, surfaceImpl, instanceId);
+        aceSurface.setRootView(this.rootView);
         objectMap.put(nextSurfaceId.get(), aceSurface);
         registerCallMethod(aceSurface.getCallMethod());
         return nextSurfaceId.getAndIncrement();
