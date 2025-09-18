@@ -15,20 +15,23 @@
 
 package ohos.ace.adapter.capability.editing;
 
-import ohos.ace.adapter.ALog;
+import android.view.inputmethod.InputConnection;
 
-import java.util.HashMap;
-import java.util.Map;
+import ohos.ace.adapter.ALog;
+import ohos.ace.adapter.capability.editing.TrackingInputConnection;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * TextInputPluginBase
  *
  * @since 1
  */
-public abstract class TextInputPluginBase {
+public abstract class TextInputPluginBase implements TrackingInputConnection.InputCommitListener {
     private static final String LOG_TAG = "Ace_IME";
     private static final int CLIENT_ID_NONE = -1;
 
@@ -51,8 +54,12 @@ public abstract class TextInputPluginBase {
      */
     public static class Delegate implements TextInputDelegate {
         private static Map<Integer, String> lastValueMap = new HashMap<>();
+        private static final Map<Integer, String> lastCommittedTexts = new HashMap<>();
 
         private boolean isSelected = false;
+        private boolean isComposing = false;
+        private int lastComposingEnd = -1;
+        private int lastComposingStart = -1;
         private String needUpdatedText = null;
 
         public Delegate(int clientID, String initData) {
@@ -67,26 +74,28 @@ public abstract class TextInputPluginBase {
             }
             try {
                 JSONObject json = new JSONObject();
-                json.put("text", text);
-                json.put("selectionStart", selectionStart);
-                json.put("selectionEnd", selectionEnd);
-                json.put("composingStart", composingStart);
-                json.put("composingEnd", composingEnd);
-
+                setJsonDefault(json, text, selectionStart, selectionEnd);
                 String lastValue = lastValueMap.get(clientId);
                 if (isSelected && needUpdatedText != null) {
-                    json.put("isDelete", false);
                     json.put("appendText", needUpdatedText);
+                    if (lastCommittedTexts.containsKey(clientId)) {
+                        lastCommittedTexts.remove(clientId);
+                    }
                     isSelected = false;
                     needUpdatedText = null;
                 } else if (lastValue != null && text.length() < lastValue.length()) {
                     json.put("isDelete", true);
                 } else {
-                    json.put("isDelete", false);
-                    String appendText = getNewInputStr(lastValue, text, selectionEnd);
-                    if (appendText != null) {
+                    String appendText = null;
+                    if (lastCommittedTexts.containsKey(clientId)) {
+                        appendText = lastCommittedTexts.remove(clientId);
+                    } else {
+                        appendText = getNewInputStr(lastValue, text, selectionEnd, composingStart, composingEnd);
+                    }
+                    if (appendText != null && !appendText.isEmpty()) {
                         json.put("appendText", appendText);
                     }
+                    handleComposingText(json, composingStart, composingEnd);
                 }
                 TextInputPluginBase.updateEditingState(clientId, json.toString());
             } catch (JSONException ignored) {
@@ -95,17 +104,27 @@ public abstract class TextInputPluginBase {
             lastValueMap.put(clientId, text);
         }
 
-        private String getNewInputStr(String lastValue, String text, int selectionEnd) {
+        private String getNewInputStr(String lastValue,
+                                        String text,
+                                        int selectionEnd,
+                                        int composingStart,
+                                        int composingEnd) {
             if (lastValue == null) {
                 return text;
             }
             int count = text.length() - lastValue.length();
+            if (composingStart != -1 && (composingEnd > (composingStart + 1))) {
+                if (count == 0) {
+                    return "";
+                }
+                return text.substring(composingStart, composingEnd);
+            }
             int start = selectionEnd - count;
             if (start < 0) {
-                return null;
+                return "";
             }
             if (selectionEnd > text.length()) {
-                return null;
+                return "";
             }
             return text.substring(start, selectionEnd);
         }
@@ -141,6 +160,40 @@ public abstract class TextInputPluginBase {
         public void setSelectedState(boolean isSelected, CharSequence text) {
             this.isSelected = isSelected;
             this.needUpdatedText = text.toString();
+        }
+
+        private void setComposedState(boolean isComposing, int commitStart, int composingEnd) {
+            this.isComposing = isComposing;
+            this.lastComposingStart = commitStart;
+            this.lastComposingEnd = composingEnd;
+        }
+
+        private void setJsonDefault(JSONObject json, String text,
+                                    int selectionStart, int selectionEnd) throws JSONException {
+            json.put("text", text);
+            json.put("selectionStart", selectionStart);
+            json.put("selectionEnd", selectionEnd);
+            json.put("composingStart", -1);
+            json.put("composingEnd", -1);
+            json.put("isDelete", false);
+        }
+
+        private void handleComposingText(JSONObject json, int composingStart, int composingEnd)
+            throws JSONException {
+            if (composingStart != -1 && (composingEnd > composingStart)) {
+                json.put("composingEnd", composingStart);
+                if (isComposing && (lastComposingEnd < composingEnd)) {
+                    json.put("composingEnd", lastComposingEnd);
+                    json.put("composingStart", composingStart);
+                }
+                setComposedState(true, composingStart, composingEnd);
+            } else {
+                if (isComposing) {
+                    json.put("composingStart", lastComposingStart);
+                    json.put("composingEnd", lastComposingEnd);
+                }
+                setComposedState(false, -1, -1);
+            }
         }
     }
 
@@ -255,6 +308,41 @@ public abstract class TextInputPluginBase {
      * Called after the connection is closed. Subclass can override this method.
      */
     protected void onClosed() {}
+
+    /**
+     * Callback invoked when text is committed from the input connection.
+     *
+     * This method stores the committed text for the current client so that
+     * it can be consumed when calculating editing deltas.
+     *
+     * @param text the text that was committed
+     */
+    @Override
+    public void onCommit(String text) {
+        if (hasClient()) {
+            Delegate.lastCommittedTexts.put(clientId(), text);
+        }
+    }
+
+    /**
+     * Wrap the original InputConnection with a TrackingInputConnection that
+     * intercepts commit events and forwards them to this listener.
+     *
+     * Subclasses should call this when creating their InputConnection (for example,
+     * inside onCreateInputConnection) to enable commit tracking.
+     *
+     * @param original the original InputConnection to wrap
+     * @return a TrackingInputConnection delegating to the original connection, or null if original is null
+     */
+    protected InputConnection wrapInputConnection(InputConnection original) {
+        if (original == null) {
+            return original;
+        }
+        if (original instanceof TrackingInputConnection) {
+            return original;
+        }
+        return new TrackingInputConnection(original, this);
+    }
 
     private static native void updateEditingState(int client, String state);
 
