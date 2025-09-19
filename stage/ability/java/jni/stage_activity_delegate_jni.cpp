@@ -60,7 +60,7 @@ bool StageActivityDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
         },
         {
             .name = "nativeDispatchOnNewWant",
-            .signature = "(Ljava/lang/String;)V",
+            .signature = "(Ljava/lang/String;Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&DispatchOnNewWant),
         },
         {
@@ -177,7 +177,7 @@ void StageActivityDelegateJni::DispatchOnBackground(JNIEnv* env, jclass myclass,
     }
 }
 
-void StageActivityDelegateJni::DispatchOnNewWant(JNIEnv* env, jclass myclass, jstring str)
+void StageActivityDelegateJni::DispatchOnNewWant(JNIEnv* env, jclass myclass, jstring str, jstring params)
 {
     LOGI("JNI DispatchOnNewWant is called.");
     if (env == nullptr) {
@@ -185,9 +185,11 @@ void StageActivityDelegateJni::DispatchOnNewWant(JNIEnv* env, jclass myclass, js
         return;
     }
     auto instanceName = env->GetStringUTFChars(str, nullptr);
-    if (instanceName != nullptr) {
-        AppMain::GetInstance()->DispatchOnNewWant(instanceName);
+    auto parameters = env->GetStringUTFChars(params, nullptr);
+    if (instanceName != nullptr && parameters != nullptr) {
+        AppMain::GetInstance()->DispatchOnNewWant(instanceName, parameters);
         env->ReleaseStringUTFChars(str, instanceName);
+        env->ReleaseStringUTFChars(params, parameters);
     }
 }
 

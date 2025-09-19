@@ -122,9 +122,9 @@ public class StageActivityDelegate {
      *
      * @param instanceName the activity instance name.
      */
-    public void dispatchOnNewWant(String instanceName) {
+    public void dispatchOnNewWant(String instanceName, String params) {
         Log.i(LOG_TAG, "dispatchOnNewWant called");
-        nativeDispatchOnNewWant(instanceName);
+        nativeDispatchOnNewWant(instanceName, params);
     }
 
     /**
@@ -209,7 +209,7 @@ public class StageActivityDelegate {
 
     private native void nativeDispatchOnBackground(String instanceName);
 
-    private native void nativeDispatchOnNewWant(String instanceName);
+    private native void nativeDispatchOnNewWant(String instanceName, String params);
 
     private native void nativeSetWindowView(String instanceName, WindowViewInterface windowView);
 
