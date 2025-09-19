@@ -121,6 +121,7 @@ public class StageActivityDelegate {
      * Dispatch the onnewwant lifecycle to native.
      *
      * @param instanceName the activity instance name.
+     * @param params       the want params.
      */
     public void dispatchOnNewWant(String instanceName, String params) {
         Log.i(LOG_TAG, "dispatchOnNewWant called");
