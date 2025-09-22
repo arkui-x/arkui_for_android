@@ -38,6 +38,8 @@ public class AcePlatformPlugin implements InputConnectionClient {
 
     private TextInputPluginAosp textInputPlugin;
 
+    private View view;
+
     /**
      * Constructor of AceViewAosp
      *
@@ -47,6 +49,7 @@ public class AcePlatformPlugin implements InputConnectionClient {
      */
     public AcePlatformPlugin(Context context, int instanceId, View view) {
         ALog.i(LOG_TAG, "AcePlatformPlugin created");
+        this.view = view;
 
         initResRegister(instanceId);
 
@@ -166,7 +169,7 @@ public class AcePlatformPlugin implements InputConnectionClient {
                 return nativeSurfacePtr;
             }
         };
-        addResourcePlugin(AceSurfacePluginAosp.createRegister(context, surfaceImpl, instanceId));
+        addResourcePlugin(AceSurfacePluginAosp.createRegister(context, view, surfaceImpl, instanceId));
     }
 
     /**
