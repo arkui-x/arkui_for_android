@@ -15,6 +15,7 @@
 
 package ohos.stage.ability.adapter;
 
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.HashSet;
@@ -104,6 +105,8 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     private static final String PHOTO_URI_KEY = "select-item-list";
 
     private static final String FILE_URI_KEY = "ability.params.stream";
+
+    private static final String ARKUI_X_DIR = "arkui-x";
 
     private static boolean isForResult = true;
 
@@ -389,7 +392,21 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             bundleName = nameArray[0];
             moduleName = nameArray[1];
             abilityName = nameArray[2];
+            String fullModuleName = bundleName + "." + moduleName;
+            String modulePath = ARKUI_X_DIR + "/" + fullModuleName;
+            if (isExistDir(modulePath) && nameArray.length >= 4) {
+                moduleName = fullModuleName;
+                instanceName = nameArray[0] + ":" + fullModuleName + ":" + nameArray[2] + ":" + nameArray[3];
+            }
         }
+    }
+
+    private boolean isExistDir(String path) {
+        if (path == null || path.isEmpty()) {
+            return false;
+        }
+        File file = new File(getFilesDir(), path);
+        return file.exists() && file.isDirectory();
     }
 
     /**

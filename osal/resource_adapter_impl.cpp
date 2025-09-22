@@ -629,13 +629,43 @@ std::shared_ptr<Global::Resource::ResourceManager> ResourceAdapterImpl::GetResou
     return resourceManager_;
 }
 
+/**
+ * @brief Try to use bundleName to concatenate moduleName to obtain resourceManager
+ *
+ * @param bundleName bundle name
+ * @param moduleName  module name
+ * @return true success
+ * @return false fail
+ */
+bool ResourceAdapterImpl::UpdatePackageResourceManager(const std::string& bundleName, const std::string& moduleName)
+{
+    if (bundleName.empty() || moduleName.empty()) {
+        return false;
+    }
+    std::string aarModuleName = bundleName + "." + moduleName;
+    auto it = resourceManagers_.find(aarModuleName);
+    if (it != resourceManagers_.end()) {
+        packagePathStr_ = rawFilePaths_[aarModuleName];
+        resourceManager_ = it->second;
+        return true;
+    }
+    return false;
+}
+
 void ResourceAdapterImpl::UpdateResourceManager(const std::string& bundleName, const std::string& moduleName)
 {
     auto it = resourceManagers_.find(moduleName);
     if (it != resourceManagers_.end()) {
         packagePathStr_ = rawFilePaths_[moduleName];
         resourceManager_ = it->second;
-    } else if (!moduleName.empty()) {
+    } else {
+        if (moduleName.empty()) {
+            LOGE("UpdateResourceManager moduleName is empty");
+            return;
+        }
+        if (UpdatePackageResourceManager(bundleName, moduleName)) {
+            return;
+        }
         AddResourceManagerByModuleName(moduleName);
     }
 }
