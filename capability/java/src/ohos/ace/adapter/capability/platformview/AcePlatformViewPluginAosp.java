@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,6 +31,9 @@ public class AcePlatformViewPluginAosp extends AcePlatformViewPluginBase {
     private static final String LOG_TAG = "AcePlatformViewPluginAosp";
     private static final String KEY_TEXTURE = "texture";
     private static final String KEY_VIEWTAG = "viewTag";
+    private static final String KEY_DATATAG = "dataTag";
+    private static final String KEY_DATAEMPTYTAG = "dataEmptyTag";
+    private static final int IS_EMPTY = 1;
 
     PlatformViewFactory platformViewFactory;
 
@@ -61,14 +64,20 @@ public class AcePlatformViewPluginAosp extends AcePlatformViewPluginBase {
                 ALog.e(LOG_TAG, "createTexture failed: Viewtag is illegal");
                 return -1L;
             }
-            long id = getAtomicId();
             String viewTag = param.get(KEY_VIEWTAG);
-            IPlatformView platformView = this.platformViewFactory.getPlatformView(viewTag);
+            IPlatformView platformView;
+            if (param.containsKey(KEY_DATAEMPTYTAG)) {
+                boolean isDataEmpty = Integer.parseInt(param.get(KEY_DATAEMPTYTAG)) == IS_EMPTY;
+                platformView = this.platformViewFactory.getPlatformView(viewTag,
+                        isDataEmpty ? "" : param.get(KEY_DATATAG));
+            } else {
+                platformView = this.platformViewFactory.getPlatformView(viewTag);
+            }
             if (platformView == null) {
                 ALog.e(LOG_TAG, "PlatformView == null." + viewTag);
                 return -1L;
             }
-
+            long id = getAtomicId();
             AcePlatformViewAosp acePlatformView = new AcePlatformViewAosp(id, context, getEventCallback());
             acePlatformView.setPlatformView(platformView);
             addResource(id, acePlatformView);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,10 +24,21 @@ import ohos.ace.adapter.capability.platformview.IPlatformView;
  */
 public abstract class PlatformViewFactory {
     /**
-     * Using xComponentId to Obtain Platform View.
+     * Using platformViewId to Obtain Platform View.
      *
-     * @param xComponentId the component id
+     * @param platformViewId the component id
      * @return IPlatformView
      */
-    public abstract IPlatformView getPlatformView(String xComponentId);
+    public abstract IPlatformView getPlatformView(String platformViewId);
+
+    /**
+     * Using platformViewId to Obtain Platform View with data.
+     *
+     * @param platformViewId the component id
+     * @param data           the component data
+     * @return IPlatformView
+     */
+    public IPlatformView getPlatformView(String platformViewId, String data) {
+        return getPlatformView(platformViewId);
+    }
 }
