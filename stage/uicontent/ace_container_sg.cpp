@@ -249,13 +249,11 @@ void AceContainerSG::InitializeFrontend()
     LOGI("InitializeFrontend finished.");
 }
 
-void AceContainerSG::InitPiplineContext(std::unique_ptr<Window> window, double density, int32_t width, int32_t height,
-    uint32_t windowId)
+void AceContainerSG::InitPiplineContext(
+    std::unique_ptr<Window> window, double density, int32_t width, int32_t height, uint32_t windowId)
 {
-    LOGI("init piplinecontext start.");
     ACE_DCHECK(aceView_ && window && taskExecutor_ && assetManager_ && resRegister_ && frontend_);
     auto instanceId = aceView_->GetInstanceId();
-    LOGI("New pipeline version creating...");
     pipelineContext_ = AceType::MakeRefPtr<NG::PipelineContext>(
         std::move(window), taskExecutor_, assetManager_, resRegister_, frontend_, instanceId);
 
@@ -266,6 +264,13 @@ void AceContainerSG::InitPiplineContext(std::unique_ptr<Window> window, double d
     pipelineContext_->SetWindowId(windowId);
     pipelineContext_->SetWindowModal(windowModal_);
     pipelineContext_->SetDrawDelegate(aceView_->GetDrawDelegate());
+    pipelineContext_->SetGetWindowRectImpl([window = uiWindow_]() -> Rect {
+        Rect rect;
+        CHECK_NULL_RETURN(window, rect);
+        auto windowRect = window->GetRect();
+        rect.SetRect(windowRect.posX_, windowRect.posY_, windowRect.width_, windowRect.height_);
+        return rect;
+    });
     auto applicationContext = AbilityRuntime::Platform::ApplicationContext::GetInstance();
     if (applicationContext != nullptr) {
         auto configuration = applicationContext->GetConfiguration();
@@ -297,8 +302,6 @@ void AceContainerSG::InitPiplineContext(std::unique_ptr<Window> window, double d
     if (isSubContainer_) {
         pipelineContext_->SetIsSubPipeline(true);
     }
-
-    LOGI("init piplinecontext end.");
 }
 
 void AceContainerSG::InitializeCallback()
