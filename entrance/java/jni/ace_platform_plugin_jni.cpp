@@ -15,8 +15,8 @@
 
 #include "adapter/android/entrance/java/jni/ace_platform_plugin_jni.h"
 
-#include "flutter/fml/platform/android/jni_weak_ref.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
+#include "adapter/android/entrance/java/jni/jni_weak_global_ref.h"
 #include "adapter/android/entrance/java/jni/native_window_surface.h"
 #include "base/log/event_report.h"
 #include "base/log/log.h"
@@ -25,7 +25,7 @@
 
 namespace OHOS::Ace::Platform {
 using NativeWindowMap = std::unordered_map<int64_t, void*>;
-using NativeTextureMap = std::unordered_map<int64_t, fml::jni::JavaObjectWeakGlobalRef>;
+using NativeTextureMap = std::unordered_map<int64_t, JniWeakGlobalRef>;
 std::unordered_map<int, RefPtr<AceResourceRegister>> g_resRegisters;
 std::unordered_map<int, NativeWindowMap> g_nativeWindowMaps;
 std::unordered_map<int, NativeTextureMap> g_surfaceTextureMaps;
@@ -155,7 +155,7 @@ void AcePlatformPluginJni::RegisterTexture(JNIEnv* env, jobject myObject,
         return;
     }
 
-    auto nativeTexture = fml::jni::JavaObjectWeakGlobalRef(env, surfaceTexture);
+    auto nativeTexture = JniWeakGlobalRef(env, surfaceTexture);
     auto iter = g_surfaceTextureMaps.find(static_cast<int32_t>(instanceId));
     if (iter != g_surfaceTextureMaps.end()) {
         iter->second.emplace(static_cast<int64_t>(textureId), nativeTexture);

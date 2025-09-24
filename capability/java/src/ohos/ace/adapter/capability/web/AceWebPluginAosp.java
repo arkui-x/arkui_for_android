@@ -128,7 +128,6 @@ public class AceWebPluginAosp extends AceWebPluginBase {
     }
 
     // Creating a VirtualDisplay larger than the size of the device screen size
-    // could cause the device to restart: https://github.com/flutter/flutter/issues/28978
     private void validateVirtualDisplayDimensions(int width, int height) {
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         if (width > metrics.widthPixels || height > metrics.heightPixels) {

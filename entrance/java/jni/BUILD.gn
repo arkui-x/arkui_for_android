@@ -26,6 +26,7 @@ template("ace_android_jni_source_set") {
 
     sources = [
       "$ace_root/adapter/android/entrance/java/jni/ace_platform_plugin_jni.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/jni_weak_global_ref.cpp",
       "$ace_root/adapter/android/entrance/java/jni/window_view_jni.cpp",
     ]
 
@@ -33,8 +34,6 @@ template("ace_android_jni_source_set") {
         [ "//foundation/graphic/graphic_surface/interfaces/inner_api/surface" ]
 
     deps = [ "$ace_root/frameworks/core/components/theme:build_theme_code" ]
-
-      deps += [ "$ace_flutter_engine_root:flutter_for_ng" ]
 
     if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
       deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client_static" ]
@@ -136,8 +135,6 @@ template("ace_common_jni_source_set") {
       "//foundation/appframework/arkui/uicontent:ace_uicontent_interface",
       "//foundation/distributeddatamgr/udmf/adapter:arkui_x_udmf_data_napi",
     ]
-
-      deps += [ "$ace_flutter_engine_root:flutter_for_ng" ]
 
     if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
       deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client_static" ]

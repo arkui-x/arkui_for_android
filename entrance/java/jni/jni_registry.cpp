@@ -15,8 +15,6 @@
 
 #include "adapter/android/entrance/java/jni/jni_registry.h"
 
-#include "flutter/fml/platform/android/jni_util.h"
-
 #include "adapter/android/capability/java/jni/bridge/bridge_jni.h"
 #include "adapter/android/capability/java/jni/clipboard/clipboard_jni.h"
 #include "adapter/android/capability/java/jni/editing/text_input_jni.h"
@@ -53,8 +51,6 @@ bool JniRegistry::Register()
         LOGE("JNI Initialize: failed to register DumpHelper");
         return false;
     }
-
-    fml::jni::InitJavaVM(JniEnvironment::GetInstance().GetVM().get());
 
     if (!WindowViewJni::RegisterNatives(jniEnv.get())) {
         LOGE("JNI Initialize: failed to register WindowViewJni");

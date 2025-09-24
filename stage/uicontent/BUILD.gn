@@ -35,7 +35,6 @@ template("ace_uicontent_android_source_set") {
       "//arkcompiler/runtime_core",
       "//base/global/resource_management/interfaces/inner_api/include",
       "//foundation/arkui/napi",
-      "//third_party/flutter/engine",
       "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/kits/native/appkit",
       "//foundation/appframework/arkui/uicontent",
       "//third_party/zlib",
@@ -71,8 +70,6 @@ template("ace_uicontent_android_source_set") {
       "$ability_runtime_cross_platform_path/interfaces/inner_api/hilog:ability_cross_platform_hilog_config",
       "$ability_runtime_cross_platform_path/interfaces/inner_api/jsruntime:jsruntime_config",
     ]
-
-      deps += [ "$ace_flutter_engine_root:flutter_for_ng" ]
 
     defines += [ "ANDROID_PLATFORM" ]
   }

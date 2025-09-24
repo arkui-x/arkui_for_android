@@ -26,7 +26,6 @@ template("stage_android_jni_source_set") {
     ]
 
     include_dirs = [
-      "//third_party/flutter/engine",
       "//foundation/arkui/ace_engine/adapter/android/entrance/java/jni",
       "//foundation/arkui/napi/module_manager",
     ]
