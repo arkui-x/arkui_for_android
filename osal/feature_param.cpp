@@ -35,4 +35,14 @@ bool FeatureParam::IsUINodeGcEnabled()
 {
     return false;
 }
+
+bool FeatureParam::IsPageOverflowEnabled()
+{
+    return false;
+}
+
+bool FeatureParam::IsDialogCorrectionEnabled()
+{
+    return false;
+}
 } // OHOS::Ace
