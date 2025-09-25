@@ -241,7 +241,15 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     protected void onNewIntent(Intent intent) {
         Log.i(LOG_TAG, "StageActivity onNewIntent called");
         super.onNewIntent(intent);
-        activityDelegate.dispatchOnNewWant(getInstanceName());
+
+        String params = "";
+        if (intent != null) {
+            params = intent.getStringExtra(WANT_PARAMS);
+            if (params == null) {
+                params = "";
+            }
+        }
+        activityDelegate.dispatchOnNewWant(getInstanceName(), params);
     }
 
     @Override
