@@ -136,6 +136,8 @@ public:
     std::vector<uint8_t> GetAotBuffer(const std::string &fileName);
     void SetIsDynamicLoadLibs(bool isDynamic);
     bool IsDynamicLoadLibs();
+    void SetBundleName(const std::string& bundleName);
+    std::string GetSplicingModuleName(const std::string& moduleName);
     void InitModuleVersionCode();
     void UpdateVersionCode(const std::string& moduleName, bool isNeedUpdate);
     bool IsDynamicUpdateModule(const std::string& moduleName);
@@ -163,6 +165,7 @@ private:
     std::string preferenceDir_;
     std::string resourcesFilePrefixPath_;
     std::string architecture_;
+    std::string bundleName_;
     bool isDynamicLibs_ = false;
     static std::shared_ptr<StageAssetProvider> instance_;
     static std::mutex mutex_;
