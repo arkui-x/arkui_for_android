@@ -222,7 +222,7 @@ public class AceWeb extends AceWebBase {
 
     private static final int CACHE_MODE_DEFAULT_VALUE = -1;
 
-    private static final int RECEIVER_NOT_EXPORTED = 0x4;
+    private static final int RECEIVER_EXPORTED = 0x2;
 
     private static final int ANDROID_VERSION_TIRAMISU = 33;
 
@@ -2070,7 +2070,7 @@ public class AceWeb extends AceWebBase {
         itFilter.addAction(WEB_DOWNLOAD_START_EVENT);
         itFilter.addAction(WEB_DOWNLOAD_FAILED_EVENT);
         if (Build.VERSION.SDK_INT >= ANDROID_VERSION_TIRAMISU) {
-            context.registerReceiver(webviewBroadcastReceive_, itFilter, RECEIVER_NOT_EXPORTED);
+            context.registerReceiver(webviewBroadcastReceive_, itFilter, RECEIVER_EXPORTED);
         } else {
             context.registerReceiver(webviewBroadcastReceive_, itFilter);
         }
