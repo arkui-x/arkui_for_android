@@ -263,7 +263,7 @@ public class SubWindow {
             this.windowParam.height = height;
         }
 
-        mainView = rootView.findViewById(parentId);
+        mainView = rootView.findViewById(android.R.id.content);
         int[] location = new int[2];
         mainView.getLocationOnScreen(location);
         mainWindowX = location[0];
