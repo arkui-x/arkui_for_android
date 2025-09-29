@@ -18,7 +18,6 @@ package ohos.ace.adapter.capability.surface;
 import java.util.HashMap;
 import java.util.Map;
 
-import android.app.Activity;
 import android.content.Context;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -108,10 +107,24 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         addOnLayoutChangeListener(this);
 
         initCallMethodMap();
+    }
 
-        FrameLayout.LayoutParams layoutParams = buildLayoutParams(0, 0, 0, 0);
-        Activity activity = (Activity) context;
-        activity.addContentView(this, layoutParams);
+    /**
+     * set the view to add surfaceView
+     *
+     * @param view the root view
+     */
+    public void setRootView(View view) {
+        if (view == null || !(view.getParent() instanceof ViewGroup)) {
+            return;
+        }
+        View contentView = (ViewGroup) view.getParent();
+        if (contentView instanceof FrameLayout) {
+            FrameLayout frameLayout = (FrameLayout) contentView;
+            int contentChildCount = frameLayout.getChildCount();
+            FrameLayout.LayoutParams layoutParams = buildLayoutParams(0, 0, 0, 0);
+            frameLayout.addView(this, contentChildCount - 1, layoutParams);
+        }
     }
 
     private void initCallMethodMap() {
