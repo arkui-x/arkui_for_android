@@ -52,4 +52,15 @@ void InputMethodManager::CloseKeyboardInPipelineDestroy() {}
 void InputMethodManager::HideKeyboardAcrossProcesses() {}
 
 void InputMethodManager::ProcessModalPageScene() {}
+
+void InputMethodManager::ShowKeyboard(bool isFocusViewChanged, int32_t instanceId) {}
+
+void InputMethodManager::SetEditingState(const TextEditingValue& value, int32_t instanceId, bool needFireChangeEvent)
+{}
+
+void InputMethodManager::CloseKeyboard(int32_t instanceId) {}
+
+void InputMethodManager::Attach(const WeakPtr<TextInputClient>& client, const TextInputConfiguration& config,
+    const RefPtr<TaskExecutor>& taskExecutor, int32_t instanceId)
+{}
 } // namespace OHOS::Ace
