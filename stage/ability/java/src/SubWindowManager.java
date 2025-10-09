@@ -683,10 +683,10 @@ public class SubWindowManager {
         Rect rect = new Rect(0, 0, 0, 0);
         if (mRootActivity != null && mRootActivity instanceof StageActivity) {
             int instanceId = ((StageActivity) mRootActivity).getInstanceId();
-            int width = mRootActivity.getWindow().getDecorView().findViewById(instanceId).getWidth();
-            int height = mRootActivity.getWindow().getDecorView().findViewById(instanceId).getHeight();
+            int width = mRootActivity.getWindow().getDecorView().findViewById(android.R.id.content).getWidth();
+            int height = mRootActivity.getWindow().getDecorView().findViewById(android.R.id.content).getHeight();
             int[] location = new int[LOCATION_SIZE];
-            mRootActivity.getWindow().getDecorView().findViewById(instanceId).getLocationOnScreen(location);
+            mRootActivity.getWindow().getDecorView().findViewById(android.R.id.content).getLocationOnScreen(location);
             int x = location[LOCATION_X];
             int y = location[LOCATION_Y];
             rect.set(x, y, width, height);
