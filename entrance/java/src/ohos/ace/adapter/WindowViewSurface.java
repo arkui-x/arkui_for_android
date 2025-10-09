@@ -86,7 +86,6 @@ public class WindowViewSurface extends SurfaceView implements SurfaceHolder.Call
      */
     @Override
     public void setInstanceId(int instanceId) {
-        setId(instanceId);
     }
 
     private WindowViewCommon getWindowViewCommon() {
