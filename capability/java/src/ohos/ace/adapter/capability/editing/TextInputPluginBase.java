@@ -58,9 +58,14 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
 
         private boolean isSelected = false;
         private boolean isComposing = false;
+        private boolean isNewCommitText = false;
+        private int finishComposingTextStart = -1;
         private int lastComposingEnd = -1;
         private int lastComposingStart = -1;
+        private int lastSelectionEnd = -1;
+        private int lastSelectionStart = -1;
         private String needUpdatedText = null;
+        private String finishComposingText = null;
 
         public Delegate(int clientID, String initData) {
             Delegate.lastValueMap.put(clientID, initData);
@@ -77,31 +82,37 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
                 setJsonDefault(json, text, selectionStart, selectionEnd);
                 String lastValue = lastValueMap.get(clientId);
                 if (isSelected && needUpdatedText != null) {
-                    json.put("appendText", needUpdatedText);
+                    String newInputStr = "";
                     if (lastCommittedTexts.containsKey(clientId)) {
-                        lastCommittedTexts.remove(clientId);
+                        newInputStr = lastCommittedTexts.remove(clientId);
                     }
+                    json.put("appendText", "".equals(needUpdatedText) &&
+                        !"".equals(newInputStr) ? newInputStr : needUpdatedText);
                     isSelected = false;
                     needUpdatedText = null;
+                    setComposedState(false, -1, -1);
+                } else if (lastSelectionEnd > lastSelectionStart) {
+                    String appendText = getAppendText(text, selectionEnd);
+                    json.put("appendText", appendText);
+                    lastSelectionEnd = -1;
+                    lastSelectionStart = -1;
+                    setComposedState(false, -1, -1);
                 } else if (lastValue != null && text.length() < lastValue.length()) {
                     json.put("isDelete", true);
+                    setComposedState(false, -1, -1);
+                } else if (composingEnd > composingStart &&
+                    isSingleLetterInput(lastValue, text, composingStart, composingEnd)) {
+                    json.put("appendText", text.substring(composingEnd - 1, composingEnd));
+                    setComposedState(false, -1, -1);
                 } else {
-                    String appendText = null;
-                    if (lastCommittedTexts.containsKey(clientId)) {
-                        appendText = lastCommittedTexts.remove(clientId);
-                    } else {
-                        appendText = getNewInputStr(lastValue, text, selectionEnd, composingStart, composingEnd);
-                    }
-                    if (appendText != null && !appendText.isEmpty()) {
-                        json.put("appendText", appendText);
-                    }
-                    handleComposingText(json, composingStart, composingEnd);
+                    handleOtherInput(json, text, clientId, composingStart, composingEnd);
                 }
                 TextInputPluginBase.updateEditingState(clientId, json.toString());
             } catch (JSONException ignored) {
                 ALog.e(LOG_TAG, "failed parse editing config json");
             }
             lastValueMap.put(clientId, text);
+            reset();
         }
 
         private String getNewInputStr(String lastValue,
@@ -126,7 +137,13 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
             if (selectionEnd > text.length()) {
                 return "";
             }
-            return text.substring(start, selectionEnd);
+            return text.substring(Math.max(start, 0), Math.min(selectionEnd, text.length()));
+        }
+
+        @Override
+        public void setFinishComposingText(String finishComposingText, int finishComposingTextStart) {
+            this.finishComposingText = finishComposingText;
+            this.finishComposingTextStart = finishComposingTextStart;
         }
 
         /**
@@ -180,6 +197,11 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
 
         private void handleComposingText(JSONObject json, int composingStart, int composingEnd)
             throws JSONException {
+            if (isNewCommitText) {
+                isNewCommitText = false;
+                setComposedState(false, -1, -1);
+                return;
+            }
             if (composingStart != -1 && (composingEnd > composingStart)) {
                 json.put("composingEnd", composingStart);
                 if (isComposing && (lastComposingEnd < composingEnd)) {
@@ -191,8 +213,123 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
                 if (isComposing) {
                     json.put("composingStart", lastComposingStart);
                     json.put("composingEnd", lastComposingEnd);
+                    ALog.e(LOG_TAG, "22222 Delegate.handleComposingText 444 json:" + json.toString());
                 }
                 setComposedState(false, -1, -1);
+            }
+        }
+        public void setSelectedState(int selectionStart, int selectionEnd) {
+            this.lastSelectionStart = selectionStart;
+            this.lastSelectionEnd = selectionEnd;
+        }
+
+        private String getAppendText(String text, int selectionEnd) {
+            if (text == null || text.isEmpty()) {
+                return "";
+            }
+            int count = lastSelectionEnd - lastSelectionStart;
+            int start = selectionEnd - count;
+            return text.substring(start > 0 ? start : 0, Math.min(text.length(), selectionEnd));
+        }
+
+        private boolean isSingleLetterInput(String lastValue, String text, int composingStart, int composingEnd) {
+            if (composingEnd > text.length() || composingStart > text.length()) {
+                return false;
+            }
+            if (composingEnd - 1 > lastValue.length() || composingStart > lastValue.length()) {
+                return false;
+            }
+            if (text.length() - lastValue.length() != 1) {
+                return false;
+            }
+            char letterCh = text.charAt(composingEnd - 1);
+            if (!Character.isLetter(letterCh)) {
+                return false;
+            }
+            if (composingStart > composingEnd) {
+                return false;
+            }
+            if (!lastValue.substring(composingStart, composingEnd - 1).equals(text.substring(composingStart,
+                composingEnd - 1))) {
+                return false;
+            }
+            if (lastValue.substring(composingStart, composingEnd - 1).matches("[a-zA-Z]+")) {
+                return true;
+            }
+            return false;
+        }
+
+        private void reset() {
+            lastCommittedTexts.clear();
+            isSelected = false;
+            lastSelectionEnd = -1;
+            lastSelectionStart = -1;
+            needUpdatedText = null;
+            finishComposingText = null;
+        }
+
+        private boolean isAppendText(String lastValue, String text, String appendText, int selectionEnd) {
+            if (lastValue == null || text == null || appendText == null || selectionEnd < 0) {
+                return false;
+            }
+
+            if (selectionEnd > text.length()) {
+                return false;
+            }
+
+            int appendTextLength = text.length() - lastValue.length();
+            if (appendTextLength <= 0) {
+                return false;
+            }
+
+            int appendStart = selectionEnd - appendTextLength;
+            if (appendStart < 0 || appendTextLength != appendText.length()) {
+                return false;
+            }
+
+            String textWithoutAppend = text.substring(0, appendStart) + text.substring(selectionEnd);
+            return lastValue.equals(textWithoutAppend);
+        }
+
+        private String getCommitText(String lastValue, String text,
+            int selectionEnd, JSONObject json, int clientId) throws JSONException {
+            String appendText = lastCommittedTexts.remove(clientId);
+            int appendStart = selectionEnd - appendText.length();
+            appendStart = Math.max(appendStart, 0);
+            if (lastValue.length() <= appendStart) {
+                return appendText;
+            }
+            String newCommitText = lastValue.substring(0, appendStart) + appendText + lastValue.substring(appendStart);
+            if (text.length() == (lastValue.length() + appendText.length()) &&
+                (newCommitText.equals(text) || isComposing)) {
+                return appendText;
+            }
+            json.put("composingStart", appendStart);
+            json.put("composingEnd", appendStart + (appendText.length() - (text.length() - lastValue.length())));
+            isNewCommitText = true;
+            return appendText;
+        }
+
+        private void handleOtherInput(JSONObject json, String text, int clientId,
+            int composingStart, int composingEnd) throws JSONException {
+            String appendText = null;
+            boolean isAppendText = false;
+            String lastValue = lastValueMap.get(clientId);
+            int selectionEnd = json.getInt("selectionEnd");
+            if (lastCommittedTexts.containsKey(clientId)) {
+                appendText = getCommitText(lastValue, text, selectionEnd, json, clientId);
+                isAppendText = isAppendText(lastValue, text, appendText, selectionEnd);
+            } else {
+                appendText = getNewInputStr(lastValue, text, selectionEnd, composingStart, composingEnd);
+            }
+            if (appendText != null && !appendText.isEmpty()) {
+                json.put("appendText", appendText);
+            }
+
+            if (isAppendText && composingStart == -1) {
+                setComposedState(false, -1, -1);
+            } else {
+                handleComposingText(json, composingStart, composingEnd);
             }
         }
     }

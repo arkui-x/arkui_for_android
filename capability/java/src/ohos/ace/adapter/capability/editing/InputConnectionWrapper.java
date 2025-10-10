@@ -95,24 +95,24 @@ class InputConnectionWrapper extends BaseInputConnection {
     }
 
     @Override
-    public ExtractedText getExtractedText(ExtractedTextRequest request, int flags) {
-        if (request == null || editable == null) {
+    public ExtractedText getExtractedText(ExtractedTextRequest textRequest, int extractedTextFlags) {
+        if (textRequest == null || editable == null) {
             return null;
         }
-        if (request.token != 0) {
-            extractedTextRequestToken = request.token;
+        if (textRequest.token != 0) {
+            extractedTextRequestToken = textRequest.token;
         }
         ExtractedText extractedText = new ExtractedText();
-        extractedText.flags = 0;
+        extractedText.selectionStart = Selection.getSelectionStart(this.editable);
+        extractedText.selectionEnd = Selection.getSelectionEnd(this.editable);
         extractedText.partialStartOffset = -1;
         extractedText.partialEndOffset = -1;
-        extractedText.selectionStart = Selection.getSelectionStart(editable);
-        extractedText.selectionEnd = Selection.getSelectionEnd(editable);
         extractedText.startOffset = 0;
-        if ((request.flags & GET_TEXT_WITH_STYLES) != 0) {
-            extractedText.text = new SpannableString(editable);
+        extractedText.flags = 0;
+        if ((textRequest.flags & GET_TEXT_WITH_STYLES) != 0) {
+            extractedText.text = new SpannableString(this.editable);
         } else {
-            extractedText.text = editable.toString();
+            extractedText.text = this.editable.toString();
         }
         return extractedText;
     }
@@ -148,12 +148,13 @@ class InputConnectionWrapper extends BaseInputConnection {
     }
 
     @Override
-    public boolean deleteSurroundingText(int beforeLength, int afterLength) {
-        if (Selection.getSelectionStart(editable) == -1) {
-            return true;
+    public boolean deleteSurroundingText(int deleteBeforeLength, int deleteAfterLength) {
+        boolean deleted = true;
+        if (Selection.getSelectionStart(this.editable) == -1) {
+            return deleted;
         }
 
-        boolean deleted = super.deleteSurroundingText(beforeLength, afterLength);
+        deleted = super.deleteSurroundingText(deleteBeforeLength, deleteAfterLength);
         onStateUpdated();
         return deleted;
     }
@@ -161,6 +162,9 @@ class InputConnectionWrapper extends BaseInputConnection {
     @Override
     public boolean setComposingRegion(int composingStart, int composingEnd) {
         boolean success = super.setComposingRegion(composingStart, composingEnd);
+        if (Selection.getSelectionStart(editable) < Selection.getSelectionEnd(editable)) {
+            delegate.setSelectedState(Selection.getSelectionStart(editable), Selection.getSelectionEnd(editable));
+        }
         onStateUpdated();
         return success;
     }
@@ -173,8 +177,29 @@ class InputConnectionWrapper extends BaseInputConnection {
         } else {
             success = super.setComposingText(text, newCursorPosition);
         }
+        if (Selection.getSelectionStart(editable) < Selection.getSelectionEnd(editable)) {
+            delegate.setSelectedState(Selection.getSelectionStart(editable), Selection.getSelectionEnd(editable));
+        }
         onStateUpdated();
         return success;
+    }
+
+    /**
+     * Finishes the composing text by extracting the current composing span
+     * and notifying the delegate with the extracted text and its start position.
+     *
+     * @return {@code true} if the superclass implementation returns {@code true},
+     *         indicating that the composing text was successfully finished.
+     */
+    @Override
+    public boolean finishComposingText() {
+        int composingStart = BaseInputConnection.getComposingSpanStart(editable);
+        int composingEnd = BaseInputConnection.getComposingSpanEnd(editable);
+        if (composingEnd > composingStart) {
+            delegate.setFinishComposingText(
+                editable.toString().substring(composingStart, composingEnd), composingStart);
+        }
+        return super.finishComposingText();
     }
 
     @Override
@@ -193,10 +218,10 @@ class InputConnectionWrapper extends BaseInputConnection {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             if (event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
                 return deleteSelection(event);
-            } else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
-                moveToLeft();
             } else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
                 moveToRight();
+            } else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
+                moveToLeft();
             } else {
                 return enterCharacter(event);
             }
@@ -316,27 +341,28 @@ class InputConnectionWrapper extends BaseInputConnection {
     }
 
     private void moveToRight() {
-        int selStart = Selection.getSelectionStart(editable);
-        int newSel = Math.min(selStart + 1, editable.length());
-        setSelection(newSel, newSel);
+        int selectionStart = Selection.getSelectionStart(this.editable) + 1;
+        int newSelectionStart = Math.min(this.editable.length(), selectionStart);
+        setSelection(newSelectionStart, newSelectionStart);
     }
 
     private void moveToLeft() {
-        int selStart = Selection.getSelectionStart(editable);
-        int newSel = Math.max(selStart - 1, 0);
-        setSelection(newSel, newSel);
+        int selectionStart = Selection.getSelectionStart(this.editable) - 1;
+        int newSelectionStart = Math.max(0, selectionStart);
+        setSelection(newSelectionStart, newSelectionStart);
     }
 
-    private boolean enterCharacter(KeyEvent event) {
-        int character = event.getUnicodeChar();
-        if (character != 0) {
-            int selStart = Math.max(0, Selection.getSelectionStart(editable));
-            int selEnd = Math.max(0, Selection.getSelectionEnd(editable));
-            if (selEnd != selStart) {
-                editable.delete(selStart, selEnd);
+    private boolean enterCharacter(KeyEvent keyEvent) {
+        int unicodeChar = keyEvent.getUnicodeChar();
+        if (unicodeChar != 0) {
+            int selectionEnd = Math.max(Selection.getSelectionEnd(this.editable), 0);
+            int selectionStart = Math.max(Selection.getSelectionStart(this.editable), 0);
+            if (selectionEnd != selectionStart) {
+                this.editable.delete(selectionStart, selectionEnd);
             }
-            editable.insert(selStart, String.valueOf((char) character));
-            setSelection(selStart + 1, selStart + 1);
+            this.editable.insert(selectionStart, String.valueOf((char) unicodeChar));
+            int newSelectionStart = selectionStart + 1;
+            setSelection(newSelectionStart, newSelectionStart);
             onStateUpdated();
             return true;
         }
