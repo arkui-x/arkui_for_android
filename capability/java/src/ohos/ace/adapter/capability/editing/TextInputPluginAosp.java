@@ -122,7 +122,7 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
         outAttrs.initialSelStart = Selection.getSelectionStart(editable);
         outAttrs.initialSelEnd = Selection.getSelectionEnd(editable);
         wrapper = new InputConnectionWrapper(view, clientId(), delegate, editable, hint);
-        return wrapper;
+        return wrapInputConnection(wrapper);
     }
 
     /**
