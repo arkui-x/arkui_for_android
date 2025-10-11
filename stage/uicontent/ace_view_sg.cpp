@@ -111,6 +111,12 @@ void AceViewSG::RegisterCrownEventCallback(CrownEventCallback&& callback)
     crownEventCallback_ = std::move(callback);
 }
 
+void AceViewSG::RegisterTouchpadInteractionBeginCallback(TouchpadInteractionBeginCallback&& callback)
+{
+    ACE_DCHECK(callback);
+    touchpadInteractionBeginCallback_ = std::move(callback);
+}
+
 void AceViewSG::RegisterViewPositionChangeCallback(ViewPositionChangeCallback&& callback)
 {
     ACE_DCHECK(callback);
