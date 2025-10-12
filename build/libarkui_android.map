@@ -606,6 +606,7 @@
       "panda::PrintStack(std::__ndk1::vector<unsigned int, std::__ndk1::allocator<unsigned int> > const&, std::__ndk1::basic_ostream<char, std::__ndk1::char_traits<char> >&)";
       "panda::utf::ConvertRegionMUtf8ToUtf16(unsigned char const*, unsigned short*, unsigned int, unsigned int, unsigned int)";
       "panda::os::mem::MmapDeleter(std::byte*, unsigned int)";
+      "panda::StringRef::NewFromUtf8(panda::ecmascript::EcmaVM const*, char const*, int)";
       "OHOS::HiviewDFX::AppEventStore::GetInstance()";
       "OHOS::HiviewDFX::AppEventStore::DeleteData(long, std::__ndk1::vector<long, std::__ndk1::allocator<long> > const&)";
       "OHOS::HiviewDFX::AppEventPack::GetSeq() const";
