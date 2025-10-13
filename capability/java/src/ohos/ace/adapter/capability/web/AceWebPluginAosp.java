@@ -15,6 +15,7 @@
 
 package ohos.ace.adapter.capability.web;
 
+import android.content.res.AssetManager;
 import android.view.View;
 import android.content.Context;
 import android.util.DisplayMetrics;
@@ -22,6 +23,8 @@ import android.widget.FrameLayout;
 
 import ohos.ace.adapter.ALog;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -50,6 +53,14 @@ public class AceWebPluginAosp extends AceWebPluginBase {
     private static final String RICH_TEXT_INIT = "richTextInit";
 
     private static final String INCOGNITO_MODE = "incognitoMode";
+
+    private static final String HTTP = "http://";
+
+    private static final String HTTPS = "https://";
+
+    private static final String ANDROID_VIRTUAL_ASSET_PREFIX = "file:///android_asset/";
+
+    private static final String ARKUIX_PATH_MARKER = "files/arkui-x/";
 
     private static final long INVALID_CREATE_ID = -1;
 
@@ -97,10 +108,9 @@ public class AceWebPluginAosp extends AceWebPluginBase {
             return INVALID_CREATE_ID;
         }
         try {
-            long webviewId = Long.parseLong(param.get(RESOURCE_TYPE));
+            long id = Long.parseLong(param.get(RESOURCE_TYPE));
             String webSrc = param.get(WEBVIEW_SRC);
             String pageUrl = param.get(WEBVIEW_PAGE_URL);
-            long id = getAtomicId();
 
             // Create AceWeb
             aceWeb = new AceWeb(id, context, rootView, getEventCallback());
@@ -110,7 +120,7 @@ public class AceWebPluginAosp extends AceWebPluginBase {
             aceWeb.initWeb();
             aceWeb.setIncognitoMode(String.valueOf(webincognitoMode));
             aceWeb.setPageUrl(pageUrl);
-            aceWeb.loadUrl(webSrc);
+            aceWeb.loadUrl(toAndroidAssetUrl(webSrc));
             int physicalWidth = toPhysicalPixels(Double.parseDouble(param.get(WEBVIEW_WIDTH)));
             int physicalHeight = toPhysicalPixels(Double.parseDouble(param.get(WEBVIEW_HEIGHT)));
             int top = toPhysicalPixels(Double.parseDouble(param.get(WEBVIEW_TOP)));
@@ -158,6 +168,48 @@ public class AceWebPluginAosp extends AceWebPluginBase {
     private int toPhysicalPixels(double logicalPixels) {
         float density = 1.0f;
         return (int) Math.round(logicalPixels * density);
+    }
+
+    /**
+     * This is called to create.
+     *
+     * @param webUrl web url
+     * @return Android asset virtual url or original web url
+     */
+    private String toAndroidAssetUrl(String webUrl) {
+        if (webUrl == null || webUrl.startsWith(HTTP) || webUrl.startsWith(HTTPS)) {
+            return webUrl;
+        }
+
+        int pos = webUrl.indexOf(ARKUIX_PATH_MARKER);
+        if (pos != -1) {
+            String assetUrl = ANDROID_VIRTUAL_ASSET_PREFIX + webUrl.substring(pos + "files/".length());
+            if (existsVirtualAsset(assetUrl)) {
+                return assetUrl;
+            }
+        }
+        return webUrl;
+    }
+
+    /**
+     * This is called to toAndroidAssetUrl.
+     *
+     * @param url url
+     */
+    private boolean existsVirtualAsset(String url) {
+        if (url == null || !url.startsWith(ANDROID_VIRTUAL_ASSET_PREFIX)) {
+            return false;
+        }
+
+        AssetManager assetManager = this.context.getAssets();
+        String assetPath = url.substring(ANDROID_VIRTUAL_ASSET_PREFIX.length());
+        try {
+            InputStream inputStream = assetManager.open(assetPath);
+            inputStream.close();
+        } catch (IOException e) {
+            return false;
+        }
+        return true;
     }
 
     /**

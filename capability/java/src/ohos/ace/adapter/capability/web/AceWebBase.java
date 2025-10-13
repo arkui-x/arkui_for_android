@@ -107,6 +107,11 @@ public abstract class AceWebBase {
         this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "cacheMode" + PARAM_BEGIN, cacheMode);
         IAceOnCallResourceMethod imageAccess = (param) -> imageAccess(param);
         this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "imageAccess" + PARAM_BEGIN, imageAccess);
+        IAceOnCallResourceMethod fileAccess = (param) -> fileAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "fileAccess" + PARAM_BEGIN, fileAccess);
+        IAceOnCallResourceMethod textZoomRatio = (param) -> textZoomRatio(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "textZoomRatio" + PARAM_BEGIN,
+            textZoomRatio);
     }
 
     private void callMethodMapPutXWardMethod() {
@@ -441,6 +446,18 @@ public abstract class AceWebBase {
             makeEventHash("onInterceptRequest"), "onInterceptRequest", obj);
     }
 
+
+    /**
+     * Triggers the "onOverrideUrlLoading" event and returns a boolean result.
+     *
+     * @param obj The object containing the data associated with the event.
+     * @return A boolean value indicating the result of the "onOverrideUrlLoading" event.
+     */
+    public boolean fireOverrideUrlLoading(Object obj) {
+        return this.nativeOnObjectEventWithBoolReturn(
+            makeEventHash("onOverrideUrlLoading"), "onOverrideUrlLoading", obj);
+    }
+
     /**
      * This is call to exit the render.
      *
@@ -671,6 +688,27 @@ public abstract class AceWebBase {
      */
     public void firePostMessage(String message) {
         callback.onEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS + "onMessage" + PARAM_BEGIN, message);
+    }
+
+    /**
+     * This is called to ssl error receive event.
+     *
+     * @param obj the ssl error object.
+     */
+    public void fireSslErrorReceive(Object obj) {
+        this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onSslErrorEventReceive" + PARAM_BEGIN, "onSslErrorEventReceive", obj);
+    }
+
+    /**
+     * This is called to all ssl error receive event (onSslErrorEvent).
+     * Provides extended SSL error information compared to fireSslErrorReceive.
+     *
+     * @param obj the all ssl error object.
+     */
+    public void fireAllSslErrorReceive(Object obj) {
+        this.nativeOnObjectEventWithBoolReturn(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onSslErrorEvent" + PARAM_BEGIN, "onSslErrorEvent", obj);
     }
 
     /**
@@ -914,6 +952,14 @@ public abstract class AceWebBase {
      * @return result of call.
      */
     public abstract String cacheMode(Map<String, String> params);
+
+    /**
+     * fileAccess
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String fileAccess(Map<String, String> params);
 
     /**
      * imageAccess
@@ -1199,4 +1245,37 @@ public abstract class AceWebBase {
      * @param objectName The name of the JavaScript object to be deleted.
      */
     public abstract void deleteJavaScriptRegister(String objectName);
+
+    /**
+     * Registers a handler for a specific custom URL scheme in the web component.
+     *
+     * @param scheme The custom URL scheme to be handled (e.g., "myapp").
+     * @return true if the handler was successfully set; false otherwise.
+     */
+    public abstract boolean setWebSchemeHandler(String scheme);
+
+    /**
+     * Clears all registered web scheme handlers.
+     * <p>
+     * This method should be implemented to remove any custom scheme handlers
+     * that have been previously set for the web component. After calling this
+     * method, the web component will no longer intercept or handle custom
+     * URL schemes until new handlers are registered.
+     */
+    public abstract void clearWebSchemeHandler();
+
+    /**
+     * Returns the default user agent string used by the web component.
+     *
+     * @return the default user agent string
+     */
+    public abstract String getDefaultUserAgent();
+
+    /**
+     * textZoomRatio.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String textZoomRatio(Map<String, String> params);
 }

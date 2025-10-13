@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1028,6 +1028,222 @@ void JniWebCommonDialogObject::Cancel(void* object, int index)
     CallVoidMethodFromJNI(obj, "cancel");
 }
 
+class JniWebOnSslErrorEventReceiveEventObject : public WebOnSslErrorEventReceiveEventObject {
+public:
+    JniWebOnSslErrorEventReceiveEventObject() = default;
+    ~JniWebOnSslErrorEventReceiveEventObject() = default;
+
+    int32_t GetError(void* object) override;
+    std::vector<std::string> GetCertChainData(void* object) override;
+    int AddObject(void* object) override;
+    void DelObject(int index) override;
+    Platform::JniEnvironment::JavaGlobalRef& GetSslErrorObject(int index);
+    void Confirm(void* object, int index) override;
+    void Cancel(void* object, int index) override;
+
+private:
+    int index_ = 0;
+    std::unordered_map<int, WebObject*> objectMap_;
+    std::mutex mutex_;
+    std::vector<std::string> certChainDataCache_;
+};
+
+int32_t JniWebOnSslErrorEventReceiveEventObject::GetError(void* object)
+{
+    return GetIntFromJNI(*(jobject*)object, "getError");
+}
+
+std::vector<std::string> JniWebOnSslErrorEventReceiveEventObject::GetCertChainData(void* object)
+{
+    certChainDataCache_ = GetStringVectorFromJNI(*(jobject*)object, "getCertChainDataArray");
+    return certChainDataCache_;
+}
+
+int JniWebOnSslErrorEventReceiveEventObject::AddObject(void* object)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    objectMap_[++index_] = new (std::nothrow) WebObject(object);
+    return index_;
+}
+
+void JniWebOnSslErrorEventReceiveEventObject::DelObject(int index)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto iter = objectMap_.find(index);
+    if (iter != objectMap_.end()) {
+        auto obj = iter->second;
+        if (obj != nullptr) {
+            delete obj;
+        }
+        objectMap_.erase(index);
+    }
+}
+
+Platform::JniEnvironment::JavaGlobalRef& JniWebOnSslErrorEventReceiveEventObject::GetSslErrorObject(int index)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto iter = objectMap_.find(index);
+    if (iter == objectMap_.end() || iter->second == nullptr) {
+        static Platform::JniEnvironment::JavaGlobalRef emptyRef(nullptr, Platform::JniEnvironment::DeleteJavaGlobalRef);
+        return emptyRef;
+    }
+    auto obj = iter->second;
+    return obj->Get();
+}
+
+void JniWebOnSslErrorEventReceiveEventObject::Confirm(void* object, int index)
+{
+    auto& objRef = GetSslErrorObject(index);
+    if (!objRef) {
+        LOGE("Confirm: GetSslErrorObject returned empty ref");
+        return;
+    }
+    auto obj = objRef.get();
+    if (!obj) {
+        LOGE("Confirm: obj is nullptr");
+        return;
+    }
+    CallVoidMethodFromJNI(obj, "proceed");
+}
+
+void JniWebOnSslErrorEventReceiveEventObject::Cancel(void* object, int index)
+{
+    auto& objRef = GetSslErrorObject(index);
+    if (!objRef) {
+        LOGE("Cancel: GetSslErrorObject returned empty ref");
+        return;
+    }
+    auto obj = objRef.get();
+    if (!obj) {
+        LOGE("Cancel: obj is nullptr");
+        return;
+    }
+    CallVoidMethodFromJNI(obj, "cancel");
+}
+
+class JniWebSslErrorEventObject final : public WebSslErrorEventObject {
+public:
+    JniWebSslErrorEventObject() = default;
+    ~JniWebSslErrorEventObject() = default;
+
+    int AddObject(void* object) override;
+    void DelObject(int index) override;
+    int32_t GetError(void* object) override;
+    std::string GetUrl(void* object) override;
+    std::string GetOriginalUrl(void* object) override;
+    std::string GetReferrer(void* object) override;
+    bool IsFatalError(void* object) override;
+    bool IsMainFrame(void* object) override;
+    std::vector<std::string> GetCertificateChain(void* object);
+    void Confirm(void* object, int index) override;
+    void Cancel(void* object, bool abortLoading, int index) override;
+    Platform::JniEnvironment::JavaGlobalRef& GetAllSslErrorObject(int index);
+
+private:
+    int index_ = 0;
+    std::unordered_map<int, WebObject*> objectMap_;
+    std::mutex mutex_;
+    std::vector<std::string> certChainDataCache_;
+};
+
+int JniWebSslErrorEventObject::AddObject(void* object)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    objectMap_[++index_] = new (std::nothrow) WebObject(object);
+    return index_;
+}
+
+void JniWebSslErrorEventObject::DelObject(int index)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto iter = objectMap_.find(index);
+    if (iter != objectMap_.end()) {
+        auto obj = iter->second;
+        if (obj != nullptr) {
+            delete obj;
+        }
+        objectMap_.erase(index);
+    }
+}
+
+Platform::JniEnvironment::JavaGlobalRef& JniWebSslErrorEventObject::GetAllSslErrorObject(int index)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto iter = objectMap_.find(index);
+    if (iter == objectMap_.end() || iter->second == nullptr) {
+        static Platform::JniEnvironment::JavaGlobalRef emptyRef(nullptr, Platform::JniEnvironment::DeleteJavaGlobalRef);
+        return emptyRef;
+    }
+    auto obj = iter->second;
+    return obj->Get();
+}
+
+int32_t JniWebSslErrorEventObject::GetError(void* object)
+{
+    return GetIntFromJNI(*(jobject*)object, "getError");
+}
+
+std::string JniWebSslErrorEventObject::GetUrl(void* object)
+{
+    return GetStringFromJNI(*(jobject*)object, "getUrl");
+}
+
+std::string JniWebSslErrorEventObject::GetOriginalUrl(void* object)
+{
+    return GetStringFromJNI(*(jobject*)object, "getOriginalUrl");
+}
+
+std::string JniWebSslErrorEventObject::GetReferrer(void* object)
+{
+    return GetStringFromJNI(*(jobject*)object, "getReferrer");
+}
+
+bool JniWebSslErrorEventObject::IsFatalError(void* object)
+{
+    return GetBoolFromJNI(*(jobject*)object, "getIsFatalError");
+}
+
+bool JniWebSslErrorEventObject::IsMainFrame(void* object)
+{
+    return GetBoolFromJNI(*(jobject*)object, "getIsMainFrame");
+}
+
+std::vector<std::string> JniWebSslErrorEventObject::GetCertificateChain(void* object)
+{
+    certChainDataCache_ = GetStringVectorFromJNI(*(jobject*)object, "getCertChainDataArray");
+    return certChainDataCache_;
+}
+
+void JniWebSslErrorEventObject::Confirm(void* object, int index)
+{
+    auto& objRef = GetAllSslErrorObject(index);
+    if (!objRef) {
+        LOGE("Confirm: GetAllSslErrorObject returned empty ref");
+        return;
+    }
+    auto obj = objRef.get();
+    if (!obj) {
+        LOGE("obj is nullptr");
+        return;
+    }
+    CallVoidMethodFromJNI(obj, "confirm");
+}
+
+void JniWebSslErrorEventObject::Cancel(void* object, bool abortLoading, int index)
+{
+    auto& objRef = GetAllSslErrorObject(index);
+    if (!objRef) {
+        LOGE("Cancel: GetAllSslErrorObject returned empty ref");
+        return;
+    }
+    auto obj = objRef.get();
+    if (!obj) {
+        LOGE("Cancel: obj is nullptr");
+        return;
+    }
+    CallVoidMethodFromJNI(obj, "cancel");
+}
+
 bool WebAdapterJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
     auto JWebResourceRequestObject = Referenced::MakeRefPtr<JniWebResourceRequestObject>();
@@ -1060,6 +1276,11 @@ bool WebAdapterJni::Register(const std::shared_ptr<JNIEnv>& env)
     OHOS::Ace::WebObjectEventManager::GetInstance().SetFullScreenEnterObject(JWebFullScreenEnterObject);
     auto JWebFullScreenExitObject = OHOS::Ace::Referenced::MakeRefPtr<JniWebFullScreenExitObject>();
     OHOS::Ace::WebObjectEventManager::GetInstance().SetFullScreenExitObject(JWebFullScreenExitObject);
+    auto JWebOnSslErrorEventReceiveEventObject = Referenced::MakeRefPtr<JniWebOnSslErrorEventReceiveEventObject>();
+    OHOS::Ace::WebObjectEventManager::GetInstance().SetOnSslErrorEventReceiveEventObject(
+        JWebOnSslErrorEventReceiveEventObject);
+    auto JWebSslErrorEventObject = Referenced::MakeRefPtr<JniWebSslErrorEventObject>();
+    OHOS::Ace::WebObjectEventManager::GetInstance().SetSslErrorEventObject(JWebSslErrorEventObject);
     static const JNINativeMethod methods[] = {
         {
             .name = "nativeOnObjectEvent",
