@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,9 +36,9 @@ public class AceWebSchemeHandler {
 
     private static final int WEB_ERROR_CODE = -104;
 
-    private String requstUrl = "";
+    private String requestUrl = "";
 
-    private String requstMethod = "";
+    private String requestMethod = "";
 
     private boolean isRequestGesture = false;
 
@@ -83,8 +83,8 @@ public class AceWebSchemeHandler {
      * <p>
      * Initializes the following fields based on the request:
      * <ul>
-     *   <li>{@code requstUrl}: The URL of the request as a string, or an empty string if the URL is null.</li>
-     *   <li>{@code requstMethod}: The HTTP method of the request as a string,
+     *   <li>{@code requestUrl}: The URL of the request as a string, or an empty string if the URL is null.</li>
+     *   <li>{@code requestMethod}: The HTTP method of the request as a string,
      * or an empty string if the method is null.</li>
      *   <li>{@code isRequestGesture}: {@code true} if the request was initiated by a user gesture;
      * {@code false} otherwise.</li>
@@ -96,8 +96,12 @@ public class AceWebSchemeHandler {
      * @param request The {@link WebResourceRequest} containing the details of the web resource request.
      */
     public AceWebSchemeHandler(WebResourceRequest request) {
-        this.requstUrl = request.getUrl() != null ? request.getUrl().toString() : "";
-        this.requstMethod = request.getMethod() != null ? request.getMethod().toString() : "";
+        if (request == null) {
+            ALog.e(LOG_TAG, "AceWebSchemeHandler: request is null");
+            return;
+        }
+        this.requestUrl = request.getUrl() != null ? request.getUrl().toString() : "";
+        this.requestMethod = request.getMethod() != null ? request.getMethod().toString() : "";
         this.isRequestGesture = request.hasGesture();
         this.isMainFrame = request.isForMainFrame();
         this.isRedirect = request.isRedirect();
@@ -112,7 +116,7 @@ public class AceWebSchemeHandler {
      *         empty string is returned.
      */
     public String getRequestUrl() {
-        return this.requstUrl;
+        return this.requestUrl;
     }
 
     /**
@@ -122,7 +126,7 @@ public class AceWebSchemeHandler {
      *         method is not available.
      */
     public String getMethod() {
-        return this.requstMethod;
+        return this.requestMethod;
     }
 
     /**
@@ -176,9 +180,9 @@ public class AceWebSchemeHandler {
                     new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
                 return this.response;
             }
-            InputStream responseData = new ByteArrayInputStream(this.responseData.getBytes(StandardCharsets.UTF_8));
+            InputStream dataStream = new ByteArrayInputStream(this.responseData.getBytes(StandardCharsets.UTF_8));
             this.response = new WebResourceResponse(this.responseMimeType, this.responseEncoding,
-                this.responseStatusCode, this.responseReason, this.responseHeaders, responseData);
+                this.responseStatusCode, this.responseReason, this.responseHeaders, dataStream);
         } catch (IllegalArgumentException e) {
             ALog.e(LOG_TAG, "getResponse throw IllegalArgumentException " + e);
             isResponseFail = true;
@@ -277,7 +281,7 @@ public class AceWebSchemeHandler {
      * @param data The response data as a String.
      */
     public void setResponseData(String data) {
-        this.responseData = data;
+        this.responseData = data != null ? data : "";
     }
 
     /**

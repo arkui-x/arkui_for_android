@@ -191,11 +191,6 @@ public class AceWebPluginAosp extends AceWebPluginBase {
         return webUrl;
     }
 
-    /**
-     * This is called to toAndroidAssetUrl.
-     *
-     * @param url url
-     */
     private boolean existsVirtualAsset(String url) {
         if (url == null || !url.startsWith(ANDROID_VIRTUAL_ASSET_PREFIX)) {
             return false;
@@ -203,13 +198,11 @@ public class AceWebPluginAosp extends AceWebPluginBase {
 
         AssetManager assetManager = this.context.getAssets();
         String assetPath = url.substring(ANDROID_VIRTUAL_ASSET_PREFIX.length());
-        try {
-            InputStream inputStream = assetManager.open(assetPath);
-            inputStream.close();
+        try (InputStream inputStream = assetManager.open(assetPath)) {
+            return true;
         } catch (IOException e) {
             return false;
         }
-        return true;
     }
 
     /**

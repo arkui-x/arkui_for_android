@@ -70,6 +70,9 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      */
     protected native void nativeInitWebDownloadItem();
 
+    /**
+     * Native init webview SchemeHandler methods.
+     */
     protected native void nativeInitSchemeHandler();
 
     /**

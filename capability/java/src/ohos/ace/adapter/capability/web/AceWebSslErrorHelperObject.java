@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,10 +30,10 @@ import java.util.List;
  */
 public class AceWebSslErrorHelperObject {
     private static final String LOG_TAG = "AceWebSslErrorHelperObject";
-    static private final int EXTERNAL_ERROR_INVALID = 0;
-    static private final int EXTERNAL_ERROR_HOST_MISMATCH = 1;
-    static private final int EXTERNAL_ERROR_DATE_INVALID = 2;
-    static private final int EXTERNAL_ERROR_UNTRUSTED = 3;
+    private static final int EXTERNAL_ERROR_INVALID = 0;
+    private static final int EXTERNAL_ERROR_HOST_MISMATCH = 1;
+    private static final int EXTERNAL_ERROR_DATE_INVALID = 2;
+    private static final int EXTERNAL_ERROR_UNTRUSTED = 3;
 
     /**
      * Converts the given SslError's primary error code to an external error code.
@@ -41,7 +41,7 @@ public class AceWebSslErrorHelperObject {
      * @param error the ssl error
      * @return the external error code
      */
-    static public int convertErrorCode(SslError error) {
+    public static int convertErrorCode(SslError error) {
         int errorCode = EXTERNAL_ERROR_UNTRUSTED;
         if (error == null) {
             return errorCode;
@@ -75,7 +75,7 @@ public class AceWebSslErrorHelperObject {
      * @param error error
      * @return the certificate chain data as a list of strings
      */
-    static public java.util.List<String> getCertChainData(SslError error) {
+    public static java.util.List<String> getCertChainData(SslError error) {
         java.util.List<String> certList = new java.util.ArrayList<>();
 
         android.net.http.SslCertificate sslCertificate = error.getCertificate();

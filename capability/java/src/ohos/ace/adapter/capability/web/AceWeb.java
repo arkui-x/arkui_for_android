@@ -58,6 +58,7 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.media.MediaMetadataRetriever;
 import android.os.Handler;
+import android.os.Looper;
 import java.util.HashMap;
 import java.util.ArrayList;
 import android.animation.ValueAnimator;
@@ -97,7 +98,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import ohos.ace.adapter.capability.web.AceWebScrollObject;
 import ohos.ace.adapter.capability.web.AceWebSchemeHandler;
-import android.os.Looper;
 
 /**
  * This class handles the lifecycle of a AceWebview.
@@ -648,7 +648,7 @@ public class AceWeb extends AceWebBase {
                 if (response instanceof WebResourceResponse) {
                     return (WebResourceResponse) response;
                 } else {
-                    return dealSchemeRequest(view, request);
+                    return handleSchemeRequest(view, request);
                 }
             }
 
@@ -872,7 +872,7 @@ public class AceWeb extends AceWebBase {
         firePageFinished(url);
     }
 
-    private WebResourceResponse dealSchemeRequest(WebView view, WebResourceRequest request) {
+    private WebResourceResponse handleSchemeRequest(WebView view, WebResourceRequest request) {
         try {
             if (!request.isForMainFrame()) {
                 return null;
@@ -881,7 +881,6 @@ public class AceWeb extends AceWebBase {
                 if (!request.getUrl().getScheme().equals(scheme)) {
                     continue;
                 }
-                ALog.e(LOG_TAG, "dealSchemeRequest scheme: " + scheme);
                 AceWebSchemeHandler handler = new AceWebSchemeHandler(request);
                 CountDownLatch latch = new CountDownLatch(1);
                 new Handler(Looper.getMainLooper()).post(() -> {
@@ -895,29 +894,7 @@ public class AceWeb extends AceWebBase {
                     resultRef.set(false);
                 }
                 if (resultRef.get().booleanValue()) {
-                    if (handler.getResponseErrCode() != 0) {
-                        AceWebErrorReceiveObject errObject = new AceWebErrorReceiveObject(
-                            handler.getResponseErrCode(), handler.getResponseErrInfo(), request);
-                        AceWeb.this.fireErrorReceive(errObject);
-                    }
-                    if (handler.getErrorCode() != 0) {
-                        AceWebErrorReceiveObject errObject = new AceWebErrorReceiveObject(
-                            handler.getErrorCode(), handler.getErrorInfo(), request);
-                        AceWeb.this.fireErrorReceive(errObject);
-                    }
-                    if (!handler.getResponseUrl().isEmpty() && handler.getResponseErrCode() == 0) {
-                        new Handler(Looper.getMainLooper()).post(() -> {
-                            AceWebPluginBase.onSchemeHandlerRequestStop(scheme, handler);
-                            view.loadUrl(handler.getResponseUrl());
-                        });
-                        return null;
-                    }
-                    if (handler.getResponseFinish() || handler.getResponseFail()) {
-                        new Handler(Looper.getMainLooper()).post(() -> {
-                            AceWebPluginBase.onSchemeHandlerRequestStop(scheme, handler);
-                        });
-                    }
-                    return handler.getResponse();
+                    return handleInterceptRequest(view, request, handler, scheme);
                 }
                 return null;
             }
@@ -926,6 +903,33 @@ public class AceWeb extends AceWebBase {
             return null;
         }
         return null;
+    }
+
+    private WebResourceResponse handleInterceptRequest(
+        WebView view, WebResourceRequest request, AceWebSchemeHandler handler, String scheme) {
+        if (handler.getResponseErrCode() != 0) {
+            AceWebErrorReceiveObject errObject = new AceWebErrorReceiveObject(
+                handler.getResponseErrCode(), handler.getResponseErrInfo(), request);
+            AceWeb.this.fireErrorReceive(errObject);
+        }
+        if (handler.getErrorCode() != 0) {
+            AceWebErrorReceiveObject errObject = new AceWebErrorReceiveObject(
+                handler.getErrorCode(), handler.getErrorInfo(), request);
+            AceWeb.this.fireErrorReceive(errObject);
+        }
+        if (!handler.getResponseUrl().isEmpty() && handler.getResponseErrCode() == 0) {
+            new Handler(Looper.getMainLooper()).post(() -> {
+                AceWebPluginBase.onSchemeHandlerRequestStop(scheme, handler);
+                view.loadUrl(handler.getResponseUrl());
+            });
+            return null;
+        }
+        if (handler.getResponseFinish() || handler.getResponseFail()) {
+            new Handler(Looper.getMainLooper()).post(() -> {
+                AceWebPluginBase.onSchemeHandlerRequestStop(scheme, handler);
+            });
+        }
+        return handler.getResponse();
     }
 
     /**

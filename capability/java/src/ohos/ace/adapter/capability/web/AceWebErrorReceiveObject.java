@@ -39,7 +39,7 @@ public class AceWebErrorReceiveObject extends AceWebResourceRequestObject implem
     /**
      * Constructs an AceWebErrorReceiveObject with the specified WebResourceError
      * and WebResourceRequest.
-     * 
+     *
      * @param errorCode   the error code representing the type of web error encountered
      * @param errorInfo   a descriptive message providing details about the error
      * @param request     the {@link WebResourceRequest} associated with the error event
