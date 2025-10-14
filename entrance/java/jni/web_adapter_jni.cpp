@@ -27,6 +27,10 @@
 #include "core/components_ng/pattern/web/web_object_event.h"
 
 namespace OHOS::Ace::Platform {
+static constexpr const int RESPONSE_STATUS_CODE_RANGE_ONE_MIN = 100;
+static constexpr const int RESPONSE_STATUS_CODE_RANGE_ONE_MAX = 299;
+static constexpr const int RESPONSE_STATUS_CODE_RANGE_TWO_MIN = 400;
+static constexpr const int RESPONSE_STATUS_CODE_RANGE_TWO_MAX = 599;
 class WebObject : public AceType {
 public:
     DECLARE_ACE_TYPE(WebObject, AceType)
@@ -1385,15 +1389,32 @@ jobject WebAdapterJni::ConvertMapToJavaMap(JNIEnv* env, const std::map<std::stri
     return hashMap;
 }
 
+bool WebAdapterJni::CheckResponseParam(const RefPtr<OHOS::Ace::WebResponse>& webResponse)
+{
+    CHECK_NULL_RETURN(webResponse, false);
+    if ((webResponse->GetStatusCode() < RESPONSE_STATUS_CODE_RANGE_ONE_MIN ||
+         webResponse->GetStatusCode() > RESPONSE_STATUS_CODE_RANGE_ONE_MAX) &&
+        (webResponse->GetStatusCode() < RESPONSE_STATUS_CODE_RANGE_TWO_MIN ||
+         webResponse->GetStatusCode() > RESPONSE_STATUS_CODE_RANGE_TWO_MAX)) {
+        LOGE("WebAdapterJni::CheckResponseParam response statusCode out of range");
+        return false;
+    }
+    if (webResponse->GetReason().empty()) {
+        LOGE("WebAdapterJni::CheckResponseParam response statusReason is empty");
+        return false;
+    }
+    return true;
+}
+
 jobject WebAdapterJni::ConvertWebResponseToJObject(JNIEnv* env, const RefPtr<OHOS::Ace::WebResponse>& webResponse)
 {
     CHECK_NULL_RETURN(env, nullptr);
     CHECK_NULL_RETURN(webResponse, nullptr);
-    jclass webResourceResponseClass = env->FindClass("android/webkit/WebResourceResponse");
-    if (webResourceResponseClass == nullptr) {
-        LOGE("ConvertWebResponseToJObject FindClass WebResourceResponse failed");
+    if (!CheckResponseParam(webResponse)) {
         return nullptr;
     }
+    jclass webResourceResponseClass = env->FindClass("android/webkit/WebResourceResponse");
+    CHECK_NULL_RETURN(webResourceResponseClass, nullptr);
     jmethodID constructor = env->GetMethodID(webResourceResponseClass, "<init>",
         "(Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/util/Map;Ljava/io/InputStream;)V");
     if (constructor == nullptr) {

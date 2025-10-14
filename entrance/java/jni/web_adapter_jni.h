@@ -46,6 +46,7 @@ public:
 private:
     static jobject ConvertMapToJavaMap(JNIEnv* env, const std::map<std::string, std::string>& headersMap);
     static jobject ConvertWebResponseToJObject(JNIEnv* env, const RefPtr<OHOS::Ace::WebResponse>& webResponse);
+    static bool CheckResponseParam(const RefPtr<OHOS::Ace::WebResponse>& webResponse);
 };
 }
 #endif

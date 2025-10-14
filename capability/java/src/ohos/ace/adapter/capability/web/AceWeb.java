@@ -239,8 +239,6 @@ public class AceWeb extends AceWebBase {
 
     private static final int WEB_TEXT_ZOOM = 100;
 
-    private static final int SHOULD_INTERCEPT_REQUEST_SLEEP_MS = 200;
-
     private static String currentPageUrl;
 
     private static String routerUrl;
@@ -625,7 +623,7 @@ public class AceWeb extends AceWebBase {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 AceWebOverrideUrlObject object = new AceWebOverrideUrlObject(request);
-                return AceWeb.this.fireUrlLoadIntercept(object) ? true : AceWeb.this.fireOverrideUrlLoading(object);
+                return AceWeb.this.fireUrlLoadIntercept(object) || AceWeb.this.fireOverrideUrlLoading(object);
             }
 
             @Override
@@ -642,7 +640,7 @@ public class AceWeb extends AceWebBase {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 isMainFrame = request.isForMainFrame();
-                referrer = request.getRequestHeaders().get("Referer");
+                referrer = request.getRequestHeaders() != null ? request.getRequestHeaders().get("Referer") : "";
                 AceWebResourceRequestObject object = new AceWebResourceRequestObject(request);
                 Object response = AceWeb.this.fireShouldInterceptRequest(object);
                 if (response instanceof WebResourceResponse) {

@@ -175,7 +175,7 @@ public class AceWebSchemeHandler {
     public WebResourceResponse getResponse() {
         try {
             if (this.responseErrorCode != 0) {
-                isResponseFail = true;
+                this.isResponseFail = true;
                 this.response = new WebResourceResponse("text/html", "UTF-8",
                     new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
                 return this.response;
@@ -185,7 +185,7 @@ public class AceWebSchemeHandler {
                 this.responseStatusCode, this.responseReason, this.responseHeaders, dataStream);
         } catch (IllegalArgumentException e) {
             ALog.e(LOG_TAG, "getResponse throw IllegalArgumentException " + e);
-            isResponseFail = true;
+            this.isResponseFail = true;
             this.response = new WebResourceResponse("text/html", "UTF-8",
                 new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
         }
