@@ -81,8 +81,6 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     private boolean viewAdded = false;
 
-    private boolean isCreate = false;
-
     private int instanceId = 0;
 
     /**
@@ -298,10 +296,7 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     public void surfaceCreated(SurfaceHolder holder) {
         ALog.i(LOG_TAG, "Surface Created");
         surface = holder.getSurface();
-        if (!isCreate) {
-            callback.onEvent(SURFACE_FLAG + id + EVENT + PARAM_EQUALS + "onCreate" + PARAM_BEGIN, "");
-            isCreate = true;
-        }
+        callback.onEvent(SURFACE_FLAG + id + EVENT + PARAM_EQUALS + "onCreate" + PARAM_BEGIN, "");
         AceSurfaceHolder.addSurface(instanceId, id, surface);
     }
 
@@ -318,6 +313,7 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     public void surfaceDestroyed(SurfaceHolder holder) {
         ALog.i(LOG_TAG, "Surface Destroyed");
         surface = null;
+        callback.onEvent(SURFACE_FLAG + id + EVENT + PARAM_EQUALS + "onDestroyed" + PARAM_BEGIN, "");
         AceSurfaceHolder.removeSurface(instanceId, id);
     }
 
