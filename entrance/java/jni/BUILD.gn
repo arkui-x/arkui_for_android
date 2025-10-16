@@ -106,6 +106,9 @@ template("ace_common_jni_source_set") {
       "//foundation/appframework/arkui",
       "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
     ]
+    external_deps = [
+      "libxml2:libxml2",
+    ]
 
     if (defined(config.use_curl_download) && config.use_curl_download) {
       sources -=
@@ -134,6 +137,7 @@ template("ace_common_jni_source_set") {
       ":ace_android_jni_$platform",
       "//foundation/appframework/arkui/uicontent:ace_uicontent_interface",
       "//foundation/distributeddatamgr/udmf/adapter:arkui_x_udmf_data_napi",
+      "//third_party/libxml2",
     ]
 
     if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
