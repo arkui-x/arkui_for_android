@@ -182,6 +182,25 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
             });
     }
 
+    /**
+     * Finish composing.
+     */
+    @Override
+    public void finishComposing() {
+        ALog.d(LOG_TAG, "finishComposing");
+        runOnUIThread(
+            new Runnable() {
+                /**
+                 * Finish composing.
+                 */
+                public void run() {
+                    if (imm != null) {
+                        imm.restartInput(view);
+                    }
+                }
+            });
+    }
+
     @Override
     public void onTextInputErrorTextChanged(String errorText) {
         if (wrapper != null) {
