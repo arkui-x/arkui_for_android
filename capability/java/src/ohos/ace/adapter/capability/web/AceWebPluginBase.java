@@ -71,6 +71,11 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
     protected native void nativeInitWebDownloadItem();
 
     /**
+     * Native init webview SchemeHandler methods.
+     */
+    protected native void nativeInitSchemeHandler();
+
+    /**
      * Native init webview download item methods.
      *
      * @param value The value of the webview.
@@ -148,6 +153,25 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         String className, String methodName, Object[] param);
 
     /**
+     * Called when a scheme handler request is started.
+     *
+     * @param scheme The scheme of the request (e.g., "http", "https", "file").
+     * @param schemeRequestHandler The handler object responsible for processing the scheme request.
+     * @return true if the request was successfully started and handled; false otherwise.
+     */
+    protected static native boolean onSchemeHandlerRequestStart(String scheme, Object schemeRequestHandler);
+
+    /**
+     * Called to stop handling a scheme request.
+     *
+     * This native method is invoked when a scheme handler request needs to be stopped.
+     *
+     * @param scheme The scheme associated with the request (e.g., "http", "https", "file").
+     * @param schemeRequestHandler The handler object responsible for managing the scheme request.
+     */
+    protected static native void onSchemeHandlerRequestStop(String scheme, Object schemeRequestHandler);
+
+    /**
      * This is called to get a atomic id.
      *
      * @return id
@@ -170,6 +194,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
             nativeInit();
             nativeInitWebDataBase();
             nativeInitWebDownloadItem();
+            nativeInitSchemeHandler();
             hasInit = true;
         }
     }
@@ -854,5 +879,51 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
             AceWebBase webBase = objectMap.get(id);
             webBase.deleteJavaScriptRegister(objectName);
         }
+    }
+
+    /**
+     * Sets a custom scheme handler for the specified web object.
+     *
+     * @param id The unique identifier of the web object.
+     * @param scheme The URL scheme to be handled.
+     * @return {@code true} if the scheme handler was successfully set; {@code false} if the web object does not exist.
+     */
+    public boolean setWebSchemeHandler(long id, String scheme) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.setWebSchemeHandler(scheme);
+        }
+        return false;
+    }
+
+    /**
+     * Clears the web scheme handler associated with the specified ID.
+     * <p>
+     * If an object with the given ID exists in the object map, this method
+     * retrieves the corresponding {@link AceWebBase} instance and invokes its
+     * {@code clearWebSchemeHandler()} method to remove any registered web scheme handlers.
+     * </p>
+     *
+     * @param id the unique identifier of the web object whose scheme handler should be cleared
+     */
+    public void clearWebSchemeHandler(long id) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            webBase.clearWebSchemeHandler();
+        }
+    }
+
+    /**
+     * Retrieves the default user agent string for the web component associated with the given ID.
+     *
+     * @param id The unique identifier of the web component.
+     * @return The default user agent string if the component exists; otherwise, an empty string.
+     */
+    public String getUserAgent(long id) {
+        if (objectMap.containsKey(id)) {
+            AceWebBase webBase = objectMap.get(id);
+            return webBase.getDefaultUserAgent();
+        }
+        return "";
     }
 }

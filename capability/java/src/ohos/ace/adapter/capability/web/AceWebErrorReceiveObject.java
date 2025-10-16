@@ -32,17 +32,22 @@ public class AceWebErrorReceiveObject extends AceWebResourceRequestObject implem
 
     private WebResourceError error;
 
+    private int errorCode = 0;
+
+    private String errorInfo = "";
+
     /**
      * Constructs an AceWebErrorReceiveObject with the specified WebResourceError
      * and WebResourceRequest.
      *
-     * @param error   The WebResourceError associated with this object, representing
-     *                the loading error.
-     * @param request The WebResourceRequest associated with this object.
+     * @param errorCode   the error code representing the type of web error encountered
+     * @param errorInfo   a descriptive message providing details about the error
+     * @param request     the {@link WebResourceRequest} associated with the error event
      */
-    public AceWebErrorReceiveObject(WebResourceError error, WebResourceRequest request) {
+    public AceWebErrorReceiveObject(int errorCode, String errorInfo, WebResourceRequest request) {
         super(request);
-        this.error = error;
+        this.errorCode = errorCode;
+        this.errorInfo = errorInfo;
     }
 
     /**
@@ -52,10 +57,7 @@ public class AceWebErrorReceiveObject extends AceWebResourceRequestObject implem
      */
     @Override
     public String getErrorInfo() {
-        if (this.error.getDescription() != null) {
-            return this.error.getDescription().toString();
-        }
-        return "";
+        return this.errorInfo;
     }
 
     /**
@@ -65,6 +67,6 @@ public class AceWebErrorReceiveObject extends AceWebResourceRequestObject implem
      */
     @Override
     public int getErrorCode() {
-        return this.error.getErrorCode();
+        return this.errorCode;
     }
 }

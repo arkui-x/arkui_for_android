@@ -97,6 +97,10 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebDownloadHelperObject.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebResourceRequestObject.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebJavascriptProxyCallback.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebSchemeHandler.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebAllSslErrorReceiveObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebSslErrorHelperObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebSslErrorReceiveObject.java",
 
   # bridge files
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeBaseCodec.java",
