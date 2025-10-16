@@ -737,6 +737,9 @@
       "CountTrace";
       "CountTraceEx";
       "IsTagEnabled";
+      "SetCallbacksNapi";
+      "RegisterTraceListenerNapi";
+      "UnregisterTraceListenerNapi";
     };
   local:
     *;

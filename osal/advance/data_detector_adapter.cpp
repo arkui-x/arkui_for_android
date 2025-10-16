@@ -26,7 +26,11 @@ bool DataDetectorAdapter::ParseOriText(const std::unique_ptr<JsonValue>& entityJ
 void DataDetectorAdapter::ParseAIResult(const TextDataDetectResult& result, int32_t startPos) {}
 void DataDetectorAdapter::ParseAIJson(
     const std::unique_ptr<JsonValue>& jsonValue, TextDataDetectType type, int32_t startPos) {}
-void DataDetectorAdapter::StartAITask(bool clearAISpanMap) {}
+void DataDetectorAdapter::StartAITask(bool clearAISpanMap, bool isSelectDetect) {}
+void DataDetectorAdapter::SetParseSelectAIResCallBack(std::function<void()>&& task) {}
+void DataDetectorAdapter::ParseSelectAIResult() {}
+void DataDetectorAdapter::SetUpdateAISelectMenuCallBack(std::function<void()>&& task) {}
+void DataDetectorAdapter::UpdateAISelectMenu() {}
 
 bool DataDetectorAdapter::ShowAIEntityMenu(
     const AISpan& aiSpan, const NG::RectF& aiRect, const RefPtr<NG::FrameNode>& targetNode, AIMenuInfo info)

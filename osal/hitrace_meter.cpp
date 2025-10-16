@@ -185,6 +185,19 @@ ACE_FORCE_EXPORT void CountTraceEx(HiTraceOutputLevel level, uint64_t tag, const
     }
 }
 
+ACE_FORCE_EXPORT void SetCallbacksNapi(ExecuteCallbackNapi executeCallbackNapi, DeleteCallbackNapi deleteCallbackNapi)
+{}
+
+ACE_FORCE_EXPORT int32_t RegisterTraceListenerNapi(void* callback)
+{
+    return 0;
+}
+
+ACE_FORCE_EXPORT int32_t UnregisterTraceListenerNapi(int32_t index)
+{
+    return 0;
+}
+
 ACE_FORCE_EXPORT void CountTraceDebug(bool isDebug, uint64_t tag, const std::string& name, int64_t count) {}
 
 ACE_FORCE_EXPORT void CountTraceWrapper(uint64_t tag, const char* name, int64_t count) {}
