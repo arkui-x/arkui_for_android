@@ -277,6 +277,13 @@ public abstract class AceWebBase {
             "updateLayout" +
             PARAM_BEGIN,
             callUpdateLayout);
+
+        IAceOnCallResourceMethod callSetNestedScrollExt = (param) -> setNestedScrollExt(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD +
+            PARAM_EQUALS +
+            "setNestedScrollExt" +
+            PARAM_BEGIN,
+            callSetNestedScrollExt);
     }
 
     /**
@@ -509,7 +516,28 @@ public abstract class AceWebBase {
     }
 
     /**
-     * This is called to fire on page scroll event.
+     * This is called to fire will start scroll start event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public void fireScrollWillStart(Object obj) {
+        this.nativeOnObjectEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onWillScrollStart" + PARAM_BEGIN, "onWillScrollStart", obj);
+    }
+
+
+    /**
+     * This is called to fire on scroll start event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public void fireScrollStart(Object obj) {
+        this.nativeOnObjectEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onScrollStart" + PARAM_BEGIN, "onScrollStart", obj);
+    }
+
+    /**
+     * This is called to fire on scroll event.
      *
      * @param obj the jni object of this event.
      */
@@ -517,6 +545,17 @@ public abstract class AceWebBase {
         this.nativeOnObjectEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS +
             "onScroll" + PARAM_BEGIN, "onScroll", obj);
     }
+
+    /**
+     * This is called to fire on scroll end event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public void fireScrollEnd(Object obj) {
+        this.nativeOnObjectEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS +
+            "onScrollEnd" + PARAM_BEGIN, "onScrollEnd", obj);
+    }
+
 
     /**
      * This is called to fire on page scale event.
@@ -1278,4 +1317,12 @@ public abstract class AceWebBase {
      * @return result of call.
      */
     public abstract String textZoomRatio(Map<String, String> params);
+
+    /**
+     * setNestedScrollExt.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String setNestedScrollExt(Map<String, String> params);
 }

@@ -370,6 +370,10 @@ class JniWebScrollObjectWrapper final : public WebScrollObject {
 public:
     float GetX(void* object);
     float GetY(void* object);
+    float GetContentWidth(void* object);
+    float GetContentHeight(void* object);
+    float GetFrameWidth(void* object);
+    float GetFrameHeight(void* object);
 };
 
 float JniWebScrollObjectWrapper::GetX(void* object)
@@ -380,6 +384,26 @@ float JniWebScrollObjectWrapper::GetX(void* object)
 float JniWebScrollObjectWrapper::GetY(void* object)
 {
     return GetIntFromJNI(*(jobject *)object, "getY");
+}
+
+float JniWebScrollObjectWrapper::GetContentWidth(void* object)
+{
+    return GetIntFromJNI(*(jobject *)object, "getContentWidth");
+}
+
+float JniWebScrollObjectWrapper::GetContentHeight(void* object)
+{
+    return GetIntFromJNI(*(jobject *)object, "getContentHeight");
+}
+
+float JniWebScrollObjectWrapper::GetFrameWidth(void* object)
+{
+    return GetIntFromJNI(*(jobject *)object, "getWidth");
+}
+
+float JniWebScrollObjectWrapper::GetFrameHeight(void* object)
+{
+    return GetIntFromJNI(*(jobject *)object, "getHeight");
 }
 
 class JniWebScaleChangeObjectWrapper final : public WebScaleChangeObject {
