@@ -184,6 +184,18 @@ public class AcePlatformPlugin implements InputConnectionClient {
         }
     }
 
+    /**
+     * Get stopBackPress of plugin
+     *
+     * @return stopBackPress of plugin
+     */
+    public boolean isStopBackPress() {
+        if (textInputPlugin != null && view.hasFocus()) {
+            return textInputPlugin.isStopBackPress();
+        }
+        return true;
+    }
+
     private native long nativeInitResRegister(AceResourceRegister resRegister, int instanceId);
     private native void nativeRegisterSurface(int instanceId, long textureId, Object surface);
     private native void nativeUnregisterSurface(int instanceId, long textureId);

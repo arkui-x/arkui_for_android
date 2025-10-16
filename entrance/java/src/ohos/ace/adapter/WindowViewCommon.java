@@ -15,6 +15,8 @@
 
 package ohos.ace.adapter;
 
+import android.app.Activity;
+import android.content.Context;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.InputDevice;
@@ -52,6 +54,7 @@ public class WindowViewCommon {
     private boolean enterPressed = false;
     private boolean numpadEnterPressed = false;
     private boolean isWindowOrientationChanging = false;
+    private boolean keyboardVisible = false;
     private AcePlatformViewPluginBase acePlatformViewPluginBase;
     private AceWebPluginBase aceWebPluginBase;
     private InputConnectionClient inputClient = null;
@@ -189,6 +192,7 @@ public class WindowViewCommon {
      */
     public void keyboardHeightChanged(int height) {
         ALog.i(TAG, "keyboardHeightChanged call");
+        keyboardVisible = height > 0;
         if (nativeWindowPtr == 0L) {
             ALog.w(TAG, "keyboardHeightChanged nativeWindow not ready.");
         } else {
@@ -470,6 +474,28 @@ public class WindowViewCommon {
             return true;
         }
         return windowViewInterface.superOnKeyUp(keyCode, event);
+    }
+
+    /**
+     * The action of pre ime key.
+     *
+     * @param keyCode key code.
+     * @param event Action and button state.
+     * @param context context of the application.
+     * @return true if pre ime action run success , false otherwise.
+     */
+    public boolean onKeyPreIme(int keyCode, KeyEvent event, Context context) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP && keyboardVisible
+                && !inputClient.isStopBackPress()) {
+            if (!(context instanceof Activity)) {
+                ALog.e(TAG, "cannot get activity.");
+                return windowViewInterface.superOnKeyPreIme(keyCode, event);
+            }
+            Activity activity = (Activity) context;
+            activity.onBackPressed();
+            return true;
+        }
+        return windowViewInterface.superOnKeyPreIme(keyCode, event);
     }
 
     private void delayNotifyIfNeeded() {

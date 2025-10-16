@@ -33,4 +33,11 @@ public interface InputConnectionClient {
      * @return the created AceView instace.
      */
     InputConnection onCreateInputConnection(View view, EditorInfo outAttrs);
+
+    /**
+     * Get stopBackPress of TextEditState
+     *
+     * @return stopBackPress of TextEditState
+     */
+    boolean isStopBackPress();
 }
