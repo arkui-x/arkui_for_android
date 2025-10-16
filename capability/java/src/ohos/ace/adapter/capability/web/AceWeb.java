@@ -1425,7 +1425,7 @@ public class AceWeb extends AceWebBase {
         if (!isNeedParallelScroll) {
             eventClone.offsetLocation(-left, -top);
         }
-        boolean ret = webView.dispatchTouchEvent(eventClone);
+        webView.dispatchTouchEvent(eventClone);
         motionEvent = null;
     }
 
@@ -1475,18 +1475,18 @@ public class AceWeb extends AceWebBase {
     public String setNestedScrollExt(Map<String, String> params) {
         if (webView != null) {
             try {
-                    nestedScrollOptionsExtObject.set(
-                    Integer.parseInt(params.get(WEBVIEW_NESTEDSCROLL_UP)),
-                    Integer.parseInt(params.get(WEBVIEW_NESTEDSCROLL_DOWN)),
-                    Integer.parseInt(params.get(WEBVIEW_NESTEDSCROLL_LEFT)),
-                    Integer.parseInt(params.get(WEBVIEW_NESTEDSCROLL_RIGHT)));
+                nestedScrollOptionsExtObject.set(
+                Integer.parseInt(params.get(WEBVIEW_NESTEDSCROLL_UP)),
+                Integer.parseInt(params.get(WEBVIEW_NESTEDSCROLL_DOWN)),
+                Integer.parseInt(params.get(WEBVIEW_NESTEDSCROLL_LEFT)),
+                Integer.parseInt(params.get(WEBVIEW_NESTEDSCROLL_RIGHT)));
                 return SUCCESS_TAG;
             } catch (NumberFormatException ignored) {
                 ALog.w(LOG_TAG, "setNestedScrollExt NumberFormatException");
                 return FAIL_TAG;
             }
         }
-        return SUCCESS_TAG;
+        return FAIL_TAG;
     }
 
     @Override

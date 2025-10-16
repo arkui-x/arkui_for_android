@@ -29,10 +29,7 @@ public class AceWebNestedScrollOptionsExtObject {
     public AceWebNestedScrollOptionsExtObject() {}
 
     /**
-     * Handles the failure of a web resource request.
-     *
-     * This method records the error code and error information when a web
-     * resource request fails. It logs the completion of the failure handling.
+     * This is called to set nested scroll options.
      *
      * @param scrollUp An integer representing the scroll up option.
      * @param scrollDown An integer representing the scroll down option.
@@ -47,14 +44,11 @@ public class AceWebNestedScrollOptionsExtObject {
     }
 
     /**
-     * Handles the failure of a web resource request.
-     *
-     * This method records the error code and error information when a web
-     * resource request fails. It logs the completion of the failure handling.
+     * This is called to judge if need parallel scroll.
      *
      * @param touchDeltaX An float representing the delta x.
      * @param touchDeltaY An float representing the delta y.
-     * @return An boolean representing need parallel scroll.
+     * @return An boolean representing if need parallel scroll.
      */
     public boolean needParallelScroll(float touchDeltaX, float touchDeltaY) {
         if (Float.compare(Math.abs(touchDeltaX), 0.0f) == 0 ||
