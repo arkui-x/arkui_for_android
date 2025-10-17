@@ -26,7 +26,7 @@ public:
     StorageProxyImpl() = default;
     ~StorageProxyImpl() = default;
 
-    RefPtr<Storage> GetStorage(int areaMode = -1) const override;
+    RefPtr<Storage> GetStorage(int areaMode = AREA_MODE_FOR_MODULE_PATH, bool useStatic = false) const override;
 
     ACE_DISALLOW_COPY_AND_MOVE(StorageProxyImpl);
 };
