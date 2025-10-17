@@ -22,6 +22,7 @@
 #include "display_manager.h"
 #include "frameworks/bridge/common/utils/engine_helper.h"
 #include "interfaces/inner_api/ace/viewport_config.h"
+#include "core/components_ng/pattern/overlay/sheet_manager.h"
 
 namespace OHOS::Ace {
 namespace {
@@ -820,6 +821,49 @@ void SubwindowAndroid::ShowBindSheetNG(bool isShow, std::function<void(const std
         std::move(onWillAppear), std::move(onWillDisappear), std::move(onHeightDidChange),
         std::move(onDetentsDidChange), std::move(onWidthDidChange), std::move(onTypeDidChange),
         std::move(sheetSpringBack), targetNode);
+}
+
+int32_t SubwindowAndroid::ShowBindSheetByUIContext(
+    const RefPtr<NG::FrameNode>& sheetContentNode, std::function<void()>&& buildtitleNodeFunc,
+    NG::SheetStyle& sheetStyle, std::function<void()>&& onAppear, std::function<void()>&& onDisappear,
+    std::function<void()>&& shouldDismiss, std::function<void(const int32_t)>&& onWillDismiss,
+    std::function<void()>&& onWillAppear, std::function<void()>&& onWillDisappear,
+    std::function<void(const float)>&& onHeightDidChange,
+    std::function<void(const float)>&& onDetentsDidChange,
+    std::function<void(const float)>&& onWidthDidChange,
+    std::function<void(const float)>&& onTypeDidChange,
+    std::function<void()>&& sheetSpringBack,
+    int32_t targetId)
+{
+    auto aceContainer = Platform::AceContainerSG::GetContainer(childContainerId_);
+    CHECK_NULL_RETURN(aceContainer, ERROR_CODE_BIND_SHEET_CONTENT_NOT_FOUND);
+    ResizeWindow();
+    ShowWindow();
+    CHECK_NULL_RETURN(window_, ERROR_CODE_BIND_SHEET_CONTENT_NOT_FOUND);
+    window_->SetFullScreen(true);
+    window_->SetTouchable(true);
+    ContainerScope scope(childContainerId_);
+    return NG::SheetManager::GetInstance().OpenBindSheetByUIContext(sheetContentNode, std::move(buildtitleNodeFunc),
+        sheetStyle, std::move(onAppear), std::move(onDisappear), std::move(shouldDismiss), std::move(onWillDismiss),
+        std::move(onWillAppear), std::move(onWillDisappear), std::move(onHeightDidChange),
+        std::move(onDetentsDidChange), std::move(onWidthDidChange), std::move(onTypeDidChange),
+        std::move(sheetSpringBack), Container::CurrentId(), targetId);
+}
+
+int32_t SubwindowAndroid::UpdateBindSheetByUIContext(
+    const RefPtr<NG::FrameNode> &sheetContentNode, const NG::SheetStyle &sheetStyle, bool isPartialUpdate)
+{
+    ContainerScope scope(childContainerId_);
+    return NG::SheetManager::GetInstance().UpdateBindSheetByUIContext(
+        sheetContentNode, sheetStyle, isPartialUpdate, childContainerId_);
+}
+
+int32_t SubwindowAndroid::CloseBindSheetByUIContext(
+    const RefPtr<NG::FrameNode> &sheetContentNode)
+{
+    ContainerScope scope(childContainerId_);
+    return NG::SheetManager::GetInstance().CloseBindSheetByUIContext(
+        sheetContentNode, childContainerId_);
 }
 
 void SubwindowAndroid::SwitchFollowParentWindowLayout(bool freeMultiWindowEnable) {}
