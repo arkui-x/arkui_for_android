@@ -65,6 +65,7 @@ template("ace_osal_android_source_set") {
       "input_manager.cpp",
       "input_method_manager_android.cpp",
       "js_accessibility_manager.cpp",
+      "accessibility_event_manager.cpp",
       "layout_inspector.cpp",
       "log_wrapper.cpp",
       "mock/accessibility_constants.cpp",
