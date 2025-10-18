@@ -23,12 +23,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.Point;
 import android.net.http.SslError;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
-import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -238,6 +236,8 @@ public class AceWeb extends AceWebBase {
     private static final long THREAD_TIME_OUT = 1000L;
 
     private static final int WEB_TEXT_ZOOM = 100;
+
+    private static final int DEFAULT_LAYOUT_SIZE = 1;
 
     private static String currentPageUrl;
 
@@ -1003,12 +1003,7 @@ public class AceWeb extends AceWebBase {
             params = new FrameLayout.LayoutParams((int) width, (int) height);
             params.setMargins((int) left, (int) top, 0, 0);
         } else {
-            Display display = activity.getWindowManager().getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            int newWidth = size.x;
-            int newHeight = size.y;
-            params = new FrameLayout.LayoutParams(newWidth, newHeight);
+            params = new FrameLayout.LayoutParams(DEFAULT_LAYOUT_SIZE, DEFAULT_LAYOUT_SIZE);
         }
         return params;
     }
