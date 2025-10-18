@@ -1851,6 +1851,7 @@ bool JsAccessibilityManager::SendAccessibilitySyncEvent(
     eventInfoJson["actionType"] = static_cast<uint32_t>(action);
     eventInfoJson["TextLengthLimit"] = elementInfo.GetTextLengthLimit();
     eventInfoJson["ParentNodeId"] = elementInfo.GetParentNodeId();
+    eventInfoJson["textAnnouncedForAccessibility"] = accessibilityEvent.textAnnouncedForAccessibility;
     AddEventInfoJsonImporved(eventInfoJson, elementInfo);
 
     AndroidEventType eventType = AndroidEventType::TYPE_VIEW_INVALID;
@@ -1954,6 +1955,11 @@ void GetRealEventWindowId(
 }
 void JsAccessibilityManager::SendAccessibilityAsyncEvent(const AccessibilityEvent& accessibilityEvent)
 {
+    auto it = accessibilityEvent.extraEventInfo.find("sendEventType");
+    if (it != accessibilityEvent.extraEventInfo.end() && it->second == "pluginsEvent") {
+        SendAccessibilityEvent(accessibilityEvent);
+        return;
+    }
     auto context = GetPipelineContext().Upgrade();
     CHECK_NULL_VOID(context);
     int32_t windowId = static_cast<int32_t>(context->GetFocusWindowId());
@@ -1989,6 +1995,18 @@ void JsAccessibilityManager::SendAccessibilityAsyncEvent(const AccessibilityEven
 
     GenerateAccessibilityEventInfo(accessibilityEvent, eventInfo);
 
+    SendAccessibilitySyncEvent(accessibilityEvent, eventInfo);
+}
+
+void JsAccessibilityManager::SendAccessibilityEvent(const AccessibilityEvent& accessibilityEvent)
+{
+    Register(true);
+    AccessibilityEventInfo eventInfo;
+    AccessibilityElementInfo elementInfo;
+    elementInfo.SetAccessibilityId(accessibilityEvent.nodeId);
+    eventInfo.SetElementInfo(elementInfo);
+    eventInfo.SetWindowId(accessibilityEvent.windowId);
+    GenerateAccessibilityEventInfo(accessibilityEvent, eventInfo);
     SendAccessibilitySyncEvent(accessibilityEvent, eventInfo);
 }
 
