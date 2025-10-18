@@ -23,10 +23,23 @@ package ohos.ace.adapter.capability.web;
 public class AceWebScrollObject {
     private int l;
     private int t;
+    private int contentWidth;
+    private int contentHeight;
+    private int width;
+    private int height;
 
     public AceWebScrollObject(int l, int t) {
         this.l = l;
         this.t = t;
+    }
+
+    public AceWebScrollObject(int l, int t, int contentWidth, int contentHeight, int width, int height) {
+        this.l = l;
+        this.t = t;
+        this.contentWidth = contentWidth;
+        this.contentHeight = contentHeight;
+        this.width = width;
+        this.height = height;
     }
 
     public int getX() {
@@ -35,5 +48,21 @@ public class AceWebScrollObject {
 
     public int getY() {
         return this.t;
+    }
+
+    public int getContentWidth() {
+        return this.contentWidth;
+    }
+
+    public int getContentHeight() {
+        return this.contentHeight;
+    }
+
+    public int getWidth() {
+        return this.width;
+    }
+
+    public int getHeight() {
+        return this.height;
     }
 }

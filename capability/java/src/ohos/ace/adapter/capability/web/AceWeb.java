@@ -96,6 +96,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import ohos.ace.adapter.capability.web.AceWebScrollObject;
 import ohos.ace.adapter.capability.web.AceWebSchemeHandler;
+import ohos.ace.adapter.capability.web.AceWebNestedScrollOptionsExtObject;
 
 /**
  * This class handles the lifecycle of a AceWebview.
@@ -174,6 +175,11 @@ public class AceWeb extends AceWebBase {
     private static final String WEB_DOWNLOAD_FAILED_EVENT = "webDownloadFailedEvent";
 
     private static final String WEB_DOWNLOAD_COMPLETE_EVENT = "webDownloadCompleteEvent";
+
+    private static final String WEBVIEW_NESTEDSCROLL_UP = "scrollUp";
+    private static final String WEBVIEW_NESTEDSCROLL_DOWN = "scrollDown";
+    private static final String WEBVIEW_NESTEDSCROLL_LEFT = "scrollLeft";
+    private static final String WEBVIEW_NESTEDSCROLL_RIGHT = "scrollRight";
 
     private static final int NO_ERROR = 0;
 
@@ -303,6 +309,12 @@ public class AceWeb extends AceWebBase {
 
     private String referrer;
 
+    private float touchStartX;
+    private float touchStartY;
+    private boolean isNeedParallelScroll = false;
+
+    private AceWebNestedScrollOptionsExtObject nestedScrollOptionsExtObject = new AceWebNestedScrollOptionsExtObject();
+
     public AceWeb(long id, Context context, View view, IAceOnResourceEvent callback) {
         super(id, callback);
         this.callback = callback;
@@ -349,15 +361,108 @@ public class AceWeb extends AceWebBase {
     public class AceWebView extends WebView {
         private static final String LOG_TAG = "AceWebView";
 
+        private static final float SCROLL_THRESHOLD = 10.0f;
+        private static final int SCROLL_END_DELAY_THRESHOLD = 150;
+
+        private Handler mScrollHandler;
+        private Runnable mScrollRunnable;
+        private boolean mIsScrolling = false;
+        private int mLastScrollX = 0;
+        private int mLastScrollY = 0;
+
+        private float startX = 0.0f;
+        private float startY = 0.0f;
+        private boolean isScrolling = false;
+
         public AceWebView(Context context) {
             super(context);
+            mScrollHandler = new Handler(Looper.getMainLooper());
         }
 
         @Override
         protected void onScrollChanged(int l, int t, int oldl, int oldt) {
             super.onScrollChanged(l, t, oldl, oldt);
-            AceWebScrollObject object = new AceWebScrollObject(l, t);
-            AceWeb.this.fireScrollChanged(object);
+
+            if (!mIsScrolling) {
+                mIsScrolling = true;
+                AceWebScrollObject object = new AceWebScrollObject(l, t);
+                AceWeb.this.fireScrollWillStart(object);
+
+                int deltaX = l - mLastScrollX;
+                int deltaY = t - mLastScrollY;
+                object = new AceWebScrollObject(deltaX, deltaY);
+                AceWeb.this.fireScrollStart(object);
+
+                object = new AceWebScrollObject(l, t, webView.computeHorizontalScrollRange(),
+                    (int) ((webView.getContentHeight() - 1) * getScale()), webView.getWidth(), webView.getHeight());
+                AceWeb.this.fireScrollChanged(object);
+            } else {
+                AceWebScrollObject object = new AceWebScrollObject(l, t, webView.computeHorizontalScrollRange(),
+                    (int) ((webView.getContentHeight() - 1) * getScale()), webView.getWidth(), webView.getHeight());
+                AceWeb.this.fireScrollChanged(object);
+            }
+
+            mLastScrollX = l;
+            mLastScrollY = t;
+
+            if (mScrollRunnable != null) {
+                mScrollHandler.removeCallbacks(mScrollRunnable);
+            }
+
+            mScrollRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    mIsScrolling = false;
+                    AceWebScrollObject object = new AceWebScrollObject(l, t);
+                    AceWeb.this.fireScrollEnd(object);
+                }
+            };
+
+            mScrollHandler.postDelayed(mScrollRunnable, SCROLL_END_DELAY_THRESHOLD);
+        }
+
+        @Override
+        protected boolean overScrollBy(int deltaX, int deltaY,
+                                       int scrollX, int scrollY,
+                                       int scrollRangeX, int scrollRangeY,
+                                       int maxOverScrollX, int maxOverScrollY,
+                                       boolean isTouchEvent) {
+            return super.overScrollBy(deltaX, deltaY, scrollX, scrollY,
+                    scrollRangeX, scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    startX = event.getX();
+                    startY = event.getY();
+                    isScrolling = false;
+
+                    if (getParent() instanceof ViewGroup) {
+                        getParent().requestDisallowInterceptTouchEvent(true);
+                    }
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    float deltaX = Math.abs(event.getX() - startX);
+                    float deltaY = Math.abs(event.getY() - startY);
+
+                    if (!isScrolling && (deltaX > SCROLL_THRESHOLD || deltaY > SCROLL_THRESHOLD)) {
+                        isScrolling = true;
+                        if (getParent() instanceof ViewGroup) {
+                            getParent().requestDisallowInterceptTouchEvent(true);
+                        }
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    if (getParent() instanceof ViewGroup) {
+                        getParent().requestDisallowInterceptTouchEvent(false);
+                    }
+                    isScrolling = false;
+                    break;
+            }
+            return super.onTouchEvent(event);
         }
     }
 
@@ -1297,10 +1402,25 @@ public class AceWeb extends AceWebBase {
         MotionEvent eventClone = MotionEvent.obtain(motionEvent);
         float deltaX = eventClone.getX() - left;
         float deltaY = eventClone.getY() - top;
-        if ((deltaX > 0) && (deltaX < width) && (deltaY > 0) && (deltaY < height)) {
-            eventClone.offsetLocation(-left, -top);
-            webView.dispatchTouchEvent(eventClone);
+
+        if (eventClone.getAction() == MotionEvent.ACTION_DOWN) {
+            touchStartX = eventClone.getX();
+            touchStartY = eventClone.getY();
         }
+
+        float touchDeltaX = 0.0f;
+        float touchDeltaY = 0.0f;
+        touchDeltaX = eventClone.getX() - touchStartX;
+        touchDeltaY = eventClone.getY() - touchStartY;
+
+        if (Float.compare(touchDeltaX, 0.0f) != 0 || Float.compare(touchDeltaY, 0.0f) != 0) {
+            isNeedParallelScroll = nestedScrollOptionsExtObject.needParallelScroll(touchDeltaX, touchDeltaY);
+        }
+
+        if (!isNeedParallelScroll) {
+            eventClone.offsetLocation(-left, -top);
+        }
+        webView.dispatchTouchEvent(eventClone);
         motionEvent = null;
     }
 
@@ -1340,6 +1460,24 @@ public class AceWeb extends AceWebBase {
                 return SUCCESS_TAG;
             } catch (NumberFormatException ignored) {
                 ALog.w(LOG_TAG, "updateWebLayout NumberFormatException");
+                return FAIL_TAG;
+            }
+        }
+        return FAIL_TAG;
+    }
+
+    @Override
+    public String setNestedScrollExt(Map<String, String> params) {
+        if (webView != null) {
+            try {
+                nestedScrollOptionsExtObject.set(
+                Integer.parseInt(params.get(WEBVIEW_NESTEDSCROLL_UP)),
+                Integer.parseInt(params.get(WEBVIEW_NESTEDSCROLL_DOWN)),
+                Integer.parseInt(params.get(WEBVIEW_NESTEDSCROLL_LEFT)),
+                Integer.parseInt(params.get(WEBVIEW_NESTEDSCROLL_RIGHT)));
+                return SUCCESS_TAG;
+            } catch (NumberFormatException ignored) {
+                ALog.w(LOG_TAG, "setNestedScrollExt NumberFormatException");
                 return FAIL_TAG;
             }
         }
