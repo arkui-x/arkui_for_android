@@ -328,7 +328,8 @@ void AceViewSG::DispatchEventToPerf(const KeyEvent& keyEvent)
         && keyEvent.code != KeyCode::KEY_VOLUME_UP
         && keyEvent.code != KeyCode::KEY_POWER
         && keyEvent.code != KeyCode::KEY_META_LEFT
-        && keyEvent.code != KeyCode::KEY_ESCAPE) {
+        && keyEvent.code != KeyCode::KEY_ESCAPE
+        && keyEvent.code != KeyCode::KEY_BACK) {
         return;
     }
     if (!PerfMonitor::GetPerfMonitor()) {

@@ -187,4 +187,13 @@ public interface WindowViewInterface {
      * Called by native to unregister Window Handle.
      */
     void unRegisterWindow();
+
+    /**
+     * The action of pre ime key.
+     *
+     * @param keyCode key code.
+     * @param event Action and button state.
+     * @return true if key on ime run success , false otherwise.
+     */
+    boolean superOnKeyPreIme(int keyCode, KeyEvent event);
 }

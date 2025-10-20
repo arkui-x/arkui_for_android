@@ -28,12 +28,14 @@ public class TextEditState {
     private final String hint;
     private final int selectionStart;
     private final int selectionEnd;
+    private final boolean stopBackPress;
 
-    private TextEditState(String text, String hint, int selectionStart, int selectionEnd) {
+    private TextEditState(String text, String hint, int selectionStart, int selectionEnd, boolean stopBackPress) {
         this.text = text;
         this.hint = hint;
         this.selectionStart = selectionStart;
         this.selectionEnd = selectionEnd;
+        this.stopBackPress = stopBackPress;
     }
 
     /**
@@ -48,7 +50,8 @@ public class TextEditState {
             textEditState.getString("text"),
             textEditState.getString("hint"),
             textEditState.getInt("selectionStart"),
-            textEditState.getInt("selectionEnd")
+            textEditState.getInt("selectionEnd"),
+            textEditState.getBoolean("stopBackPress")
         );
     }
 
@@ -86,5 +89,14 @@ public class TextEditState {
      */
     public int getSelectionEnd() {
         return selectionEnd;
+    }
+
+    /**
+     * Get stopBackPress of TextEditState
+     *
+     * @return stopBackPress of TextEditState
+     */
+    public boolean getStopBackPress() {
+        return stopBackPress;
     }
 }

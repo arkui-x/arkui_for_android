@@ -54,6 +54,8 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
     // Indicate whether need to call IMM restartInput.
     private boolean isRestartInputPending = false;
 
+    private boolean stopBackPress = true;
+
     private InputConnectionWrapper wrapper = null;
 
     /**
@@ -189,6 +191,10 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
         }
     }
 
+    public boolean isStopBackPress() {
+        return stopBackPress;
+    }
+
     /**
      * Called when clientId and configuration are initialized.
      */
@@ -226,6 +232,7 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
             return;
         }
         hint = state.getHint();
+        stopBackPress = state.getStopBackPress();
         if (!isRestartInputPending && state.getText().equals(editable.toString())) {
             applyStateToSelection(state);
 
