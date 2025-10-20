@@ -47,6 +47,8 @@ import ohos.ace.adapter.WindowViewAospInterface;
 import ohos.ace.adapter.WindowViewBuilder;
 import ohos.ace.adapter.capability.bridge.BridgeManager;
 import ohos.ace.adapter.capability.grantresult.GrantResult;
+import ohos.ace.adapter.capability.keyboard.KeyboardHeightObserver;
+import ohos.ace.adapter.capability.keyboard.KeyboardHeightProvider;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginBase;
@@ -60,7 +62,7 @@ import ohos.ace.adapter.capability.platformview.AcePlatformViewPluginAosp;
  *
  * @since 1
  */
-public class StageFragment extends Fragment {
+public class StageFragment extends Fragment implements KeyboardHeightObserver {
     private static final String LOG_TAG = "StageFragment";
 
     private static final String INSTANCE_DEFAULT_NAME = "default";
@@ -129,6 +131,25 @@ public class StageFragment extends Fragment {
 
     private boolean isBackground = true;
 
+    private KeyboardHeightProvider keyboardHeightProvider;
+
+    @Override
+    public void onKeyboardHeightChanged(int height) {
+        if (windowView != null) {
+            windowView.keyboardHeightChanged(height);
+        }
+        if (platformPlugin != null) {
+            platformPlugin.keyboardHeightChanged(height);
+        }
+    }
+
+    @Override
+    public void onAvoidAreaChanged() {
+        if (windowView != null) {
+            windowView.avoidAreaChanged();
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.i(LOG_TAG, "OnCreate called, instance name:" + getInstanceName());
@@ -156,6 +177,17 @@ public class StageFragment extends Fragment {
         initBridgeManager();
         initArkUIXPluginRegistry();
         Trace.endSection();
+
+        keyboardHeightProvider = new KeyboardHeightProvider(this.getActivity());
+        keyboardHeightProvider.setKeyboardHeightObserver(this);
+        windowView.getView().post(new Runnable() {
+            /**
+             * Called from the thread that created the view hierarchy
+             */
+            public void run() {
+                keyboardHeightProvider.start();
+            }
+        });
     }
 
     @Override
@@ -283,6 +315,7 @@ public class StageFragment extends Fragment {
         fragmentDelegate.dispatchOnDestroy(getInstanceName());
         windowView.destroy();
         arkUIXPluginRegistry.unRegistryAllPlugins();
+        keyboardHeightProvider.close();
         BridgeManager.unRegisterBridgeManager(instanceId);
         if (platformPlugin != null) {
             platformPlugin.release();
