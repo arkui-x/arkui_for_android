@@ -22,6 +22,7 @@ common_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputConfiguration.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputDelegate.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputPluginBase.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TrackingInputConnection.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/editing/TextInputType.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/keyboard/KeyboardHeightObserver.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/keyboard/KeyboardHeightProvider.java",

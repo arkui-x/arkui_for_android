@@ -64,4 +64,20 @@ public interface TextInputDelegate {
      * @param text The selected text content
      */
     void setSelectedState(boolean isSelected, CharSequence text);
+
+    /**
+     * Set the selection range in the text.
+     *
+     * @param selectionStart The start position of the selection
+     * @param selectionEnd The end position of the selection
+     */
+    void setSelectedState(int selectionStart, int selectionEnd);
+
+    /**
+     * Finish composing text and update the composing state.
+     *
+     * @param finishComposingText The text to complete the composing
+     * @param composingStart The start position of the composing text
+     */
+    void setFinishComposingText(String finishComposingText, int composingStart);
 }
