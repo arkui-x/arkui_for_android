@@ -97,10 +97,9 @@ public class AceWebPluginAosp extends AceWebPluginBase {
             return INVALID_CREATE_ID;
         }
         try {
-            long webviewId = Long.parseLong(param.get(RESOURCE_TYPE));
+            long id = Long.parseLong(param.get(RESOURCE_TYPE));
             String webSrc = param.get(WEBVIEW_SRC);
             String pageUrl = param.get(WEBVIEW_PAGE_URL);
-            long id = getAtomicId();
 
             // Create AceWeb
             aceWeb = new AceWeb(id, context, rootView, getEventCallback());
