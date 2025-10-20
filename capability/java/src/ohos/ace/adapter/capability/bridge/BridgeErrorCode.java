@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -33,7 +33,8 @@ public enum BridgeErrorCode {
     BRIDGE_DATA_ERROR(9, "Data error"),
     BRIDGE_EXCEEDS_SAFE_INTEGER(10, "Data exceeds safe integer"),
     BRIDGE_CODEC_TYPE_MISMATCH(11, "Bridge codec type mismatch"),
-    BRIDGE_CODEC_INVALID(12, "Bridge codec is invalid");
+    BRIDGE_CODEC_INVALID(12, "Bridge codec is invalid"),
+    BRIDGE_CALL_METHOD_SYNC_TIMEOUT(13, "Bridge callMethodSync timeout!");
 
     private int id;
     private String errorMessage;
