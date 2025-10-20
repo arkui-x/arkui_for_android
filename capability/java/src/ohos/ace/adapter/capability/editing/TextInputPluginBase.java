@@ -209,6 +209,11 @@ public abstract class TextInputPluginBase {
     protected abstract void hideTextInput();
 
     /**
+     * Finish composing.
+     */
+    protected abstract void finishComposing();
+
+    /**
      * release function.
      */
     public abstract void release();

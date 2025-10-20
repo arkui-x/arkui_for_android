@@ -70,6 +70,17 @@ void TextInputConnectionImpl::Close(int32_t instanceId)
     }
 }
 
+void TextInputConnectionImpl::FinishComposing(int32_t instanceId)
+{
+    if (taskExecutor_ && Attached(instanceId)) {
+        taskExecutor_->PostSyncTask(
+            [instanceId] {
+                TextInputJni::FinishComposing(instanceId);
+            },
+            TaskExecutor::TaskType::PLATFORM, "ArkUI-XTextInputConnectionImplFinishComposing");
+    }
+}
+
 bool TextInputConnectionImpl::Attached(int32_t instanceId)
 {
     // Should be called on AceUI thread.

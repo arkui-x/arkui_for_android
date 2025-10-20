@@ -139,4 +139,11 @@ void InputMethodManager::Attach(const WeakPtr<TextInputClient>& client, const Te
                                instanceId] { Platform::TextInputJni::SetClient(clientId, config, instanceId); },
         TaskExecutor::TaskType::PLATFORM, "ArkUI-XTextInputPluginAttach");
 }
+
+void InputMethodManager::FinishComposing(int32_t instanceId)
+{
+    auto connection = Platform::TextInputClientHandler::GetInstance().GetConnectionByInstanceId(instanceId);
+    CHECK_NULL_VOID(connection);
+    connection->FinishComposing(instanceId);
+}
 } // namespace OHOS::Ace

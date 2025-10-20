@@ -43,12 +43,14 @@ static const char* const METHOD_CLEAR_CLIENT = "clearTextInputClient";
 static const char* const METHOD_SET_EDITING_STATE = "setTextInputEditingState";
 static const char* const METHOD_SHOW = "showTextInput";
 static const char* const METHOD_HIDE = "hideTextInput";
+static const char* const METHOD_FINISH_COMPOSING = "finishComposing";
 
 static const char* const SIGNATURE_SET_CLIENT = "(ILjava/lang/String;)V";
 static const char* const SIGNATURE_CLEAR_CLIENT = "()V";
 static const char* const SIGNATURE_SET_EDITING_STATE = "(Ljava/lang/String;)V";
 static const char* const SIGNATURE_SHOW = "(Z)V";
 static const char* const SIGNATURE_HIDE = "()V";
+static const char* const SIGNATURE_FINISH_COMPOSING = "()V";
 
 std::unordered_map<jint, JniEnvironment::JavaGlobalRef> g_jobjects;
 
@@ -58,6 +60,7 @@ struct {
     jmethodID setEditingState;
     jmethodID showTextInput;
     jmethodID hideTextInput;
+    jmethodID finishComposing;
 } g_pluginClass;
 
 } // namespace
@@ -144,6 +147,11 @@ void TextInputJni::NativeInit(JNIEnv* env, jobject jobj, jint instanceId)
     g_pluginClass.hideTextInput = env->GetMethodID(cls, METHOD_HIDE, SIGNATURE_HIDE);
     if (!g_pluginClass.hideTextInput) {
         LOGW("TextInput JNI: hideTextInput method not found.");
+    }
+
+    g_pluginClass.finishComposing = env->GetMethodID(cls, METHOD_FINISH_COMPOSING, SIGNATURE_FINISH_COMPOSING);
+    if (!g_pluginClass.finishComposing) {
+        LOGW("TextInput JNI: finishComposing method not found.");
     }
 
     env->DeleteLocalRef(cls);
@@ -344,6 +352,29 @@ bool TextInputJni::ClearClient(int32_t instanceId)
 void TextInputJni::ReleaseInstance(int32_t instanceId)
 {
     g_jobjects.erase(instanceId);
+}
+
+bool TextInputJni::FinishComposing(int32_t instanceId)
+{
+    auto env = JniEnvironment::GetInstance().GetJniEnv();
+    if (!env) {
+        LOGW("TextInput JNI: env not ready");
+        return false;
+    }
+
+    auto jobject = g_jobjects.find(instanceId);
+    if (jobject == g_jobjects.end() || !g_pluginClass.finishComposing) {
+        return false;
+    }
+
+    env->CallVoidMethod(jobject->second.get(), g_pluginClass.finishComposing);
+    if (env->ExceptionCheck()) {
+        LOGE("TextInput JNI: call FinishComposing has exception");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return false;
+    }
+    return true;
 }
 
 } // namespace OHOS::Ace::Platform
