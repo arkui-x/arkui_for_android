@@ -46,6 +46,7 @@ public:
     static bool SetEditingState(const TextEditingValue& state, int32_t instanceId, bool needFireChangeEvent = true);
     static bool ClearClient(int32_t instanceId);
     static void ReleaseInstance(int32_t instanceId);
+    static bool FinishComposing(int32_t instanceId);
 
 private:
     static void OnJniRegistered();

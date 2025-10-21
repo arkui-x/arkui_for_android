@@ -399,6 +399,11 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
     protected abstract void hideTextInput();
 
     /**
+     * Finish composing.
+     */
+    protected abstract void finishComposing();
+
+    /**
      * release function.
      */
     public abstract void release();
