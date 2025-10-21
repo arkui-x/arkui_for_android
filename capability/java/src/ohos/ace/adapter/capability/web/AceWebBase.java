@@ -107,6 +107,9 @@ public abstract class AceWebBase {
         this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "cacheMode" + PARAM_BEGIN, cacheMode);
         IAceOnCallResourceMethod imageAccess = (param) -> imageAccess(param);
         this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "imageAccess" + PARAM_BEGIN, imageAccess);
+        IAceOnCallResourceMethod textZoomRatio = (param) -> textZoomRatio(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "textZoomRatio" + PARAM_BEGIN,
+            textZoomRatio);
     }
 
     private void callMethodMapPutXWardMethod() {
@@ -1199,4 +1202,12 @@ public abstract class AceWebBase {
      * @param objectName The name of the JavaScript object to be deleted.
      */
     public abstract void deleteJavaScriptRegister(String objectName);
+
+    /**
+     * textZoomRatio.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String textZoomRatio(Map<String, String> params);
 }

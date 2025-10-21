@@ -56,6 +56,7 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.media.MediaMetadataRetriever;
 import android.os.Handler;
+import android.os.Looper;
 import java.util.HashMap;
 import java.util.ArrayList;
 import android.animation.ValueAnimator;
@@ -147,6 +148,7 @@ public class AceWeb extends AceWebBase {
     private static final String NTC_IMAGE_ACCESS = "imageAccess";
     private static final String NTC_JAVASCRIPT_ACCESS = "javascriptAccess";
     private static final String NTC_MIN_FONT_SIZE = "minFontSize";
+    private static final String NTC_TEXT_ZOOM_RATIO = "textZoomRatio";
     private static final String NTC_HORIZONTAL_SCROLLBAR_ACCESS = "horizontalScrollBarAccess";
     private static final String NTC_VERTICAL_SCROLLBAR_ACCESS = "verticalScrollBarAccess";
     private static final String NTC_BACKGROUND_COLOR = "backgroundColor";
@@ -225,6 +227,8 @@ public class AceWeb extends AceWebBase {
 
     private static final int ANDROID_VERSION_TIRAMISU = 33;
 
+    private static final int WEB_TEXT_ZOOM = 100;
+
     private static String currentPageUrl;
 
     private static String routerUrl;
@@ -298,6 +302,16 @@ public class AceWeb extends AceWebBase {
 
     @Override
     public void release() {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            ALog.w(LOG_TAG, "release main thread");
+            doRelease();
+        } else {
+            ALog.w(LOG_TAG, "release main thread post");
+            new Handler(Looper.getMainLooper()).post(this::doRelease);
+        }
+    }
+
+    private void doRelease() {
         if (webView != null) {
             removeWebFromSurface(webView);
             webView.destroy();
@@ -1411,6 +1425,24 @@ public class AceWeb extends AceWebBase {
             return FAIL_TAG;
         }
         webView.getSettings().setMinimumFontSize(fontSize);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String textZoomRatio(Map<String, String> params) {
+        if (!params.containsKey(NTC_TEXT_ZOOM_RATIO) || webView == null) {
+            ALog.e(LOG_TAG, "textZoomRatio failed");
+            return FAIL_TAG;
+        }
+        int textZoom = WEB_TEXT_ZOOM;
+        try {
+            int textZoomRatio = Integer.parseInt(params.get(NTC_TEXT_ZOOM_RATIO));
+            textZoom = textZoomRatio;
+        } catch (NumberFormatException ignored) {
+            ALog.w(LOG_TAG, "textZoom NumberFormatException");
+            return FAIL_TAG;
+        }
+        webView.getSettings().setTextZoom(textZoom);
         return SUCCESS_TAG;
     }
 
