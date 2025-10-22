@@ -373,6 +373,8 @@ public class AceWeb extends AceWebBase {
         private float startX = 0.0f;
         private float startY = 0.0f;
         private boolean isScrolling = false;
+        private boolean isTouching = false;
+        private boolean isSendEnd = false;
 
         public AceWebView(Context context) {
             super(context);
@@ -402,23 +404,20 @@ public class AceWeb extends AceWebBase {
                 AceWeb.this.fireScrollChanged(object);
             }
 
-            mLastScrollX = l;
-            mLastScrollY = t;
 
             if (mScrollRunnable != null) {
                 mScrollHandler.removeCallbacks(mScrollRunnable);
             }
 
-            mScrollRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    mIsScrolling = false;
-                    AceWebScrollObject object = new AceWebScrollObject(l, t);
-                    AceWeb.this.fireScrollEnd(object);
+            if (mLastScrollX == l && mLastScrollY == t) {
+                if (!isTouching) {
+                    sendScrollEndEvent();
+                } else {
+                    isSendEnd = true;
                 }
-            };
-
-            mScrollHandler.postDelayed(mScrollRunnable, SCROLL_END_DELAY_THRESHOLD);
+            }
+            mLastScrollX = l;
+            mLastScrollY = t;
         }
 
         @Override
@@ -427,6 +426,7 @@ public class AceWeb extends AceWebBase {
                                        int scrollRangeX, int scrollRangeY,
                                        int maxOverScrollX, int maxOverScrollY,
                                        boolean isTouchEvent) {
+            onScrollChanged(scrollX + deltaX, scrollY + deltaY, scrollX, scrollY);
             return super.overScrollBy(deltaX, deltaY, scrollX, scrollY,
                     scrollRangeX, scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
         }
@@ -438,6 +438,7 @@ public class AceWeb extends AceWebBase {
                     startX = event.getX();
                     startY = event.getY();
                     isScrolling = false;
+                    isTouching = true;
 
                     if (getParent() instanceof ViewGroup) {
                         getParent().requestDisallowInterceptTouchEvent(true);
@@ -453,6 +454,7 @@ public class AceWeb extends AceWebBase {
                             getParent().requestDisallowInterceptTouchEvent(true);
                         }
                     }
+                    isTouching = true;
                     break;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
@@ -460,9 +462,25 @@ public class AceWeb extends AceWebBase {
                         getParent().requestDisallowInterceptTouchEvent(false);
                     }
                     isScrolling = false;
+                    isTouching = false;
+                    if (isSendEnd) {
+                        sendScrollEndEvent();
+                    }
                     break;
             }
             return super.onTouchEvent(event);
+        }
+
+        private void sendScrollEndEvent() {
+            mScrollRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    mIsScrolling = false;
+                    AceWebScrollObject object = new AceWebScrollObject(mLastScrollX, mLastScrollY);
+                    AceWeb.this.fireScrollEnd(object);
+                }
+            };
+            mScrollHandler.postDelayed(mScrollRunnable, SCROLL_END_DELAY_THRESHOLD);
         }
     }
 

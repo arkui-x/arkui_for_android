@@ -51,13 +51,13 @@ public class AceWebNestedScrollOptionsExtObject {
      * @return An boolean representing if need parallel scroll.
      */
     public boolean needParallelScroll(float touchDeltaX, float touchDeltaY) {
-        if (Float.compare(Math.abs(touchDeltaX), 0.0f) == 0 ||
+        if (Float.compare(Math.abs(touchDeltaX), 0.0f) == 0 &&
             Float.compare(Math.abs(touchDeltaY), 0.0f) == 0) {
                 return false;
         }
 
         if (Math.abs(touchDeltaX) > Math.abs(touchDeltaY)) {
-            if (Float.compare(touchDeltaX, 0.0f) > 0) {
+            if (Float.compare(touchDeltaX, 0.0f) < 0) {
                 if (scrollRight == NestedScrollMode.PARALLEL) {
                     return true;
                 }
@@ -67,7 +67,7 @@ public class AceWebNestedScrollOptionsExtObject {
                 }
             }
         } else {
-            if (Float.compare(touchDeltaY, 0.0f) > 0) {
+            if (Float.compare(touchDeltaY, 0.0f) < 0) {
                 if (scrollDown == NestedScrollMode.PARALLEL) {
                     return true;
                 }
