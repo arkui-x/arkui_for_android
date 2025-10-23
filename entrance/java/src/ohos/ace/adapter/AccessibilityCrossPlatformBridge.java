@@ -1191,6 +1191,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
             event.setCurrentItemIndex(jsonObject.getInt("currentIndex"));
             event.setPassword(jsonObject.getBoolean("IsPassword"));
             event.setScrollable(jsonObject.getBoolean("IsScrollable"));
+            event.getText().add(jsonObject.getString("textAnnouncedForAccessibility"));
         } catch (JSONException e) {
             Log.e(TAG, "ConvertJsonToEvent failed; err is " + e.getMessage());
         }
