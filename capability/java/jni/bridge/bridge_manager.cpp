@@ -88,7 +88,7 @@ std::string BridgeManager::JSCallMethodSync(
     return BridgeJni::JSCallMethodSyncJni(bridgeName, methodName, parameter);
 }
 
-std::unique_ptr<BufferMapping> BridgeManager::JSCallMethodBinarySync(
+BinaryResultHolder BridgeManager::JSCallMethodBinarySync(
     const std::string& bridgeName, const std::string& methodName, const std::vector<uint8_t>& data)
 {
     return BridgeJni::JSCallMethodBinarySyncJni(bridgeName, methodName, data);

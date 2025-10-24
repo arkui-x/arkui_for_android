@@ -665,54 +665,61 @@ public class BridgeManager {
      * @param methodName Name of method.
      * @param bufferData Method data.
      */
-    public ByteBuffer jsCallMethodBinarySync(String bridgeName, String methodName, ByteBuffer bufferData) {
+    public BinaryResultHolder jsCallMethodBinarySync(String bridgeName, String methodName, ByteBuffer bufferData) {
         ALog.d(LOG_TAG, "jsCallMethodBinary enter, bridgeName is " + bridgeName + ", methodName is " + methodName);
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
         if (bridgePlugin == null) {
             ALog.e(LOG_TAG, "jsCallMethodBinary bridgePlugin Not found, bridgeName is " + bridgeName);
-            return ByteBuffer.allocateDirect(0);
+            BinaryResultHolder holder = new BinaryResultHolder();
+            holder.errorCode = BridgeErrorCode.BRIDGE_INVALID.getId();
+            holder.result = ByteBuffer.allocateDirect(0);
+            return holder;
         }
         return jsCallMethodBinarySyncInner(bridgePlugin, methodName, bufferData);
     }
 
-    private ByteBuffer jsCallMethodBinarySyncInner(BridgePlugin bridgePlugin,
-        String methodName,
-        ByteBuffer bufferData) {
-        BridgeErrorCode bridgeErrorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
+    private BinaryResultHolder createResultHolder(int codeId, ByteBuffer result) {
+        BinaryResultHolder holder = new BinaryResultHolder();
+        holder.errorCode = codeId;
+        holder.result = result;
+        return holder;
+    }
+
+    private BinaryResultHolder jsCallMethodBinarySyncInner(
+        BridgePlugin bridgePlugin, String methodName, ByteBuffer bufferData) {
         if (bridgePlugin.getBridgeType() != BridgeType.BINARY_TYPE) {
             ALog.e(LOG_TAG, "The bridge is not BINARY_TYPE.");
-            bridgeErrorCode = BridgeErrorCode.BRIDGE_CODEC_TYPE_MISMATCH;
-            return ByteBuffer.allocateDirect(0);
+            return createResultHolder(
+                BridgeErrorCode.BRIDGE_CODEC_TYPE_MISMATCH.getId(), ByteBuffer.allocateDirect(0));
         }
         if (bridgeBinaryCodec_ == null) {
             ALog.e(LOG_TAG, "The bridgeBinaryCodec is null.");
-            bridgeErrorCode = BridgeErrorCode.BRIDGE_CODEC_INVALID;
-            return ByteBuffer.allocateDirect(0);
+            return createResultHolder(BridgeErrorCode.BRIDGE_CODEC_INVALID.getId(), ByteBuffer.allocateDirect(0));
         }
         Object paramObj = bridgeBinaryCodec_.decodeData(bufferData);
         String splitName = splitMethodName(methodName);
         Object resultObject = null;
         MethodData methodData = null;
         ByteBuffer resultBuffer = bridgeBinaryCodec_.encodeData(null);
-        if (paramObj == null) {
+        BridgeErrorCode bridgeErrorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
+        if (paramObj != null) {
             bridgeErrorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
+        }
+        Object[] objects = ParameterHelper.binaryTransformObject(paramObj);
+        if (objects == null || ParameterHelper.containsNull(Arrays.asList(objects))) {
+            ALog.e(LOG_TAG, "Parameter parsing failed.");
+            bridgeErrorCode = BridgeErrorCode.BRIDGE_METHOD_PARAM_ERROR;
         } else {
-            Object[] objects = ParameterHelper.binaryTransformObject(paramObj);
-            if (objects == null || ParameterHelper.containsNull(Arrays.asList(objects))) {
-                ALog.e(LOG_TAG, "Parameter parsing failed.");
-                bridgeErrorCode = BridgeErrorCode.BRIDGE_METHOD_PARAM_ERROR;
+            methodData = new MethodData(splitName, objects);
+            resultObject = bridgePlugin.jsCallMethod(bridgePlugin, methodData);
+            ALog.i(LOG_TAG, "End of method call, the methodName is " + splitName);
+            if (resultObject != null && resultObject instanceof BridgeErrorCode) {
+                bridgeErrorCode = (BridgeErrorCode) resultObject;
             } else {
-                methodData = new MethodData(splitName, objects);
-                resultObject = bridgePlugin.jsCallMethod(bridgePlugin, methodData);
-                ALog.i(LOG_TAG, "End of method call, the methodName is " + splitName);
-                if (resultObject != null && resultObject instanceof BridgeErrorCode) {
-                    bridgeErrorCode = (BridgeErrorCode) resultObject;
-                } else {
-                    resultBuffer = bridgeBinaryCodec_.encodeData(resultObject);
-                }
+                resultBuffer = bridgeBinaryCodec_.encodeData(resultObject);
             }
         }
-        return resultBuffer;
+        return createResultHolder(bridgeErrorCode.getId(), resultBuffer);
     }
 
     /**

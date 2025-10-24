@@ -24,6 +24,7 @@
 #include "base/thread/task_executor.h"
 #include "base/log/log.h"
 #include "base/utils/macros.h"
+#include "bridge_receiver.h"
 #include "core/pipeline_ng/pipeline_context.h"
 #include "jni.h"
 
@@ -33,7 +34,7 @@ public:
     BridgeJni() = delete;
     ~BridgeJni() = delete;
 
-    static bool Register(const std::shared_ptr<JNIEnv> &env);
+    static bool Register(const std::shared_ptr<JNIEnv>& env);
     static void NativeInit(JNIEnv* env, jobject jobj);
 
     static void JSCallMethodJni(
@@ -59,7 +60,7 @@ public:
         JNIEnv* env, jobject jobj, jstring jBridgeName, jobject jBuffer);
     static void JSCallMethodBinaryJni(
         const std::string& bridgeName, const std::string& methodName, const std::vector<uint8_t>& data);
-    static std::unique_ptr<BufferMapping> JSCallMethodBinarySyncJni(
+    static BinaryResultHolder JSCallMethodBinarySyncJni(
         const std::string& bridgeName, const std::string& methodName, const std::vector<uint8_t>& data);
     static void PlatformSendMethodResultBinary(JNIEnv* env, jobject jobj, jstring jBridgeName, jstring jMethodName,
         jobject jBuffer, jint jErrorCode, jstring jErrorMessage);
