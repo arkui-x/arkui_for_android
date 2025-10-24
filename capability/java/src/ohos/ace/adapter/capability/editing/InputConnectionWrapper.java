@@ -54,8 +54,6 @@ class InputConnectionWrapper extends BaseInputConnection {
 
     private int extractedTextRequestToken = 0;
 
-    private boolean isSoftKeyboardOpened;
-
     /**
      * constructor of InputConnectionWrapper
      *
@@ -86,10 +84,7 @@ class InputConnectionWrapper extends BaseInputConnection {
      */
     public void keyboardHeightChanged(int height) {
         ALog.d(LOG_TAG, "keyboardHeightChanged height " + height);
-        if (height > 0) {
-            isSoftKeyboardOpened = true;
-        } else if (isSoftKeyboardOpened) {
-            isSoftKeyboardOpened = false;
+        if (height == 0) {
             delegate.notifyKeyboardClosedByUser(clientId);
         }
     }
