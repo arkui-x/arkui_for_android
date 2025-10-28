@@ -80,4 +80,11 @@ public interface TextInputDelegate {
      * @param composingStart The start position of the composing text
      */
     void setFinishComposingText(String finishComposingText, int composingStart);
+
+    /**
+     * Set composing text and update the composing state.
+     *
+     * @param composingText The text to set as composing
+     */
+    void setComposingText(String composingText);
 }
