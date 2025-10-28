@@ -180,6 +180,7 @@ class InputConnectionWrapper extends BaseInputConnection {
         if (Selection.getSelectionStart(editable) < Selection.getSelectionEnd(editable)) {
             delegate.setSelectedState(Selection.getSelectionStart(editable), Selection.getSelectionEnd(editable));
         }
+        delegate.setComposingText(text.toString());
         onStateUpdated();
         return success;
     }

@@ -48,6 +48,34 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
     }
 
     /**
+     * The selected range.
+     *
+     * @since 20
+     */
+    protected static class SelectedRange {
+        /**
+         * The start position of the selected text range.
+         */
+        public final int selectionStart;
+
+        /**
+         * The end position of the selected text range.
+         */
+        public final int selectionEnd;
+
+        /**
+         * Constructor to initialize the selected range.
+         *
+         * @param selectionStart the start position of the selection
+         * @param selectionEnd the end position of the selection
+         */
+        public SelectedRange(int selectionStart, int selectionEnd) {
+            this.selectionStart = selectionStart;
+            this.selectionEnd = selectionEnd;
+        }
+    }
+
+    /**
      * Delegate implementation.
      *
      * @since 1
@@ -55,6 +83,7 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
     public static class Delegate implements TextInputDelegate {
         private static Map<Integer, String> lastValueMap = new HashMap<>();
         private static final Map<Integer, String> lastCommittedTexts = new HashMap<>();
+        private static final Map<Integer, SelectedRange> selectedRange = new HashMap<>();
 
         private boolean isSelected = false;
         private boolean isComposing = false;
@@ -66,9 +95,72 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
         private int lastSelectionStart = -1;
         private String needUpdatedText = null;
         private String finishComposingText = null;
+        private String composingText = null;
 
         public Delegate(int clientID, String initData) {
             Delegate.lastValueMap.put(clientID, initData);
+        }
+
+        private static class DiffResult {
+            /**
+             * The start of the selection in the previous text.
+             */
+            public final int preSelStart;
+
+            /**
+             * The end of the selection in the previous text.
+             */
+            public final int preSelEnd;
+
+            /**
+             * The start of the selection in the current text.
+             */
+            public final int curSelStart;
+
+            /**
+             * The end of the selection in the current text.
+             */
+            public final int curSelEnd;
+
+            /**
+             * The text that is appended to the previous text.
+             */
+            private String newAppendText;
+
+            /**
+             * Constructor to initialize the DiffResult.
+             *
+             * @param preSelStart the start of the selection in the previous text
+             * @param preSelEnd the end of the selection in the previous text
+             * @param curSelStart the start of the selection in the current text
+             * @param curSelEnd the end of the selection in the current text
+             * @param newAppendText the text that is appended to the previous text
+             */
+            public DiffResult(int preSelStart, int preSelEnd, int curSelStart, int curSelEnd, String newAppendText) {
+                this.preSelStart = preSelStart;
+                this.preSelEnd = preSelEnd;
+                this.curSelStart = curSelStart;
+                this.curSelEnd = curSelEnd;
+                this.newAppendText = newAppendText;
+            }
+
+            /**
+             * Set new append text.
+             *
+             * @param newAppendText new append text
+             */
+            public void setNewAppendText(String newAppendText) {
+                this.newAppendText = newAppendText;
+            }
+
+            /**
+             * Get new append text.
+             *
+             * @return new append text
+             */
+            public String getNewAppendText() {
+                return newAppendText;
+            }
         }
 
         @Override
@@ -107,6 +199,7 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
                 } else {
                     handleOtherInput(json, text, clientId, composingStart, composingEnd);
                 }
+                tryModifyText(json, text, lastValue, selectionEnd, clientId);
                 TextInputPluginBase.updateEditingState(clientId, json.toString());
             } catch (JSONException ignored) {
                 ALog.e(LOG_TAG, "failed parse editing config json");
@@ -144,6 +237,16 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
         public void setFinishComposingText(String finishComposingText, int finishComposingTextStart) {
             this.finishComposingText = finishComposingText;
             this.finishComposingTextStart = finishComposingTextStart;
+        }
+
+        /**
+         * Set composing text and update the composing state.
+         *
+         * @param composingText The text to set as composing
+         */
+        @Override
+        public void setComposingText(String composingText) {
+            this.composingText = composingText;
         }
 
         /**
@@ -213,7 +316,6 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
                 if (isComposing) {
                     json.put("composingStart", lastComposingStart);
                     json.put("composingEnd", lastComposingEnd);
-                    ALog.e(LOG_TAG, "22222 Delegate.handleComposingText 444 json:" + json.toString());
                 }
                 setComposedState(false, -1, -1);
             }
@@ -266,6 +368,7 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
             lastSelectionStart = -1;
             needUpdatedText = null;
             finishComposingText = null;
+            composingText = null;
         }
 
         private boolean isAppendText(String lastValue, String text, String appendText, int selectionEnd) {
@@ -294,6 +397,14 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
         private String getCommitText(String lastValue, String text,
             int selectionEnd, JSONObject json, int clientId) throws JSONException {
             String appendText = lastCommittedTexts.remove(clientId);
+            if (composingText != null && composingText.length() > 0) {
+                String newText = appendText + composingText;
+                if (newText.equals(text.substring(Math.max(0, selectionEnd - newText.length()),
+                    Math.min(selectionEnd, text.length())))) {
+                    appendText = newText;
+                }
+                composingText = null;
+            }
             int appendStart = selectionEnd - appendText.length();
             appendStart = Math.max(appendStart, 0);
             if (lastValue.length() <= appendStart) {
@@ -306,6 +417,7 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
             }
             json.put("composingStart", appendStart);
             json.put("composingEnd", appendStart + (appendText.length() - (text.length() - lastValue.length())));
+            tryModifyComposeText(json, lastValue, text, appendText);
             isNewCommitText = true;
             return appendText;
         }
@@ -331,6 +443,113 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
             } else {
                 handleComposingText(json, composingStart, composingEnd);
             }
+        }
+
+        private void tryModifyComposeText(JSONObject json, String lastValue, String text,
+            String appendText) throws JSONException {
+            int start = Math.max(0, json.getInt("composingStart"));
+            int end = Math.min(lastValue.length(), json.getInt("composingEnd"));
+            if (start == end) {
+                return;
+            }
+            StringBuilder lastValueStr = new StringBuilder(lastValue);
+            lastValueStr.replace(start, end, appendText);
+            if (!lastValueStr.toString().equals(text)) {
+                start = Math.max(0, json.getInt("composingStart") - 1);
+                end = Math.min(lastValue.length(), json.getInt("composingEnd") - 1);
+                if (end <= 0) {
+                    return;
+                }
+                if (new StringBuilder(lastValue).replace(start, end, appendText).toString().equals(text)) {
+                    json.put("composingStart", json.getInt("composingStart") - 1);
+                    json.put("composingEnd", json.getInt("composingEnd") - 1);
+                }
+            }
+        }
+
+        private void tryModifyText(JSONObject json, String text, String lastValue, int selectionEnd,
+            int clientId) throws JSONException {
+            if (text == null || lastValue == null || selectionEnd < 0 || selectionEnd > text.length()) {
+                return;
+            }
+            int start = json.getInt("composingStart");
+            int end = json.getInt("composingEnd");
+            if (start < 0 || end <= 0 || start == end) {
+                if (selectedRange.containsKey(clientId)) {
+                    start = selectedRange.get(clientId).selectionStart;
+                    end = selectedRange.get(clientId).selectionEnd;
+                }
+            }
+            if (start > end || !json.has("appendText")) {
+                return;
+            }
+            String curAppendText = json.getString("appendText");
+            if (isCorrectData(lastValue, text, start, end, json.getString("appendText"))) {
+                return;
+            }
+            DiffResult diffResult = getDiffResult(lastValue, text, start, selectionEnd);
+            if (diffResult.preSelStart == diffResult.preSelEnd) {
+                if (start == end && end != diffResult.preSelEnd) {
+                    String newAppendText = text.substring(Math.max(start, 0),
+                                                            Math.min(selectionEnd - 1, text.length()));
+                    if (isCorrectData(lastValue, text, start, end, newAppendText)) {
+                        diffResult.setNewAppendText(newAppendText);
+                    }
+                }
+                json.put("composingStart", -1);
+                json.put("composingEnd", -1);
+            } else {
+                json.put("composingStart", diffResult.preSelStart);
+                json.put("composingEnd", diffResult.preSelEnd);
+            }
+            json.put("appendText", diffResult.getNewAppendText());
+        }
+
+        private boolean isCorrectData(String preText, String curText, int selectionStart,
+            int selectionEnd, String appendText) {
+            if (preText == null || curText == null) {
+                return false;
+            }
+            if (selectionStart < 0 || selectionEnd < 0 || selectionStart > preText.length() ||
+                selectionEnd > preText.length() || selectionStart > selectionEnd) {
+                return false;
+            }
+            StringBuilder newText = new StringBuilder(preText);
+            newText.replace(selectionStart, selectionEnd, appendText);
+            return newText.toString().equals(curText);
+        }
+
+        private DiffResult getDiffResult(String preText, String curText, int start, int selectionEnd) {
+            int curTextLength = curText.length();
+            int preTextLength = preText.length();
+            int left = 0;
+            while (left < curTextLength && left < preTextLength && curText.charAt(left) == preText.charAt(left)) {
+                left++;
+            }
+            int rightText = curTextLength - 1;
+            int rightLast = preTextLength - 1;
+            while (rightText >= left && rightLast >= left
+                    && curText.charAt(rightText) == preText.charAt(rightLast)) {
+                rightText--;
+                rightLast--;
+            }
+
+            int lastDelEnd = rightLast + 1;
+            int textInsertStart = left;
+            int textInsertEnd = rightText + 1;
+            int lastDelStart = left;
+            String insertedText = curText.substring(textInsertStart, Math.max(textInsertEnd, selectionEnd));
+            if (selectionEnd > textInsertEnd) {
+                lastDelEnd = lastDelEnd + (selectionEnd - textInsertEnd);
+            }
+            if (selectionEnd < textInsertEnd && textInsertEnd - selectionEnd == 1 &&
+                " ".equals(curText.substring(selectionEnd, selectionEnd + 1))) {
+                int substringStart = Math.max(start, 0);
+                int substringEnd = Math.max(selectionEnd, substringStart);
+                insertedText = curText.substring(substringStart, substringEnd);
+            }
+
+            return new DiffResult(lastDelStart, lastDelEnd, textInsertStart, textInsertEnd, insertedText);
         }
     }
 
@@ -457,7 +676,27 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
     @Override
     public void onCommit(String text) {
         if (hasClient()) {
-            Delegate.lastCommittedTexts.put(clientId(), text);
+            if (Delegate.lastCommittedTexts.containsKey(clientId())) {
+                String existing = Delegate.lastCommittedTexts.get(clientId());
+                if (" ".equals(existing)) {
+                    Delegate.lastCommittedTexts.put(clientId(), existing + text);
+                } else {
+                    Delegate.lastCommittedTexts.put(clientId(), text);
+                }
+            } else {
+                Delegate.lastCommittedTexts.put(clientId(), text);
+            }
+        }
+    }
+
+    /**
+     * Set the selected range.
+     *
+     * @param range The selected range.
+     */
+    protected void setSelectedRange(SelectedRange range) {
+        if (hasClient()) {
+            Delegate.selectedRange.put(clientId(), range);
         }
     }
 

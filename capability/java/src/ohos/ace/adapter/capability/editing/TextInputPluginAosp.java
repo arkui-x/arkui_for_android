@@ -245,6 +245,9 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
             }
             isRestartInputPending = false;
         }
+        int selectionStart = Selection.getSelectionStart(editable);
+        int selectionEnd = Selection.getSelectionEnd(editable);
+        setSelectedRange(new SelectedRange(selectionStart, selectionEnd));
     }
 
     @Override
