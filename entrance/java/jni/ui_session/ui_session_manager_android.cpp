@@ -15,8 +15,6 @@
 
 #include "ui_session_manager_android.h"
 namespace OHOS::Ace {
-std::mutex UiSessionManager::mutex_;
-std::shared_mutex UiSessionManager::reportObjectMutex_;
 UiSessionManager* UiSessionManager::GetInstance()
 {
     static UiSessionManagerAndroid instance;
