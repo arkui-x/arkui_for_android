@@ -67,7 +67,6 @@ struct SubWindowManagerStruct {
     jmethodID setStatusBarMethod;
     jmethodID setNavigationBarMethod;
     jmethodID setWindowPrivacyModeMethod;
-    jmethodID getSurfaceRectMethod;
 };
 
 class SubWindowManagerJni {
@@ -110,7 +109,6 @@ public:
     static bool SetStatusBar(uint32_t baclgroundColor, uint32_t contentColor);
     static bool SetNavigationBar(uint32_t baclgroundColor, uint32_t contentColor);
     static bool SetWindowPrivacyMode(bool isPrivacyMode);
-    static OHOS::Rosen::Rect GetSurfaceRect();
 
 private:
     static SubWindowManagerStruct subWindowManagerStruct_;
