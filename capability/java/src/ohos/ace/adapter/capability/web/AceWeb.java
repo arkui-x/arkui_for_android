@@ -312,6 +312,9 @@ public class AceWeb extends AceWebBase {
     private float touchStartX;
     private float touchStartY;
     private boolean isNeedParallelScroll = false;
+    private MotionEvent cacheDownEvent = null;
+    private boolean isParallelScrollLocked = false;
+    private int initialPointerCount = 0;
 
     private AceWebNestedScrollOptionsExtObject nestedScrollOptionsExtObject = new AceWebNestedScrollOptionsExtObject();
 
@@ -404,18 +407,16 @@ public class AceWeb extends AceWebBase {
                 AceWeb.this.fireScrollChanged(object);
             }
 
-
             if (mScrollRunnable != null) {
                 mScrollHandler.removeCallbacks(mScrollRunnable);
             }
 
-            if (mLastScrollX == l && mLastScrollY == t) {
-                if (!isTouching) {
-                    sendScrollEndEvent();
-                } else {
-                    isSendEnd = true;
-                }
+            if (!isTouching) {
+                sendScrollEndEvent();
+            } else {
+                isSendEnd = true;
             }
+
             mLastScrollX = l;
             mLastScrollY = t;
         }
@@ -463,8 +464,10 @@ public class AceWeb extends AceWebBase {
                     }
                     isScrolling = false;
                     isTouching = false;
+
                     if (isSendEnd) {
                         sendScrollEndEvent();
+                        isSendEnd = false;
                     }
                     break;
             }
@@ -1418,28 +1421,112 @@ public class AceWeb extends AceWebBase {
             return;
         }
         MotionEvent eventClone = MotionEvent.obtain(motionEvent);
-        float deltaX = eventClone.getX() - left;
-        float deltaY = eventClone.getY() - top;
+        int action = eventClone.getActionMasked();
+        int pointerCount = eventClone.getPointerCount();
 
-        if (eventClone.getAction() == MotionEvent.ACTION_DOWN) {
-            touchStartX = eventClone.getX();
-            touchStartY = eventClone.getY();
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                handleActionDown(eventClone);
+                break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                handleActionPointerDown(eventClone, pointerCount);
+                break;
+            case MotionEvent.ACTION_MOVE:
+                handleActionMove(eventClone, pointerCount);
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                handleActionPointerUp(eventClone);
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                handleActionUpOrCancel(eventClone);
+                break;
+            default:
+                break;
         }
+    }
 
-        float touchDeltaX = 0.0f;
-        float touchDeltaY = 0.0f;
-        touchDeltaX = eventClone.getX() - touchStartX;
-        touchDeltaY = eventClone.getY() - touchStartY;
+    private void handleActionDown(MotionEvent eventClone) {
+        touchStartX = eventClone.getX();
+        touchStartY = eventClone.getY();
+        isNeedParallelScroll = false;
+        isParallelScrollLocked = false;
+        initialPointerCount = 1;
+        motionEvent = null;
+        if (cacheDownEvent != null) {
+            cacheDownEvent.recycle();
+        }
+        cacheDownEvent = MotionEvent.obtain(eventClone);
+    }
 
-        if (Float.compare(touchDeltaX, 0.0f) != 0 || Float.compare(touchDeltaY, 0.0f) != 0) {
+    private void handleActionPointerDown(MotionEvent eventClone, int pointerCount) {
+        isNeedParallelScroll = false;
+        isParallelScrollLocked = false;
+        if (cacheDownEvent != null) {
+            cacheDownEvent.offsetLocation(-left, -top);
+            webView.dispatchTouchEvent(cacheDownEvent);
+            cacheDownEvent.recycle();
+            cacheDownEvent = null;
+        }
+        eventClone.offsetLocation(-left, -top);
+        webView.dispatchTouchEvent(eventClone);
+        motionEvent = null;
+        initialPointerCount = pointerCount;
+    }
+
+    private void handleActionMove(MotionEvent eventClone, int pointerCount) {
+        if (pointerCount > 1 || initialPointerCount > 1) {
+            eventClone.offsetLocation(-left, -top);
+            webView.dispatchTouchEvent(eventClone);
+            motionEvent = null;
+            return;
+        }
+        float touchDeltaX = eventClone.getX() - touchStartX;
+        float touchDeltaY = eventClone.getY() - touchStartY;
+        if (!isParallelScrollLocked) {
             isNeedParallelScroll = nestedScrollOptionsExtObject.needParallelScroll(touchDeltaX, touchDeltaY);
+            isParallelScrollLocked = true;
+            if (cacheDownEvent != null) {
+                if (!isNeedParallelScroll) {
+                    cacheDownEvent.offsetLocation(-left, -top);
+                }
+                webView.dispatchTouchEvent(cacheDownEvent);
+                cacheDownEvent.recycle();
+                cacheDownEvent = null;
+            }
         }
-
         if (!isNeedParallelScroll) {
             eventClone.offsetLocation(-left, -top);
         }
         webView.dispatchTouchEvent(eventClone);
         motionEvent = null;
+    }
+
+    private void handleActionPointerUp(MotionEvent eventClone) {
+        if (!isNeedParallelScroll) {
+            eventClone.offsetLocation(-left, -top);
+        }
+        webView.dispatchTouchEvent(eventClone);
+        motionEvent = null;
+    }
+
+    private void handleActionUpOrCancel(MotionEvent eventClone) {
+        if (cacheDownEvent != null) {
+            if (!isNeedParallelScroll) {
+                cacheDownEvent.offsetLocation(-left, -top);
+            }
+            webView.dispatchTouchEvent(cacheDownEvent);
+            cacheDownEvent.recycle();
+            cacheDownEvent = null;
+        }
+        if (!isNeedParallelScroll) {
+            eventClone.offsetLocation(-left, -top);
+        }
+        webView.dispatchTouchEvent(eventClone);
+        motionEvent = null;
+        isNeedParallelScroll = false;
+        isParallelScrollLocked = false;
+        initialPointerCount = 0;
     }
 
     @Override
