@@ -63,5 +63,10 @@ struct ACE_EXPORT BridgeReceiver {
     AceSendMessageResponseCallback sendMessageResponseCallback_ = nullptr;
     AceSendWillTerminateResponseCallback sendWillTerminateResponseCallback_ = nullptr;
 };
+
+struct ACE_EXPORT BinaryResultHolder {
+    int32_t errorCode { 0 };
+    std::unique_ptr<BufferMapping> buffer { nullptr };
+};
 } // namespace OHOS::Ace::Platform
 #endif // FOUNDATION_ACE_ADAPTER_CAPABILITY_JAVA_JNI_BRIDGE_RECEIVER_H

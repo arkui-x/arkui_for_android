@@ -58,7 +58,7 @@ public:
     static void JSSendMessageBinary(const std::string& bridgeName, const std::vector<uint8_t>& data);
     static void JSCallMethodBinary(const std::string& bridgeName,
         const std::string& methodName, const std::vector<uint8_t>& data);
-    static std::unique_ptr<BufferMapping> JSCallMethodBinarySync(const std::string& bridgeName,
+    static BinaryResultHolder JSCallMethodBinarySync(const std::string& bridgeName,
         const std::string& methodName, const std::vector<uint8_t>& data);
     static void JSSendMethodResultBinary(const std::string& bridgeName,
         const std::string& methodName, int errorCode, const std::string& errorMessage,

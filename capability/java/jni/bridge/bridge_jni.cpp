@@ -22,7 +22,9 @@
 #include "adapter/android/capability/java/jni/bridge/bridge_manager.h"
 #include "core/common/container.h"
 #include "frameworks/core/common/ace_engine.h"
+#include "plugins/bridge/utils/include/error_code.h"
 
+using namespace OHOS::Plugin::Bridge;
 namespace OHOS::Ace::Platform {
 namespace {
 static const std::string CONVERSION_FAILED = "error";
@@ -32,42 +34,42 @@ static const JNINativeMethod METHODS[] = {
     {
         "nativeInit",
         "()V",
-        reinterpret_cast<void *>(&BridgeJni::NativeInit)
+        reinterpret_cast<void*>(&BridgeJni::NativeInit)
     },
     {
         "nativePlatformCallMethod",
         "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
-        reinterpret_cast<void *>(&BridgeJni::PlatformCallMethod)
+        reinterpret_cast<void*>(&BridgeJni::PlatformCallMethod)
     },
     {
         "nativePlatformSendMethodResult",
         "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
-        reinterpret_cast<void *>(&BridgeJni::PlatformSendMethodResult)
+        reinterpret_cast<void*>(&BridgeJni::PlatformSendMethodResult)
     },
     {
         "nativePlatformSendMessageResponse",
         "(Ljava/lang/String;Ljava/lang/String;)V",
-        reinterpret_cast<void *>(&BridgeJni::PlatformSendMessageResponse)
+        reinterpret_cast<void*>(&BridgeJni::PlatformSendMessageResponse)
     },
     {
         "nativePlatformSendMessage",
         "(Ljava/lang/String;Ljava/lang/String;)V",
-        reinterpret_cast<void *>(&BridgeJni::PlatformSendMessage)
+        reinterpret_cast<void*>(&BridgeJni::PlatformSendMessage)
     },
     {
         "nativePlatformSendMessageBinary",
         "(Ljava/lang/String;Ljava/nio/ByteBuffer;)V",
-        reinterpret_cast<void *>(&BridgeJni::PlatformSendMessageBinary)
+        reinterpret_cast<void*>(&BridgeJni::PlatformSendMessageBinary)
     },
     {
         "nativePlatformSendMethodResultBinary",
         "(Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;ILjava/lang/String;)V",
-        reinterpret_cast<void *>(&BridgeJni::PlatformSendMethodResultBinary)
+        reinterpret_cast<void*>(&BridgeJni::PlatformSendMethodResultBinary)
     },
     {
         "nativePlatformCallMethodBinary",
         "(Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;)V",
-        reinterpret_cast<void *>(&BridgeJni::PlatformCallMethodBinary)
+        reinterpret_cast<void*>(&BridgeJni::PlatformCallMethodBinary)
     },
     {
         "nativePlatformCallMethodSync",
@@ -105,7 +107,8 @@ static const char JS_CALL_METHOD_BINARY_JNI[] = "jsCallMethodBinary";
 static const char JS_CALL_METHOD_BINARY_JNI_PARAM[] = "(Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;)V";
 static const char JS_CALL_METHOD_BINARY_SYNC_JNI[] = "jsCallMethodBinarySync";
 static const char JS_CALL_METHOD_BINARY_SYNC_JNI_PARAM[] =
-    "(Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;)Ljava/nio/ByteBuffer;";
+    "(Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;)Lohos/ace/adapter/capability/bridge/"
+        "BridgeManager$BinaryResultHolder;";
 static const char JS_SEND_MESSAGE_BINARY_JNI[] = "jsSendMessageBinary";
 static const char JS_SEND_MESSAGE_BINARY_JNI_PARAM[] = "(Ljava/lang/String;Ljava/nio/ByteBuffer;)V";
 static const char JS_SEND_METHOD_RESULT_BINARY_JNI[] = "jsSendMethodResultBinary";
@@ -131,6 +134,88 @@ struct {
 
 JniEnvironment::JavaGlobalRef g_JObject(nullptr, nullptr);
 std::mutex g_bridgeJniLock;
+
+static void DeleteLocalRefString(const std::shared_ptr<JNIEnv>& env, jstring jString)
+{
+    CHECK_NULL_VOID(env);
+    if (jString) {
+        env->DeleteLocalRef(jString);
+    }
+}
+
+static void DeleteLocalRefObject(const std::shared_ptr<JNIEnv>& env, jobject jObject)
+{
+    CHECK_NULL_VOID(env);
+    if (jObject) {
+        env->DeleteLocalRef(jObject);
+    }
+}
+
+static bool PrepareBinarySyncParams(const std::shared_ptr<JNIEnv>& env, const std::string& bridgeName,
+    const std::string& methodName, const std::vector<uint8_t>& data, jstring& jBridgeName, jstring& jMethodName,
+    jobject& jByteBuffer, int32_t& errorCode)
+{
+    CHECK_NULL_RETURN(env, false);
+    jBridgeName = env->NewStringUTF(bridgeName.c_str());
+    if (!jBridgeName) {
+        LOGE("PrepareBinarySyncParams bridgeName convert failed.");
+        errorCode = static_cast<int32_t>(ErrorCode::BRIDGE_NAME_ERROR);
+        return false;
+    }
+    jMethodName = env->NewStringUTF(methodName.c_str());
+    if (!jMethodName) {
+        LOGE("PrepareBinarySyncParams methodName convert failed.");
+        DeleteLocalRefString(env, jBridgeName);
+        errorCode = static_cast<int32_t>(ErrorCode::BRIDGE_METHOD_NAME_ERROR);
+        return false;
+    }
+    jByteBuffer = env->NewDirectByteBuffer((void*)data.data(), data.size());
+    if (!jByteBuffer) {
+        LOGE("PrepareBinarySyncParams params convert failed.");
+        DeleteLocalRefString(env, jBridgeName);
+        DeleteLocalRefString(env, jMethodName);
+        errorCode = static_cast<int32_t>(ErrorCode::BRIDGE_METHOD_PARAM_ERROR);
+        return false;
+    }
+    return true;
+}
+
+static void FillHolderFromJava(const std::shared_ptr<JNIEnv>& env, jobject holderObj, BinaryResultHolder& holder)
+{
+    if (!env || !holderObj) {
+        holder.errorCode = static_cast<int32_t>(ErrorCode::BRIDGE_INVALID);
+        return;
+    }
+    jclass holderCls = env->GetObjectClass(holderObj);
+    if (!holderCls) {
+        holder.errorCode = static_cast<int32_t>(ErrorCode::BRIDGE_INVALID);
+        env->DeleteLocalRef(holderObj);
+        return;
+    }
+    jfieldID errorCodeField = env->GetFieldID(holderCls, "errorCode", "I");
+    jfieldID resultField = env->GetFieldID(holderCls, "result", "Ljava/nio/ByteBuffer;");
+    if (!errorCodeField || !resultField) {
+        holder.errorCode = static_cast<int32_t>(ErrorCode::BRIDGE_METHOD_UNIMPL);
+        env->DeleteLocalRef(holderCls);
+        env->DeleteLocalRef(holderObj);
+        return;
+    }
+    holder.errorCode = static_cast<int32_t>(env->GetIntField(holderObj, errorCodeField));
+    jobject resultBufferObj = env->GetObjectField(holderObj, resultField);
+    if (resultBufferObj) {
+        auto* addr = (unsigned char*)env->GetDirectBufferAddress(resultBufferObj);
+        size_t size = static_cast<size_t>(env->GetDirectBufferCapacity(resultBufferObj));
+        if (addr && size > 0) {
+            uint8_t* copyBuf = BufferMapping::Copy(addr, size).Release();
+            holder.buffer = std::make_unique<BufferMapping>(copyBuf, size);
+        } else {
+            LOGE("FillHolderFromJava buffer invalid");
+        }
+        env->DeleteLocalRef(resultBufferObj);
+    }
+    env->DeleteLocalRef(holderCls);
+    env->DeleteLocalRef(holderObj);
+}
 }  // namespace
 
 std::string TransformString(JNIEnv* env, jstring jString)
@@ -145,15 +230,7 @@ std::string TransformString(JNIEnv* env, jstring jString)
     return resultString;
 }
 
-void DeleteLocalRefString(std::shared_ptr<JNIEnv> env, jstring jString)
-{
-    CHECK_NULL_VOID(env);
-    if (jString) {
-        env->DeleteLocalRef(jString);
-    }
-}
-
-bool BridgeJni::Register(const std::shared_ptr<JNIEnv> &env)
+bool BridgeJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
     if (!env) {
         LOGE("Register JNIEnv is nullptr");
@@ -177,7 +254,7 @@ void BridgeJni::NativeInit(JNIEnv* env, jobject jobj)
     }
 
     std::lock_guard<std::mutex> lock(g_bridgeJniLock);
-    LOGI("BridgeJni NativeInit enter");
+    LOGI("BridgeJni NativeInit - Singleton initialization");
     g_JObject = JniEnvironment::MakeJavaGlobalRef(JniEnvironment::GetInstance().GetJniEnv(), jobj);
 
     jclass cls = env->GetObjectClass(jobj);
@@ -273,7 +350,7 @@ std::string BridgeJni::JSCallMethodSyncJni(const std::string& bridgeName,
         env->ExceptionDescribe();
         env->ExceptionClear();
     }
-    const char *cStr = env->GetStringUTFChars(jStr, nullptr);
+    const char* cStr = env->GetStringUTFChars(jStr, nullptr);
     if (cStr) {
         env->ReleaseStringUTFChars(jStr, cStr);
     }
@@ -317,17 +394,17 @@ void BridgeJni::PlatformCallMethod(JNIEnv* env, jobject jobj, jstring jBridgeNam
     std::string callBridgeName;
     std::string callMethodName;
     std::string callParam;
-    const auto *bridgeNameStr = env->GetStringUTFChars(jBridgeName, nullptr);
+    const auto* bridgeNameStr = env->GetStringUTFChars(jBridgeName, nullptr);
     if (bridgeNameStr != nullptr) {
         callBridgeName = bridgeNameStr;
         env->ReleaseStringUTFChars(jBridgeName, bridgeNameStr);
     }
-    const auto *methodNameStr = env->GetStringUTFChars(jMethodName, nullptr);
+    const auto* methodNameStr = env->GetStringUTFChars(jMethodName, nullptr);
     if (methodNameStr != nullptr) {
         callMethodName = methodNameStr;
         env->ReleaseStringUTFChars(jMethodName, methodNameStr);
     }
-    const auto *paramStr = env->GetStringUTFChars(jParam, nullptr);
+    const auto* paramStr = env->GetStringUTFChars(jParam, nullptr);
     if (paramStr != nullptr) {
         callParam = paramStr;
         env->ReleaseStringUTFChars(jParam, paramStr);
@@ -512,7 +589,7 @@ void BridgeJni::JSCallMethodBinaryJni(
     }
     jstring jBridgeName = env->NewStringUTF(bridgeName.c_str());
     jstring jMethodName = env->NewStringUTF(methodName.c_str());
-    jobject jByteBuffer = env->NewDirectByteBuffer((void *)data.data(), data.size());
+    jobject jByteBuffer = env->NewDirectByteBuffer((void*)data.data(), data.size());
     if (jBridgeName == nullptr || jMethodName == nullptr || jByteBuffer == nullptr) {
         LOGE("jBridgeName or jMethodName or jByteBuffer is nullptr");
         DeleteLocalRefString(env, jBridgeName);
@@ -534,56 +611,42 @@ void BridgeJni::JSCallMethodBinaryJni(
     env->DeleteLocalRef(jByteBuffer);
 }
 
-std::unique_ptr<BufferMapping> BridgeJni::JSCallMethodBinarySyncJni(
+BinaryResultHolder BridgeJni::JSCallMethodBinarySyncJni(
     const std::string& bridgeName, const std::string& methodName, const std::vector<uint8_t>& data)
 {
-    LOGD("JSCallMethodBinarySyncJni enter, bridgeName is %{public}s, methodName is %{public}s",
-        bridgeName.c_str(), methodName.c_str());
+    LOGD("JSCallMethodBinarySyncJni enter, bridgeName=%{public}s, methodName=%{public}s", bridgeName.c_str(),
+        methodName.c_str());
+    BinaryResultHolder holder;
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
-    CHECK_NULL_RETURN(env, {});
-    CHECK_NULL_RETURN(g_pluginClass.JSCallMethodBinarySyncJni_, {});
-    if (g_JObject == nullptr) {
-        LOGE("JSCallMethodBinarySyncJni failed - BridgeManager object is null, bridgeName is %{public}s, methodName is "
-             "%{public}s", bridgeName.c_str(), methodName.c_str());
-        return {};
+    if (!env || !g_pluginClass.JSCallMethodBinarySyncJni_ || !g_JObject) {
+        holder.errorCode = static_cast<int32_t>(ErrorCode::BRIDGE_INVALID);
+        return holder;
     }
-    jstring jBridgeName = env->NewStringUTF(bridgeName.c_str());
-    jstring jMethodName = env->NewStringUTF(methodName.c_str());
-    jobject jByteBuffer = env->NewDirectByteBuffer((void *)data.data(), data.size());
-    if (jBridgeName == nullptr || jMethodName == nullptr || jByteBuffer == nullptr) {
-        LOGE("jBridgeName or jMethodName or jByteBuffer is nullptr");
-        DeleteLocalRefString(env, jBridgeName);
-        DeleteLocalRefString(env, jMethodName);
-        if (jByteBuffer) {
-            env->DeleteLocalRef(jByteBuffer);
-        }
-        return {};
+
+    jstring jBridgeName = nullptr;
+    jstring jMethodName = nullptr;
+    jobject jByteBuffer = nullptr;
+    if (!PrepareBinarySyncParams(env, bridgeName, methodName, data,
+        jBridgeName, jMethodName, jByteBuffer, holder.errorCode)) {
+        return holder;
     }
-    jobject jobj = (jobject)env->CallObjectMethod(g_JObject.get(), g_pluginClass.JSCallMethodBinarySyncJni_,
-        jBridgeName, jMethodName, jByteBuffer);
+
+    jobject holderObj = env->CallObjectMethod(
+        g_JObject.get(), g_pluginClass.JSCallMethodBinarySyncJni_, jBridgeName, jMethodName, jByteBuffer);
     if (env->ExceptionCheck()) {
         env->ExceptionDescribe();
         env->ExceptionClear();
     }
-    env->DeleteLocalRef(jBridgeName);
-    env->DeleteLocalRef(jMethodName);
-    env->DeleteLocalRef(jByteBuffer);
+    DeleteLocalRefString(env, jBridgeName);
+    DeleteLocalRefString(env, jMethodName);
+    DeleteLocalRefObject(env, jByteBuffer);
 
-    if (jobj == nullptr) {
-        LOGE("JSCallMethodBinarySyncJni failed - returned jobject is null");
-        return {};
+    if (!holderObj) {
+        holder.errorCode = static_cast<int32_t>(ErrorCode::BRIDGE_METHOD_UNIMPL);
+        return holder;
     }
-    uint8_t* bufferAddress = (unsigned char *)env->GetDirectBufferAddress(jobj);
-    size_t bufferSize = static_cast<size_t>(env->GetDirectBufferCapacity(jobj));
-    if (bufferAddress == nullptr || bufferSize == 0) {
-        LOGE("JSCallMethodBinarySyncJni failed - buffer address is null or size is zero");
-        env->DeleteLocalRef(jobj);
-        return {};
-    }
-    uint8_t* buffer = BufferMapping::Copy(bufferAddress, bufferSize).Release();
-    auto mapping = std::make_unique<BufferMapping>(buffer, bufferSize);
-    env->DeleteLocalRef(jobj);
-    return mapping;
+    FillHolderFromJava(env, holderObj, holder);
+    return holder;
 }
 
 void BridgeJni::PlatformSendMethodResultBinary(JNIEnv* env, jobject jobj,
@@ -597,7 +660,7 @@ void BridgeJni::PlatformSendMethodResultBinary(JNIEnv* env, jobject jobj,
         LOGE("bridgeName or methodName or errorMessage conversion failed");
         return;
     }
-    uint8_t* bufferAddress = (unsigned char *)env->GetDirectBufferAddress(jBuffer);
+    uint8_t* bufferAddress = (unsigned char*)env->GetDirectBufferAddress(jBuffer);
     size_t bufferSize = static_cast<size_t>(env->GetDirectBufferCapacity(jBuffer));
     uint8_t* buffer = BufferMapping::Copy(bufferAddress, bufferSize).Release();
     auto mapping = std::make_unique<BufferMapping>(buffer, bufferSize);
@@ -618,7 +681,7 @@ void BridgeJni::JSSendMessageBinaryJni(
         return;
     }
     jstring jBridgeName = env->NewStringUTF(bridgeName.c_str());
-    jobject jByteBuffer = env->NewDirectByteBuffer((void *)data.data(), data.size());
+    jobject jByteBuffer = env->NewDirectByteBuffer((void*)data.data(), data.size());
     if (jByteBuffer == nullptr) {
         LOGE("jByteBuffer is nullptr");
         return;
@@ -640,7 +703,7 @@ void BridgeJni::PlatformSendMessageBinary(JNIEnv* env, jobject jobj, jstring jBr
         bridgeName = bridgeNameStr;
         env->ReleaseStringUTFChars(jBridgeName, bridgeNameStr);
     }
-    uint8_t* bufferAddress = (unsigned char *)env->GetDirectBufferAddress(jBuffer);
+    uint8_t* bufferAddress = (unsigned char*)env->GetDirectBufferAddress(jBuffer);
     size_t bufferSize = static_cast<size_t>(env->GetDirectBufferCapacity(jBuffer));
     uint8_t* buffer = BufferMapping::Copy(bufferAddress, bufferSize).Release();
     auto mapping = std::make_unique<BufferMapping>(buffer, bufferSize);
@@ -661,7 +724,7 @@ void BridgeJni::JSSendMethodResultBinaryJni(const std::string& bridgeName, const
     }
     jobject jByteBuffer = nullptr;
     if (result != nullptr) {
-        jByteBuffer = env->NewDirectByteBuffer((void *)result->data(), result->size());
+        jByteBuffer = env->NewDirectByteBuffer((void*)result->data(), result->size());
         if (jByteBuffer == nullptr) {
             return;
         }
@@ -703,7 +766,7 @@ void BridgeJni::PlatformCallMethodBinary(
     if (jBuffer == nullptr) {
         BridgeManager::PlatformCallMethodBinary(bridgeName, methodName, nullptr);
     } else {
-        uint8_t* bufferAddress = (unsigned char *)env->GetDirectBufferAddress(jBuffer);
+        uint8_t* bufferAddress = (unsigned char*)env->GetDirectBufferAddress(jBuffer);
         size_t bufferSize = static_cast<size_t>(env->GetDirectBufferCapacity(jBuffer));
         uint8_t* buffer = BufferMapping::Copy(bufferAddress, bufferSize).Release();
         auto mapping = std::make_unique<BufferMapping>(buffer, bufferSize);
@@ -796,7 +859,7 @@ jobject BridgeJni::PlatformCallMethodSyncBinary(
     }
     std::unique_ptr<BufferMapping> paramMapping = nullptr;
     if (jBuffer != nullptr) {
-        uint8_t* bufferAddress = (unsigned char *)env->GetDirectBufferAddress(jBuffer);
+        uint8_t* bufferAddress = (unsigned char*)env->GetDirectBufferAddress(jBuffer);
         size_t bufferSize = static_cast<size_t>(env->GetDirectBufferCapacity(jBuffer));
         if (bufferAddress && bufferSize > 0) {
             uint8_t* buffer = BufferMapping::Copy(bufferAddress, bufferSize).Release();
