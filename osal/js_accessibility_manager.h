@@ -68,6 +68,7 @@ public:
     ~JsAccessibilityManager() override;
     bool GetAllComponents(NodeId nodeID, OHOS::Ace::Platform::ComponentInfo& rootComponent);
     bool GetAllComponentsId(NodeId nodeID, std::vector<int>& componentids, int windowid);
+    void SendAccessibilityEvent(const AccessibilityEvent& accessibilityEvent);
     void InitializeCallback() override;
     void SendAccessibilityAsyncEvent(const AccessibilityEvent& accessibilityEvent) override;
     void UpdateVirtualNodeFocus() override;
