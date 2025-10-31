@@ -127,8 +127,6 @@ void SubWindowManagerJni::SetupSubWindowManager(JNIEnv* env, jobject obj)
     subWindowManagerStruct_.setStatusBarMethod = env->GetMethodID(clazz, "setStatusBar", "(II)Z");
     subWindowManagerStruct_.setNavigationBarMethod = env->GetMethodID(clazz, "setNavigationBar", "(II)Z");
     subWindowManagerStruct_.setWindowPrivacyModeMethod = env->GetMethodID(clazz, "setWindowPrivacyMode", "(Z)Z");
-    subWindowManagerStruct_.getSurfaceRectMethod =
-        env->GetMethodID(clazz, "getSurfaceRect", "()Landroid/graphics/Rect;");
 }
 
 void SubWindowManagerJni::OnWindowTouchOutside(JNIEnv* env, jobject obj, jlong window)
@@ -583,30 +581,6 @@ OHOS::Rosen::Rect SubWindowManagerJni::GetSafeArea()
         return rect;
     }
     jobject javaRect = env->CallObjectMethod(subWindowManagerStruct_.object, subWindowManagerStruct_.getSafeAreaMethod);
-    jclass rectClass = env->FindClass("android/graphics/Rect");
-    jfieldID xField = env->GetFieldID(rectClass, "left", "I");
-    jfieldID yField = env->GetFieldID(rectClass, "top", "I");
-    jfieldID widthField = env->GetFieldID(rectClass, "right", "I");
-    jfieldID heightField = env->GetFieldID(rectClass, "bottom", "I");
-
-    int x = env->GetIntField(javaRect, xField);
-    int y = env->GetIntField(javaRect, yField);
-    int width = env->GetIntField(javaRect, widthField);
-    int height = env->GetIntField(javaRect, heightField);
-    rect = { x, y, width, height };
-    return rect;
-}
-
-OHOS::Rosen::Rect SubWindowManagerJni::GetSurfaceRect()
-{
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
-    OHOS::Rosen::Rect rect = { 0, 0, 0, 0 };
-    if (env == nullptr) {
-        LOGE("SubWindowManagerJni::GetSurfaceRect: env is NULL");
-        return rect;
-    }
-    jobject javaRect = env->CallObjectMethod(
-        subWindowManagerStruct_.object, subWindowManagerStruct_.getSurfaceRectMethod);
     jclass rectClass = env->FindClass("android/graphics/Rect");
     jfieldID xField = env->GetFieldID(rectClass, "left", "I");
     jfieldID yField = env->GetFieldID(rectClass, "top", "I");

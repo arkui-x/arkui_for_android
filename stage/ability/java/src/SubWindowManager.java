@@ -1047,25 +1047,5 @@ public class SubWindowManager {
         return false;
     }
 
-    /**
-     * Get screen display surface area.
-     *
-     * @return Surface Area.
-     */
-    public Rect getSurfaceRect() {
-        Rect rect = new Rect();
-        if (mRootActivity != null && mRootActivity instanceof StageActivity) {
-            View decorView = mRootActivity.getWindow().getDecorView();
-            int[] location = new int[LOCATION_SIZE];
-            decorView.getLocationOnScreen(location);
-            int x = location[LOCATION_X];
-            int y = location[LOCATION_Y];
-            rect.set(x, y, decorView.getWidth(), decorView.getHeight());
-        } else {
-            Log.e(TAG, "mRootActivity is null");
-        }
-        return rect;
-    }
-
     private native void nativeSetupSubWindowManager();
 }
