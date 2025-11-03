@@ -66,7 +66,7 @@ public class AceWebNestedScrollOptionsExtObject {
                     return true;
                 }
             }
-        } else {
+        } else if (Math.abs(touchDeltaX) < Math.abs(touchDeltaY)) {
             if (Float.compare(touchDeltaY, 0.0f) < 0) {
                 if (scrollDown == NestedScrollMode.PARALLEL) {
                     return true;
