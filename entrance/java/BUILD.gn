@@ -19,7 +19,6 @@ import(
 # common java files
 common_java_files = [
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceEnv.java",
-  "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceEventCallback.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/ALog.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AppModeConfig.java",
   "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/DumpHelper.java",
