@@ -72,7 +72,6 @@ template("ace_common_jni_source_set") {
       "$ace_root/adapter/android/entrance/java/jni/html/html_to_span.cpp",
       "$ace_root/adapter/android/entrance/java/jni/html/span_to_html.cpp",
       "$ace_root/adapter/android/entrance/java/jni/interaction/interaction_impl.cpp",
-      "$ace_root/adapter/android/entrance/java/jni/java_event_callback.cpp",
       "$ace_root/adapter/android/entrance/java/jni/jni_app_mode_config.cpp",
       "$ace_root/adapter/android/entrance/java/jni/jni_environment.cpp",
       "$ace_root/adapter/android/entrance/java/jni/jni_load.cpp",
