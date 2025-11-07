@@ -22,13 +22,14 @@ import android.provider.Settings;
 import android.view.Display;
 import android.view.View;
 import android.view.Surface;
-import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
 import android.util.Log;
 import android.os.Build;
 import android.graphics.Rect;
+
+import ohos.ace.adapter.WindowViewInterface;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -203,7 +204,7 @@ public class SubWindowManager {
         if (mRootActivity != null) {
             View rootView = mRootActivity.getWindow().getDecorView();
             View topView = rootView.findFocus();
-            if (topView instanceof SurfaceView) {
+            if (topView instanceof WindowViewInterface) {
                 return topView;
             }
         }
@@ -522,8 +523,10 @@ public class SubWindowManager {
         boolean result = false;
         if (isFullScreen) {
             this.uiOptions_ |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+            this.uiOptions_ |= View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
         } else {
             this.uiOptions_ &= ~View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+            this.uiOptions_ &= ~View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
         }
         result = setSystemUiVisibilityInner();
         return result;

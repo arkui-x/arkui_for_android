@@ -145,9 +145,6 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
 
     @Override
     public void onAvoidAreaChanged() {
-        if (windowView != null) {
-            windowView.avoidAreaChanged();
-        }
     }
 
     @Override

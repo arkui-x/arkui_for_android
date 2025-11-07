@@ -22,6 +22,7 @@ import ohos.ace.adapter.capability.web.AceWebPluginBase;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import androidx.core.view.WindowInsetsCompat;
 
 /**
  * WindowViewAospInterface class that extends WindowViewInterface.
@@ -81,8 +82,14 @@ public interface WindowViewInterface {
 
     /**
      * To notify avoid area changed.
+     * This method is called when window insets change, such as when system UI visibility changes,
+     * keyboard appears/disappears, or display cutout area changes.
+     * It delegates the handling to WindowViewCommon which performs the actual processing.
+     *
+     * @param insets the window insets containing information about system UI areas
+     *               that need to be avoided by the application content
      */
-    void avoidAreaChanged();
+    void onInsetsAreaChanged(WindowInsetsCompat insets);
 
     /**
      * Convert action and button state to action key.

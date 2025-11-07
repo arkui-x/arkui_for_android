@@ -546,7 +546,6 @@ WMError Window::MoveWindowTo(int32_t x, int32_t y)
 
     bool result = SubWindowManagerJni::MoveWindowTo(this->GetWindowName(), x, y);
     if (result) {
-        AvoidAreaChange();
         NotifySizeChange(rect_);
         return WMError::WM_OK;
     } else {
@@ -566,7 +565,6 @@ WMError Window::ResizeWindowTo(int32_t width, int32_t height)
     rect_.height_ = height;
     bool result = SubWindowManagerJni::ResizeWindowTo(this->GetWindowName(), width, height);
     if (result) {
-        AvoidAreaChange();
         NotifySizeChange(rect_);
         return WMError::WM_OK;
     } else {
@@ -922,7 +920,6 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
 void Window::NotifyKeyboardHeightChanged(int32_t height)
 {
     g_KeyboardHeight = height;
-    AvoidAreaChange();
     auto occupiedAreaChangeListeners = GetListeners<IOccupiedAreaChangeListener>();
     for (auto& listener : occupiedAreaChangeListeners) {
         if (listener != nullptr) {
@@ -962,9 +959,10 @@ void Window::UpdateAvoidArea(const std::shared_ptr<Rosen::AvoidArea>& avoidArea,
 void Window::NotifyAvoidAreaChange(const std::shared_ptr<AvoidArea>& avoidArea, AvoidAreaType type)
 {
     auto avoidAreaChangeListeners = GetListeners<IAvoidAreaChangedListener>();
+    LOGD("window NotifyAvoidAreaChange");
     for (auto& listener : avoidAreaChangeListeners) {
         if (listener != nullptr) {
-            LOGD("type=%{public}u", type);
+            LOGD("window OnAvoidAreaChanged type=%{public}u", type);
             listener->OnAvoidAreaChanged(*avoidArea, type);
         }
     }
@@ -1269,136 +1267,20 @@ WMError Window::SetSpecificBarProperty(WindowType type, const SystemBarProperty&
     }
 }
 
-Rect Window::GetTopRect(const Rect& safeAreaRect, const Rect& surfaceRect)
+void Window::OnSafeAreaChange(int type, AvoidArea avoidArea)
 {
-    Rect rect = EMPTY_RECT;
-    if (safeAreaRect.posY_ > surfaceRect.posY_) {
-        rect.posX_ = surfaceRect.posX_;
-        rect.posY_ = surfaceRect.posY_;
-        rect.width_ = surfaceRect.width_;
-        rect.height_ = safeAreaRect.posY_ - surfaceRect.posY_;
-    }
-    return rect;
-}
-
-Rect Window::GetLeftRect(const Rect& safeAreaRect, const Rect& surfaceRect)
-{
-    Rect rect = EMPTY_RECT;
-    if (safeAreaRect.posX_ > surfaceRect.posX_) {
-        rect.posX_ = surfaceRect.posX_;
-        rect.posY_ = surfaceRect.posY_;
-        rect.width_ = safeAreaRect.posX_ - surfaceRect.posX_;
-        rect.height_ = surfaceRect.height_;
-    }
-    return rect;
-}
-
-Rect Window::GetRightRect(const Rect& safeAreaRect, const Rect& surfaceRect)
-{
-    Rect rect = EMPTY_RECT;
-    auto sumWidth = safeAreaRect.posX_ + safeAreaRect.width_;
-    if (sumWidth < surfaceRect.posX_ + surfaceRect.width_) {
-        rect.posX_ = sumWidth;
-        rect.posY_= surfaceRect.posY_;
-        rect.width_ = surfaceRect.posX_ + surfaceRect.width_ - sumWidth;
-        rect.height_ = surfaceRect.height_;
-    }
-    return rect;
-}
-
-Rect Window::GetBottomRect(const Rect& safeAreaRect, const Rect& surfaceRect)
-{
-    Rect rect = EMPTY_RECT;
-    auto sumHeight = safeAreaRect.posY_ + safeAreaRect.height_;
-    if (sumHeight < surfaceRect.posY_ + surfaceRect.height_) {
-        rect.posX_ = surfaceRect.posX_;
-        rect.posY_ = sumHeight;
-        rect.width_ = surfaceRect.width_;
-        rect.height_ = surfaceRect.posY_ + surfaceRect.height_ - sumHeight;
-    }
-    return rect;
-}
-
-void Window::GetCutoutRect(const Rect& safeAreaRect, const Rect& surfaceRect, AvoidArea& avoidArea)
-{
-    auto cutoutBarHeight = SubWindowManagerJni::GetCutoutBarHeight();
-    if (cutoutBarHeight == 0) {
-        return;
-    }
-    auto orientationType = SubWindowManagerJni::GetScreenOrientation();
-    if (orientationType == ORIENTATION_PORTRAIT) {
-        avoidArea.topRect_ = GetTopRect(safeAreaRect, surfaceRect);
-    } else {
-        orientationType == ORIENTATION_LANDSCAPE ? avoidArea.leftRect_ = GetLeftRect(safeAreaRect, surfaceRect)
-                                                 : avoidArea.rightRect_ = GetRightRect(safeAreaRect, surfaceRect);
-    }
+    auto avoidType = static_cast<AvoidAreaType>(type);
+    std::shared_ptr<Rosen::AvoidArea> avoidArea1 = std::make_shared<Rosen::AvoidArea>(avoidArea);
+    UpdateAvoidArea(avoidArea1, avoidType);
+    LOGD("Window OnSafeAreaChange");
 }
 
 WMError Window::GetAvoidAreaByType(AvoidAreaType type, AvoidArea& avoidArea)
 {
-    avoidArea.topRect_ = EMPTY_RECT;
-    avoidArea.leftRect_ = EMPTY_RECT;
-    avoidArea.rightRect_ = EMPTY_RECT;
-    avoidArea.bottomRect_ = EMPTY_RECT;
-    auto errorCode = WMError::WM_OK;
-    const Rect safeAreaRect = SubWindowManagerJni::GetSafeArea();
-    const Rect surfaceRect = SubWindowManagerJni::GetSurfaceRect();
-    if (IsSubWindow()) {
-        if (isFullScreen_ == false) {
-            return errorCode;
-        }
-    }
-
-    switch (type) {
-        case AvoidAreaType::TYPE_SYSTEM:
-            avoidArea.topRect_ = GetTopRect(safeAreaRect, surfaceRect);
-            avoidArea.leftRect_ = GetLeftRect(safeAreaRect, surfaceRect);
-            avoidArea.rightRect_ = GetRightRect(safeAreaRect, surfaceRect);
-            avoidArea.bottomRect_ = GetBottomRect(safeAreaRect, surfaceRect);
-            break;
-        case AvoidAreaType::TYPE_CUTOUT:
-            GetCutoutRect(safeAreaRect, surfaceRect, avoidArea);
-            break;
-        case AvoidAreaType::TYPE_SYSTEM_GESTURE:
-            break;
-        case AvoidAreaType::TYPE_KEYBOARD:
-            if (g_KeyboardHeight > 0) {
-                avoidArea.bottomRect_.posY_ = DisplayInfoJni::getDisplayHeight() - g_KeyboardHeight;
-                avoidArea.bottomRect_.width_ = surfaceWidth_;
-                avoidArea.bottomRect_.height_ = g_KeyboardHeight;
-            }
-            break;
-        case AvoidAreaType::TYPE_NAVIGATION_INDICATOR:
-            if (SubWindowManagerJni::GetNavigationIndicatorStatus()) {
-                avoidArea.bottomRect_ = GetBottomRect(safeAreaRect, surfaceRect);
-            }
-            break;
-        default:
-            LOGE("Window::GetAvoidAreaByType, Set Invalid AvoidAreaByType. The type is %{public}d", type);
-            errorCode = WMError::WM_ERROR_INVALID_PARAM;
-            break;
-    }
-    return errorCode;
-}
-
-void Window::AvoidAreaChange()
-{
-    std::shared_ptr<Rosen::AvoidArea> avoidArea = std::make_shared<Rosen::AvoidArea>();
-    auto WMErrorCode = WMError::WM_OK;
-    LOGE("AvoidAreaChange is calling.");
     std::lock_guard<std::recursive_mutex> lock(globalMutex_);
-    for (const auto& [type, avoidArea_] : avoidAreaMap_) {
-        WMErrorCode = GetAvoidAreaByType(type, *avoidArea);
-        if (WMErrorCode != WMError::WM_OK) {
-            LOGE("Window::AvoidAreaChange, GetAvoidAreaByType failed. The type is %{public}d", type);
-            return;
-        }
-        LOGE("GetAvoidAreaByType is over.");
-        if (avoidArea_ != *avoidArea) {
-            UpdateAvoidArea(avoidArea, type);
-            LOGE("UpdateAvoidArea is over.");
-        }
-    }
+    auto avoidArea_ = avoidAreaMap_[type];
+    avoidArea = avoidArea_;
+    return WMError::WM_OK;
 }
 
 WMError Window::UpdateSystemBarProperties(

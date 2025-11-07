@@ -169,9 +169,6 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     }
 
     public void onAvoidAreaChanged() {
-        if (windowView != null) {
-            windowView.avoidAreaChanged();
-        }
     }
 
     @Override

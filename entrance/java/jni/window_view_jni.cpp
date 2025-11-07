@@ -92,7 +92,7 @@ static const JNINativeMethod COMMON_METHODS[] = {
     },
     {
         .name = "nativeAvoidAreaChanged",
-        .signature = "(J)V",
+        .signature = "(JIIIIIIIIIIIIIIIII)V",
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::AvoidAreaChange),
     },
 };
@@ -116,12 +116,21 @@ void WindowViewJni::SurfaceChanged(
     }
 }
 
-void WindowViewJni::AvoidAreaChange(JNIEnv* env, jobject myObject, jlong window)
+void WindowViewJni::AvoidAreaChange(JNIEnv* env, jobject myObject, jlong window, jint type,
+    jint leftLeft, jint leftTop, jint leftWidth, jint leftHeight,
+    jint topLeft, jint topTop, jint topWidth, jint topHeight,
+    jint rightLeft, jint rightTop, jint rightWidth, jint rightHeight,
+    jint bottomLeft, jint bottomTop, jint bottomWidth, jint bottomHeight)
 {
+    Rosen::AvoidArea avoidArea;
+    avoidArea.topRect_ = {topLeft, topTop, topWidth, topHeight};
+    avoidArea.leftRect_ = {leftLeft, leftTop, leftWidth, leftHeight};
+    avoidArea.rightRect_ = {rightLeft, rightTop, rightWidth, rightHeight};
+    avoidArea.bottomRect_ = {bottomLeft, bottomTop, bottomWidth, bottomHeight};
     auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
     if (windowPtr != nullptr) {
         LOGE("AvoidAreaChange windowPtr is calling.");
-        windowPtr->AvoidAreaChange();
+        windowPtr->OnSafeAreaChange(type, avoidArea);
     }
 }
 

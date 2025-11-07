@@ -28,7 +28,11 @@ public:
     static void SurfaceCreated(JNIEnv* env, jobject myObject, jlong window, jobject jsurface);
     static void SurfaceChanged(JNIEnv* env, jobject myObject, jlong window, jint width, jint height, jfloat density);
     static void KeyboardHeightChanged(JNIEnv* env, jobject myObject, jlong window, jint height);
-    static void AvoidAreaChange(JNIEnv* env, jobject myObject, jlong window);
+    static void AvoidAreaChange(JNIEnv* env, jobject myObject, jlong window, jint type,
+        jint leftLeft, jint leftTop, jint leftWidth, jint leftHeight,
+        jint topLeft, jint topTop, jint topWidth, jint topHeight,
+        jint rightLeft, jint rightTop, jint rightWidth, jint rightHeight,
+        jint bottomLeft, jint bottomTop, jint bottomWidth, jint bottomHeight);
     static void SurfaceDestroyed(JNIEnv* env, jobject myObject, jlong window);
     static void RegisterWindow(JNIEnv* env, void* window, jobject windowView);
     static void UnRegisterWindow(JNIEnv* env, jobject windowView);
