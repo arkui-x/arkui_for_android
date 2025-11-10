@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -174,7 +174,6 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
         fragmentDelegate.dispatchOnCreate(getInstanceName(), params);
 
         initPlatformPlugin(this.getActivity(), instanceId, windowView);
-        initBridgeManager();
         initArkUIXPluginRegistry();
         Trace.endSection();
 
@@ -316,7 +315,6 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
         windowView.destroy();
         arkUIXPluginRegistry.unRegistryAllPlugins();
         keyboardHeightProvider.close();
-        BridgeManager.unRegisterBridgeManager(instanceId);
         if (platformPlugin != null) {
             platformPlugin.release();
             Log.i(LOG_TAG, "StageFragment onDestroy releseResRegister called");
@@ -586,18 +584,6 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
         grantResultsClass.onRequestPremissionCallback(permissions, grantResults);
     }
 
-    private void initBridgeManager() {
-        Trace.beginSection("StageFragment::initBridgeManager");
-        if (bridgeManager == null) {
-            getBridgeManager();
-        }
-        if (BridgeManager.findBridgeManager(instanceId) == null) {
-            bridgeManager.nativeInit(instanceId);
-            BridgeManager.registerBridgeManager(instanceId, bridgeManager);
-        }
-        Trace.endSection();
-    }
-
     /**
      * Initialize arkui-x plugins and arkui-x plugins registry.
      */
@@ -615,7 +601,7 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
      */
     public BridgeManager getBridgeManager() {
         if (bridgeManager == null) {
-            bridgeManager = new BridgeManager(instanceId);
+            bridgeManager = BridgeManager.getInstance();
         }
         return bridgeManager;
     }

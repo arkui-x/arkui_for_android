@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,7 @@
 package ohos.ace.adapter.capability.bridge;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.HashMap;
@@ -49,32 +50,37 @@ public class BridgeManager {
 
     private static final int NO_PARAM = 4;
 
-    private static HashMap<Integer, BridgeManager> managerMap_ = new HashMap<Integer, BridgeManager>();
+    private static final Object INSTANCE_LOCK = new Object();
+
+    private static volatile BridgeManager instance = null;
 
     private static BridgeBinaryCodec bridgeBinaryCodec_ = BridgeBinaryCodec.getInstance();
 
-    private static Lock managerMapLock_ = new ReentrantLock();
-
     private HashMap<String, BridgePlugin> bridgeMap_;
-
-    private HashMap<String, BridgeTaskQueueHandler> handlerMap_;
 
     private Lock bridgeMapLock_ = new ReentrantLock();
 
-    private Lock handlerMapLock_ = new ReentrantLock();
-
-    private int instanceId_ = 0;
+    private BridgeManager() {
+        this.bridgeMap_ = new HashMap<String, BridgePlugin>();
+        nativeInit();
+    }
 
     /**
-     * Constructor of BridgeManager.
+     * Get singleton instance of BridgeManager.
      *
-     * @param instanceId the id of instance.
-     * @return BridgeManager object.
+     * @return BridgeManager singleton instance.
      */
-    public BridgeManager(int instanceId) {
-        this.bridgeMap_ = new HashMap<String, BridgePlugin>();
-        this.handlerMap_ = new HashMap<String, BridgeTaskQueueHandler>();
-        this.instanceId_ = instanceId;
+    public static BridgeManager getInstance() {
+        if (instance != null) {
+            return instance;
+        }
+
+        synchronized (INSTANCE_LOCK) {
+            if (instance == null) {
+                instance = new BridgeManager();
+            }
+            return instance;
+        }
     }
 
     /**
@@ -90,6 +96,10 @@ public class BridgeManager {
             if (this.bridgeMap_ != null) {
                 this.bridgeMap_.put(bridgeName, bridgePlugin);
                 ALog.i(LOG_TAG, "The BridgePlugin registered successfully, The bridgeName is " + bridgeName);
+                int type = (bridgePlugin.getBridgeType() == BridgeType.JSON_TYPE) ? 0 : 1;
+                if (nativeJSBridgeExists(bridgeName, type)) {
+                    bridgePlugin.onRegisterResult(true);
+                }
                 return true;
             } else {
                 ALog.e(LOG_TAG, "The BridgePlugin registration failure, The bridgeName is " + bridgeName);
@@ -135,52 +145,6 @@ public class BridgeManager {
     }
 
     /**
-     * Register Bridge plugin.
-     *
-     * @param instanceId the id of instance.
-     * @param bridgeManager BridgeManager object.
-     * @return Success or fail.
-     */
-    public static boolean registerBridgeManager(int instanceId, BridgeManager bridgeManager) {
-        managerMapLock_.lock();
-        try {
-            if (managerMap_ != null && managerMap_.containsKey(instanceId)) {
-                ALog.e(LOG_TAG, "The BridgeManager Already exists, instanceId is " + String.valueOf(instanceId));
-                return false;
-            } else {
-                managerMap_.put(instanceId, bridgeManager);
-                ALog.i(LOG_TAG,
-                    "The BridgeManager registered successfully, instanceId is " + String.valueOf(instanceId));
-                return true;
-            }
-        } finally {
-            managerMapLock_.unlock();
-        }
-    }
-
-    /**
-     * unRegister BridgeManager object.
-     *
-     * @param instanceId the id of instance.
-     * @return Success or fail.
-     */
-    public static boolean unRegisterBridgeManager(int instanceId) {
-        managerMapLock_.lock();
-        try {
-            if (managerMap_ != null && managerMap_.containsKey(instanceId)) {
-                managerMap_.get(instanceId).release();
-                managerMap_.remove(instanceId);
-                return true;
-            } else {
-                ALog.e(LOG_TAG, "unRegisterBridgeManager failed, instanceId is " + String.valueOf(instanceId));
-                return false;
-            }
-        } finally {
-            managerMapLock_.unlock();
-        }
-    }
-
-    /**
      * release BridgeManager object.
      *
      */
@@ -192,81 +156,6 @@ public class BridgeManager {
             iterator.remove();
         }
         ALog.i(LOG_TAG, "BridgeManager release.");
-    }
-
-    /**
-     * Find BridgeManager object.
-     *
-     * @param instanceId the id of instance.
-     * @return BridgeManager object.
-     */
-    public static BridgeManager findBridgeManager(int instanceId) {
-        managerMapLock_.lock();
-        try {
-            if (managerMap_ != null) {
-                return managerMap_.get(instanceId);
-            } else {
-                return null;
-            }
-        } finally {
-            managerMapLock_.unlock();
-        }
-    }
-
-    /**
-     * Register Bridge TaskQueueHandler.
-     *
-     * @param bridgeName Name of bridge.
-     * @param handler BridgeTaskQueueHandler object.
-     * @return Success or fail.
-     */
-    public boolean registerTaskQueueHandler(String bridgeName, BridgeTaskQueueHandler handler) {
-        this.handlerMapLock_.lock();
-        try {
-            if (this.handlerMap_ != null) {
-                this.handlerMap_.put(bridgeName, handler);
-                ALog.i(LOG_TAG, "The TaskQueueHandler registered successfully");
-                return true;
-            } else {
-                ALog.e(LOG_TAG, "HandlerMap is null, the TaskQueueHandler registration failed");
-                return false;
-            }
-        } finally {
-            this.handlerMapLock_.unlock();
-        }
-    }
-
-    /**
-     * Unregister Bridge TaskQueueHandler.
-     *
-     * @param bridgeName Name of bridge.
-     * @return Success or fail.
-     */
-    public boolean unRegisterTaskQueueHandler(String bridgeName) {
-        this.handlerMapLock_.lock();
-        try {
-            if (this.handlerMap_ != null && this.handlerMap_.remove(bridgeName) != null) {
-                return true;
-            } else {
-                ALog.e(LOG_TAG, "unRegisterTaskQueueHandler failed");
-                return false;
-            }
-        } finally {
-            this.handlerMapLock_.unlock();
-        }
-    }
-
-    private BridgeTaskQueueHandler findTaskQueueHandler(String bridgeName) {
-        this.handlerMapLock_.lock();
-        try {
-            if (this.handlerMap_ != null) {
-                return this.handlerMap_.get(bridgeName);
-            } else {
-                return null;
-            }
-        } finally {
-            this.handlerMapLock_.unlock();
-        }
     }
 
     private JSONObject createJsonMethodResult(BridgeErrorCode bridgeErrorCode, Object result) {
@@ -313,18 +202,12 @@ public class BridgeManager {
             ALog.e(LOG_TAG, "jsCallMethod bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
-        if (bridgePlugin.isUseTaskQueue()) {
-            BridgeTaskQueueHandler handler = findTaskQueueHandler(bridgeName);
-            if (handler == null) {
-                ALog.e(LOG_TAG, "jsCallMethod Unable to find handler corresponding to bridgePlugin.");
-                return;
-            }
-            handler.dispatch(() -> {
+        BridgeThreadExecutor.getInstance().execute(new Runnable() {
+            @Override
+            public void run() {
                 jsCallMethodInner(bridgePlugin, methodName, parameters);
-            });
-        } else {
-            jsCallMethodInner(bridgePlugin, methodName, parameters);
-        }
+            }
+        });
     }
 
     /**
@@ -346,15 +229,15 @@ public class BridgeManager {
                 methodData = new MethodData(splitName, ParameterHelper.jsonTransformObject(paramJsonObj));
                 object = bridgePlugin.jsCallMethod(bridgePlugin, methodData);
             } else {
-                Object[] objectParamters = {};
-                methodData = new MethodData(splitName, objectParamters);
+                Object[] objectParameters = {};
+                methodData = new MethodData(splitName, objectParameters);
                 object = bridgePlugin.jsCallMethod(bridgePlugin, methodData);
             }
             ALog.i(LOG_TAG, "End of method call, the methodName is " + splitName);
             if (object != null && !ParameterHelper.isExceedJsSafeInteger(object)) {
                 bridgeErrorCode = BridgeErrorCode.BRIDGE_EXCEEDS_SAFE_INTEGER;
             }
-            if (object != null && object.getClass() == BridgeErrorCode.class) {
+            if (object != null && object instanceof BridgeErrorCode) {
                 bridgeErrorCode = (BridgeErrorCode) object;
             }
             resultJsonObj = createJsonMethodResult(bridgeErrorCode, object);
@@ -372,6 +255,59 @@ public class BridgeManager {
     }
 
     /**
+     * Other platforms call methods.
+     *
+     * @param bridgeName Name of bridge.
+     * @param methodName Name of method.
+     * @param parameters Param of the method.
+     */
+    public String jsCallMethodSync(String bridgeName, String methodName, String parameters) {
+        ALog.d(LOG_TAG, "jsCallMethodSync enter, bridgeName is " + bridgeName + ", methodName is " + methodName);
+        BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
+        if (bridgePlugin == null) {
+            ALog.e(LOG_TAG, "jsCallMethodSync bridgePlugin Not found, bridgeName is " + bridgeName);
+            return null;
+        }
+        return jsCallMethodSyncInner(bridgePlugin, methodName, parameters);
+    }
+
+    private String jsCallMethodSyncInner(BridgePlugin bridgePlugin, String methodName, String parameters) {
+        JSONObject resultJsonObj = new JSONObject();
+        BridgeErrorCode bridgeErrorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
+        try {
+            Object object = null;
+            MethodData methodData = null;
+            String splitName = splitMethodName(methodName);
+            if (parameters.length() != NO_PARAM) {
+                JSONObject paramJsonObj = new JSONObject(parameters);
+                methodData = new MethodData(splitName, ParameterHelper.jsonTransformObject(paramJsonObj));
+                object = bridgePlugin.jsCallMethod(bridgePlugin, methodData);
+            } else {
+                Object[] objectParameters = {};
+                methodData = new MethodData(splitName, objectParameters);
+                object = bridgePlugin.jsCallMethod(bridgePlugin, methodData);
+            }
+            ALog.i(LOG_TAG, "End of method call, the methodName is " + splitName);
+            if (object != null && !ParameterHelper.isExceedJsSafeInteger(object)) {
+                bridgeErrorCode = BridgeErrorCode.BRIDGE_EXCEEDS_SAFE_INTEGER;
+            }
+            if (object != null && object instanceof BridgeErrorCode) {
+                bridgeErrorCode = (BridgeErrorCode) object;
+            }
+            resultJsonObj = createJsonMethodResult(bridgeErrorCode, object);
+            if (resultJsonObj == null) {
+                ALog.e(LOG_TAG, "createJsonMethodResult failed");
+                resultJsonObj = createJsonMethodResult(bridgeErrorCode, null);
+            }
+        } catch (JSONException e) {
+            ALog.e(LOG_TAG, "jsCallMethod failed");
+            bridgeErrorCode = BridgeErrorCode.BRIDGE_METHOD_UNIMPL;
+            resultJsonObj = createJsonMethodResult(bridgeErrorCode, null);
+        }
+        return resultJsonObj.toString();
+    }
+
+    /**
      * Return the call result.
      *
      * @param bridgeName Name of bridge.
@@ -384,7 +320,7 @@ public class BridgeManager {
             ALog.e(LOG_TAG, "platformSendMethodResult bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
-        nativePlatformSendMethodResult(bridgeName, methodName, result, this.instanceId_);
+        nativePlatformSendMethodResult(bridgeName, methodName, result);
     }
 
     /**
@@ -417,7 +353,7 @@ public class BridgeManager {
             }
             parameters = JsonParameters.toString();
         }
-        nativePlatformCallMethod(bridgeName, methodName, parameters, this.instanceId_);
+        nativePlatformCallMethod(bridgeName, methodName, parameters);
         return bridgeErrorCode;
     }
 
@@ -434,18 +370,7 @@ public class BridgeManager {
             ALog.e(LOG_TAG, "jsSendMethodResult bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
-        if (bridgePlugin.isUseTaskQueue()) {
-            BridgeTaskQueueHandler handler = findTaskQueueHandler(bridgeName);
-            if (handler == null) {
-                ALog.e(LOG_TAG, "jsSendMethodResult Unable to find handler corresponding to bridgePlugin.");
-                return;
-            }
-            handler.dispatch(() -> {
-                jsSendMethodResultInner(bridgePlugin, methodName, result);
-            });
-        } else {
-            jsSendMethodResultInner(bridgePlugin, methodName, result);
-        }
+        jsSendMethodResultInner(bridgePlugin, methodName, result);
     }
 
     private void jsSendMethodResultInner(BridgePlugin bridgePlugin, String methodName, String result) {
@@ -478,7 +403,7 @@ public class BridgeManager {
             JSONObject dataJson = new JSONObject();
             dataJson.put(MESSAGE_JSON_KEY, JSON_ERROR_CODE);
             dataJson.put(JSON_ERROR_CODE, bridgeErrorCode.getId());
-            nativePlatformSendMessageResponse(bridgeName, dataJson.toString(), this.instanceId_);
+            nativePlatformSendMessageResponse(bridgeName, dataJson.toString());
         } catch (JSONException e) {
             ALog.e(LOG_TAG, "platformSendMessageResponseErrorInfo failed, JSONException.");
         }
@@ -498,24 +423,14 @@ public class BridgeManager {
             platformSendMessageResponseErrorInfo(bridgeName, bridgeErrorCode);
             return;
         }
-        if (bridgePlugin.isUseTaskQueue()) {
-            BridgeTaskQueueHandler handler = findTaskQueueHandler(bridgeName);
-            if (handler == null) {
-                ALog.e(LOG_TAG, "jsSendMessage Unable to find handler corresponding to bridgePlugin.");
-                return;
-            }
-            handler.dispatch(() -> {
-                jsSendMessageInner(bridgePlugin, bridgeName, data);
-            });
-        } else {
-            jsSendMessageInner(bridgePlugin, bridgeName, data);
-        }
+        jsSendMessageInner(bridgePlugin, bridgeName, data);
     }
 
     private void jsSendMessageInner(BridgePlugin bridgePlugin, String bridgeName, String data) {
         try {
             JSONObject dataJsonObj = new JSONObject(data);
-            Object dataObj = dataJsonObj.get(MESSAGE_JSON_KEY);
+            Object dataObj =
+                (dataJsonObj.get(MESSAGE_JSON_KEY) == JSONObject.NULL) ? null : dataJsonObj.get(MESSAGE_JSON_KEY);
             bridgePlugin.jsSendMessage(dataObj);
         } catch (JSONException e) {
             BridgeErrorCode bridgeErrorCode = BridgeErrorCode.BRIDGE_DATA_ERROR;
@@ -539,7 +454,7 @@ public class BridgeManager {
         }
         try {
             if (data == null) {
-                sendMessageResponseErrorCode(bridgeName, this.instanceId_, BridgeErrorCode.BRIDGE_DATA_ERROR);
+                sendMessageResponseErrorCode(bridgeName, BridgeErrorCode.BRIDGE_DATA_ERROR);
                 return;
             }
             JSONObject dataJson = new JSONObject();
@@ -547,33 +462,32 @@ public class BridgeManager {
                 dataJson.put(MESSAGE_JSON_KEY, data.toString());
             } else if (!data.getClass().isArray()) {
                 if (!ParameterHelper.isExceedJsSafeInteger(data)) {
-                    sendMessageResponseErrorCode(
-                        bridgeName, this.instanceId_, BridgeErrorCode.BRIDGE_EXCEEDS_SAFE_INTEGER);
+                    sendMessageResponseErrorCode(bridgeName, BridgeErrorCode.BRIDGE_EXCEEDS_SAFE_INTEGER);
                     return;
                 }
                 dataJson.put(MESSAGE_JSON_KEY, data);
             } else if (data.getClass().isArray()) {
                 JSONArray array = ParameterHelper.objectTransformJsonArray(data);
                 if (array == null) {
-                    sendMessageResponseErrorCode(bridgeName, this.instanceId_, BridgeErrorCode.BRIDGE_DATA_ERROR);
+                    sendMessageResponseErrorCode(bridgeName, BridgeErrorCode.BRIDGE_DATA_ERROR);
                     return;
                 }
                 dataJson.put(MESSAGE_JSON_KEY, array);
             } else {
-                sendMessageResponseErrorCode(bridgeName, this.instanceId_, BridgeErrorCode.BRIDGE_DATA_ERROR);
+                sendMessageResponseErrorCode(bridgeName, BridgeErrorCode.BRIDGE_DATA_ERROR);
                 return;
             }
             dataJson.put(JSON_ERROR_CODE, 0);
-            nativePlatformSendMessageResponse(bridgeName, dataJson.toString(), this.instanceId_);
+            nativePlatformSendMessageResponse(bridgeName, dataJson.toString());
         } catch (JSONException e) {
             ALog.e(LOG_TAG, "platformSendMessageResponse failed, JSONException.");
         }
     }
 
-    private void sendMessageResponseErrorCode(String bridgeName, int instanceId, BridgeErrorCode bridgeErrorCode) {
+    private void sendMessageResponseErrorCode(String bridgeName, BridgeErrorCode bridgeErrorCode) {
         JSONObject dataJson = new JSONObject();
         dataJson = createJsonMethodResult(bridgeErrorCode, DATA_ERROR);
-        nativePlatformSendMessageResponse(bridgeName, dataJson.toString(), instanceId);
+        nativePlatformSendMessageResponse(bridgeName, dataJson.toString());
     }
 
     /**
@@ -589,11 +503,13 @@ public class BridgeManager {
             return;
         }
         try {
+            JSONObject dataJson = new JSONObject();
             if (data == null) {
-                jsSendMessageResponseErrorCode(bridgePlugin, BridgeErrorCode.BRIDGE_DATA_ERROR);
+                dataJson.put(MESSAGE_JSON_KEY, data);
+                dataJson.put(JSON_ERROR_CODE, 0);
+                nativePlatformSendMessage(bridgeName, dataJson.toString());
                 return;
             }
-            JSONObject dataJson = new JSONObject();
             if (data instanceof JSONObject) {
                 dataJson.put(MESSAGE_JSON_KEY, data.toString());
             } else if (data.getClass().isArray()) {
@@ -611,7 +527,7 @@ public class BridgeManager {
                 dataJson.put(MESSAGE_JSON_KEY, data);
             }
             dataJson.put(JSON_ERROR_CODE, 0);
-            nativePlatformSendMessage(bridgeName, dataJson.toString(), this.instanceId_);
+            nativePlatformSendMessage(bridgeName, dataJson.toString());
         } catch (JSONException e) {
             ALog.e(LOG_TAG, "platformSendMessage failed, JSONException.");
         }
@@ -635,18 +551,7 @@ public class BridgeManager {
             ALog.e(LOG_TAG, "jsSendMessageResponse bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
-        if (bridgePlugin.isUseTaskQueue()) {
-            BridgeTaskQueueHandler handler = findTaskQueueHandler(bridgeName);
-            if (handler == null) {
-                ALog.e(LOG_TAG, "jsSendMessageResponse Unable to find handler corresponding to bridgePlugin.");
-                return;
-            }
-            handler.dispatch(() -> {
-                jsSendMessageResponseInner(bridgePlugin, data);
-            });
-        } else {
-            jsSendMessageResponseInner(bridgePlugin, data);
-        }
+        jsSendMessageResponseInner(bridgePlugin, data);
     }
 
     private void jsSendMessageResponseInner(BridgePlugin bridgePlugin, String data) {
@@ -668,14 +573,14 @@ public class BridgeManager {
     public void jsCancelMethod(String bridgeName, String methodName) {
         BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
         if (bridgePlugin == null) {
-            ALog.e(LOG_TAG, "jsSendMessageResponse bridgePlugin Not found, bridgeName is " + bridgeName);
+            ALog.e(LOG_TAG, "jsCancelMethod bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
         bridgePlugin.jsCancelMethod(methodName);
     }
 
     /**
-     * Send binarydata to other platforms.
+     * Send binaryData to other platforms.
      *
      * @param bridgeName Name of bridge.
      * @param data Data to be sent.
@@ -691,12 +596,12 @@ public class BridgeManager {
             return;
         }
         ByteBuffer buffer = bridgeBinaryCodec_.encodeData(data);
-        nativePlatformSendMessageBinary(bridgeName, buffer, this.instanceId_);
+        nativePlatformSendMessageBinary(bridgeName, buffer);
     }
 
     private void platformSendMethodResultBinaryInner(String bridgeName, String methodName,
-        ByteBuffer resultBuffer, int instanceId, BridgeErrorCode bridgeErrorCode) {
-        nativePlatformSendMethodResultBinary(bridgeName, methodName, resultBuffer, instanceId,
+        ByteBuffer resultBuffer, BridgeErrorCode bridgeErrorCode) {
+        nativePlatformSendMethodResultBinary(bridgeName, methodName, resultBuffer,
             bridgeErrorCode.getId(), bridgeErrorCode.getErrorMessage());
     }
 
@@ -714,18 +619,7 @@ public class BridgeManager {
             ALog.e(LOG_TAG, "jsCallMethodBinary bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
-        if (bridgePlugin.isUseTaskQueue()) {
-            BridgeTaskQueueHandler handler = findTaskQueueHandler(bridgeName);
-            if (handler == null) {
-                ALog.e(LOG_TAG, "jsCallMethodBinary Unable to find handler corresponding to bridgePlugin.");
-                return;
-            }
-            handler.dispatch(() -> {
-                jsCallMethodBinaryInner(bridgePlugin, methodName, bufferData);
-            });
-        } else {
-            jsCallMethodBinaryInner(bridgePlugin, methodName, bufferData);
-        }
+        jsCallMethodBinaryInner(bridgePlugin, methodName, bufferData);
     }
 
     private void jsCallMethodBinaryInner(BridgePlugin bridgePlugin, String methodName, ByteBuffer bufferData) {
@@ -747,7 +641,7 @@ public class BridgeManager {
             bridgeErrorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
         } else {
             Object[] objects = ParameterHelper.binaryTransformObject(paramObj);
-            if (objects == null) {
+            if (objects == null || ParameterHelper.containsNull(Arrays.asList(objects))) {
                 ALog.e(LOG_TAG, "Parameter parsing failed.");
                 bridgeErrorCode = BridgeErrorCode.BRIDGE_METHOD_PARAM_ERROR;
             } else {
@@ -761,8 +655,71 @@ public class BridgeManager {
                 }
             }
         }
-        platformSendMethodResultBinaryInner(bridgePlugin.getBridgeName(), methodName, resultBuffer,
-            this.instanceId_, bridgeErrorCode);
+        platformSendMethodResultBinaryInner(bridgePlugin.getBridgeName(), methodName, resultBuffer, bridgeErrorCode);
+    }
+
+    /**
+     * Other platforms call methods by binary type.
+     *
+     * @param bridgeName Name of bridge.
+     * @param methodName Name of method.
+     * @param bufferData Method data.
+     */
+    public BinaryResultHolder jsCallMethodBinarySync(String bridgeName, String methodName, ByteBuffer bufferData) {
+        ALog.d(LOG_TAG, "jsCallMethodBinary enter, bridgeName is " + bridgeName + ", methodName is " + methodName);
+        BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
+        if (bridgePlugin == null) {
+            ALog.e(LOG_TAG, "jsCallMethodBinary bridgePlugin Not found, bridgeName is " + bridgeName);
+            BinaryResultHolder holder = new BinaryResultHolder();
+            holder.errorCode = BridgeErrorCode.BRIDGE_INVALID.getId();
+            holder.result = ByteBuffer.allocateDirect(0);
+            return holder;
+        }
+        return jsCallMethodBinarySyncInner(bridgePlugin, methodName, bufferData);
+    }
+
+    private BinaryResultHolder createResultHolder(int codeId, ByteBuffer result) {
+        BinaryResultHolder holder = new BinaryResultHolder();
+        holder.errorCode = codeId;
+        holder.result = result;
+        return holder;
+    }
+
+    private BinaryResultHolder jsCallMethodBinarySyncInner(
+        BridgePlugin bridgePlugin, String methodName, ByteBuffer bufferData) {
+        if (bridgePlugin.getBridgeType() != BridgeType.BINARY_TYPE) {
+            ALog.e(LOG_TAG, "The bridge is not BINARY_TYPE.");
+            return createResultHolder(
+                BridgeErrorCode.BRIDGE_CODEC_TYPE_MISMATCH.getId(), ByteBuffer.allocateDirect(0));
+        }
+        if (bridgeBinaryCodec_ == null) {
+            ALog.e(LOG_TAG, "The bridgeBinaryCodec is null.");
+            return createResultHolder(BridgeErrorCode.BRIDGE_CODEC_INVALID.getId(), ByteBuffer.allocateDirect(0));
+        }
+        Object paramObj = bridgeBinaryCodec_.decodeData(bufferData);
+        String splitName = splitMethodName(methodName);
+        Object resultObject = null;
+        MethodData methodData = null;
+        ByteBuffer resultBuffer = bridgeBinaryCodec_.encodeData(null);
+        BridgeErrorCode bridgeErrorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
+        if (paramObj != null) {
+            bridgeErrorCode = BridgeErrorCode.BRIDGE_ERROR_NO;
+        }
+        Object[] objects = ParameterHelper.binaryTransformObject(paramObj);
+        if (objects == null || ParameterHelper.containsNull(Arrays.asList(objects))) {
+            ALog.e(LOG_TAG, "Parameter parsing failed.");
+            bridgeErrorCode = BridgeErrorCode.BRIDGE_METHOD_PARAM_ERROR;
+        } else {
+            methodData = new MethodData(splitName, objects);
+            resultObject = bridgePlugin.jsCallMethod(bridgePlugin, methodData);
+            ALog.i(LOG_TAG, "End of method call, the methodName is " + splitName);
+            if (resultObject != null && resultObject instanceof BridgeErrorCode) {
+                bridgeErrorCode = (BridgeErrorCode) resultObject;
+            } else {
+                resultBuffer = bridgeBinaryCodec_.encodeData(resultObject);
+            }
+        }
+        return createResultHolder(bridgeErrorCode.getId(), resultBuffer);
     }
 
     /**
@@ -785,20 +742,8 @@ public class BridgeManager {
             ALog.e(LOG_TAG, "The bridgeBinaryCodec is null.");
             return;
         }
-        if (bridgePlugin.isUseTaskQueue()) {
-            BridgeTaskQueueHandler handler = findTaskQueueHandler(bridgeName);
-            if (handler == null) {
-                ALog.e(LOG_TAG, "jsSendMessageBinary Unable to find handler corresponding to bridgePlugin.");
-                return;
-            }
-            handler.dispatch(() -> {
-                Object dataObj = bridgeBinaryCodec_.decodeData(bufferData);
-                bridgePlugin.jsSendMessage(dataObj);
-            });
-        } else {
-            Object dataObj = bridgeBinaryCodec_.decodeData(bufferData);
-            bridgePlugin.jsSendMessage(dataObj);
-        }
+        Object dataObj = bridgeBinaryCodec_.decodeData(bufferData);
+        bridgePlugin.jsSendMessage(dataObj);
     }
 
     /**
@@ -826,7 +771,7 @@ public class BridgeManager {
             String methodName = methodData.getMethodName();
             Object[] params = methodData.getMethodParameter();
             ByteBuffer buffer = bridgeBinaryCodec_.encodeData(params);
-            nativePlatformCallMethodBinary(bridgeName, methodName, buffer, this.instanceId_);
+            nativePlatformCallMethodBinary(bridgeName, methodName, buffer);
         }
         return errorCode;
     }
@@ -860,19 +805,8 @@ public class BridgeManager {
             ALog.e(LOG_TAG, "jsSendMethodResultBinary bridgePlugin Not found, bridgeName is " + bridgeName);
             return;
         }
-        if (bridgePlugin.isUseTaskQueue()) {
-            BridgeTaskQueueHandler handler = findTaskQueueHandler(bridgeName);
-            if (handler == null) {
-                ALog.e(LOG_TAG, "jsSendMethodResultBinary Unable to find handler corresponding to bridgePlugin.");
-                return;
-            }
-            ByteBuffer copyBufferResult = copyByteBuffer(result);
-            handler.dispatch(() -> {
-                jsSendMethodResultBinaryInner(bridgePlugin, methodName, copyBufferResult, errorCode, errorMessage);
-            });
-        } else {
-            jsSendMethodResultBinaryInner(bridgePlugin, methodName, result, errorCode, errorMessage);
-        }
+        ByteBuffer copyBufferResult = copyByteBuffer(result);
+        jsSendMethodResultBinaryInner(bridgePlugin, methodName, copyBufferResult, errorCode, errorMessage);
     }
 
     private void jsSendMethodResultBinaryInner(BridgePlugin bridgePlugin, String methodName, ByteBuffer result,
@@ -889,27 +823,145 @@ public class BridgeManager {
     }
 
     /**
-     * Init BridgeManager jni.
+     * Return the call method result.
      *
-     * @param instanceId The instanceId.
+     * @param bridgeName Name of bridge.
+     * @param methodData Method packaging structure.
+     * @return Return the execution result of the ArkTS method.
+     * @throws IllegalStateException Return error code.
      */
-    public native void nativeInit(int instanceId);
+    public Object platformCallMethodSync(String bridgeName, MethodData methodData) {
+        BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
+        if (bridgePlugin == null) {
+            ALog.e(LOG_TAG, "platformCallMethod bridgePlugin Not found, bridgeName is " + bridgeName);
+            throw new IllegalStateException("Bridge not found: " + bridgeName + ", errorCode = "
+                + BridgeErrorCode.BRIDGE_NAME_ERROR.getId());
+        }
+        String methodName = methodData.getMethodName();
+        String parameters;
+        if (methodData.getMethodParameter() == null || methodData.getMethodParameter().length == 0) {
+            ALog.i(LOG_TAG, "The calling method has no parameters");
+            parameters = new JSONObject().toString();
+        } else {
+            ALog.i(LOG_TAG, "The calling method has parameters");
+            JSONObject jsonParameters = ParameterHelper.objectTransformJson(methodData.getMethodParameter());
+            if (jsonParameters == null) {
+                throw new IllegalStateException("Invalid method parameters, method=" + methodName + ", errorCode = "
+                    + BridgeErrorCode.BRIDGE_METHOD_PARAM_ERROR.getId());
+            }
+            parameters = jsonParameters.toString();
+        }
+        String result = nativePlatformCallMethodSync(bridgeName, methodName, parameters);
+        return parseSyncResultOrThrow(result, methodName);
+    }
+
+    private Object parseSyncResultOrThrow(String result, String methodName) {
+        try {
+            JSONObject resultValue = new JSONObject(result);
+            int errorCode = resultValue.getInt(JSON_ERROR_CODE);
+            if (errorCode == 0) {
+                return resultValue.get(CALL_METHOD_JSON_KEY);
+            }
+            throw new IllegalStateException(
+                "Call method failed, method = " + methodName + ", errorCode = " + errorCode);
+        } catch (JSONException e) {
+            ALog.e(LOG_TAG, "platformCallMethodSync parse result failed, JSONException.");
+            throw new RuntimeException("platformCallMethodSync parse result failed.", e);
+        }
+    }
 
     /**
-     * Update the current instanceId in jni.
+     * platforms call methods by binary type.
      *
-     * @param instanceId The current instanceId.
+     * @param bridgeName Name of bridge.
+     * @param methodData Method data.
+     * @throws IllegalStateException Return error code.
      */
-    public native void nativeUpdateCurrentInstanceId(int instanceId);
-    private native void nativePlatformCallMethod(String bridgeName,
-        String methodName, String parameters, int instanceId);
-    private native void nativePlatformSendMessageResponse(String bridgeName, String data, int instanceId);
-    private native void nativePlatformSendMethodResult(String bridgeName,
-        String methodName, String result, int instanceId);
-    private native void nativePlatformSendMessage(String bridgeName, String data, int instanceId);
-    private native void nativePlatformSendMessageBinary(String bridgeName, ByteBuffer buffer, int instanceId);
-    private native void nativePlatformSendMethodResultBinary(String bridgeName, String methodName, ByteBuffer buffer,
-        int instanceId, int errorCode, String ErrorMessage);
-    private native void nativePlatformCallMethodBinary(String bridgeName,
-        String methodName, ByteBuffer parameters, int instanceId);
+    public Object platformCallMethodSyncBinary(String bridgeName, MethodData methodData) {
+        BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
+        if (bridgePlugin == null) {
+            ALog.e(LOG_TAG, "platformCallMethodBinary bridgePlugin Not found, bridgeName is " + bridgeName);
+            throw new IllegalStateException("Bridge not found: " + bridgeName + ", errorCode = "
+                + BridgeErrorCode.BRIDGE_NAME_ERROR.getId());
+        }
+        if (bridgePlugin.getBridgeType() != BridgeType.BINARY_TYPE) {
+            ALog.e(LOG_TAG, "The bridge is not BINARY_TYPE.");
+            throw new IllegalStateException("Bridge type mismatch, bridge=" + bridgeName + ", errorCode = "
+                + BridgeErrorCode.BRIDGE_CODEC_TYPE_MISMATCH.getId());
+        }
+        if (bridgeBinaryCodec_ == null) {
+            ALog.e(LOG_TAG, "The bridgeBinaryCodec is null.");
+            throw new IllegalStateException("Bridge binary codec invalid, bridge=" + bridgeName + ", errorCode = "
+                + BridgeErrorCode.BRIDGE_CODEC_INVALID.getId());
+        }
+        String methodName = methodData.getMethodName();
+        Object[] params = methodData.getMethodParameter();
+        ByteBuffer buffer = bridgeBinaryCodec_.encodeData(params);
+        BinaryResultHolder holder = nativePlatformCallMethodSyncBinary(bridgeName, methodName, buffer);
+        if (holder == null) {
+            throw new IllegalStateException("CallMethodSyncBinary failed, method = " + methodName);
+        }
+        if (holder.errorCode != 0) {
+            throw new IllegalStateException("CallMethodSyncBinary failed, method = " + methodName + ", errorCode = "
+                + holder.errorCode);
+        }
+        ByteBuffer copyBufferResult = copyByteBuffer(holder.result);
+        return bridgeBinaryCodec_.decodeData(copyBufferResult);
+    }
+
+    /**
+     * Notify the result of the registration.
+     *
+     * @param bridgeName Name of bridge.
+     * @param bridgeType Type of bridge.
+     * @param available Registration result.
+     */
+    public void jsOnRegisterResult(String bridgeName, int bridgeType, boolean available) {
+        BridgePlugin bridgePlugin = findBridgePlugin(bridgeName);
+        if (bridgePlugin == null) {
+            ALog.e(LOG_TAG, "jsOnRegisterResult bridgePlugin Not found, bridgeName is " + bridgeName);
+            return;
+        }
+        if (!available) {
+            bridgePlugin.onRegisterResult(available);
+            return;
+        }
+        int type = (bridgePlugin.getBridgeType() == BridgeType.JSON_TYPE) ? 0 : 1;
+        if (bridgeType == type) {
+            bridgePlugin.onRegisterResult(available);
+        }
+    }
+
+    /**
+     * The class that returns a value for binary synchronous calls.
+     */
+    public static class BinaryResultHolder {
+        /**
+         * Error codes for binary synchronous calls: 0 indicates success, and non-0 indicates failure.
+         */
+        public int errorCode;
+
+        /**
+         * The data result buffer returned by the binary synchronous call.
+         */
+        public ByteBuffer result;
+    }
+
+    /**
+     * Initialize native BridgeManager.
+     */
+    public native void nativeInit();
+
+    private native void nativePlatformCallMethod(String bridgeName, String methodName, String parameters);
+    private native void nativePlatformSendMessageResponse(String bridgeName, String data);
+    private native void nativePlatformSendMethodResult(String bridgeName, String methodName, String result);
+    private native void nativePlatformSendMessage(String bridgeName, String data);
+    private native void nativePlatformSendMessageBinary(String bridgeName, ByteBuffer buffer);
+    private native void nativePlatformSendMethodResultBinary(
+        String bridgeName, String methodName, ByteBuffer buffer, int errorCode, String errorMessage);
+    private native void nativePlatformCallMethodBinary(String bridgeName, String methodName, ByteBuffer parameters);
+    private native String nativePlatformCallMethodSync(String bridgeName, String methodName, String parameters);
+    private native BinaryResultHolder nativePlatformCallMethodSyncBinary(
+        String bridgeName, String methodName, ByteBuffer parameters);
+    private native boolean nativeJSBridgeExists(String bridgeName, int bridgeType);
 }
