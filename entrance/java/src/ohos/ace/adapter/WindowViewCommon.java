@@ -23,15 +23,24 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
+import androidx.core.graphics.Insets;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.ViewCompat;
+import android.view.View;
+import android.graphics.Rect;
+import android.view.ViewGroup;
+import android.content.Context;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
+import java.util.HashMap;
 
 import ohos.ace.adapter.capability.platformview.AcePlatformViewPluginBase;
 import ohos.ace.adapter.capability.platformview.AcePlatformViewBase;
 import ohos.ace.adapter.capability.web.AceWebPluginBase;
 import ohos.ace.adapter.capability.web.AceWebBase;
 import ohos.ace.adapter.WindowViewInterface;
+import ohos.ace.adapter.AvoidArea;
 
 /**
  * WindowViewCommon is a class that implement WindowView common interface.
@@ -39,7 +48,34 @@ import ohos.ace.adapter.WindowViewInterface;
  * @since 2025-05-06
  */
 public class WindowViewCommon {
+    /**
+     * Size class.
+     *
+     * @since 2025-10-29
+     */
+    private static class Size {
+
+        /**
+         * width of size
+         */
+        public int width = 0;
+
+        /**
+         * height of size
+         */
+        public int height = 0;
+
+        public Size(int width, int height) {
+            this.width = width;
+            this.height = height;
+        }
+    }
     private static final String TAG = "WindowViewCommon";
+    private static final int AVOID_TYPE_SYSTEM = 0; // area of SystemUI
+    private static final int AVOID_TYPE_CUTOUT = 1; // cutout of screen
+    private static final int AVOID_TYPE_SYSTEM_GESTURE = 2; // area for system gesture
+    private static final int AVOID_TYPE_KEYBOARD = 3; // area for soft input keyboard
+    private static final int AVOID_TYPE_NAVIGATION_INDICATOR = 4; // area for navigation indicator
 
     private long nativeWindowPtr = 0L;
     private int surfaceWidth = 0;
@@ -51,6 +87,7 @@ public class WindowViewCommon {
     private float lastMouseY = 0f;
     private boolean delayNotifySurfaceChanged = false;
     private boolean delayNotifySurfaceDestroyed = false;
+    private boolean delayNotifyAvoidAreaChanged = false;
     private boolean enterPressed = false;
     private boolean numpadEnterPressed = false;
     private boolean isWindowOrientationChanging = false;
@@ -60,6 +97,7 @@ public class WindowViewCommon {
     private InputConnectionClient inputClient = null;
     private Surface delayNotifyCreateSurface = null;
     private WindowViewInterface windowViewInterface = null;
+    private HashMap<Integer, AvoidArea> avoidAreaRects = new HashMap<>();
 
     /**
      * Constructor of WindowViewCommon
@@ -86,6 +124,7 @@ public class WindowViewCommon {
      */
     public void registerWindow(long windowHandle) {
         nativeWindowPtr = windowHandle;
+        setupWindowInsetsListener();
         delayNotifyIfNeeded();
     }
 
@@ -202,14 +241,20 @@ public class WindowViewCommon {
 
     /**
      * To notify avoid area changed.
+     * This method is called when window insets change, such as when system UI visibility changes,
+     * keyboard appears/disappears, or display cutout area changes.
+     *
+     * @param insets the window insets containing information about system UI areas
+     *               that need to be avoided by the application content
      */
-    public void avoidAreaChanged() {
-        ALog.i(TAG, "avoidAreaChanged call");
-        if (nativeWindowPtr == 0L) {
-            ALog.w(TAG, "avoidAreaChanged nativeWindow not ready.");
-        } else {
-            nativeAvoidAreaChanged(nativeWindowPtr);
-        }
+    public void onInsetsAreaChanged(WindowInsetsCompat insets) {
+        ALog.d(TAG, "Window" + "onInsetsAreaChanged" + nativeWindowPtr);
+        getLocationOnScreen(new LocationCallback() {
+            @Override
+            public void onLocationReceived(Rect rect) {
+                processAvoidAreas(insets, rect);
+            }
+        });
     }
 
     /**
@@ -498,6 +543,217 @@ public class WindowViewCommon {
         return windowViewInterface.superOnKeyPreIme(keyCode, event);
     }
 
+    private void setupWindowInsetsListener() {
+        if (windowViewInterface != null && windowViewInterface.getView() != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(windowViewInterface.getView().getRootView(),
+                new WindowViewCommon.WindowInsetsListener());
+        }
+    }
+
+    private void removeWindowInsetsListener() {
+        if (windowViewInterface != null && windowViewInterface.getView() != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(windowViewInterface.getView().getRootView(), null);
+        }
+    }
+
+private void adjustToWindowCoordinate(AvoidArea avoidArea, Rect windowRect) {
+        if (avoidArea == null || windowRect == null) {
+            return;
+        }
+
+        Rect[] rects = {
+            avoidArea.leftRect,
+            avoidArea.topRect,
+            avoidArea.rightRect,
+            avoidArea.bottomRect
+        };
+
+        for (Rect rect : rects) {
+            if (rect != null && !rect.isEmpty()) {
+                rect.offset(-windowRect.left, -windowRect.top);
+            }
+        }
+    }
+
+    private void processAvoidAreas(WindowInsetsCompat insets, Rect rect) {
+        if (rect == null) {
+            ALog.w(TAG, "Window processAvoidAreas: windowRect is null");
+            return;
+        }
+
+        Size screenSize = getRootViewSize();
+        for (int i = AVOID_TYPE_SYSTEM; i <= AVOID_TYPE_NAVIGATION_INDICATOR; i++) {
+            if (i == AVOID_TYPE_SYSTEM_GESTURE) {
+                continue;
+            }
+            onAvoidAreaChanged(i, insets.getInsets(avoidTypeToType(i)), screenSize.width, screenSize.height,
+                rect);
+            ALog.d(TAG, "Window" + "screenWidth:" + screenSize.width + "screenHeight:" + screenSize.height);
+            ALog.d(TAG, "Window" + "rect:" + rect.left + "," + rect.top + "," +
+                rect.width() + "," + rect.height() + "," + rect.bottom);
+            ALog.d(TAG, "Window" + i + "left" + insets.getInsets(avoidTypeToType(i)).left);
+            ALog.d(TAG, "Window" + i + "top" + insets.getInsets(avoidTypeToType(i)).top);
+            ALog.d(TAG, "Window" + i + "right" + insets.getInsets(avoidTypeToType(i)).right);
+            ALog.d(TAG, "Window" + i + "bottom" + insets.getInsets(avoidTypeToType(i)).bottom);
+        }
+    }
+
+    private void onAvoidAreaChanged(int type, Insets insets, int screenWidth, int screenHeight, Rect rect) {
+
+        AvoidArea avoidAreaRect = new AvoidArea(
+            getIntersection(rect, new Rect(0, 0, insets.left, screenHeight)),
+            getIntersection(rect, new Rect(0, 0, screenWidth, insets.top)),
+            getIntersection(rect, new Rect(screenWidth - insets.right, 0, screenWidth, screenHeight)),
+            getIntersection(rect, new Rect(0, screenHeight - insets.bottom, screenWidth, screenHeight)));
+
+        adjustToWindowCoordinate(avoidAreaRect, rect);
+        if (this.avoidAreaRects.containsKey(type) && avoidAreaRect.isEqualTo(this.avoidAreaRects.get(type))) {
+            return;
+        }
+        this.avoidAreaRects.put(type, avoidAreaRect);
+        ALog.d(TAG, "Window" + "onAvoidAreaChanged call");
+        if (nativeWindowPtr == 0L) {
+            delayNotifyAvoidAreaChanged = true;
+            ALog.w(TAG, "Window" + "avoidAreaChanged nativeWindow not ready.");
+        } else {
+            nativeAvoidAreaChanged(nativeWindowPtr, type,
+                avoidAreaRect.leftRect.left, avoidAreaRect.leftRect.top,
+                avoidAreaRect.leftRect.width(), avoidAreaRect.leftRect.height(),
+                avoidAreaRect.topRect.left, avoidAreaRect.topRect.top,
+                avoidAreaRect.topRect.width(), avoidAreaRect.topRect.height(),
+                avoidAreaRect.rightRect.left, avoidAreaRect.rightRect.top,
+                avoidAreaRect.rightRect.width(), avoidAreaRect.rightRect.height(),
+                avoidAreaRect.bottomRect.left, avoidAreaRect.bottomRect.top,
+                avoidAreaRect.bottomRect.width(), avoidAreaRect.bottomRect.height());
+        }
+    }
+
+    private Size getRootViewSize() {
+        Size size = new Size(0, 0);
+        if (windowViewInterface != null && windowViewInterface.getView() != null) {
+            size.width = windowViewInterface.getView().getRootView().getWidth();
+            size.height = windowViewInterface.getView().getRootView().getHeight();
+        }
+        return size;
+    }
+    private Rect getIntersection(Rect rect1, Rect rect2) {
+        if (rect1 == null || rect2 == null) {
+            return new Rect(0, 0, 0, 0);
+        }
+        Rect intersection = new Rect();
+        boolean hasIntersection = intersection.setIntersect(rect1, rect2);
+        if (!hasIntersection || intersection.width() <= 0 || intersection.height() <= 0) {
+            intersection.setEmpty();
+        }
+        return intersection;
+    }
+
+    /**
+     * Callback interface for receiving the location of the view.
+     *
+     * @since 2025-10-29
+     */
+    public interface LocationCallback {
+        /**
+         * Called when the location of the view is received.
+         *
+         * @param rect The rectangle representing the location and size of the view on screen.
+         */
+        void onLocationReceived(Rect rect);
+    }
+
+    private void getLocationOnScreen(LocationCallback callback) {
+        ALog.d(TAG, "Window" + "getLocationOnScreen");
+        if (windowViewInterface == null || windowViewInterface.getView() == null) {
+            if (callback != null) {
+                callback.onLocationReceived(new Rect(0, 0, 0, 0));
+            }
+            ALog.e(TAG, "Window" + "windowViewInterface == null || windowViewInterface.getView() == null");
+            return;
+        }
+        View view = windowViewInterface.getView();
+        if (view.getWindowToken() == null || !view.isAttachedToWindow()) {
+            ALog.d(TAG, "Window" + "View is not attached to window, returning default rect");
+            if (callback != null) {
+                callback.onLocationReceived(new Rect(0, 0, 0, 0));
+            }
+            return;
+        }
+        // return the rect after the view is layouted and measured
+        view.post(new Runnable() {
+            @Override
+            public void run() {
+                Rect rect = new Rect();
+                if (windowViewInterface != null && windowViewInterface.getView() != null) {
+                    View view = windowViewInterface.getView();
+                    int[] location = new int[2];
+                    view.getLocationInWindow(location);
+                    rect.left = location[0];
+                    rect.top = location[1];
+                    rect.right = rect.left + view.getWidth();
+                    rect.bottom = rect.top + view.getHeight();
+                    ALog.d(TAG, "Window" + "getLocationOnScreen delayed: left=" + rect.left + ", top=" + rect.top);
+                }
+                if (callback != null) {
+                    callback.onLocationReceived(rect);
+                }
+            }
+        });
+    }
+
+    private int avoidTypeFromType(int type) {
+        if (type == WindowInsetsCompat.Type.systemBars()) {
+                return AVOID_TYPE_SYSTEM;
+        } else if (type == WindowInsetsCompat.Type.displayCutout()) {
+            return AVOID_TYPE_CUTOUT;
+        } else if (type == WindowInsetsCompat.Type.navigationBars()) {
+            return AVOID_TYPE_NAVIGATION_INDICATOR;
+        } else if (type == WindowInsetsCompat.Type.ime()) {
+            return AVOID_TYPE_KEYBOARD;
+        } else {
+            return -1;
+        }
+    }
+
+    private int avoidTypeToType(int type) {
+        if (type == AVOID_TYPE_SYSTEM) {
+                return WindowInsetsCompat.Type.systemBars();
+        } else if (type == AVOID_TYPE_CUTOUT) {
+            return WindowInsetsCompat.Type.displayCutout();
+        } else if (type == AVOID_TYPE_NAVIGATION_INDICATOR) {
+            return WindowInsetsCompat.Type.navigationBars();
+        } else if (type == AVOID_TYPE_KEYBOARD) {
+            return WindowInsetsCompat.Type.ime();
+        } else {
+            return -1;
+        }
+    }
+
+    private static class WindowInsetsListener implements androidx.core.view.OnApplyWindowInsetsListener {
+        @Override
+        public WindowInsetsCompat onApplyWindowInsets(View view, WindowInsetsCompat insets) {
+            ALog.d(TAG, "Window" + "onApplyWindowInsets");
+            WindowViewInterface windowView;
+            if (view instanceof WindowViewInterface) {
+                ALog.d(TAG, "Window" + "view instanceof WindowViewInterface");
+                // subwindow not support yet
+                return insets;
+            } else {
+                ALog.d(TAG, "Window" + "view not instanceof WindowViewInterface");
+                ViewGroup contentParent = (ViewGroup) view.findViewById(android.R.id.content);
+                View contentView = contentParent.getChildAt(0);
+                if (contentView instanceof WindowViewInterface) {
+                    ALog.d(TAG, "Window" + "view is instanceof WindowViewInterface");
+                    // main window
+                    windowView = (WindowViewInterface) contentView;
+                    windowView.onInsetsAreaChanged(insets);
+                }
+            }
+            return insets;
+        }
+    }
+
+
     private void delayNotifyIfNeeded() {
         if (nativeWindowPtr == 0L) {
             ALog.e(TAG, "delay notify, nativeWindow is invalid!");
@@ -519,6 +775,25 @@ public class WindowViewCommon {
             ALog.i(TAG, "delay notify surface changed w=" + surfaceWidth + " h=" + surfaceHeight);
             nativeSurfaceChanged(nativeWindowPtr, surfaceWidth, surfaceHeight, density);
             delayNotifySurfaceChanged = false;
+        }
+
+        if (delayNotifyAvoidAreaChanged) {
+            ALog.i(TAG, "delay notify Insets changed");
+            for (Map.Entry<Integer, AvoidArea> entry : this.avoidAreaRects.entrySet()) {
+                    Integer key = entry.getKey();
+                    AvoidArea avoidAreaRect = entry.getValue();
+                // notify avoid area changed
+                nativeAvoidAreaChanged(nativeWindowPtr, avoidTypeFromType(key),
+                    avoidAreaRect.leftRect.left, avoidAreaRect.leftRect.top,
+                    avoidAreaRect.leftRect.width(), avoidAreaRect.leftRect.height(),
+                    avoidAreaRect.topRect.left, avoidAreaRect.topRect.top,
+                    avoidAreaRect.topRect.width(), avoidAreaRect.topRect.height(),
+                    avoidAreaRect.rightRect.left, avoidAreaRect.rightRect.top,
+                    avoidAreaRect.rightRect.width(), avoidAreaRect.rightRect.height(),
+                    avoidAreaRect.bottomRect.left, avoidAreaRect.bottomRect.top,
+                    avoidAreaRect.bottomRect.width(), avoidAreaRect.bottomRect.height());
+            }
+            delayNotifyAvoidAreaChanged = false;
         }
     }
 
@@ -627,5 +902,9 @@ public class WindowViewCommon {
     private native boolean nativeDispatchKeyEvent(long windowPtr, int keyCode, int action, int repeatTime,
             long timeStamp, long timeStampStart, int source, int deviceId, int metaKey);
 
-    private native void nativeAvoidAreaChanged(long windowPtr);
+    private native void nativeAvoidAreaChanged(long windowPtr, int type,
+        int leftLeft, int leftTop, int leftWidth, int leftHeight,
+        int topLeft, int topTop, int topWidth, int topHeight,
+        int rightLeft, int rightTop, int rightWidth, int rightHeight,
+        int bottomLeft, int bottomTop, int bottomWitdh, int bottomHeight);
 }

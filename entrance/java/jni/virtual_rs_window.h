@@ -149,10 +149,7 @@ public:
     void NotifySurfaceDestroyed();
     void NotifyTouchOutside();
     void NotifyAvoidAreaChange(const std::shared_ptr<AvoidArea>& avoidArea, AvoidAreaType type);
-    void AvoidAreaChange();
-    bool IsTouchingBottom(const Rect& subWindowRect, const Rect& safeAreaRect);
-    bool IsTouchingRight(const Rect& subWindowRect, const Rect& safeAreaRect);
-    void GetAvoidAreaForSubWindow(const Rect& subWindowRect, const Rect& safeAreaRect, AvoidArea& avoidArea);
+    void OnSafeAreaChange(int type, Rosen::AvoidArea avoidArea);
     void UpdateAvoidArea(const std::shared_ptr<Rosen::AvoidArea>& avoidArea, AvoidAreaType type);
     void SubWindowHide();
 

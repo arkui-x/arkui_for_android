@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.os.Build;
+import androidx.core.view.WindowInsetsCompat;
 
 import ohos.ace.adapter.capability.platformview.AcePlatformViewPluginBase;
 import ohos.ace.adapter.capability.web.AceWebPluginBase;
@@ -144,10 +145,16 @@ public class WindowViewSurface extends SurfaceView implements SurfaceHolder.Call
 
     /**
      * To notify avoid area changed.
+     * This method is called when window insets change, such as when system UI visibility changes,
+     * keyboard appears/disappears, or display cutout area changes.
+     * It delegates the handling to WindowViewCommon which performs the actual processing.
+     *
+     * @param insets the window insets containing information about system UI areas
+     *               that need to be avoided by the application content
      */
     @Override
-    public void avoidAreaChanged() {
-        windowViewCommon.avoidAreaChanged();
+    public void onInsetsAreaChanged(WindowInsetsCompat insets) {
+        windowViewCommon.onInsetsAreaChanged(insets);
     }
 
     /**
