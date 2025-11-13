@@ -76,6 +76,16 @@ public class WindowViewCommon {
     private static final int AVOID_TYPE_SYSTEM_GESTURE = 2; // area for system gesture
     private static final int AVOID_TYPE_KEYBOARD = 3; // area for soft input keyboard
     private static final int AVOID_TYPE_NAVIGATION_INDICATOR = 4; // area for navigation indicator
+    private static boolean sAndroidXAvailable;
+
+    static {
+        try {
+            Class.forName("androidx.core.view.ViewCompat");
+            sAndroidXAvailable = true;
+        } catch (ClassNotFoundException e) {
+            sAndroidXAvailable = false;
+        }
+    }
 
     private long nativeWindowPtr = 0L;
     private int surfaceWidth = 0;
@@ -544,6 +554,10 @@ public class WindowViewCommon {
     }
 
     private void setupWindowInsetsListener() {
+        if (!sAndroidXAvailable) {
+            ALog.w(TAG, "AndroidX is not available.");
+            return;
+        }
         if (windowViewInterface != null && windowViewInterface.getView() != null) {
             ViewCompat.setOnApplyWindowInsetsListener(windowViewInterface.getView().getRootView(),
                 new WindowViewCommon.WindowInsetsListener());
@@ -551,6 +565,9 @@ public class WindowViewCommon {
     }
 
     private void removeWindowInsetsListener() {
+        if (!sAndroidXAvailable) {
+            return;
+        }
         if (windowViewInterface != null && windowViewInterface.getView() != null) {
             ViewCompat.setOnApplyWindowInsetsListener(windowViewInterface.getView().getRootView(), null);
         }
