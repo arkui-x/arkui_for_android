@@ -27,4 +27,18 @@ ReportSyncEventFunc LoadReportSyncEventFunc()
     return nullptr;
 }
 
+void NotifyForceExpandStateFunc(int32_t state, bool isTid, uint64_t tid)
+{
+    return;
+}
+
+SetNotifyForceExpandStateFunc LoadSetNotifyForceExpandStateFunc()
+{
+    return nullptr;
+}
+
+NotifyAppSceneFunc LoadNotifyAppSceneFunc()
+{
+    return nullptr;
+}
 } // namespace OHOS::Ace
