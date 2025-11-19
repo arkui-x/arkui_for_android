@@ -793,15 +793,14 @@ MenuWindowState SubwindowAndroid::GetDetachState()
 }
 
 void SubwindowAndroid::ShowBindSheetNG(bool isShow, std::function<void(const std::string&)>&& callback,
-    std::function<RefPtr<NG::UINode>()>&& buildNodeFunc, std::function<RefPtr<NG::UINode>()>&& buildtitleNodeFunc,
-    NG::SheetStyle& sheetStyle, std::function<void()>&& onAppear, std::function<void()>&& onDisappear,
-    std::function<void()>&& shouldDismiss, std::function<void(const int32_t)>&& onWillDismiss,
-    std::function<void()>&& onWillAppear, std::function<void()>&& onWillDisappear,
-    std::function<void(const float)>&& onHeightDidChange,
-    std::function<void(const float)>&& onDetentsDidChange,
-    std::function<void(const float)>&& onWidthDidChange,
-    std::function<void(const float)>&& onTypeDidChange,
-    std::function<void()>&& sheetSpringBack, const RefPtr<NG::FrameNode>& targetNode)
+    std::function<RefPtr<NG::UINode>(int32_t)>&& buildNodeFunc,
+    std::function<RefPtr<NG::UINode>()>&& buildtitleNodeFunc, NG::SheetStyle& sheetStyle,
+    std::function<void()>&& onAppear, std::function<void()>&& onDisappear, std::function<void()>&& shouldDismiss,
+    std::function<void(const int32_t)>&& onWillDismiss, std::function<void()>&& onWillAppear,
+    std::function<void()>&& onWillDisappear, std::function<void(const float)>&& onHeightDidChange,
+    std::function<void(const float)>&& onDetentsDidChange, std::function<void(const float)>&& onWidthDidChange,
+    std::function<void(const float)>&& onTypeDidChange, std::function<void()>&& sheetSpringBack,
+    const RefPtr<NG::FrameNode>& targetNode)
 {
     auto aceContainer = Platform::AceContainerSG::GetContainer(childContainerId_);
     CHECK_NULL_VOID(aceContainer);

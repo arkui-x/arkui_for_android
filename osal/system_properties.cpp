@@ -101,6 +101,8 @@ bool SystemProperties::taskPriorityAdjustmentEnable_ = false;
 
 int32_t SystemProperties::dragDropFrameworkStatus_ = 0;
 
+int32_t SystemProperties::pageLoadTimethreshold_ = 1000; // page load max timethreshold is 1000ms.
+
 bool SystemProperties::pageTransitionFrzEnabled_ = false;
 bool SystemProperties::softPagetransition_ = false;
 
@@ -398,6 +400,11 @@ int32_t SystemProperties::GetDragDropFrameworkStatus()
 bool SystemProperties::IsSuperFoldDisplayDevice()
 {
     return false;
+}
+
+int32_t SystemProperties::GetPageLoadTimethreshold()
+{
+    return pageLoadTimethreshold_;
 }
 
 bool SystemProperties::GetContainerDeleteFlag()
