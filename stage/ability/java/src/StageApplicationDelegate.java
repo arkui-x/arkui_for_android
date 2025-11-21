@@ -29,8 +29,10 @@ import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.SharedPreferences;
+import android.database.ContentObserver;
 import android.os.Bundle;
 import android.os.Build;
+import android.os.Handler;
 import android.os.LocaleList;
 import android.os.Process;
 import android.os.Trace;
@@ -146,6 +148,21 @@ public class StageApplicationDelegate {
 
     private String assetsModulePath = "";
 
+    private ContentObserver fontScaleObserver = new ContentObserver(new Handler()) {
+        @Override
+        public void onChange(boolean selfChange) {
+            if (stageApplication == null) {
+                Log.e(LOG_TAG, "stageApplication is null");
+                return;
+            }
+            float fontScale = Settings.System.getFloat(stageApplication.getContentResolver(),
+                    Settings.System.FONT_SCALE, 1.0f);
+            Configuration config = stageApplication.getResources().getConfiguration();
+            config.fontScale = fontScale;
+            onConfigurationChanged(config);
+        }
+    };
+
     /**
      * Constructor.
      */
@@ -250,6 +267,9 @@ public class StageApplicationDelegate {
 
         initActivity();
         initPlatformCapability(context);
+        stageApplication.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.FONT_SCALE), true,
+                fontScaleObserver);
         Trace.endSection();
     }
 
@@ -771,6 +791,10 @@ public class StageApplicationDelegate {
      * @param newConfig the configuration.
      */
     public void onConfigurationChanged(Configuration newConfig) {
+        if (stageApplication != null) {
+            newConfig.fontScale = Settings.System.getFloat(stageApplication.getContentResolver(),
+                    Settings.System.FONT_SCALE, 1.0f);
+        }
         setLocaleInfo();
         JSONObject json = StageConfiguration.convertConfiguration(newConfig, -1.0);
         nativeOnConfigurationChanged(json.toString());
