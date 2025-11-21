@@ -750,11 +750,13 @@ private void adjustToWindowCoordinate(AvoidArea avoidArea, Rect windowRect) {
         @Override
         public WindowInsetsCompat onApplyWindowInsets(View view, WindowInsetsCompat insets) {
             ALog.d(TAG, "Window" + "onApplyWindowInsets");
+            WindowInsetsCompat resultInsets = ViewCompat.onApplyWindowInsets(view, insets);
+
             WindowViewInterface windowView;
             if (view instanceof WindowViewInterface) {
                 ALog.d(TAG, "Window" + "view instanceof WindowViewInterface");
                 // subwindow not support yet
-                return insets;
+                return resultInsets;
             } else {
                 ALog.d(TAG, "Window" + "view not instanceof WindowViewInterface");
                 ViewGroup contentParent = (ViewGroup) view.findViewById(android.R.id.content);
@@ -766,7 +768,7 @@ private void adjustToWindowCoordinate(AvoidArea avoidArea, Rect windowRect) {
                     windowView.onInsetsAreaChanged(insets);
                 }
             }
-            return insets;
+            return resultInsets;
         }
     }
 
