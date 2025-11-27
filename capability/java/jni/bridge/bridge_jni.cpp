@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,67 +17,84 @@
 
 #include <memory>
 #include <unordered_map>
+#include "ui/base/utils/utils.h"
 
 #include "adapter/android/capability/java/jni/bridge/bridge_manager.h"
 #include "core/common/container.h"
 #include "frameworks/core/common/ace_engine.h"
+#include "plugins/bridge/utils/include/error_code.h"
 
+using namespace OHOS::Plugin::Bridge;
 namespace OHOS::Ace::Platform {
 namespace {
-static const std::string CONVER_FAILED = "error";
+static const std::string CONVERSION_FAILED = "error";
 // Register the native method of jni in java.
 const char ACE_BRIDGE_CLASS_NAME[] = "ohos/ace/adapter/capability/bridge/BridgeManager";
 static const JNINativeMethod METHODS[] = {
     {
         "nativeInit",
-        "(I)V",
-        reinterpret_cast<void *>(&BridgeJni::NativeInit)
-    },
-    {
-        "nativeUpdateCurrentInstanceId",
-        "(I)V",
-        reinterpret_cast<void *>(&BridgeJni::NativeUpdateCurrentInstanceId)
+        "()V",
+        reinterpret_cast<void*>(&BridgeJni::NativeInit)
     },
     {
         "nativePlatformCallMethod",
-        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V",
-        reinterpret_cast<void *>(&BridgeJni::PlatformCallMethod)
+        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+        reinterpret_cast<void*>(&BridgeJni::PlatformCallMethod)
     },
     {
         "nativePlatformSendMethodResult",
-        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V",
-        reinterpret_cast<void *>(&BridgeJni::PlatformSendMethodResult)
+        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+        reinterpret_cast<void*>(&BridgeJni::PlatformSendMethodResult)
     },
     {
         "nativePlatformSendMessageResponse",
-        "(Ljava/lang/String;Ljava/lang/String;I)V",
-        reinterpret_cast<void *>(&BridgeJni::PlatformSendMessageResponse)
+        "(Ljava/lang/String;Ljava/lang/String;)V",
+        reinterpret_cast<void*>(&BridgeJni::PlatformSendMessageResponse)
     },
     {
         "nativePlatformSendMessage",
-        "(Ljava/lang/String;Ljava/lang/String;I)V",
-        reinterpret_cast<void *>(&BridgeJni::PlatformSendMessage)
+        "(Ljava/lang/String;Ljava/lang/String;)V",
+        reinterpret_cast<void*>(&BridgeJni::PlatformSendMessage)
     },
     {
         "nativePlatformSendMessageBinary",
-        "(Ljava/lang/String;Ljava/nio/ByteBuffer;I)V",
-        reinterpret_cast<void *>(&BridgeJni::PlatformSendMessageBinary)
+        "(Ljava/lang/String;Ljava/nio/ByteBuffer;)V",
+        reinterpret_cast<void*>(&BridgeJni::PlatformSendMessageBinary)
     },
     {
         "nativePlatformSendMethodResultBinary",
-        "(Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;IILjava/lang/String;)V",
-        reinterpret_cast<void *>(&BridgeJni::PlatformSendMethodResultBinary)
+        "(Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;ILjava/lang/String;)V",
+        reinterpret_cast<void*>(&BridgeJni::PlatformSendMethodResultBinary)
     },
     {
         "nativePlatformCallMethodBinary",
-        "(Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;I)V",
-        reinterpret_cast<void *>(&BridgeJni::PlatformCallMethodBinary)
-    }
+        "(Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;)V",
+        reinterpret_cast<void*>(&BridgeJni::PlatformCallMethodBinary)
+    },
+    {
+        "nativePlatformCallMethodSync",
+        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+        reinterpret_cast<void*>(&BridgeJni::PlatformCallMethodSync),
+    },
+    {
+        "nativePlatformCallMethodSyncBinary",
+        "(Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;)Lohos/ace/adapter/capability/bridge/"
+        "BridgeManager$BinaryResultHolder;",
+        reinterpret_cast<void*>(&BridgeJni::PlatformCallMethodSyncBinary),
+    },
+    {
+        "nativeJSBridgeExists",
+        "(Ljava/lang/String;I)Z",
+        reinterpret_cast<void*>(&BridgeJni::JSBridgeExistsJni),
+    },
 };
 
 // Register the native method of java in jni.
 static const char JS_CALL_METHOD_JNI[] = "jsCallMethod";
 static const char JS_CALL_METHOD_JNI_PARAM[] = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V";
+static const char JS_CALL_METHOD_SYNC_JNI[] = "jsCallMethodSync";
+static const char JS_CALL_METHOD_SYNC_JNI_PARAM[] =
+    "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;";
 static const char JS_CALL_METHOD_RESULT_JNI[] = "jsSendMethodResult";
 static const char JS_CALL_METHOD_RESULT_JNI_PARAM[] = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V";
 static const char JS_SEND_MESSAGE_JNI[] = "jsSendMessage";
@@ -88,64 +105,122 @@ static const char JS_CANCEL_RESPONSE_JNI[] = "jsCancelMethod";
 static const char JS_CANCEL_RESPONSE_JNI_PARAM[] = "(Ljava/lang/String;Ljava/lang/String;)V";
 static const char JS_CALL_METHOD_BINARY_JNI[] = "jsCallMethodBinary";
 static const char JS_CALL_METHOD_BINARY_JNI_PARAM[] = "(Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;)V";
+static const char JS_CALL_METHOD_BINARY_SYNC_JNI[] = "jsCallMethodBinarySync";
+static const char JS_CALL_METHOD_BINARY_SYNC_JNI_PARAM[] =
+    "(Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;)Lohos/ace/adapter/capability/bridge/"
+        "BridgeManager$BinaryResultHolder;";
 static const char JS_SEND_MESSAGE_BINARY_JNI[] = "jsSendMessageBinary";
 static const char JS_SEND_MESSAGE_BINARY_JNI_PARAM[] = "(Ljava/lang/String;Ljava/nio/ByteBuffer;)V";
 static const char JS_SEND_METHOD_RESULT_BINARY_JNI[] = "jsSendMethodResultBinary";
 static const char JS_SEND_METHOD_RESULT_BINARY_JNI_PARAM[] =
     "(Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;ILjava/lang/String;)V";
+static const char JS_ON_REGISTER_RESULT_JNI[] = "jsOnRegisterResult";
+static const char JS_ON_REGISTER_RESULT_JNI_PARAM[] = "(Ljava/lang/String;IZ)V";
 
 // java methodID and object.
 struct {
     jmethodID JSCallMethodJni_;
+    jmethodID JSCallMethodSyncJni_;
     jmethodID JSSendMethodResultJni_;
     jmethodID JSSendMessageJni_;
     jmethodID JSSendMessageResponseJni_;
     jmethodID JSCancelMethodJni_;
     jmethodID JSCallMethodBinaryJni_;
+    jmethodID JSCallMethodBinarySyncJni_;
     jmethodID JSSendMessageBinaryJni_;
     jmethodID JSSendMethodResultBinaryJni_;
+    jmethodID JSOnRegisterResultJni_;
 } g_pluginClass;
 
-std::unordered_map<jint, JniEnvironment::JavaGlobalRef> g_jobjects;
+JniEnvironment::JavaGlobalRef g_JObject(nullptr, nullptr);
 std::mutex g_bridgeJniLock;
-static int32_t g_currentInstanceId;
+
+static void DeleteLocalRefString(const std::shared_ptr<JNIEnv>& env, jstring jString)
+{
+    CHECK_NULL_VOID(env);
+    if (jString) {
+        env->DeleteLocalRef(jString);
+    }
+}
+
+static void DeleteLocalRefObject(const std::shared_ptr<JNIEnv>& env, jobject jObject)
+{
+    CHECK_NULL_VOID(env);
+    if (jObject) {
+        env->DeleteLocalRef(jObject);
+    }
+}
+
+static bool PrepareBinarySyncParams(const std::shared_ptr<JNIEnv>& env, const std::string& bridgeName,
+    const std::string& methodName, const std::vector<uint8_t>& data, jstring& jBridgeName, jstring& jMethodName,
+    jobject& jByteBuffer, int32_t& errorCode)
+{
+    CHECK_NULL_RETURN(env, false);
+    jBridgeName = env->NewStringUTF(bridgeName.c_str());
+    if (!jBridgeName) {
+        LOGE("PrepareBinarySyncParams bridgeName convert failed.");
+        errorCode = static_cast<int32_t>(ErrorCode::BRIDGE_NAME_ERROR);
+        return false;
+    }
+    jMethodName = env->NewStringUTF(methodName.c_str());
+    if (!jMethodName) {
+        LOGE("PrepareBinarySyncParams methodName convert failed.");
+        DeleteLocalRefString(env, jBridgeName);
+        errorCode = static_cast<int32_t>(ErrorCode::BRIDGE_METHOD_NAME_ERROR);
+        return false;
+    }
+    jByteBuffer = env->NewDirectByteBuffer((void*)data.data(), data.size());
+    if (!jByteBuffer) {
+        LOGE("PrepareBinarySyncParams params convert failed.");
+        DeleteLocalRefString(env, jBridgeName);
+        DeleteLocalRefString(env, jMethodName);
+        errorCode = static_cast<int32_t>(ErrorCode::BRIDGE_METHOD_PARAM_ERROR);
+        return false;
+    }
+    return true;
+}
+
+static void FillHolderFromJava(const std::shared_ptr<JNIEnv>& env, jobject holderObj, BinaryResultHolder& holder)
+{
+    if (!env || !holderObj) {
+        holder.errorCode = static_cast<int32_t>(ErrorCode::BRIDGE_INVALID);
+        return;
+    }
+    jclass holderCls = env->GetObjectClass(holderObj);
+    if (!holderCls) {
+        holder.errorCode = static_cast<int32_t>(ErrorCode::BRIDGE_INVALID);
+        env->DeleteLocalRef(holderObj);
+        return;
+    }
+    jfieldID errorCodeField = env->GetFieldID(holderCls, "errorCode", "I");
+    jfieldID resultField = env->GetFieldID(holderCls, "result", "Ljava/nio/ByteBuffer;");
+    if (!errorCodeField || !resultField) {
+        holder.errorCode = static_cast<int32_t>(ErrorCode::BRIDGE_METHOD_UNIMPL);
+        env->DeleteLocalRef(holderCls);
+        env->DeleteLocalRef(holderObj);
+        return;
+    }
+    holder.errorCode = static_cast<int32_t>(env->GetIntField(holderObj, errorCodeField));
+    jobject resultBufferObj = env->GetObjectField(holderObj, resultField);
+    if (resultBufferObj) {
+        auto* addr = (unsigned char*)env->GetDirectBufferAddress(resultBufferObj);
+        size_t size = static_cast<size_t>(env->GetDirectBufferCapacity(resultBufferObj));
+        if (addr && size > 0) {
+            uint8_t* copyBuf = BufferMapping::Copy(addr, size).Release();
+            holder.buffer = std::make_unique<BufferMapping>(copyBuf, size);
+        } else {
+            LOGE("FillHolderFromJava buffer invalid");
+        }
+        env->DeleteLocalRef(resultBufferObj);
+    }
+    env->DeleteLocalRef(holderCls);
+    env->DeleteLocalRef(holderObj);
+}
 }  // namespace
 
-jobject GetJObjectByInstanceId(const int32_t instanceId)
+std::string TransformString(JNIEnv* env, jstring jString)
 {
-    std::lock_guard<std::mutex> lock(g_bridgeJniLock);
-    auto finder = g_jobjects.find(instanceId);
-    if (finder == g_jobjects.end()) {
-        LOGE("BridgeJobject is not exist. the instanceId is %{public}d", instanceId);
-        return nullptr;
-    }
-    return finder->second.get();
-}
-
-RefPtr<TaskExecutor> BridgeJni::GetPlatformTaskExecutor(int32_t instanceId)
-{
-    auto container = AceEngine::Get().GetContainer(instanceId);
-    if (!container) {
-        LOGE("JNI GetPlatformTaskExecutor container is null. the instanceId is %{public}d", instanceId);
-        return nullptr;
-    }
-
-    auto pipelineContext = container->GetPipelineContext();
-    if (!pipelineContext) {
-        LOGE("JNI GetPlatformTaskExecutor pipelineContext is null. the instanceId is %{public}d", instanceId);
-        return nullptr;
-    }
-    RefPtr<TaskExecutor> taskExecutor = pipelineContext->GetTaskExecutor();
-    if (!taskExecutor) {
-        LOGE("JNI GetPlatformTaskExecutor taskExecutor is null. the instanceId is %{public}d", instanceId);
-        return nullptr;
-    }
-    return taskExecutor;
-}
-
-std::string TransformString(JNIEnv *env, jstring jString)
-{
-    CHECK_NULL_RETURN(env, CONVER_FAILED);
+    CHECK_NULL_RETURN(env, CONVERSION_FAILED);
     std::string resultString;
     auto converString = env->GetStringUTFChars(jString, nullptr);
     if (converString != nullptr) {
@@ -155,15 +230,7 @@ std::string TransformString(JNIEnv *env, jstring jString)
     return resultString;
 }
 
-void DeleteLocalRefString(std::shared_ptr<JNIEnv> env, jstring jString)
-{
-    CHECK_NULL_VOID(env);
-    if (jString) {
-        env->DeleteLocalRef(jString);
-    }
-}
-
-bool BridgeJni::Register(const std::shared_ptr<JNIEnv> &env)
+bool BridgeJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
     if (!env) {
         LOGE("Register JNIEnv is nullptr");
@@ -179,26 +246,26 @@ bool BridgeJni::Register(const std::shared_ptr<JNIEnv> &env)
     return ret;
 }
 
-void BridgeJni::NativeInit(JNIEnv *env, jobject jobj, jint instanceId)
+void BridgeJni::NativeInit(JNIEnv* env, jobject jobj)
 {
     if (!env) {
         LOGE("NativeInit JNIEnv is nullptr");
         return;
     }
 
-    auto id = static_cast<int32_t>(instanceId);
     std::lock_guard<std::mutex> lock(g_bridgeJniLock);
-    g_currentInstanceId = id;
-    LOGI("BridgeJni NativeInit InstanceId is %{public}d", g_currentInstanceId);
-    g_jobjects.emplace(id, JniEnvironment::MakeJavaGlobalRef(JniEnvironment::GetInstance().GetJniEnv(), jobj));
+    LOGI("BridgeJni NativeInit - Singleton initialization");
+    g_JObject = JniEnvironment::MakeJavaGlobalRef(JniEnvironment::GetInstance().GetJniEnv(), jobj);
 
     jclass cls = env->GetObjectClass(jobj);
     if (cls == nullptr) {
-        LOGE("AceBridge JNI Init: class not found");
+        LOGE("Bridge JNI Init: class not found");
         return;
     }
 
     g_pluginClass.JSCallMethodJni_ = env->GetMethodID(cls, JS_CALL_METHOD_JNI, JS_CALL_METHOD_JNI_PARAM);
+    g_pluginClass.JSCallMethodSyncJni_ = env->GetMethodID(cls,
+        JS_CALL_METHOD_SYNC_JNI, JS_CALL_METHOD_SYNC_JNI_PARAM);
     g_pluginClass.JSSendMethodResultJni_ = env->GetMethodID(cls,
         JS_CALL_METHOD_RESULT_JNI, JS_CALL_METHOD_RESULT_JNI_PARAM);
     g_pluginClass.JSSendMessageJni_ = env->GetMethodID(cls, JS_SEND_MESSAGE_JNI, JS_SEND_MESSAGE_JNI_PARAM);
@@ -207,36 +274,28 @@ void BridgeJni::NativeInit(JNIEnv *env, jobject jobj, jint instanceId)
     g_pluginClass.JSCancelMethodJni_ = env->GetMethodID(cls, JS_CANCEL_RESPONSE_JNI, JS_CANCEL_RESPONSE_JNI_PARAM);
     g_pluginClass.JSCallMethodBinaryJni_ = env->GetMethodID(cls,
         JS_CALL_METHOD_BINARY_JNI, JS_CALL_METHOD_BINARY_JNI_PARAM);
+    g_pluginClass.JSCallMethodBinarySyncJni_ = env->GetMethodID(cls,
+        JS_CALL_METHOD_BINARY_SYNC_JNI, JS_CALL_METHOD_BINARY_SYNC_JNI_PARAM);
     g_pluginClass.JSSendMessageBinaryJni_ = env->GetMethodID(cls,
         JS_SEND_MESSAGE_BINARY_JNI, JS_SEND_MESSAGE_BINARY_JNI_PARAM);
     g_pluginClass.JSSendMethodResultBinaryJni_ = env->GetMethodID(cls,
         JS_SEND_METHOD_RESULT_BINARY_JNI, JS_SEND_METHOD_RESULT_BINARY_JNI_PARAM);
+    g_pluginClass.JSOnRegisterResultJni_ = env->GetMethodID(cls,
+        JS_ON_REGISTER_RESULT_JNI, JS_ON_REGISTER_RESULT_JNI_PARAM);
     env->DeleteLocalRef(cls);
 }
 
-void BridgeJni::NativeUpdateCurrentInstanceId(JNIEnv *env, jobject jobj, jint instanceId)
-{
-    if (!env) {
-        LOGE("NativeUpdateCurrentInstanceId JNIEnv is nullptr");
-        return;
-    }
-    std::lock_guard<std::mutex> lock(g_bridgeJniLock);
-    g_currentInstanceId = static_cast<int32_t>(instanceId);
-    LOGI("BridgeJni Update Current InstanceId is %{public}d", g_currentInstanceId);
-}
-
-void BridgeJni::JSCallMethodJni(const int32_t instanceId, const std::string& bridgeName,
+void BridgeJni::JSCallMethodJni(const std::string& bridgeName,
     const std::string& methodName, const std::string& parameters)
 {
-    LOGD("JSCallMethodJni enter, instanceId is %{public}d, bridgeName is %{public}s, methodName is %{public}s",
-        instanceId, bridgeName.c_str(), methodName.c_str());
+    LOGD("JSCallMethodJni  enter, bridgeName is %{public}s, methodName is %{public}s",
+        bridgeName.c_str(), methodName.c_str());
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
     CHECK_NULL_VOID(g_pluginClass.JSCallMethodJni_);
-    jobject obj = GetJObjectByInstanceId(instanceId);
-    if (obj == nullptr) {
-        LOGE("JSCallMethodJni failed instanceId is %{public}d, bridgeName is %{public}s, methodName is %{public}s",
-            instanceId, bridgeName.c_str(), methodName.c_str());
+    if (g_JObject == nullptr) {
+        LOGE("JSCallMethodJni failed BridgeManager object is null, bridgeName is %{public}s, methodName is %{public}s",
+            bridgeName.c_str(), methodName.c_str());
         return;
     }
 
@@ -250,7 +309,7 @@ void BridgeJni::JSCallMethodJni(const int32_t instanceId, const std::string& bri
         DeleteLocalRefString(env, jParameters);
         return;
     }
-    env->CallVoidMethod(obj, g_pluginClass.JSCallMethodJni_, jBridgeName, jMethodName, jParameters);
+    env->CallVoidMethod(g_JObject.get(), g_pluginClass.JSCallMethodJni_, jBridgeName, jMethodName, jParameters);
     if (env->ExceptionCheck()) {
         env->ExceptionDescribe();
         env->ExceptionClear();
@@ -260,8 +319,51 @@ void BridgeJni::JSCallMethodJni(const int32_t instanceId, const std::string& bri
     env->DeleteLocalRef(jParameters);
 }
 
-void BridgeJni::PlatformSendMethodResult(JNIEnv *env, jobject jobj,
-    jstring jBridgeName, jstring jMethodName, jstring jResult, jint instanceId)
+std::string BridgeJni::JSCallMethodSyncJni(const std::string& bridgeName,
+    const std::string& methodName, const std::string& parameters)
+{
+    LOGD("JSCallMethodSyncJni  enter, bridgeName is %{public}s, methodName is %{public}s",
+        bridgeName.c_str(), methodName.c_str());
+    auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
+    CHECK_NULL_RETURN(env, "");
+    CHECK_NULL_RETURN(g_pluginClass.JSCallMethodJni_, "");
+    if (g_JObject == nullptr) {
+        LOGE("JSCallMethodSyncJni failed BridgeManager object is null,"
+            "bridgeName is %{public}s, methodName is %{public}s", bridgeName.c_str(), methodName.c_str());
+        return "";
+    }
+
+    jstring jBridgeName = env->NewStringUTF(bridgeName.c_str());
+    jstring jMethodName = env->NewStringUTF(methodName.c_str());
+    jstring jParameters = env->NewStringUTF(parameters.c_str());
+    if (jBridgeName == nullptr || jMethodName == nullptr || jParameters == nullptr) {
+        LOGE("jBridgeName or jMethodName or jParameters is nullptr");
+        DeleteLocalRefString(env, jBridgeName);
+        DeleteLocalRefString(env, jMethodName);
+        DeleteLocalRefString(env, jParameters);
+        return "";
+    }
+    jstring jStr = (jstring) env->CallObjectMethod(g_JObject.get(),
+        g_pluginClass.JSCallMethodSyncJni_,
+        jBridgeName, jMethodName, jParameters);
+    if (env->ExceptionCheck()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
+    const char* cStr = env->GetStringUTFChars(jStr, nullptr);
+    if (cStr) {
+        env->ReleaseStringUTFChars(jStr, cStr);
+    }
+    std::string result(cStr);
+    env->DeleteLocalRef(jStr);
+    env->DeleteLocalRef(jBridgeName);
+    env->DeleteLocalRef(jMethodName);
+    env->DeleteLocalRef(jParameters);
+    return result;
+}
+
+void BridgeJni::PlatformSendMethodResult(JNIEnv* env, jobject jobj,
+    jstring jBridgeName, jstring jMethodName, jstring jResult)
 {
     CHECK_NULL_VOID(env);
     std::string bridgeName;
@@ -283,67 +385,48 @@ void BridgeJni::PlatformSendMethodResult(JNIEnv *env, jobject jobj,
         env->ReleaseStringUTFChars(jResult, resultStr);
     }
 
-    auto taskExecutor = GetPlatformTaskExecutor(instanceId);
-    ContainerScope scope(instanceId);
-    if (!taskExecutor) {
-        LOGE("PlatformSendMethodResult taskExecutor is nullptr");
-        return;
-    }
-    auto task = [bridgeName, methodName, result, instanceId] {
-        BridgeManager::PlatformSendMethodResult(instanceId, bridgeName, methodName, result);
-    };
-    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS, "ArkUI-XBridgeJniPlatformSendMethodResult");
+    BridgeManager::PlatformSendMethodResult(bridgeName, methodName, result);
 }
 
-void BridgeJni::PlatformCallMethod(JNIEnv *env, jobject jobj,
-    jstring jBridgeName, jstring jMethodName, jstring jParam, jint instanceId)
+void BridgeJni::PlatformCallMethod(JNIEnv* env, jobject jobj, jstring jBridgeName, jstring jMethodName, jstring jParam)
 {
     CHECK_NULL_VOID(env);
     std::string callBridgeName;
     std::string callMethodName;
     std::string callParam;
-    const auto *bridgeNameStr = env->GetStringUTFChars(jBridgeName, nullptr);
+    const auto* bridgeNameStr = env->GetStringUTFChars(jBridgeName, nullptr);
     if (bridgeNameStr != nullptr) {
         callBridgeName = bridgeNameStr;
         env->ReleaseStringUTFChars(jBridgeName, bridgeNameStr);
     }
-    const auto *methodNameStr = env->GetStringUTFChars(jMethodName, nullptr);
+    const auto* methodNameStr = env->GetStringUTFChars(jMethodName, nullptr);
     if (methodNameStr != nullptr) {
         callMethodName = methodNameStr;
         env->ReleaseStringUTFChars(jMethodName, methodNameStr);
     }
-    const auto *paramStr = env->GetStringUTFChars(jParam, nullptr);
+    const auto* paramStr = env->GetStringUTFChars(jParam, nullptr);
     if (paramStr != nullptr) {
         callParam = paramStr;
         env->ReleaseStringUTFChars(jParam, paramStr);
     }
-    if (!BridgeManager::JSBridgeExists(instanceId, callBridgeName)) {
+    if (!BridgeManager::JSBridgeExists(callBridgeName)) {
         std::string resultValue = "{\"errorCode\":1, \"errorMessage\":\"Bridge name error!\", \"result\":0}";
-        JSSendMethodResultJni(instanceId, callBridgeName, callMethodName, resultValue);
+        JSSendMethodResultJni(callBridgeName, callMethodName, resultValue);
         return;
     }
-    auto taskExecutor = GetPlatformTaskExecutor(instanceId);
-    ContainerScope scope(instanceId);
-    if (!taskExecutor) {
-        LOGE("PlatformCallMethod taskExecutor = nullptr, the instanceId is %{public}d", instanceId);
-        return;
-    }
-    auto task = [callBridgeName, callMethodName, callParam, instanceId] {
-        BridgeManager::PlatformCallMethod(instanceId, callBridgeName, callMethodName, callParam);
-    };
-    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS, "ArkUI-XBridgeJniPlatformCallMethod");
+
+    BridgeManager::PlatformCallMethod(callBridgeName, callMethodName, callParam);
 }
 
-void BridgeJni::JSSendMethodResultJni(const int32_t instanceId, const std::string& bridgeName,
-    const std::string& methodName, const std::string& resultValue)
+void BridgeJni::JSSendMethodResultJni(
+    const std::string& bridgeName, const std::string& methodName, const std::string& resultValue)
 {
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
     CHECK_NULL_VOID(g_pluginClass.JSSendMethodResultJni_);
-    jobject obj = GetJObjectByInstanceId(instanceId);
-    if (obj == nullptr) {
-        LOGE("JSSendMethodResultJni failed instanceId is %{public}d, bridgeName is %{public}s, methodName is "
-            "%{public}s", instanceId, bridgeName.c_str(), methodName.c_str());
+    if (g_JObject == nullptr) {
+        LOGE("JSSendMethodResultJni failed - BridgeManager object is null, bridgeName is %{public}s, methodName is "
+            "%{public}s", bridgeName.c_str(), methodName.c_str());
         return;
     }
 
@@ -357,7 +440,7 @@ void BridgeJni::JSSendMethodResultJni(const int32_t instanceId, const std::strin
         DeleteLocalRefString(env, jResultValue);
         return;
     }
-    env->CallVoidMethod(obj, g_pluginClass.JSSendMethodResultJni_, jBridgeName, jMethodName, jResultValue);
+    env->CallVoidMethod(g_JObject.get(), g_pluginClass.JSSendMethodResultJni_, jBridgeName, jMethodName, jResultValue);
 
     if (env->ExceptionCheck()) {
         env->ExceptionDescribe();
@@ -368,15 +451,14 @@ void BridgeJni::JSSendMethodResultJni(const int32_t instanceId, const std::strin
     env->DeleteLocalRef(jResultValue);
 }
 
-void BridgeJni::JSSendMessageJni(const int32_t instanceId, const std::string& bridgeName, const std::string& data)
+void BridgeJni::JSSendMessageJni(const std::string& bridgeName, const std::string& data)
 {
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
     CHECK_NULL_VOID(g_pluginClass.JSSendMessageJni_);
-    jobject obj = GetJObjectByInstanceId(instanceId);
-    if (obj == nullptr) {
-        LOGE("JSSendMessageJni failed instanceId is %{public}d, bridgeName is %{public}s",
-            instanceId, bridgeName.c_str());
+    if (g_JObject == nullptr) {
+        LOGE("JSSendMessageJni failed - BridgeManager object is null, bridgeName is %{public}s",
+            bridgeName.c_str());
         return;
     }
 
@@ -388,7 +470,7 @@ void BridgeJni::JSSendMessageJni(const int32_t instanceId, const std::string& br
         DeleteLocalRefString(env, jData);
         return;
     }
-    env->CallVoidMethod(obj, g_pluginClass.JSSendMessageJni_, jBridgeName, jData);
+    env->CallVoidMethod(g_JObject.get(), g_pluginClass.JSSendMessageJni_, jBridgeName, jData);
     if (env->ExceptionCheck()) {
         env->ExceptionDescribe();
         env->ExceptionClear();
@@ -397,8 +479,8 @@ void BridgeJni::JSSendMessageJni(const int32_t instanceId, const std::string& br
     env->DeleteLocalRef(jData);
 }
 
-void BridgeJni::PlatformSendMessageResponse(JNIEnv *env, jobject jobj,
-    jstring jBridgeName, jstring jData, jint instanceId)
+void BridgeJni::PlatformSendMessageResponse(JNIEnv* env, jobject jobj,
+    jstring jBridgeName, jstring jData)
 {
     CHECK_NULL_VOID(env);
     std::string bridgeName;
@@ -414,19 +496,10 @@ void BridgeJni::PlatformSendMessageResponse(JNIEnv *env, jobject jobj,
         env->ReleaseStringUTFChars(jData, dataStr);
     }
 
-    auto taskExecutor = GetPlatformTaskExecutor(instanceId);
-    ContainerScope scope(instanceId);
-    if (!taskExecutor) {
-        LOGE("BridgeJni JsSendMessageResponse taskExecutor is nullptr");
-        return;
-    }
-    auto task = [bridgeName, data, instanceId] {
-        BridgeManager::PlatformSendMessageResponse(instanceId, bridgeName, data);
-    };
-    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS, "ArkUI-XBridgeJniPlatformSendMessageResponse");
+    BridgeManager::PlatformSendMessageResponse(bridgeName, data);
 }
 
-void BridgeJni::PlatformSendMessage(JNIEnv *env, jobject jobj, jstring jBridgeName, jstring jData, jint instanceId)
+void BridgeJni::PlatformSendMessage(JNIEnv* env, jobject jobj, jstring jBridgeName, jstring jData)
 {
     CHECK_NULL_VOID(env);
     std::string bridgeName;
@@ -442,28 +515,17 @@ void BridgeJni::PlatformSendMessage(JNIEnv *env, jobject jobj, jstring jBridgeNa
         env->ReleaseStringUTFChars(jData, dataStr);
     }
 
-    auto taskExecutor = GetPlatformTaskExecutor(instanceId);
-    ContainerScope scope(instanceId);
-    if (!taskExecutor) {
-        LOGE("BridgeJni PlatformSendMessage taskExecutor is nullptr");
-        return;
-    }
-    auto task = [bridgeName, data, instanceId] {
-        BridgeManager::PlatformSendMessage(instanceId, bridgeName, data);
-    };
-    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS, "ArkUI-XBridgeJniPlatformSendMessage");
+    BridgeManager::PlatformSendMessage(bridgeName, data);
 }
 
-void BridgeJni::JSSendMessageResponseJni(const int32_t instanceId,
-    const std::string& bridgeName, const std::string& data)
+void BridgeJni::JSSendMessageResponseJni(const std::string& bridgeName, const std::string& data)
 {
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
     CHECK_NULL_VOID(g_pluginClass.JSSendMessageResponseJni_);
-    jobject obj = GetJObjectByInstanceId(instanceId);
-    if (obj == nullptr) {
-        LOGE("JSSendMessageResponseJni failed instanceId is %{public}d, bridgeName is %{public}s",
-            instanceId, bridgeName.c_str());
+    if (g_JObject == nullptr) {
+        LOGE("JSSendMessageResponseJni failed - BridgeManager object is null, bridgeName is %{public}s",
+            bridgeName.c_str());
         return;
     }
 
@@ -475,7 +537,7 @@ void BridgeJni::JSSendMessageResponseJni(const int32_t instanceId,
         DeleteLocalRefString(env, jData);
         return;
     }
-    env->CallVoidMethod(obj, g_pluginClass.JSSendMessageResponseJni_, jBridgeName, jData);
+    env->CallVoidMethod(g_JObject.get(), g_pluginClass.JSSendMessageResponseJni_, jBridgeName, jData);
     if (env->ExceptionCheck()) {
         env->ExceptionDescribe();
         env->ExceptionClear();
@@ -484,16 +546,14 @@ void BridgeJni::JSSendMessageResponseJni(const int32_t instanceId,
     env->DeleteLocalRef(jData);
 }
 
-void BridgeJni::JSCancelMethodJni(const int32_t instanceId,
-    const std::string& bridgeName, const std::string& methodName)
+void BridgeJni::JSCancelMethodJni(const std::string& bridgeName, const std::string& methodName)
 {
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
     CHECK_NULL_VOID(g_pluginClass.JSCancelMethodJni_);
-    jobject obj = GetJObjectByInstanceId(instanceId);
-    if (obj == nullptr) {
-        LOGE("JSCancelMethodJni failed instanceId is %{public}d, bridgeName is %{public}s, methodName is %{public}s",
-            instanceId, bridgeName.c_str(), methodName.c_str());
+    if (g_JObject == nullptr) {
+        LOGE("JSCancelMethodJni failed BridgeManager object is null,"
+            "bridgeName is %{public}s, methodName is %{public}s", bridgeName.c_str(), methodName.c_str());
         return;
     }
 
@@ -505,7 +565,7 @@ void BridgeJni::JSCancelMethodJni(const int32_t instanceId,
         DeleteLocalRefString(env, jMethodName);
         return;
     }
-    env->CallVoidMethod(obj, g_pluginClass.JSCancelMethodJni_, jBridgeName, jMethodName);
+    env->CallVoidMethod(g_JObject.get(), g_pluginClass.JSCancelMethodJni_, jBridgeName, jMethodName);
     if (env->ExceptionCheck()) {
         env->ExceptionDescribe();
         env->ExceptionClear();
@@ -514,23 +574,22 @@ void BridgeJni::JSCancelMethodJni(const int32_t instanceId,
     env->DeleteLocalRef(jMethodName);
 }
 
-void BridgeJni::JSCallMethodBinaryJni(const int32_t instanceId, const std::string& bridgeName,
-    const std::string& methodName, const std::vector<uint8_t>& data)
+void BridgeJni::JSCallMethodBinaryJni(
+    const std::string& bridgeName, const std::string& methodName, const std::vector<uint8_t>& data)
 {
-    LOGD("JSCallMethodBinaryJni enter, instanceId is %{public}d, bridgeName is %{public}s, methodName is "
-        "%{public}s", instanceId, bridgeName.c_str(), methodName.c_str());
+    LOGD("JSCallMethodBinaryJni enter, bridgeName is %{public}s, methodName is %{public}s",
+        bridgeName.c_str(), methodName.c_str());
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
     CHECK_NULL_VOID(g_pluginClass.JSCallMethodBinaryJni_);
-    jobject obj = GetJObjectByInstanceId(instanceId);
-    if (obj == nullptr) {
-        LOGE("JSCallMethodBinaryJni failed instanceId is %{public}d, bridgeName is %{public}s, methodName is "
-             "%{public}s", instanceId, bridgeName.c_str(), methodName.c_str());
+    if (g_JObject == nullptr) {
+        LOGE("JSCallMethodBinaryJni failed - BridgeManager object is null, bridgeName is %{public}s, methodName is "
+             "%{public}s", bridgeName.c_str(), methodName.c_str());
         return;
     }
     jstring jBridgeName = env->NewStringUTF(bridgeName.c_str());
     jstring jMethodName = env->NewStringUTF(methodName.c_str());
-    jobject jByteBuffer = env->NewDirectByteBuffer((void *)data.data(), data.size());
+    jobject jByteBuffer = env->NewDirectByteBuffer((void*)data.data(), data.size());
     if (jBridgeName == nullptr || jMethodName == nullptr || jByteBuffer == nullptr) {
         LOGE("jBridgeName or jMethodName or jByteBuffer is nullptr");
         DeleteLocalRefString(env, jBridgeName);
@@ -541,7 +600,7 @@ void BridgeJni::JSCallMethodBinaryJni(const int32_t instanceId, const std::strin
         return;
     }
 
-    env->CallVoidMethod(obj, g_pluginClass.JSCallMethodBinaryJni_,
+    env->CallVoidMethod(g_JObject.get(), g_pluginClass.JSCallMethodBinaryJni_,
         jBridgeName, jMethodName, jByteBuffer);
     if (env->ExceptionCheck()) {
         env->ExceptionDescribe();
@@ -552,55 +611,82 @@ void BridgeJni::JSCallMethodBinaryJni(const int32_t instanceId, const std::strin
     env->DeleteLocalRef(jByteBuffer);
 }
 
-void BridgeJni::PlatformSendMethodResultBinary(JNIEnv *env, jobject jobj, jstring jBridgeName, jstring jMethodName,
-    jobject jBuffer, jint instanceId, jint jErrorCode, jstring jErrorMessage)
+BinaryResultHolder BridgeJni::JSCallMethodBinarySyncJni(
+    const std::string& bridgeName, const std::string& methodName, const std::vector<uint8_t>& data)
+{
+    LOGD("JSCallMethodBinarySyncJni enter, bridgeName=%{public}s, methodName=%{public}s", bridgeName.c_str(),
+        methodName.c_str());
+    BinaryResultHolder holder;
+    auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (!env || !g_pluginClass.JSCallMethodBinarySyncJni_ || !g_JObject) {
+        holder.errorCode = static_cast<int32_t>(ErrorCode::BRIDGE_INVALID);
+        return holder;
+    }
+
+    jstring jBridgeName = nullptr;
+    jstring jMethodName = nullptr;
+    jobject jByteBuffer = nullptr;
+    if (!PrepareBinarySyncParams(env, bridgeName, methodName, data,
+        jBridgeName, jMethodName, jByteBuffer, holder.errorCode)) {
+        return holder;
+    }
+
+    jobject holderObj = env->CallObjectMethod(
+        g_JObject.get(), g_pluginClass.JSCallMethodBinarySyncJni_, jBridgeName, jMethodName, jByteBuffer);
+    if (env->ExceptionCheck()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
+    DeleteLocalRefString(env, jBridgeName);
+    DeleteLocalRefString(env, jMethodName);
+    DeleteLocalRefObject(env, jByteBuffer);
+
+    if (!holderObj) {
+        holder.errorCode = static_cast<int32_t>(ErrorCode::BRIDGE_METHOD_UNIMPL);
+        return holder;
+    }
+    FillHolderFromJava(env, holderObj, holder);
+    return holder;
+}
+
+void BridgeJni::PlatformSendMethodResultBinary(JNIEnv* env, jobject jobj,
+    jstring jBridgeName, jstring jMethodName, jobject jBuffer, jint jErrorCode, jstring jErrorMessage)
 {
     CHECK_NULL_VOID(env);
     std::string bridgeName = TransformString(env, jBridgeName);
     std::string methodName = TransformString(env, jMethodName);
     std::string errorMessage = TransformString(env, jErrorMessage);
-    if (bridgeName == CONVER_FAILED || methodName == CONVER_FAILED || errorMessage == CONVER_FAILED) {
+    if (bridgeName == CONVERSION_FAILED || methodName == CONVERSION_FAILED || errorMessage == CONVERSION_FAILED) {
         LOGE("bridgeName or methodName or errorMessage conversion failed");
         return;
     }
-    uint8_t* bufferAddress = (unsigned char *)env->GetDirectBufferAddress(jBuffer);
+    uint8_t* bufferAddress = (unsigned char*)env->GetDirectBufferAddress(jBuffer);
     size_t bufferSize = static_cast<size_t>(env->GetDirectBufferCapacity(jBuffer));
     uint8_t* buffer = BufferMapping::Copy(bufferAddress, bufferSize).Release();
+    auto mapping = std::make_unique<BufferMapping>(buffer, bufferSize);
 
-    auto taskExecutor = GetPlatformTaskExecutor(instanceId);
-    ContainerScope scope(instanceId);
-    if (!taskExecutor) {
-        LOGE("BridgeJni PlatformSendMessage taskExecutor is nullptr");
-        return;
-    }
-    
-    auto task = [bridgeName, methodName, jErrorCode, errorMessage, buffer, bufferSize, instanceId] {
-        auto mapping = std::make_unique<BufferMapping>(buffer, bufferSize);
-        BridgeManager::PlatformSendMethodResultBinary(instanceId, bridgeName, methodName,
-            jErrorCode, errorMessage, std::move(mapping));
-    };
-    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS, "ArkUI-XBridgeJniPlatformSendMethodResultBinary");
+    BridgeManager::PlatformSendMethodResultBinary(
+        bridgeName, methodName, jErrorCode, errorMessage, std::move(mapping));
 }
 
 void BridgeJni::JSSendMessageBinaryJni(
-    const int32_t instanceId, const std::string& bridgeName, const std::vector<uint8_t>& data)
+    const std::string& bridgeName, const std::vector<uint8_t>& data)
 {
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
     CHECK_NULL_VOID(g_pluginClass.JSSendMessageBinaryJni_);
-    jobject obj = GetJObjectByInstanceId(instanceId);
-    if (obj == nullptr) {
-        LOGE("JSSendMessageBinaryJni failed instanceId is %{public}d, bridgeName is %{public}s",
-            instanceId, bridgeName.c_str());
+    if (g_JObject == nullptr) {
+        LOGE("JSSendMessageBinaryJni failed - BridgeManager object is null, bridgeName is %{public}s",
+            bridgeName.c_str());
         return;
     }
     jstring jBridgeName = env->NewStringUTF(bridgeName.c_str());
-    jobject jByteBuffer = env->NewDirectByteBuffer((void *)data.data(), data.size());
+    jobject jByteBuffer = env->NewDirectByteBuffer((void*)data.data(), data.size());
     if (jByteBuffer == nullptr) {
         LOGE("jByteBuffer is nullptr");
         return;
     }
-    env->CallVoidMethod(obj, g_pluginClass.JSSendMessageBinaryJni_, jBridgeName, jByteBuffer);
+    env->CallVoidMethod(g_JObject.get(), g_pluginClass.JSSendMessageBinaryJni_, jBridgeName, jByteBuffer);
     if (env->ExceptionCheck()) {
         env->ExceptionDescribe();
         env->ExceptionClear();
@@ -608,8 +694,7 @@ void BridgeJni::JSSendMessageBinaryJni(
     env->DeleteLocalRef(jByteBuffer);
 }
 
-void BridgeJni::PlatformSendMessageBinary(JNIEnv *env, jobject jobj,
-    jstring jBridgeName, jobject jBuffer, jint instanceId)
+void BridgeJni::PlatformSendMessageBinary(JNIEnv* env, jobject jobj, jstring jBridgeName, jobject jBuffer)
 {
     CHECK_NULL_VOID(env);
     std::string bridgeName;
@@ -618,40 +703,28 @@ void BridgeJni::PlatformSendMessageBinary(JNIEnv *env, jobject jobj,
         bridgeName = bridgeNameStr;
         env->ReleaseStringUTFChars(jBridgeName, bridgeNameStr);
     }
-    uint8_t* bufferAddress = (unsigned char *)env->GetDirectBufferAddress(jBuffer);
+    uint8_t* bufferAddress = (unsigned char*)env->GetDirectBufferAddress(jBuffer);
     size_t bufferSize = static_cast<size_t>(env->GetDirectBufferCapacity(jBuffer));
     uint8_t* buffer = BufferMapping::Copy(bufferAddress, bufferSize).Release();
+    auto mapping = std::make_unique<BufferMapping>(buffer, bufferSize);
 
-    auto taskExecutor = GetPlatformTaskExecutor(instanceId);
-    ContainerScope scope(instanceId);
-    if (!taskExecutor) {
-        LOGE("BridgeJni PlatformSendMessage taskExecutor is nullptr");
-        return;
-    }
-
-    auto task = [bridgeName, buffer, bufferSize, instanceId] {
-        auto mapping = std::make_unique<BufferMapping>(buffer, bufferSize);
-        BridgeManager::PlatformSendMessageBinary(instanceId, bridgeName, std::move(mapping));
-    };
-    taskExecutor->PostTask(task, TaskExecutor::TaskType::JS, "ArkUI-XBridgeJniPlatformSendMessageBinary");
+    BridgeManager::PlatformSendMessageBinary(bridgeName, std::move(mapping));
 }
 
-void BridgeJni::JSSendMethodResultBinaryJni(const int32_t instanceId, const std::string& bridgeName,
-    const std::string& methodName, const int32_t errorCode, const std::string& errorMessage,
-    std::unique_ptr<std::vector<uint8_t>> result)
+void BridgeJni::JSSendMethodResultBinaryJni(const std::string& bridgeName, const std::string& methodName,
+    const int32_t errorCode, const std::string& errorMessage, std::unique_ptr<std::vector<uint8_t>> result)
 {
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_VOID(env);
     CHECK_NULL_VOID(g_pluginClass.JSSendMethodResultBinaryJni_);
-    jobject obj = GetJObjectByInstanceId(instanceId);
-    if (obj == nullptr) {
-        LOGE("JSSendMethodResultBinaryJni failed instanceId is %{public}d, bridgeName is %{public}s, methodName is "
-            "%{public}s", instanceId, bridgeName.c_str(), methodName.c_str());
+    if (g_JObject == nullptr) {
+        LOGE("JSSendMethodResultBinaryJni failed BridgeManager object is null,"
+            "bridgeName is %{public}s, methodName is %{public}s", bridgeName.c_str(), methodName.c_str());
         return;
     }
     jobject jByteBuffer = nullptr;
     if (result != nullptr) {
-        jByteBuffer = env->NewDirectByteBuffer((void *)result->data(), result->size());
+        jByteBuffer = env->NewDirectByteBuffer((void*)result->data(), result->size());
         if (jByteBuffer == nullptr) {
             return;
         }
@@ -666,7 +739,7 @@ void BridgeJni::JSSendMethodResultBinaryJni(const int32_t instanceId, const std:
         DeleteLocalRefString(env, jErrorMessage);
         return;
     }
-    env->CallVoidMethod(obj, g_pluginClass.JSSendMethodResultBinaryJni_,
+    env->CallVoidMethod(g_JObject.get(), g_pluginClass.JSSendMethodResultBinaryJni_,
         jBridgeName, jMethodName, jByteBuffer, errorCode, jErrorMessage);
 
     if (env->ExceptionCheck()) {
@@ -679,47 +752,142 @@ void BridgeJni::JSSendMethodResultBinaryJni(const int32_t instanceId, const std:
     env->DeleteLocalRef(jByteBuffer);
 }
 
-void BridgeJni::PlatformCallMethodBinary(JNIEnv *env, jobject jobj,
-    jstring jBridgeName, jstring jMethodName, jobject jBuffer, jint instanceId)
+void BridgeJni::PlatformCallMethodBinary(
+    JNIEnv* env, jobject jobj, jstring jBridgeName, jstring jMethodName, jobject jBuffer)
 {
     CHECK_NULL_VOID(env);
     std::string bridgeName = TransformString(env, jBridgeName);
     std::string methodName = TransformString(env, jMethodName);
-    if (bridgeName == CONVER_FAILED || methodName == CONVER_FAILED) {
+    if (bridgeName == CONVERSION_FAILED || methodName == CONVERSION_FAILED) {
         LOGE("bridgeName or methodName conversion failed");
         return;
     }
-    auto taskExecutor = GetPlatformTaskExecutor(instanceId);
-    ContainerScope scope(instanceId);
-    if (!taskExecutor) {
-        LOGE("PlatformCallMethodBinary taskExecutor = nullptr, the instanceId is %{public}d", instanceId);
-        return;
-    }
+
     if (jBuffer == nullptr) {
-        auto task = [bridgeName, methodName, instanceId] {
-            BridgeManager::PlatformCallMethodBinary(instanceId, bridgeName, methodName, nullptr);
-        };
-        taskExecutor->PostTask(task, TaskExecutor::TaskType::JS, "ArkUI-XBridgeJniPlatformCallMethodBinaryIf");
+        BridgeManager::PlatformCallMethodBinary(bridgeName, methodName, nullptr);
     } else {
-        uint8_t* bufferAddress = (unsigned char *)env->GetDirectBufferAddress(jBuffer);
+        uint8_t* bufferAddress = (unsigned char*)env->GetDirectBufferAddress(jBuffer);
         size_t bufferSize = static_cast<size_t>(env->GetDirectBufferCapacity(jBuffer));
         uint8_t* buffer = BufferMapping::Copy(bufferAddress, bufferSize).Release();
-
-        auto task = [bridgeName, methodName, buffer, bufferSize, instanceId] {
-            auto mapping = std::make_unique<BufferMapping>(buffer, bufferSize);
-            BridgeManager::PlatformCallMethodBinary(instanceId, bridgeName, methodName, std::move(mapping));
-        };
-        taskExecutor->PostTask(task, TaskExecutor::TaskType::JS, "ArkUI-XBridgeJniPlatformCallMethodBinaryElse");
+        auto mapping = std::make_unique<BufferMapping>(buffer, bufferSize);
+        BridgeManager::PlatformCallMethodBinary(bridgeName, methodName, std::move(mapping));
     }
 }
 
-void BridgeJni::ReleaseInstance(int32_t instanceId)
+jstring BridgeJni::PlatformCallMethodSync(
+    JNIEnv* env, jobject jobj, jstring jBridgeName, jstring jMethodName, jstring jParam)
 {
-    g_jobjects.erase(instanceId);
+    CHECK_NULL_RETURN(env, nullptr);
+    if (!jBridgeName || !jMethodName || !jParam) {
+        LOGE("PlatformCallMethodSync: One or more parameters are null");
+        std::string errorResult = "{\"errorCode\":1, \"errorMessage\":\"Bridge name error!\", \"result\":null}";
+        return env->NewStringUTF(errorResult.c_str());
+    }
+
+    std::string callBridgeName = TransformString(env, jBridgeName);
+    std::string callMethodName = TransformString(env, jMethodName);
+    std::string callParam = TransformString(env, jParam);
+    if (callBridgeName == CONVERSION_FAILED || callMethodName == CONVERSION_FAILED || callParam == CONVERSION_FAILED) {
+        LOGE("PlatformCallMethodSync: Parameter conversion failed");
+        std::string errorResult = "{\"errorCode\":4, \"errorMessage\":\"Method name error!\", \"result\":null}";
+        return env->NewStringUTF(errorResult.c_str());
+    }
+
+    if (callBridgeName.empty() || callMethodName.empty()) {
+        LOGE("PlatformCallMethodSync: Bridge name or method name is empty");
+        std::string errorResult = "{\"errorCode\":6, \"errorMessage\":\"Method not implemented!\", \"result\":null}";
+        return env->NewStringUTF(errorResult.c_str());
+    }
+
+    std::string result = BridgeManager::PlatformCallMethodSync(callBridgeName, callMethodName, callParam);
+    if (result.empty()) {
+        LOGW("PlatformCallMethodSync: Method returned empty result");
+        std::string defaultResult = "{\"errorCode\":0, \"errorMessage\":\"\", \"result\":null}";
+        return env->NewStringUTF(defaultResult.c_str());
+    }
+
+    return env->NewStringUTF(result.c_str());
 }
 
-int32_t BridgeJni::GetCurrentInstanceId()
+void BridgeJni::JSOnRegisterResultJni(const std::string& bridgeName, int32_t bridgeType, bool available)
 {
-    return g_currentInstanceId;
+    auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
+    CHECK_NULL_VOID(env);
+    CHECK_NULL_VOID(g_pluginClass.JSOnRegisterResultJni_);
+    if (g_JObject == nullptr) {
+        LOGE("JSOnRegisterResultJni failed - BridgeManager object is null, bridgeName is %{public}s",
+            bridgeName.c_str());
+        return;
+    }
+    jstring jBridgeName = env->NewStringUTF(bridgeName.c_str());
+    jint jBridgeType = static_cast<jint>(bridgeType);
+    jboolean jAvailable = available ? JNI_TRUE : JNI_FALSE;
+    if (jBridgeName == nullptr) {
+        LOGE("JSOnRegisterResultJni jBridgeName is null");
+        return;
+    }
+    env->CallVoidMethod(g_JObject.get(), g_pluginClass.JSOnRegisterResultJni_, jBridgeName, jBridgeType, jAvailable);
+    if (env->ExceptionCheck()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
+    env->DeleteLocalRef(jBridgeName);
+}
+
+jboolean BridgeJni::JSBridgeExistsJni(JNIEnv* env, jobject, jstring jBridgeName, jint jBridgeType)
+{
+    CHECK_NULL_RETURN(env, JNI_FALSE);
+    std::string bridgeName = TransformString(env, jBridgeName);
+    if (bridgeName.empty()) {
+        LOGE("JSBridgeExistsJni bridgeName is empty.");
+        return JNI_FALSE;
+    }
+    bool exists = BridgeManager::JSBridgeExists(bridgeName);
+    exists = exists && (jBridgeType == BridgeManager::GetBridgeType(bridgeName));
+    return (exists ? JNI_TRUE : JNI_FALSE);
+}
+
+jobject BridgeJni::PlatformCallMethodSyncBinary(
+    JNIEnv* env, jobject jobj, jstring jBridgeName, jstring jMethodName, jobject jBuffer)
+{
+    CHECK_NULL_RETURN(env, nullptr);
+    std::string bridgeName = TransformString(env, jBridgeName);
+    std::string methodName = TransformString(env, jMethodName);
+    if (bridgeName.empty() || methodName.empty()) {
+        LOGE("PlatformCallMethodSyncBinary empty bridge or method");
+        return nullptr;
+    }
+    std::unique_ptr<BufferMapping> paramMapping = nullptr;
+    if (jBuffer != nullptr) {
+        uint8_t* bufferAddress = (unsigned char*)env->GetDirectBufferAddress(jBuffer);
+        size_t bufferSize = static_cast<size_t>(env->GetDirectBufferCapacity(jBuffer));
+        if (bufferAddress && bufferSize > 0) {
+            uint8_t* buffer = BufferMapping::Copy(bufferAddress, bufferSize).Release();
+            paramMapping = std::make_unique<BufferMapping>(buffer, bufferSize);
+        }
+    }
+    int32_t errorCode = 0;
+    auto resultMapping =
+        BridgeManager::PlatformCallMethodSyncBinary(bridgeName, methodName, std::move(paramMapping), errorCode);
+    jclass holderCls = env->FindClass("ohos/ace/adapter/capability/bridge/BridgeManager$BinaryResultHolder");
+    CHECK_NULL_RETURN(holderCls, nullptr);
+    jmethodID ctor = env->GetMethodID(holderCls, "<init>", "()V");
+    CHECK_NULL_RETURN(ctor, nullptr);
+    jobject holderObj = env->NewObject(holderCls, ctor);
+    CHECK_NULL_RETURN(holderObj, nullptr);
+    jfieldID errorField = env->GetFieldID(holderCls, "errorCode", "I");
+    CHECK_NULL_RETURN(errorField, nullptr);
+    jfieldID resultField = env->GetFieldID(holderCls, "result", "Ljava/nio/ByteBuffer;");
+    CHECK_NULL_RETURN(resultField, nullptr);
+    env->SetIntField(holderObj, errorField, static_cast<jint>(errorCode));
+    jobject retBuffer = nullptr;
+    if (resultMapping && resultMapping->GetSize() > 0 && resultMapping->GetMapping()) {
+        retBuffer = env->NewDirectByteBuffer((void*)resultMapping->GetMapping(), resultMapping->GetSize());
+    }
+    if (retBuffer) {
+        env->SetObjectField(holderObj, resultField, retBuffer);
+    }
+    env->DeleteLocalRef(holderCls);
+    return holderObj;
 }
 }  // namespace OHOS::Ace::Platform

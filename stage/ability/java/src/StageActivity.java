@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -194,7 +194,6 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         Trace.endSection();
         windowView.setInstanceId(instanceId);
         initPlatformPlugin(this, instanceId, windowView);
-        initBridgeManager();
         initArkUIXPluginRegistry();
         Trace.beginSection("setContentView");
         setContentView(windowView.getView());
@@ -255,9 +254,6 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     @Override
     protected void onRestart() {
         Log.i(LOG_TAG, "StageActivity onRestart called");
-        if (this.bridgeManager != null) {
-            this.bridgeManager.nativeUpdateCurrentInstanceId(instanceId);
-        }
         super.onRestart();
     }
 
@@ -279,7 +275,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         windowView.destroy();
         arkUIXPluginRegistry.unRegistryAllPlugins();
         keyboardHeightProvider.close();
-        BridgeManager.unRegisterBridgeManager(instanceId);
+        this.bridgeManager = null;
         if (platformPlugin != null) {
             platformPlugin.release();
             Log.i(LOG_TAG, "StageActivity onDestroy platformPlugin release called");
@@ -407,19 +403,9 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      */
     public BridgeManager getBridgeManager() {
         if (this.bridgeManager == null) {
-            this.bridgeManager = new BridgeManager(instanceId);
+            this.bridgeManager = BridgeManager.getInstance();
         }
         return this.bridgeManager;
-    }
-
-    private void initBridgeManager() {
-        if (bridgeManager == null) {
-            getBridgeManager();
-        }
-        if (BridgeManager.findBridgeManager(instanceId) == null) {
-            bridgeManager.nativeInit(instanceId);
-            BridgeManager.registerBridgeManager(instanceId, bridgeManager);
-        }
     }
 
     /**
@@ -428,7 +414,6 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      * @return The InstanceId.
      */
     public int getInstanceId() {
-        initBridgeManager();
         return this.instanceId;
     }
 

@@ -18,6 +18,7 @@ package ohos.ace.adapter.capability.bridge;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.HashMap;
 import ohos.ace.adapter.ALog;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -87,25 +88,27 @@ public class ParameterHelper {
      * @return Parameter in the form of Object.
      */
     public static Object[] jsonTransformObject(JSONObject paramJsonObj) {
-        try {
-            List<Object> arraysObject = new ArrayList<Object>();
-            Iterator<String> keys = paramJsonObj.keys();
-            while (keys.hasNext()) {
-                String str = keys.next();
-                if (paramJsonObj.get(str) instanceof JSONArray && arraysObject != null) {
-                    JSONArray JsonArray = (JSONArray) paramJsonObj.get(str);
-                    addArraysObject(JsonArray, arraysObject);
-                } else if (arraysObject != null) {
-                    arraysObject.add(paramJsonObj.get(str));
-                } else {
-                    return null;
-                }
-            }
-            return arraysObject.toArray();
-        } catch (JSONException e) {
-            ALog.e(LOG_TAG, "jsonTransformObject failed, JSONException.");
+        if (paramJsonObj == null) {
+            return null;
         }
-        return null;
+        List<Object> resultObjectList = new ArrayList<>();
+        Iterator<String> keyIterator = paramJsonObj.keys();
+        while (keyIterator.hasNext()) {
+            String currentKey = keyIterator.next();
+            Object currentValue = paramJsonObj.opt(currentKey);
+            if (currentValue == null) {
+                return null;
+            }
+            if (currentValue instanceof JSONArray) {
+                addArraysObject((JSONArray) currentValue, resultObjectList);
+            } else if (currentValue instanceof JSONObject) {
+                Object convertedMap = convertJsonObjectToTypedMap((JSONObject) currentValue);
+                resultObjectList.add(convertedMap != null ? convertedMap : currentValue);
+            } else {
+                resultObjectList.add(currentValue);
+            }
+        }
+        return resultObjectList.toArray(new Object[0]);
     }
 
     private static void addArraysObject(JSONArray JsonArray, List<Object> arraysObject) {
@@ -323,5 +326,193 @@ public class ParameterHelper {
             return null;
         }
         return JsonArray;
+    }
+
+    private static Object convertJsonObjectToTypedMap(JSONObject jsonObject) {
+        ScanResult result = scanJsonObject(jsonObject);
+        if (result == null) {
+            ALog.e(LOG_TAG, "convertJsonObjectToTypedMap The data to be parsed is empty.");
+            return null;
+        }
+        if (result.allBoolean) {
+            return buildBooleanMap(jsonObject, result.keys);
+        }
+        if (result.allString) {
+            return buildStringMap(jsonObject, result.keys);
+        }
+        if (result.allNumber) {
+            if (result.allIntegral) {
+                if (result.fitsIntRange) {
+                    return buildIntegerMap(jsonObject, result.keys);
+                } else if (result.fitsLongRange) {
+                    return buildLongMap(jsonObject, result.keys);
+                } else {
+                    ALog.e(LOG_TAG, "convertJsonObjectToTypedMap Other number types.");
+                    return null;
+                }
+            }
+            if (result.maxAbsNumber <= Float.MAX_VALUE) {
+                return buildFloatMap(jsonObject, result.keys);
+            } else {
+                return buildDoubleMap(jsonObject, result.keys);
+            }
+        }
+        ALog.e(LOG_TAG, "convertJsonObjectToTypedMap Beyond the range of the parsing type.");
+        return null;
+    }
+
+    private static ScanResult scanJsonObject(JSONObject jsonObject) {
+        if (jsonObject == null || jsonObject.length() == 0) {
+            ALog.e(LOG_TAG, "scanJsonObject jsonObject is null.");
+            return null;
+        }
+        ScanResult scanResult = new ScanResult();
+        Iterator<String> keyIterator = jsonObject.keys();
+        while (keyIterator.hasNext()) {
+            String key = keyIterator.next();
+            scanResult.keys.add(key);
+            Object value;
+            try {
+                value = jsonObject.get(key);
+            } catch (JSONException e) {
+                ALog.e(LOG_TAG, "scanJsonObject get value failed.");
+                return null;
+            }
+            if (!isPrimitiveValue(value)) {
+                ALog.e(LOG_TAG, "scanJsonObject value is null.");
+                return null;
+            }
+            updateTypeFlags(scanResult, value);
+        }
+        return scanResult;
+    }
+
+    private static boolean isPrimitiveValue(Object value) {
+        return value != null && !(value instanceof JSONObject) && !(value instanceof JSONArray);
+    }
+
+    private static void updateTypeFlags(ScanResult scanResult, Object value) {
+        scanResult.allBoolean &= value instanceof Boolean;
+        scanResult.allString &= value instanceof String;
+        scanResult.allNumber &= value instanceof Number;
+        if (!(value instanceof Number)) {
+            return;
+        }
+        double numberValue = ((Number) value).doubleValue();
+        scanResult.maxAbsNumber = Math.max(scanResult.maxAbsNumber, Math.abs(numberValue));
+        if (Math.floor(numberValue) != numberValue) {
+            scanResult.allIntegral = false;
+            return;
+        }
+        if (numberValue > Integer.MAX_VALUE || numberValue < Integer.MIN_VALUE) {
+            scanResult.fitsIntRange = false;
+        }
+        if (numberValue > Long.MAX_VALUE || numberValue < Long.MIN_VALUE) {
+            scanResult.fitsLongRange = false;
+        }
+    }
+
+    private static Object buildBooleanMap(JSONObject jsonObjectParam, List<String> keys) {
+        HashMap<String, Boolean> map = new HashMap<>();
+        for (String key : keys) {
+            try {
+                map.put(key, jsonObjectParam.getBoolean(key));
+            } catch (JSONException jsonException) {
+                ALog.e(LOG_TAG, "buildBooleanMap failed, JSONException.");
+                return null;
+            }
+        }
+        return map;
+    }
+
+    private static Object buildStringMap(JSONObject jsonObjectParam, List<String> keys) {
+        HashMap<String, String> map = new HashMap<>();
+        for (String key : keys) {
+            try {
+                map.put(key, jsonObjectParam.getString(key));
+            } catch (JSONException jsonException) {
+                ALog.e(LOG_TAG, "buildStringMap failed, JSONException.");
+                return null;
+            }
+        }
+        return map;
+    }
+
+    private static Object buildIntegerMap(JSONObject jsonObjectParam, List<String> keys) {
+        HashMap<String, Integer> map = new HashMap<>();
+        for (String key : keys) {
+            try {
+                map.put(key, jsonObjectParam.getInt(key));
+            } catch (JSONException jsonException) {
+                ALog.e(LOG_TAG, "buildStringMap failed, JSONException.");
+                return null;
+            }
+        }
+        return map;
+    }
+
+    private static Object buildLongMap(JSONObject jsonObjectParam, List<String> keys) {
+        HashMap<String, Long> map = new HashMap<>();
+        for (String key : keys) {
+            try {
+                map.put(key, jsonObjectParam.getLong(key));
+            } catch (JSONException jsonException) {
+                ALog.e(LOG_TAG, "buildLongMap failed, JSONException.");
+                return null;
+            }
+        }
+        return map;
+    }
+
+    private static Object buildFloatMap(JSONObject jsonObjectParam, List<String> keys) {
+        HashMap<String, Float> map = new HashMap<>();
+        for (String key : keys) {
+            try {
+                map.put(key, (float) jsonObjectParam.getDouble(key));
+            } catch (JSONException jsonException) {
+                ALog.e(LOG_TAG, "buildFloatMap failed, JSONException.");
+                return null;
+            }
+        }
+        return map;
+    }
+
+    private static Object buildDoubleMap(JSONObject jsonObjectParam, List<String> keys) {
+        HashMap<String, Double> map = new HashMap<>();
+        for (String key : keys) {
+            try {
+                map.put(key, jsonObjectParam.getDouble(key));
+            } catch (JSONException jsonException) {
+                ALog.e(LOG_TAG, "buildDoubleMap failed, JSONException.");
+                return null;
+            }
+        }
+        return map;
+    }
+
+    private static class ScanResult {
+        List<String> keys = new ArrayList<>();
+        boolean allBoolean = true;
+        boolean allString = true;
+        boolean allNumber = true;
+        boolean allIntegral = true;
+        boolean fitsIntRange = true;
+        boolean fitsLongRange = true;
+        double maxAbsNumber = 0.0;
+    }
+
+    /**
+     * Check if the object array contains null.
+     *
+     * @param objects Object array to be checked.
+     * @return true if contains null, false otherwise.
+     */
+    public static boolean containsNull(List<Object> objects) {
+        for (Object obj : objects) {
+            if (obj == null) {
+                return true;
+            }
+        }
+        return false;
     }
 }

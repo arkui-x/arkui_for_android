@@ -105,6 +105,7 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeErrorCode.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeManager.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgePlugin.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeThreadExecutor.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeSerializer.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeTaskQueue.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeTaskQueueHandler.java",
