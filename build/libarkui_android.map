@@ -127,9 +127,9 @@
       virtual?thunk?to?OHOS::Ace::Animator::~Animator??;
       virtual?thunk?to?OHOS::Ace::NG::LayoutProperty::~LayoutProperty??;
 
-      "OHOS::Rosen::RenderContext::RenderContext()";
-      "OHOS::Rosen::RenderContext::InitializeEglContext()";
+      "OHOS::Rosen::RenderContext::Init()";
       "OHOS::Rosen::RenderContext::~RenderContext()";
+      "OHOS::Rosen::RenderContext::Create()";
       "OHOS::ColorManager::GetColorSpaceByJSObject(napi_env__*, napi_value__*)";
       "OHOS::ColorManager::CreateJsColorSpaceObject(napi_env__*, std::__ndk1::shared_ptr<OHOS::ColorManager::ColorSpace>&)";
       "OHOS::Rosen::RSPixelMapUtil::GetPixelmapColorSpace(std::__ndk1::shared_ptr<OHOS::Media::PixelMap> const&)";
