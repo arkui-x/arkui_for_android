@@ -44,6 +44,18 @@ RefPtr<ImageSource> ImageSource::Create(const uint8_t* data, uint32_t size, uint
     return MakeRefPtr<ImageSourceAndroid>(std::move(src));
 }
 
+RefPtr<ImageSource> ImageSource::Create(const uint8_t* data, uint32_t size)
+{
+    uint32_t errorCode = 0;
+    Media::SourceOptions options;
+    auto src = Media::ImageSource::CreateImageSource(data, size, options, errorCode);
+    if (errorCode != Media::SUCCESS) {
+        TAG_LOGE(AceLogTag::ACE_IMAGE, "create image source failed, errorCode = %{public}u", errorCode);
+        return nullptr;
+    }
+    return MakeRefPtr<ImageSourceAndroid>(std::move(src));
+}
+
 RefPtr<ImageSource> ImageSource::Create(const std::string& filePath)
 {
     Media::SourceOptions opts;
