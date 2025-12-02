@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,12 +16,11 @@
 #ifndef FOUNDATION_ACE_ADAPTER_AOSP_OSAL_RESOURCE_ADAPTER_IMPL_V2_H
 #define FOUNDATION_ACE_ADAPTER_AOSP_OSAL_RESOURCE_ADAPTER_IMPL_V2_H
 
-#include "resource_manager.h"
-
 #include <mutex>
 #include <shared_mutex>
 
 #include "core/components/theme/resource_adapter.h"
+#include "resource_manager.h"
 
 namespace OHOS::Ace {
 class ResourceAdapterImplV2 : public ResourceAdapter {
@@ -43,6 +42,7 @@ public:
     Dimension GetDimensionByName(const std::string& resName) override;
     std::string GetString(uint32_t resId) override;
     std::string GetStringByName(const std::string& resName) override;
+    std::string GetStringFormatByName(const char* resName, ...) override;
     std::string GetPluralString(uint32_t resId, int quantity) override;
     std::string GetPluralStringByName(const std::string& resName, int quantity) override;
     std::vector<std::string> GetStringArray(uint32_t resId) const override;
@@ -69,19 +69,23 @@ public:
         const std::string& bundleName, const std::string& moduleName) override;
     void UpdateResourceManager(const std::string& bundleName, const std::string& moduleName) override {};
     bool GetRawFileDescription(const std::string& rawfileName, RawfileDescription& rawfileDescription) const override;
+    bool CloseRawFileDescription(const std::string& rawfileName) const override;
+    bool GetRawFD(const std::string& rawfileName, RawfileDescription& rawfileDescription) const override;
     bool GetMediaById(const int32_t& resId, std::string& mediaPath) const override;
+    uint32_t GetResourceLimitKeys() const override;
+    uint32_t GetSymbolById(uint32_t resId) const override;
+    uint32_t GetSymbolByName(const char* resName) const override;
+    RefPtr<ResourceAdapter> GetOverrideResourceAdapter(
+        const ResourceConfiguration& config, const ConfigurationChange& configurationChange) override;
+    uint32_t GetResId(const std::string& resTypeName) const override;
 
 private:
     std::string GetActualResourceName(const std::string& resName) const;
 
-    inline std::shared_ptr<Global::Resource::ResourceManager> GetResourceManager() const
-    {
-        return resourceManager_;
-    }
-
     std::shared_ptr<Global::Resource::ResourceManager> resourceManager_;
-    std::string packagePathStr_;
+    mutable std::shared_mutex resourceMutex_;
     ACE_DISALLOW_COPY_AND_MOVE(ResourceAdapterImplV2);
+    ColorMode GetResourceColorMode() const override;
 };
 } // namespace OHOS::Ace
 #endif // FOUNDATION_ACE_ADAPTER_AOSP_OSAL_RESOURCE_ADAPTER_IMPL_H
