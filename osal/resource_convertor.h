@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,6 +25,7 @@ namespace OHOS::Ace {
 Global::Resource::DeviceType ConvertDeviceTypeToGlobal(DeviceType type);
 Global::Resource::Direction ConvertDirectionToGlobal(DeviceOrientation orientation);
 Global::Resource::ScreenDensity ConvertDensityToGlobal(double density);
+Global::Resource::ColorMode ConvertColorModeToGlobal(ColorMode colorMode);
 std::shared_ptr<Global::Resource::ResConfig> ConvertConfigToGlobal(const ResourceConfiguration& config);
 
 DeviceType ConvertDeviceTypeToAce(Global::Resource::DeviceType type);

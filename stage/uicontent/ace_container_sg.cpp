@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -864,10 +864,22 @@ void InitResourceAndThemeManager(const RefPtr<PipelineBase>& pipelineContext, co
     ResourceManager::GetInstance().AddResourceAdapter(
         defaultBundleName, defaultModuleName, instanceId, resourceAdapter);
     if (context) {
+        auto hapInfo = context->GetHapModuleInfo();
+        CHECK_NULL_VOID(hapInfo);
         auto bundleName = context->GetBundleName();
-        auto moduleName = context->GetHapModuleInfo()->name;
-        if (!bundleName.empty() && !moduleName.empty()) {
+        if (bundleName.empty()) {
+            return;
+        }
+        auto moduleName = hapInfo->name;
+        if (!moduleName.empty()) {
             ResourceManager::GetInstance().AddResourceAdapter(bundleName, moduleName, instanceId, resourceAdapter);
+        }
+        auto dependencies = hapInfo->dependencies;
+        for (const auto& dependency : dependencies) {
+            if (dependency.empty()) {
+                continue;
+            }
+            ResourceManager::GetInstance().AddResourceAdapter(bundleName, dependency, instanceId, resourceAdapter);
         }
     } else if (abilityInfo) {
         auto bundleName = abilityInfo->bundleName;
@@ -1370,6 +1382,12 @@ bool AceContainerSG::GetLastMovingPointerPosition(DragPointerEvent& dragPointerE
     dragPointerEvent.displayX = pointerItem.GetDisplayX();
     dragPointerEvent.displayY = pointerItem.GetDisplayY();
     return true;
+}
+
+std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> AceContainerSG::GetAbilityContext()
+{
+    auto context = runtimeContext_.lock();
+    return context;
 }
 
 void AceContainerSG::RegisterStopDragCallback(int32_t pointerId, StopDragCallback&& stopDragCallback)
