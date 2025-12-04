@@ -97,6 +97,11 @@ void ClipboardImpl::GetSpanStringData(
     GetSpanStringDataHelper(callback, syncMode);
 }
 
+void ClipboardImpl::GetSpanStringData(
+    const std::function<void(std::vector<std::vector<uint8_t>>&, const std::string&, bool&, bool&)>& callback,
+    bool syncMode)
+{}
+
 void ClipboardImpl::GetSpanStringDataHelper(
     const std::function<void(std::vector<std::vector<uint8_t>>&, const std::string&, bool&)>& callback,
     bool syncMode)
@@ -181,6 +186,8 @@ void ClipboardImpl::SetData(const std::string& data, CopyOptions copyOption, boo
     taskExecutor_->PostTask(
         [data] { ClipboardJni::SetData(data); }, TaskExecutor::TaskType::PLATFORM, "ArkUI-XClipboardImplSetData");
 }
+
+void ClipboardImpl::GetData(const std::function<void(const std::string&, bool)>& callback, bool syncMode) {}
 
 void ClipboardImpl::GetData(const std::function<void(const std::string&)>& callback, bool syncMode)
 {
