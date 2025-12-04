@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,6 +21,7 @@ import java.util.Map;
 import android.graphics.SurfaceTexture;
 import android.view.Surface;
 
+import ohos.ace.adapter.AceSurfaceHolder;
 import ohos.ace.adapter.AceTextureHolder;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.IAceOnCallResourceMethod;
@@ -160,6 +161,21 @@ public class AceTexture {
         this.callMethodMap.put("texture@" + id + METHOD + PARAM_EQUALS + TEXTURE_UPDATE_TEXTURE_IMAGE_KEY +
             PARAM_BEGIN, callUpdateTextureImage);
 
+        IAceOnCallResourceMethod callAttachNativeWindow = new IAceOnCallResourceMethod() {
+            /**
+             * Attach native window
+             *
+             * @param param params
+             * @return result of attach native window.
+             */
+            public String onCall(Map<String, String> param) {
+                return attachNativeWindow(param);
+            }
+        };
+
+        this.callMethodMap.put("texture@" + id + METHOD + PARAM_EQUALS + "attachNativeWindow" + PARAM_BEGIN,
+                callAttachNativeWindow);
+
         registerSurface();
 
         AceTextureHolder.addSurfaceTexture(id, surfaceTexture);
@@ -193,7 +209,8 @@ public class AceTexture {
         }
 
         setDefaultBufferSize(textureWidth, textureHeight);
-
+        String param = "textureWidth=" + textureWidth + "&textureHeight=" + textureHeight;
+        callback.onEvent(TEXTURE_FLAG + id + EVENT + PARAM_EQUALS + "onChanged" + PARAM_BEGIN, param);
         return SUCCESS;
     }
 
@@ -282,6 +299,7 @@ public class AceTexture {
     public void registerSurface() {
         if (surface == null) {
             surface = new Surface(this.surfaceTexture);
+            AceSurfaceHolder.addSurface(instanceId, id, surface);
         }
 
         if (!hasRegisterSurface) {
@@ -289,6 +307,23 @@ public class AceTexture {
             this.textureImpl.registerSurface(this.id, surface);
             hasRegisterSurface = true;
         }
+    }
+
+    /**
+     * Attach the native window.
+     *
+     * @param params params
+     * @return result of attach the native window.
+     */
+    private String attachNativeWindow(Map<String, String> params) {
+        ALog.d(LOG_TAG, "attachNativeWindow called.");
+        if (surface == null) {
+            ALog.e(LOG_TAG, "surface is null, attachNativeWindow failed");
+            return FALSE;
+        }
+        long nativeWindow = textureImpl.attachNaitveSurface(surface);
+        ALog.d(LOG_TAG, "Surface attach:" + nativeWindow);
+        return "nativeWindow=" + nativeWindow;
     }
 
     /**
@@ -319,6 +354,7 @@ public class AceTexture {
         textureImpl.unregisterSurface(id);
         AceTextureHolder.removeSurfaceTexture(id);
         if (surface != null) {
+            AceSurfaceHolder.removeSurface(instanceId, id);
             surface.release();
         }
         surfaceTexture.release();
