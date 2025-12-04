@@ -41,8 +41,17 @@ void NavigationRoute::InitRouteMap()
         TAG_LOGE(AceLogTag::ACE_NAVIGATION, "get bundle info failed");
         return;
     }
-    allRouteItems_ = bundleInfo.routerArray;
-    moduleInfos_ = bundleInfo.hapModuleInfos;
+    
+    routeMap_.clear();
+    moduleMap_.clear();
+    
+    for (const auto& item : bundleInfo.routerArray) {
+        routeMap_[item.name] = item;
+    }
+    
+    for (const auto& module : bundleInfo.hapModuleInfos) {
+        moduleMap_[module.moduleName] = module;
+    }
 }
 
 bool NavigationRoute::GetRouteItem(const std::string& name, NG::RouteItem& info)
@@ -62,11 +71,10 @@ bool NavigationRoute::GetRouteItem(const std::string& name, NG::RouteItem& info)
 
 bool NavigationRoute::GetRouteItemFromBundle(const std::string& name, AppExecFwk::RouterItem& routeItem)
 {
-    for (auto moduleIter = allRouteItems_.begin(); moduleIter != allRouteItems_.end(); moduleIter++) {
-        if (moduleIter->name == name) {
-            routeItem = *moduleIter;
-            return true;
-        }
+    auto it = routeMap_.find(name);
+    if (it != routeMap_.end()) {
+        routeItem = it->second;
+        return true;
     }
     TAG_LOGE(AceLogTag::ACE_NAVIGATION, "can't find name in config file: %{public}s", name.c_str());
     return false;
@@ -88,7 +96,7 @@ int32_t NavigationRoute::LoadPage(const std::string& name)
     if (res == 0) {
         names_.emplace_back(name);
     }
-    return LoadPageFromHapModule(name);
+    return res;
 }
 
 bool NavigationRoute::IsNavigationItemExits(const std::string& name)
@@ -109,21 +117,18 @@ int32_t NavigationRoute::LoadPageFromHapModule(const std::string& name)
     if (!callback_) {
         return res;
     }
-    for (auto hapIter = moduleInfos_.begin(); hapIter != moduleInfos_.end(); hapIter++) {
-        auto routerInfo = hapIter->routerArray;
-        for (auto routerIter = routerInfo.begin(); routerIter != routerInfo.end(); routerIter++) {
-            if (routerIter->name != name) {
-                continue;
-            }
-            res = callback_(routerIter->bundleName, routerIter->moduleName, routerIter->ohmurl, false);
-            TAG_LOGD(AceLogTag::ACE_NAVIGATION, "load current destination name: %{public}s, ohmurl: %{public}s",
-                name.c_str(), routerIter->ohmurl.c_str());
-            if (res == 0) {
-                return 0;
-            }
-            break;
+    
+    auto it = routeMap_.find(name);
+    if (it != routeMap_.end()) {
+        const auto& item = it->second;
+        res = callback_(item.bundleName, item.moduleName, item.ohmurl, false);
+        TAG_LOGD(AceLogTag::ACE_NAVIGATION, "load current destination name: %{public}s, ohmurl: %{public}s",
+            name.c_str(), item.ohmurl.c_str());
+        if (res == 0) {
+            return 0;
         }
     }
+    
     return res;
 }
 } // namespace OHOS::Ace
