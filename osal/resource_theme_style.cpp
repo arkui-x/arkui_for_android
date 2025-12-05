@@ -52,6 +52,27 @@ static const std::set<std::string> stringAttrs = {
     "text_overlay_menu_search_label"
 };
 
+constexpr bool IsColor(const std::string& value)
+{
+    return !value.empty() &&
+           (value.front() == '#' || value.find(COLOR_VALUE_PREFIX) != std::string::npos);
+}
+
+constexpr bool IsMediaPath(const std::string& value)
+{
+    return value.find(MEDIA_VALUE_KEY_WORD) != std::string::npos;
+}
+
+bool IsNamedString(const std::string& name)
+{
+    return stringAttrs.find(name) != stringAttrs.end();
+}
+
+constexpr bool IsReference(const std::string& value)
+{
+    return value.find(REF_ATTR_VALUE_KEY_WORD) != std::string::npos;
+}
+
 double ParseDoubleUnit(const std::string& value, std::string& unit)
 {
     for (size_t i = 0; i < value.length(); i++) {
@@ -89,26 +110,30 @@ void ResourceThemeStyle::ParseContent()
             LOGW("theme attr name:%{public}s or value:%{public}s is empty", attrName.c_str(), attrValue.c_str());
             continue;
         }
-        if (attrValue.front() == '#' || attrValue.find(COLOR_VALUE_PREFIX) != std::string::npos) {
-            // color
+        if (IsColor(attrValue)) {
             attributes_[attrName] = { .type = ThemeConstantsType::COLOR, .value = Color::FromString(attrValue) };
-        } else if (attrValue.find(MEDIA_VALUE_KEY_WORD) != std::string::npos) {
-            attributes_[attrName] = { .type =  ThemeConstantsType::STRING, .value = std::string(RES_TAG) + attrValue };
-        } else if (stringAttrs.find(attrName) != stringAttrs.end()) {
-            // string
+            continue;
+        }
+        if (IsMediaPath(attrValue)) {
+            attributes_[attrName] = { .type = ThemeConstantsType::STRING, .value = std::string(RES_TAG) + attrValue };
+            continue;
+        }
+        if (IsNamedString(attrName)) {
             attributes_[attrName] = { .type = ThemeConstantsType::STRING, .value = attrValue };
-        } else if (attrValue.find(REF_ATTR_VALUE_KEY_WORD) != std::string::npos) {
+            continue;
+        }
+        if (IsReference(attrValue)) {
             attributes_[attrName] = { .type = ThemeConstantsType::REFERENCE_ATTR, .value = attrValue };
+            continue;
+        }
+        // double & dimension
+        std::string unit = "";
+        auto doubleValue = ParseDoubleUnit(attrValue, unit);
+        if (unit.empty()) {
+            attributes_[attrName] = { .type = ThemeConstantsType::DOUBLE, .value = doubleValue };
         } else {
-            // double & dimension
-            std::string unit = "";
-            auto doubleValue = ParseDoubleUnit(attrValue, unit);
-            if (unit.empty()) {
-                attributes_[attrName] = { .type = ThemeConstantsType::DOUBLE, .value = doubleValue };
-            } else {
-                attributes_[attrName] = { .type = ThemeConstantsType::DIMENSION,
-                    .value = Dimension(doubleValue, ParseDimensionUnit(unit)) };
-            }
+            attributes_[attrName] = { .type = ThemeConstantsType::DIMENSION,
+                .value = Dimension(doubleValue, ParseDimensionUnit(unit)) };
         }
     }
     LOGD("theme attribute size:%{public}zu", attributes_.size());
