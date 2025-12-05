@@ -156,28 +156,31 @@ void ResourceAdapterImpl::Init(const ResourceInfo& resourceInfo)
     } else {
         std::istringstream iss(hapPath);
         std::string token;
+        std::shared_ptr<Global::Resource::ResourceManager> lastValidManager;
         while (std::getline(iss, token, ':')) {
-            std::shared_ptr<Global::Resource::ResourceManager> newResMgr(Global::Resource::CreateResourceManager());
+            std::shared_ptr<Global::Resource::ResourceManager> currentManager(
+                Global::Resource::CreateResourceManager());
             LOGE("ResourceAdapterImpl CreateResourceManager end.");
-            if (!newResMgr) {
+            if (!currentManager) {
                 LOGE("create resource manager from Global::Resource::CreateResourceManager() failed!");
             }
             std::string appResIndexPath = token + DELIMITER + "resources.index";
-            auto appResRet = newResMgr->AddResource(appResIndexPath.c_str());
+            auto appResRet = currentManager->AddResource(appResIndexPath.c_str());
             LOGI("appResIndexPath: %s", appResIndexPath.c_str());
-            auto sysResRet = newResMgr->AddResource(sysResIndexPath.c_str());
+            auto sysResRet = currentManager->AddResource(sysResIndexPath.c_str());
             LOGI("sysResIndexPath: %s", sysResIndexPath.c_str());
 
-            auto configRet = newResMgr->UpdateResConfig(*resConfig);
+            auto configRet = currentManager->UpdateResConfig(*resConfig);
             LOGI("AddAppRes result=%{public}d, AddSysRes result=%{public}d,  UpdateResConfig result=%{public}d,"
                  "ori=%{public}d, dpi=%{public}d, device=%{public}d, colorMode=%{public}d,",
                 appResRet, sysResRet, configRet, resConfig->GetDirection(), resConfig->GetScreenDensity(),
                 resConfig->GetDeviceType(), resConfig->GetColorMode());
-            resourceManager_ = newResMgr;
-            resourceManagers_[token.substr(token.rfind(DELIMITER) + 1)] = resourceManager_;
+            lastValidManager = currentManager;
+            resourceManagers_[token.substr(token.rfind(DELIMITER) + 1)] = currentManager;
             packagePathStr_ = (IsDirExist(token) ? token : std::string());
             rawFilePaths_[token.substr(token.rfind(DELIMITER) + 1)] = packagePathStr_;
         }
+        resourceManager_ = lastValidManager;
     }
 }
 
