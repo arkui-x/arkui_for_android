@@ -32,6 +32,7 @@ template("ace_osal_android_source_set") {
       defines += [ "USE_NEW_SKIA" ]
     }
     sources = [
+      "accessibility_event_manager.cpp",
       "accessibility_type_convertor.cpp",
       "ace_checker.cpp",
       "ace_engine_ext.cpp",
@@ -65,7 +66,6 @@ template("ace_osal_android_source_set") {
       "input_manager.cpp",
       "input_method_manager_android.cpp",
       "js_accessibility_manager.cpp",
-      "accessibility_event_manager.cpp",
       "layout_inspector.cpp",
       "log_wrapper.cpp",
       "mock/accessibility_constants.cpp",
@@ -84,6 +84,7 @@ template("ace_osal_android_source_set") {
       "resource_theme_style.cpp",
       "ressched_report.cpp",
       "socperf_client_impl.cpp",
+      "statistic_event_adapter.cpp",
       "statusbar_event_proxy_android.cpp",
       "stylus_detector_default.cpp",
       "stylus_detector_mgr.cpp",

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,16 +13,12 @@
  * limitations under the License.
  */
 
-#include "base/want/want_wrap.h"
+#include "core/common/statistic_event_adapter.h"
 
 namespace OHOS::Ace {
-RefPtr<WantWrap> WantWrap::CreateWantWrap(const std::string& bundleName, const std::string& abilityName)
+void StatisticEventAdapter::ReportStatisticEvents(
+    const StatisticAppInfo& appInfo, const std::map<StatisticEventType, StatisticEventInfo>& events)
 {
-    return nullptr;
-}
-
-RefPtr<WantParamsWrap> WantParamsWrap::CreateWantWrap(const OHOS::AAFwk::WantParams& params)
-{
-    return nullptr;
+    return;
 }
 } // namespace OHOS::Ace
