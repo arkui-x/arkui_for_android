@@ -84,4 +84,13 @@ public class StageApplication extends Application {
         }
         StageApplicationDelegate.nativePreloadModule(moduleName, abilityName);
     }
+
+    /**
+     * Should load UI.
+     *
+     * @return Return true if need load UI, else return false.
+     */
+    public boolean onShouldLoadUI() {
+        return true;
+    }
 }

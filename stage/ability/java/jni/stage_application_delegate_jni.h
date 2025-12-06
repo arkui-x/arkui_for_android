@@ -34,7 +34,7 @@ public:
     static void SetIsDynamicLoadLibs(JNIEnv* env, jclass clazz, jboolean isDynamic);
     static void SetHapPath(JNIEnv* env, jclass myclass, jstring str);
     static void SetAssetsFileRelativePath(JNIEnv* env, jclass myclass, jstring str);
-    static void LaunchApplication(JNIEnv* env, jclass clazz, jboolean isCopyNativeLibs);
+    static void LaunchApplication(JNIEnv* env, jclass clazz, jboolean isCopyNativeLibs, jboolean isNeedLoadAce);
     static void SetCacheDir(JNIEnv* env, jclass myclass, jstring str);
     static void SetFileDir(JNIEnv* env, jclass myclass, jstring str);
     static void SetAppLibDir(JNIEnv* env, jclass myclass, jstring str);
@@ -50,6 +50,7 @@ public:
     static void DispatchApplicationOnForeground(JNIEnv* env, jclass myclass);
     static void DispatchApplicationOnBackground(JNIEnv* env, jclass myclass);
     static void PreloadModule(JNIEnv* env, jclass myclass, jstring jModuleName, jstring jAbilityName);
+    static void LoadModule(JNIEnv* env, jclass myclass, jstring jModuleName, jstring jEntryFile);
     static OHOS::Ace::LogLevel GetCurrentLogLevel();
 };
 } // namespace Platform
