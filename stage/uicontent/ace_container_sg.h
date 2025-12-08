@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -357,13 +357,6 @@ public:
     bool GetCurPointerEventInfo(DragPointerEvent& dragPointerEvent, StopDragCallback&& stopDragCallback) override;
 
     bool GetLastMovingPointerPosition(DragPointerEvent& dragPointerEvent) override;
-
-    std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> GetAbilityContext();
-
-    const ResourceInfo& GetResourceInfo() const
-    {
-        return resourceInfo_;
-    }
 private:
     virtual bool MaybeRelease() override;
     void InitializeFrontend();
