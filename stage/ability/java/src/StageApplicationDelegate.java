@@ -1130,7 +1130,7 @@ public class StageApplicationDelegate {
      * Load module.
      *
      * @param moduleName The module name.
-     * @param entryFile The entry file of the module.
+     * @param entryFile The entry file of the module. Example: "./ets/xxx.ets".
      */
     public static void loadModule(String moduleName, String entryFile) {
         if (!isInitialized) {
@@ -1197,7 +1197,6 @@ public class StageApplicationDelegate {
     /**
      * Native calls the Load module.
      *
-     * @param bundleName the bundle name.
      * @param moduleName the module name.
      * @param entryFile the path of load module.
      */
