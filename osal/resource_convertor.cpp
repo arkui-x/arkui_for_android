@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -99,7 +99,6 @@ Global::Resource::InputDevice ConvertInputDevice(bool deviceAccess)
 std::shared_ptr<Global::Resource::ResConfig> ConvertConfigToGlobal(const ResourceConfiguration& config)
 {
     std::shared_ptr<Global::Resource::ResConfig> newResCfg(Global::Resource::CreateResConfig());
-    CHECK_NULL_RETURN(newResCfg, nullptr);
     newResCfg->SetLocaleInfo(AceApplicationInfo::GetInstance().GetLanguage().c_str(),
         AceApplicationInfo::GetInstance().GetScript().c_str(),
         AceApplicationInfo::GetInstance().GetCountryOrRegion().c_str());
