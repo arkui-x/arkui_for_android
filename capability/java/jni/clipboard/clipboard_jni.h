@@ -35,6 +35,9 @@ public:
     static bool SetData(const std::string& data);
 
     static bool GetData(
+        const std::function<void(const std::string&, bool isFromAutoFill)>& callback, const WeakPtr<TaskExecutor>& taskExecutor);
+
+    static bool GetData(
         const std::function<void(const std::string&)>& callback, const WeakPtr<TaskExecutor>& taskExecutor);
 
     static bool HasData(const std::function<void(const bool)>& callback, const WeakPtr<TaskExecutor>& taskExecutor);
