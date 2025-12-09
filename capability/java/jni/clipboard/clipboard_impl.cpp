@@ -100,7 +100,41 @@ void ClipboardImpl::GetSpanStringData(
 void ClipboardImpl::GetSpanStringData(
     const std::function<void(std::vector<std::vector<uint8_t>>&, const std::string&, bool&, bool&)>& callback,
     bool syncMode)
-{}
+{
+    auto task = [callback, weakExecutor = WeakClaim(RawPtr(taskExecutor_)), weak = WeakClaim(this)]() {
+        auto clip = weak.Upgrade();
+        CHECK_NULL_VOID(clip);
+        auto taskExecutor = weakExecutor.Upgrade();
+        CHECK_NULL_VOID(taskExecutor);
+        auto hasData = ClipboardJni::HasPasteData();
+        CHECK_NULL_VOID(hasData);
+        std::vector<std::vector<uint8_t>> arrays;
+        std::string text;
+        bool isMultiTypeRecord = false;
+        bool isFromAutoFill = false;
+        auto IsMultiType = ClipboardJni::IsMultiTypeData();
+        if (IsMultiType) {
+            auto result = ClipboardJni::GetMultiTypeData();
+            auto pasteData = std::make_shared<PasteData>();
+            CHECK_NULL_VOID(pasteData);
+            pasteData->FromJsonString(result);
+            clip->ProcessSpanStringData(arrays, *pasteData, text, isMultiTypeRecord);
+        } else {
+            text = ClipboardJni::GetData();
+        }
+        taskExecutor->PostTask(
+            [callback, arrays, text, isMultiTypeRecord, isFromAutoFill]() mutable {
+                callback(arrays, text, isMultiTypeRecord, isFromAutoFill);
+            },
+            TaskExecutor::TaskType::UI, "ArkUIClipboardGetSpanStringDataCallback", PriorityType::IMMEDIATE);
+    };
+    if (syncMode) {
+        taskExecutor_->PostSyncTask(task, TaskExecutor::TaskType::BACKGROUND, "ArkUIClipboardGetSpanStringDataSync");
+    } else {
+        taskExecutor_->PostTask(task, TaskExecutor::TaskType::BACKGROUND, "ArkUIClipboardGetSpanStringDataAsync",
+            PriorityType::IMMEDIATE);
+    }
+}
 
 void ClipboardImpl::GetSpanStringDataHelper(
     const std::function<void(std::vector<std::vector<uint8_t>>&, const std::string&, bool&)>& callback,
@@ -187,7 +221,13 @@ void ClipboardImpl::SetData(const std::string& data, CopyOptions copyOption, boo
         [data] { ClipboardJni::SetData(data); }, TaskExecutor::TaskType::PLATFORM, "ArkUI-XClipboardImplSetData");
 }
 
-void ClipboardImpl::GetData(const std::function<void(const std::string&, bool)>& callback, bool syncMode) {}
+void ClipboardImpl::GetData(const std::function<void(const std::string&, bool)>& callback, bool syncMode) {
+    if (taskExecutor_) {
+        taskExecutor_->PostTask([callback, taskExecutor = WeakClaim(RawPtr(
+                                               taskExecutor_))] { ClipboardJni::GetData(callback, taskExecutor); },
+            TaskExecutor::TaskType::PLATFORM, "ArkUI-XClipboardImplGetData");
+    }
+}
 
 void ClipboardImpl::GetData(const std::function<void(const std::string&)>& callback, bool syncMode)
 {

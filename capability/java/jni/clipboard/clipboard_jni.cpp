@@ -169,6 +169,49 @@ bool ClipboardJni::SetData(const std::string& data)
 }
 
 bool ClipboardJni::GetData(
+    const std::function<void(const std::string&, bool isFromAutoFill)>& callback, const WeakPtr<TaskExecutor>& taskExecutor)
+{
+    auto env = JniEnvironment::GetInstance().GetJniEnv();
+    if (!env) {
+        LOGW("Clipborad JNI: null env");
+        return false;
+    }
+    if (!g_clipboardObj || !g_pluginMethods.getData) {
+        LOGW("Clipborad JNI: null getData method");
+        return false;
+    }
+
+    std::string result;
+    jstring jData = static_cast<jstring>(env->CallObjectMethod(g_clipboardObj.get(), g_pluginMethods.getData));
+    if (env->ExceptionCheck()) {
+        LOGE("Clipborad JNI: call getData has exception");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return false;
+    }
+    const char* content = env->GetStringUTFChars(jData, nullptr);
+    if (content != nullptr) {
+        result.assign(content);
+        env->ReleaseStringUTFChars(jData, content);
+    }
+    if (jData != nullptr) {
+        env->DeleteLocalRef(jData);
+    }
+
+    auto executor = taskExecutor.Upgrade();
+    if (executor) {
+        executor->PostTask(
+            [callback, result] {
+                if (callback) {
+                    callback(result, false);
+                }
+            },
+            TaskExecutor::TaskType::UI, "ArkUI-XClipboardJniGetData");
+    }
+    return true;
+}
+
+bool ClipboardJni::GetData(
     const std::function<void(const std::string&)>& callback, const WeakPtr<TaskExecutor>& taskExecutor)
 {
     auto env = JniEnvironment::GetInstance().GetJniEnv();
