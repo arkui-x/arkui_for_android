@@ -206,13 +206,6 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
     public void onResume() {
         Log.i(LOG_TAG, "OnResume called, instance name:" + getInstanceName());
         super.onResume();
-        if (isHidden()) {
-            Log.i(LOG_TAG, "onResume called, isHidden");
-            isToResume = true;
-            return;
-        }
-        isToResume = false;
-        foreground();
     }
 
     @Override
@@ -292,7 +285,6 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
     public void onPause() {
         Log.i(LOG_TAG, "onPause called, instance name:" + getInstanceName());
         super.onPause();
-        background();
     }
 
     private void background() {
