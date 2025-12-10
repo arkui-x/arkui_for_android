@@ -31,6 +31,7 @@ import android.graphics.Rect;
 import android.view.ViewGroup;
 import android.content.Context;
 
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.HashMap;
@@ -77,13 +78,26 @@ public class WindowViewCommon {
     private static final int AVOID_TYPE_KEYBOARD = 3; // area for soft input keyboard
     private static final int AVOID_TYPE_NAVIGATION_INDICATOR = 4; // area for navigation indicator
     private static boolean sAndroidXAvailable;
+    private static boolean sAndroidXVersionSupportedGetInsets;
 
     static {
         try {
             Class.forName("androidx.core.view.ViewCompat");
+            Class.forName("androidx.core.view.WindowInsetsCompat");
+            Class.forName("androidx.core.view.WindowInsetsCompat$Type");
             sAndroidXAvailable = true;
         } catch (ClassNotFoundException e) {
             sAndroidXAvailable = false;
+        }
+    }
+
+    static {
+        try {
+            Class<?> clazz = Class.forName("androidx.core.view.WindowInsetsCompat");
+            Method method = clazz.getMethod("getInsets", int.class);
+            sAndroidXVersionSupportedGetInsets = (method != null);
+        } catch (Exception e) {
+            sAndroidXVersionSupportedGetInsets = false;
         }
     }
 
@@ -258,6 +272,10 @@ public class WindowViewCommon {
      *               that need to be avoided by the application content
      */
     public void onInsetsAreaChanged(WindowInsetsCompat insets) {
+        if (!sAndroidXAvailable) {
+            ALog.w(TAG, "AndroidX is not available.");
+            return;
+        }
         ALog.d(TAG, "Window" + "onInsetsAreaChanged" + nativeWindowPtr);
         getLocationOnScreen(new LocationCallback() {
             @Override
@@ -573,7 +591,7 @@ public class WindowViewCommon {
         }
     }
 
-private void adjustToWindowCoordinate(AvoidArea avoidArea, Rect windowRect) {
+    private void adjustToWindowCoordinate(AvoidArea avoidArea, Rect windowRect) {
         if (avoidArea == null || windowRect == null) {
             return;
         }
@@ -603,6 +621,12 @@ private void adjustToWindowCoordinate(AvoidArea avoidArea, Rect windowRect) {
             if (i == AVOID_TYPE_SYSTEM_GESTURE) {
                 continue;
             }
+
+            if (!sAndroidXVersionSupportedGetInsets) {
+                ALog.e(TAG, "window" + " please update your androidx version to 1.8.0 or higher.");
+                return;  
+            }
+
             onAvoidAreaChanged(i, insets.getInsets(avoidTypeToType(i)), screenSize.width, screenSize.height,
                 rect);
             ALog.d(TAG, "Window" + "screenWidth:" + screenSize.width + "screenHeight:" + screenSize.height);
