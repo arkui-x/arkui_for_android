@@ -170,4 +170,9 @@ std::string ImageSourceAndroid::GetEncodedFormat()
 {
     return "";
 }
+
+bool ImageSourceAndroid::IsHeifWithoutAlpha()
+{
+    return false;
+}
 } // namespace OHOS::Ace

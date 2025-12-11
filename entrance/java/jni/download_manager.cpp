@@ -82,6 +82,11 @@ public:
         return false;
     }
 
+    void* WrapDownloadInfoToNapiValue(void* env, const ImageErrorInfo& errorInfo) override
+    {
+        return nullptr;
+    }
+
     DownloadManagerImpl() = default;
 
     ~DownloadManagerImpl() = default;

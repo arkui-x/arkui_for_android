@@ -29,4 +29,10 @@ Reporter& Reporter::GetInstance()
 }
 
 void ReporterImpl::HandleUISessionReporting(const JsonReport& report) const {}
+void ReporterImpl::HandleInspectorReporting(const JsonReport& report) const {}
+void ReporterImpl::HandleInputEventInspectorReporting(const TouchEvent& event) const {}
+void ReporterImpl::HandleInputEventInspectorReporting(const MouseEvent& event) const {}
+void ReporterImpl::HandleInputEventInspectorReporting(const AxisEvent& event) const {}
+void ReporterImpl::HandleInputEventInspectorReporting(const KeyEvent& event) const {}
+void ReporterImpl::HandleWindowFocusInspectorReporting(bool isFocus) const {}
 } // namespace OHOS::Ace::NG

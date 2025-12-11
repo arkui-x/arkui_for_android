@@ -71,6 +71,10 @@ void EventReport::ReportFunctionTimeout(const std::string& functionName, int64_t
 void EventReport::ReportUiExtensionTransparentEvent(const std::string& pageUrl, const std::string& bundleName,
     const std::string& moduleName) {}
 
+void EventReport::ReportMainWindowTransparentEvent(const std::string& pageUrl, const std::string& bundleName,
+    const std::string& moduleName)
+{}
+
 void EventReport::ReportDragInfo(const DragInfo& dragInfo) {}
 
 void EventReport::ReportTextFieldErrorEvent(int32_t frameNodeId, int32_t depth, const std::string& errorType)
