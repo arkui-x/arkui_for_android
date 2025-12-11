@@ -87,6 +87,11 @@ DimensionUnit ParseDimensionUnit(const std::string& unit)
 
 } // namespace
 
+RefPtr<ResourceAdapter> ResourceAdapter::Create()
+{
+    return nullptr;
+}
+
 RefPtr<ResourceAdapter> ResourceAdapter::CreateV2()
 {
     LOGI("Use resourceAdapter v2");

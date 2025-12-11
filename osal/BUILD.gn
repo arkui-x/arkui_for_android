@@ -78,7 +78,6 @@ template("ace_osal_android_source_set") {
       "page_url_checker_android.cpp",
       "perf_interfaces.cpp",
       "pixel_map_android.cpp",
-      "resource_adapter_impl.cpp",
       "resource_adapter_impl_v2.cpp",
       "resource_convertor.cpp",
       "resource_theme_style.cpp",
