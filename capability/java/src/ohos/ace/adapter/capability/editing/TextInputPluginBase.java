@@ -283,13 +283,9 @@ public abstract class TextInputPluginBase {
 
         @Override
         public void handleCommitTextForClient(int clientId, String text) {
-            if (lastCommittedTexts.containsKey(clientId)) {
-                String existing = lastCommittedTexts.get(clientId);
-                if (" ".equals(existing)) {
-                    lastCommittedTexts.put(clientId, existing + text);
-                } else {
-                    lastCommittedTexts.put(clientId, text);
-                }
+            String existing = lastCommittedTexts.get(clientId);
+            if (existing != null && " ".equals(existing)) {
+                lastCommittedTexts.put(clientId, existing + text);
             } else {
                 lastCommittedTexts.put(clientId, text);
             }
