@@ -18,7 +18,6 @@ package ohos.ace.adapter.capability.editing;
 import android.view.inputmethod.InputConnection;
 
 import ohos.ace.adapter.ALog;
-import ohos.ace.adapter.capability.editing.TrackingInputConnection;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,7 +30,7 @@ import java.util.Map;
  *
  * @since 1
  */
-public abstract class TextInputPluginBase implements TrackingInputConnection.InputCommitListener {
+public abstract class TextInputPluginBase {
     private static final String LOG_TAG = "Ace_IME";
     private static final int CLIENT_ID_NONE = -1;
 
@@ -280,6 +279,20 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
         public void setSelectedState(boolean isSelected, CharSequence text) {
             this.isSelected = isSelected;
             this.needUpdatedText = text.toString();
+        }
+
+        @Override
+        public void handleCommitTextForClient(int clientId, String text) {
+            if (lastCommittedTexts.containsKey(clientId)) {
+                String existing = lastCommittedTexts.get(clientId);
+                if (" ".equals(existing)) {
+                    lastCommittedTexts.put(clientId, existing + text);
+                } else {
+                    lastCommittedTexts.put(clientId, text);
+                }
+            } else {
+                lastCommittedTexts.put(clientId, text);
+            }
         }
 
         private void setComposedState(boolean isComposing, int commitStart, int composingEnd) {
@@ -671,30 +684,6 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
     protected void onClosed() {}
 
     /**
-     * Callback invoked when text is committed from the input connection.
-     *
-     * This method stores the committed text for the current client so that
-     * it can be consumed when calculating editing deltas.
-     *
-     * @param text the text that was committed
-     */
-    @Override
-    public void onCommit(String text) {
-        if (hasClient()) {
-            if (Delegate.lastCommittedTexts.containsKey(clientId())) {
-                String existing = Delegate.lastCommittedTexts.get(clientId());
-                if (" ".equals(existing)) {
-                    Delegate.lastCommittedTexts.put(clientId(), existing + text);
-                } else {
-                    Delegate.lastCommittedTexts.put(clientId(), text);
-                }
-            } else {
-                Delegate.lastCommittedTexts.put(clientId(), text);
-            }
-        }
-    }
-
-    /**
      * Set the selected range.
      *
      * @param range The selected range.
@@ -703,27 +692,7 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
         if (hasClient()) {
             Delegate.selectedRange.put(clientId(), range);
         }
-    }
-
-    /**
-     * Wrap the original InputConnection with a TrackingInputConnection that
-     * intercepts commit events and forwards them to this listener.
-     *
-     * Subclasses should call this when creating their InputConnection (for example,
-     * inside onCreateInputConnection) to enable commit tracking.
-     *
-     * @param original the original InputConnection to wrap
-     * @return a TrackingInputConnection delegating to the original connection, or null if original is null
-     */
-    protected InputConnection wrapInputConnection(InputConnection original) {
-        if (original == null) {
-            return original;
-        }
-        if (original instanceof TrackingInputConnection) {
-            return original;
-        }
-        return new TrackingInputConnection(original, this);
-    }
+	}
 
     private static native void updateEditingState(int client, String state);
 

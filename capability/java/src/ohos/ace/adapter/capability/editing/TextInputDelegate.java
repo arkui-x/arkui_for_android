@@ -87,4 +87,15 @@ public interface TextInputDelegate {
      * @param composingText The text to set as composing
      */
     void setComposingText(String composingText);
+
+    /**
+     * Processes the committed text for a specific client and stores it for future use.
+     * 
+     * This method is called when text is committed from the input connection. It stores the committed text
+     * for the given client so that it can be used later, for example, when calculating editing deltas. 
+     * 
+     * @param clientId Unique identifier for the client to distinguish between multiple client sessions
+     * @param text The text committed by the client, will replace or append to the existing record
+     */
+    void handleCommitTextForClient(int clientId, String text);
 }
