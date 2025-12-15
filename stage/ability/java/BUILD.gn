@@ -17,6 +17,7 @@ import("//foundation/arkui/ace_engine/ace_config.gni")
 # build android jar
 java_library("stage_platform_android_java") {
   java_files = [
+    "$ace_root/adapter/android/stage/ability/java/src/AbilityLoader.java",
     "$ace_root/adapter/android/stage/ability/java/src/InstanceIdGenerator.java",
     "$ace_root/adapter/android/stage/ability/java/src/RunningProcessInfo.java",
     "$ace_root/adapter/android/stage/ability/java/src/StageActivity.java",
