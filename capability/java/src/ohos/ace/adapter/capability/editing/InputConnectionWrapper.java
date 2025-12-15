@@ -37,6 +37,9 @@ import ohos.ace.adapter.ALog;
  */
 class InputConnectionWrapper extends BaseInputConnection {
     private static final String LOG_TAG = "Ace_IME";
+    private static final int CLIENT_ID_NONE = -1;
+    private static final int KEYBOARD_HIDDEN = 0;
+    private static final int CURSOR_INVALID = -1;
 
     private final View aceView;
 
@@ -84,7 +87,7 @@ class InputConnectionWrapper extends BaseInputConnection {
      */
     public void keyboardHeightChanged(int height) {
         ALog.d(LOG_TAG, "keyboardHeightChanged height " + height);
-        if (height == 0) {
+        if (height == KEYBOARD_HIDDEN) {
             delegate.notifyKeyboardClosedByUser(clientId);
         }
     }
@@ -97,13 +100,8 @@ class InputConnectionWrapper extends BaseInputConnection {
         if (textRequest.token != 0) {
             extractedTextRequestToken = textRequest.token;
         }
-        ExtractedText extractedText = new ExtractedText();
-        extractedText.selectionStart = Selection.getSelectionStart(this.editable);
-        extractedText.selectionEnd = Selection.getSelectionEnd(this.editable);
-        extractedText.partialStartOffset = -1;
-        extractedText.partialEndOffset = -1;
-        extractedText.startOffset = 0;
-        extractedText.flags = 0;
+        ExtractedText extractedText = createExtractedText(Selection.getSelectionStart(this.editable), 
+                                                        Selection.getSelectionEnd(this.editable));
         if ((textRequest.flags & GET_TEXT_WITH_STYLES) != 0) {
             extractedText.text = new SpannableString(this.editable);
         } else {
@@ -145,7 +143,7 @@ class InputConnectionWrapper extends BaseInputConnection {
     @Override
     public boolean deleteSurroundingText(int deleteBeforeLength, int deleteAfterLength) {
         boolean deleted = true;
-        if (Selection.getSelectionStart(this.editable) == -1) {
+        if (Selection.getSelectionStart(this.editable) == CURSOR_INVALID) {
             return deleted;
         }
 
@@ -211,19 +209,22 @@ class InputConnectionWrapper extends BaseInputConnection {
 
         // Only care about down event.
         // Note: If the key is held down, ACTION_DOWN will be triggered multiple times by IME.
-        if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            if (event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
-                return deleteSelection(event);
-            } else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                moveToRight();
-            } else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
-                moveToLeft();
-            } else {
-                return enterCharacter(event);
-            }
-            return true;
+        if (event.getAction() != KeyEvent.ACTION_DOWN) {
+            return false;
         }
-        return false;
+        
+        switch (event.getKeyCode()) {
+            case KeyEvent.KEYCODE_DEL:
+                return deleteSelection(event);
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                moveToRight();
+                return true;
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                moveToLeft();
+                return true;
+            default:
+                return enterCharacter(event);
+        }
     }
 
     @Override
@@ -274,33 +275,51 @@ class InputConnectionWrapper extends BaseInputConnection {
     }
 
     private void onStateUpdated() {
-        // If the IME is in the middle of a batch edit, then wait until it completes.
-        if (batchCount > 0 || imm == null) {
+        if (shouldSkipUpdate()) {
             return;
         }
+        
+        updateInputMethod();
+        notifyEditingState();
+    }
 
+    private boolean shouldSkipUpdate() {
+        return batchCount > 0 || imm == null;
+    }
+
+    private void updateInputMethod() {
         int selectionStart = Selection.getSelectionStart(editable);
         int selectionEnd = Selection.getSelectionEnd(editable);
         int composingStart = BaseInputConnection.getComposingSpanStart(editable);
         int composingEnd = BaseInputConnection.getComposingSpanEnd(editable);
+        
+        updateInputMethodSelection(selectionStart, selectionEnd, composingStart, composingEnd);
+        updateInputMethodExtractedText(selectionStart, selectionEnd);
+    }
 
+    private void updateInputMethodSelection(int selectionStart, int selectionEnd, 
+                                            int composingStart, int composingEnd) {
         imm.updateSelection(this.aceView, selectionStart, selectionEnd, composingStart, composingEnd);
+    }
 
+    private void updateInputMethodExtractedText(int selectionStart, int selectionEnd) {
         // Update extract text to imm, enable show input text in fullscreen mode.
-        ExtractedText extractedText = new ExtractedText();
+        ExtractedText extractedText = createExtractedText(selectionStart, selectionEnd);
         final CharSequence content = editable;
         final int length = content.length();
-        extractedText.partialStartOffset = -1;
-        extractedText.partialEndOffset = -1;
-        extractedText.startOffset = 0;
-        extractedText.selectionStart = selectionStart;
-        extractedText.selectionEnd = selectionEnd;
-        extractedText.flags = 0;
         extractedText.text = content.subSequence(0, length);
         imm.updateExtractedText(aceView, extractedTextRequestToken, extractedText);
+    }
 
-        delegate.updateEditingState(clientId, editable.toString(), selectionStart, selectionEnd, composingStart,
-            composingEnd);
+    private void notifyEditingState() {
+        int selectionStart = Selection.getSelectionStart(editable);
+        int selectionEnd = Selection.getSelectionEnd(editable);
+        int composingStart = BaseInputConnection.getComposingSpanStart(editable);
+        int composingEnd = BaseInputConnection.getComposingSpanEnd(editable);
+        
+        delegate.updateEditingState(clientId, editable.toString(), 
+                                selectionStart, selectionEnd, 
+                                composingStart, composingEnd);
     }
 
     /**
@@ -363,5 +382,16 @@ class InputConnectionWrapper extends BaseInputConnection {
             return true;
         }
         return false;
+    }
+
+    private ExtractedText createExtractedText(int selectionStart, int selectionEnd){
+        ExtractedText extractedText = new ExtractedText();
+        extractedText.selectionStart = selectionStart;
+        extractedText.selectionEnd = selectionEnd;
+        extractedText.partialStartOffset = -1;
+        extractedText.partialEndOffset = -1;
+        extractedText.startOffset = 0;
+        extractedText.flags = 0;
+        return extractedText;
     }
 }
