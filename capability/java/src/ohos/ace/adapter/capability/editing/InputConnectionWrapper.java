@@ -37,6 +37,7 @@ import ohos.ace.adapter.ALog;
  */
 class InputConnectionWrapper extends BaseInputConnection {
     private static final String LOG_TAG = "Ace_IME";
+    private static final int CLIENT_ID_NONE = -1;
 
     private final View aceView;
 
@@ -136,6 +137,9 @@ class InputConnectionWrapper extends BaseInputConnection {
         boolean isSelected = Selection.getSelectionEnd(editable) - Selection.getSelectionStart(editable) > 0;
         if (isSelected) {
             delegate.setSelectedState(isSelected, text);
+        }
+        if (text != null && clientId != CLIENT_ID_NONE) {
+            delegate.handleCommitTextForClient(clientId, text.toString());
         }
         boolean result = super.commitText(text, newCursorPosition);
         onStateUpdated();
