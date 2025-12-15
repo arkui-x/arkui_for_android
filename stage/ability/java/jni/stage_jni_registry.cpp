@@ -15,6 +15,7 @@
 
 #include "stage_jni_registry.h"
 
+#include "ability_loader_jni.h"
 #include "stage_activity_delegate_jni.h"
 #include "stage_application_delegate_jni.h"
 #include "stage_fragment_delegate_jni.h"
@@ -45,6 +46,11 @@ bool StageJniRegistry::Register()
 
     if (!StageFragmentDelegateJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register StageFragmentDelegateJni.");
+        return false;
+    }
+
+    if (!AbilityLoaderJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register AbilityLoaderJni.");
         return false;
     }
     return true;
