@@ -370,6 +370,13 @@ std::vector<uint8_t> UdmfClientImpl::GetSpanStringEntry(const RefPtr<UnifiedData
 
 bool UdmfClientImpl::IsAppropriateType(DragSummaryInfo& dragSummaryInfo, const std::set<std::string>& allowTypes)
 {
+    std::vector<std::string> allowTypesArr(allowTypes.begin(), allowTypes.end());
+    for (const auto& allowType : allowTypes) {
+        if (dragSummaryInfo.summary.find(allowType) != dragSummaryInfo.summary.end() ||
+            dragSummaryInfo.detailedSummary.find(allowType) != dragSummaryInfo.detailedSummary.end()) {
+            return true;
+        }
+    }
     return false;
 }
 
