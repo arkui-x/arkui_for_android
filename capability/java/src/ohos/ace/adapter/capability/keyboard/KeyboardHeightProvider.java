@@ -47,9 +47,16 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
     private int lastKeyboardHeight = 0;
     private int lastPortraitVisibleHeight = -1;
     private int navigationBarHeight = 0;
-    private float navigationBarMaxHeightRate = 0.1f;
+    private float navigationBarMaxHeightRate = 0.2f;
     private Map<Integer, Integer> bottomMaxMap = null;
     private Map<Integer, Integer> screenSizeYMap = null;
+
+    private Runnable notifyRunnable = new Runnable() {
+        @Override
+        public void run() {
+            notifyKeyboardHeightChanged(lastKeyboardHeight);
+        }
+    };
 
     /**
      * Constructor.
@@ -111,7 +118,7 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
         int navigationBarMaxHeight = (int) (screenSizeY * navigationBarMaxHeightRate);
         if (screenSizeY.intValue() > screenSize.y) {
             if ((screenSizeY - screenSize.y) > navigationBarMaxHeight) {
-                return;
+                this.bottomMaxMap.put(orientation, 0);
             } else {
                 navigationBarHeight = screenSizeY - screenSize.y;
             }
@@ -169,7 +176,11 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
         int visibleHeight = rect.bottom - rect.top;
         if (orientation == Configuration.ORIENTATION_PORTRAIT) {
             if ((keyboardHeight > bottomMax / 2) && (visibleHeight != popupView.getHeight())) {
-                return;
+                if (isLargeScreen()) {
+                  keyboardHeight = bottomMax / 2;
+                }else{
+                  return; 
+                }
             }
             if (visibleHeight <= lastPortraitVisibleHeight) {
                 return;
@@ -186,9 +197,19 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
         }
 
         if (lastKeyboardHeight != keyboardHeight) {
-            notifyKeyboardHeightChanged(keyboardHeight);
             lastKeyboardHeight = keyboardHeight;
+            if (keyboardHeight > 0 && isLargeScreen()) {  
+                popupView.removeCallbacks(notifyRunnable);              
+                popupView.postDelayed(notifyRunnable, 100);
+            }else{
+                notifyKeyboardHeightChanged(keyboardHeight);
+            } 
         }
+    }
+
+    private boolean isLargeScreen() {
+        int minScreenWidth = activity.getResources().getConfiguration().smallestScreenWidthDp;
+        return minScreenWidth >= 600 ;
     }
 
     private void notifyKeyboardHeightChanged(int height) {
