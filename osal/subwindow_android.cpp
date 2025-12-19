@@ -874,6 +874,16 @@ bool SubwindowAndroid::NeedFollowParentWindowLayout()
 
 void SubwindowAndroid::AddFollowParentWindowLayoutNode(int32_t nodeId) {}
 
+bool SubwindowAndroid::SetReceiveDragEventEnabled(bool enabled)
+{
+    return false;
+}
+
+bool SubwindowAndroid::GetIsReceiveDragEventEnabled()
+{
+    return false;
+}
+
 void SubwindowAndroid::RemoveFollowParentWindowLayoutNode(int32_t nodeId) {}
 
 void SubwindowAndroid::SetNodeId(int32_t nodeId) {}
