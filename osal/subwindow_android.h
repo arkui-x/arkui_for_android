@@ -261,6 +261,8 @@ public:
     bool NeedFollowParentWindowLayout() override;
     void AddFollowParentWindowLayoutNode(int32_t nodeId) override;
     void RemoveFollowParentWindowLayoutNode(int32_t nodeId) override;
+    bool SetReceiveDragEventEnabled(bool enabled) override;
+    bool GetIsReceiveDragEventEnabled() override;
     void SetNodeId(int32_t nodeId) override;
     int32_t GetNodeId() const override;
     void SetWindowAnchorInfo(const NG::OffsetF& offset, SubwindowType type, int32_t nodeId) override;
