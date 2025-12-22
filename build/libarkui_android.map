@@ -211,6 +211,9 @@
       cJSON_IsObject;
       cJSON_GetStringValue;
       cJSON_Print;
+      cJSON_IsNumber;
+      cJSON_HasObjectItem;
+      cJSON_IsArray;
       NativeModuleManager::*;
       NativeEngine::*;
       SkBitmap::*;
