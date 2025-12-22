@@ -97,7 +97,7 @@ public class WindowViewAospCommon {
      */
     public AccessibilityNodeProvider getAccessibilityNodeProvider() {
         accessibilityCrossPlatformBridgeInit();
-        if (accessibilityBridge != null && accessibilityBridge.isAccessibilityEnabled()) {
+        if (accessibilityBridge != null) {
             return accessibilityBridge;
         }
         return null;
