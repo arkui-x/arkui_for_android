@@ -189,12 +189,15 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
                     lastSelectionEnd = -1;
                     lastSelectionStart = -1;
                     setComposedState(false, -1, -1);
-                } else if (lastValue != null && text.length() < lastValue.length()) {
+                } else if (lastValue != null &&
+                    (lastValue.length() - text.length() == 1 &&
+                    text.equals(substringSafe(lastValue, 0, lastValue.length() - 1)) ||
+                    text.length() < lastValue.length() && text.isEmpty())) {
                     json.put("isDelete", true);
                     setComposedState(false, -1, -1);
                 } else if (composingEnd > composingStart &&
                     isSingleLetterInput(lastValue, text, composingStart, composingEnd)) {
-                    json.put("appendText", text.substring(composingEnd - 1, composingEnd));
+                    json.put("appendText", substringSafe(text, composingEnd - 1, composingEnd));
                     setComposedState(false, -1, -1);
                 } else {
                     handleOtherInput(json, text, clientId, composingStart, composingEnd);
@@ -221,7 +224,7 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
                 if (count == 0) {
                     return "";
                 }
-                return text.substring(composingStart, composingEnd);
+                return substringSafe(text, composingStart, composingEnd);
             }
             int start = selectionEnd - count;
             if (start < 0) {
@@ -230,7 +233,7 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
             if (selectionEnd > text.length()) {
                 return "";
             }
-            return text.substring(Math.max(start, 0), Math.min(selectionEnd, text.length()));
+            return substringSafe(text, Math.max(start, 0), Math.min(selectionEnd, text.length()));
         }
 
         @Override
@@ -331,7 +334,7 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
             }
             int count = lastSelectionEnd - lastSelectionStart;
             int start = selectionEnd - count;
-            return text.substring(start > 0 ? start : 0, Math.min(text.length(), selectionEnd));
+            return substringSafe(text, start > 0 ? start : 0, Math.min(text.length(), selectionEnd));
         }
 
         private boolean isSingleLetterInput(String lastValue, String text, int composingStart, int composingEnd) {
@@ -351,11 +354,11 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
             if (composingStart > composingEnd) {
                 return false;
             }
-            if (!lastValue.substring(composingStart, composingEnd - 1).equals(text.substring(composingStart,
-                composingEnd - 1))) {
+            if (!substringSafe(lastValue, composingStart, composingEnd - 1).equals(substringSafe(text,
+                composingStart, composingEnd - 1))) {
                 return false;
             }
-            if (lastValue.substring(composingStart, composingEnd - 1).matches("[a-zA-Z]+")) {
+            if (substringSafe(lastValue, composingStart, composingEnd - 1).matches("[a-zA-Z]+")) {
                 return true;
             }
             return false;
@@ -390,7 +393,7 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
                 return false;
             }
 
-            String textWithoutAppend = text.substring(0, appendStart) + text.substring(selectionEnd);
+            String textWithoutAppend = substringSafe(text, 0, appendStart) + text.substring(selectionEnd);
             return lastValue.equals(textWithoutAppend);
         }
 
@@ -399,7 +402,7 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
             String appendText = lastCommittedTexts.remove(clientId);
             if (composingText != null && composingText.length() > 0) {
                 String newText = appendText + composingText;
-                if (newText.equals(text.substring(Math.max(0, selectionEnd - newText.length()),
+                if (newText.equals(substringSafe(text, Math.max(0, selectionEnd - newText.length()),
                     Math.min(selectionEnd, text.length())))) {
                     appendText = newText;
                 }
@@ -410,7 +413,8 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
             if (lastValue.length() <= appendStart) {
                 return appendText;
             }
-            String newCommitText = lastValue.substring(0, appendStart) + appendText + lastValue.substring(appendStart);
+            String newCommitText = substringSafe(lastValue, 0, appendStart) +
+                appendText + lastValue.substring(appendStart);
             if (text.length() == (lastValue.length() + appendText.length()) &&
                 (newCommitText.equals(text) || isComposing)) {
                 return appendText;
@@ -490,7 +494,7 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
             DiffResult diffResult = getDiffResult(lastValue, text, start, selectionEnd);
             if (diffResult.preSelStart == diffResult.preSelEnd) {
                 if (start == end && end != diffResult.preSelEnd) {
-                    String newAppendText = text.substring(Math.max(start, 0),
+                    String newAppendText = substringSafe(text, Math.max(start, 0),
                                                             Math.min(selectionEnd - 1, text.length()));
                     if (isCorrectData(lastValue, text, start, end, newAppendText)) {
                         diffResult.setNewAppendText(newAppendText);
@@ -538,18 +542,31 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
             int textInsertStart = left;
             int textInsertEnd = rightText + 1;
             int lastDelStart = left;
-            String insertedText = curText.substring(textInsertStart, Math.max(textInsertEnd, selectionEnd));
+            String insertedText = substringSafe(curText, textInsertStart, Math.max(textInsertEnd, selectionEnd));
             if (selectionEnd > textInsertEnd) {
                 lastDelEnd = lastDelEnd + (selectionEnd - textInsertEnd);
             }
             if (selectionEnd < textInsertEnd && textInsertEnd - selectionEnd == 1 &&
-                " ".equals(curText.substring(selectionEnd, selectionEnd + 1))) {
+                " ".equals(substringSafe(curText, selectionEnd, selectionEnd + 1))) {
                 int substringStart = Math.max(start, 0);
                 int substringEnd = Math.max(selectionEnd, substringStart);
-                insertedText = curText.substring(substringStart, substringEnd);
+                insertedText = substringSafe(curText, substringStart, substringEnd);
             }
 
             return new DiffResult(lastDelStart, lastDelEnd, textInsertStart, textInsertEnd, insertedText);
+        }
+
+        private String substringSafe(String text, int start, int end) {
+            if (text == null || text.isEmpty()) {
+                return "";
+            }
+
+            int startSafe = Math.max(0, start);
+            int endSafe = Math.min(end, text.length());
+            if (startSafe >= endSafe) {
+                return "";
+            }
+            return text.substring(startSafe, endSafe);
         }
     }
 
