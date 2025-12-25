@@ -918,6 +918,7 @@ std::vector<uint8_t> StageAssetProvider::GetFontConfigJsonBuffer(const std::stri
         buffer = GetBufferByAppDataPath(modulePath);
     }
     if (!buffer.empty()) {
+        buffer.push_back('\0');
         nlohmann::json moduleJson = nlohmann::json::parse(buffer.data(), nullptr, false);
         if (!moduleJson.is_discarded() && moduleJson.contains("app") && moduleJson["app"].contains("configuration")) {
             configJsonValue = moduleJson["app"]["configuration"].get<std::string>();
@@ -931,7 +932,9 @@ std::vector<uint8_t> StageAssetProvider::GetFontConfigJsonBuffer(const std::stri
     }
     std::string sourcePath = GetAppDataModuleDir() + SEPARATOR + moduleName + SEPARATOR + RESOURCES_DIR_NAME +
                              BASE_DIR + PROFILE_DIR + SEPARATOR + configJsonEnd;
-    return GetBufferByAppDataPath(sourcePath);
+    std::vector<uint8_t> jsonBuffer = GetBufferByAppDataPath(sourcePath);
+    jsonBuffer.push_back('\0');
+    return jsonBuffer;
 }
 } // namespace Platform
 } // namespace AbilityRuntime
