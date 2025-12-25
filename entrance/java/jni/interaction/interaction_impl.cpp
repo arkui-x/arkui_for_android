@@ -218,7 +218,7 @@ int32_t InteractionImpl::GetDragState(DragState& dragState) const
     return -1;
 }
 
-int32_t InteractionImpl::AddPrivilege()
+int32_t InteractionImpl::AddPrivilege(const std::string& signature, const DragEventData& dragEventData)
 {
     return -1;
 }
