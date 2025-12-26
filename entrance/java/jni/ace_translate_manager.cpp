@@ -21,5 +21,4 @@
 namespace OHOS::Ace {
 void UiTranslateManagerImpl::AddPixelMap(int32_t nodeId, RefPtr<PixelMap> pixelMap) {}
 void UiTranslateManagerImpl::GetAllPixelMap(RefPtr<NG::FrameNode> pageNode) {}
-void UiTranslateManagerImpl::FindTopNavDestination(RefPtr<NG::UINode> currentNode, RefPtr<NG::FrameNode>& result) {}
 } // namespace OHOS::Ace
