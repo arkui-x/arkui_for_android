@@ -624,7 +624,7 @@ public class WindowViewCommon {
 
             if (!sAndroidXVersionSupportedGetInsets) {
                 ALog.e(TAG, "window" + " please update your androidx version to 1.8.0 or higher.");
-                return;  
+                return;
             }
 
             onAvoidAreaChanged(i, insets.getInsets(avoidTypeToType(i)), screenSize.width, screenSize.height,

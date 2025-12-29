@@ -84,6 +84,8 @@ public:
 
     void* WrapDownloadInfoToNapiValue(void* env, const ImageErrorInfo& errorInfo) override
     {
+        (void)env;
+        (void)errorInfo;
         return nullptr;
     }
 
