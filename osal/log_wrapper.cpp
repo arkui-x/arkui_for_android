@@ -194,4 +194,8 @@ bool LogBacktrace(size_t maxFrameNums)
     return true;
 }
 
+CallbackLogger::CallbackLogger(const std::string& funcName, uintptr_t callback) {}
+
+CallbackLogger::~CallbackLogger() {}
+
 } // namespace OHOS::Ace

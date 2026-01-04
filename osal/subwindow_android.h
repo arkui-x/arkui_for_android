@@ -263,6 +263,8 @@ public:
     void RemoveFollowParentWindowLayoutNode(int32_t nodeId) override;
     bool SetReceiveDragEventEnabled(bool enabled) override;
     bool GetIsReceiveDragEventEnabled() override;
+    bool GetDestroyInHide() override;
+    void SetDestroyInHide(bool destroyInHide) override;
     void SetNodeId(int32_t nodeId) override;
     int32_t GetNodeId() const override;
     void SetWindowAnchorInfo(const NG::OffsetF& offset, SubwindowType type, int32_t nodeId) override;
@@ -290,6 +292,7 @@ private:
     bool haveDialog_ = false;
     bool isToastWindow_ = false;
     bool isMenuWindow_ = false;
+    bool destroyInHide_ = false;
     std::shared_ptr<OHOS::Rosen::Window> window_ = nullptr;
     sptr<OHOS::Rosen::Window> parentWindow_ = nullptr;
     std::unordered_map<int32_t, std::vector<Rosen::Rect>> hotAreasMap_;
