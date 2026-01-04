@@ -34,5 +34,8 @@ void ReporterImpl::HandleInputEventInspectorReporting(const TouchEvent& event) c
 void ReporterImpl::HandleInputEventInspectorReporting(const MouseEvent& event) const {}
 void ReporterImpl::HandleInputEventInspectorReporting(const AxisEvent& event) const {}
 void ReporterImpl::HandleInputEventInspectorReporting(const KeyEvent& event) const {}
-void ReporterImpl::HandleWindowFocusInspectorReporting(bool isFocus) const {}
+void ReporterImpl::HandleWindowFocusInspectorReporting(bool isFocus) const
+{
+    (void)isFocus;
+}
 } // namespace OHOS::Ace::NG

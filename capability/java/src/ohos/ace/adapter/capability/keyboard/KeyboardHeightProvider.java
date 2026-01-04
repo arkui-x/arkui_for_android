@@ -177,9 +177,9 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
         if (orientation == Configuration.ORIENTATION_PORTRAIT) {
             if ((keyboardHeight > bottomMax / 2) && (visibleHeight != popupView.getHeight())) {
                 if (isLargeScreen()) {
-                  keyboardHeight = bottomMax / 2;
-                }else{
-                  return; 
+                    keyboardHeight = bottomMax / 2;
+                } else {
+                    return;
                 }
             }
             if (visibleHeight <= lastPortraitVisibleHeight) {
@@ -198,12 +198,12 @@ public class KeyboardHeightProvider extends PopupWindow implements OnGlobalLayou
 
         if (lastKeyboardHeight != keyboardHeight) {
             lastKeyboardHeight = keyboardHeight;
-            if (keyboardHeight > 0 && isLargeScreen()) {  
-                popupView.removeCallbacks(notifyRunnable);              
+            if (keyboardHeight > 0 && isLargeScreen()) {
+                popupView.removeCallbacks(notifyRunnable);
                 popupView.postDelayed(notifyRunnable, 100);
-            }else{
+            } else {
                 notifyKeyboardHeightChanged(keyboardHeight);
-            } 
+            }
         }
     }
 

@@ -19,6 +19,8 @@ import android.util.Log;
 
 /**
  * This class is responsible for loading abilities.
+ *
+ * @since 2025-12-15
  */
 public class AbilityLoader {
     private static final String LOG_TAG = "AbilityLoader";
@@ -39,7 +41,7 @@ public class AbilityLoader {
      * @param abilityName The ability name.
      * @param params the want params.
      */
-    static public void loadAbility(String bundleName, String moduleName, String abilityName, String params) {
+    public static void loadAbility(String bundleName, String moduleName, String abilityName, String params) {
         if (bundleName == null || bundleName.isEmpty()) {
             Log.e(LOG_TAG, "bundleName is invalid.");
             return;
@@ -53,10 +55,8 @@ public class AbilityLoader {
             return;
         }
         String instanceName = bundleName + ":" + moduleName + ":" + abilityName + ":" + ABILITY_LOADER_INSTANCE_ID;
-        if (params == null) {
-            params = "";
-        }
-        nativeDispatchOnCreate(instanceName, params);
+        String finalParams = (params == null) ? "" : params;
+        nativeDispatchOnCreate(instanceName, finalParams);
     }
 
     /**
@@ -66,7 +66,7 @@ public class AbilityLoader {
      * @param moduleName The module name.
      * @param abilityName The ability name.
      */
-    static public void unloadAbility(String bundleName, String moduleName, String abilityName) {
+    public static void unloadAbility(String bundleName, String moduleName, String abilityName) {
         if (bundleName == null || bundleName.isEmpty()) {
             Log.e(LOG_TAG, "bundleName is invalid.");
             return;
@@ -83,6 +83,6 @@ public class AbilityLoader {
         nativeDispatchOnDestroy(instanceName);
     }
 
-    static private native void nativeDispatchOnCreate(String instanceName, String params);
-    static private native void nativeDispatchOnDestroy(String instanceName);
+    private static native void nativeDispatchOnCreate(String instanceName, String params);
+    private static native void nativeDispatchOnDestroy(String instanceName);
 }

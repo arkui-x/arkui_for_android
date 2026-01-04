@@ -29,6 +29,9 @@ ReportSyncEventFunc LoadReportSyncEventFunc()
 
 void NotifyForceExpandStateFunc(int32_t state, bool isTid, uint64_t tid)
 {
+    (void)state;
+    (void)isTid;
+    (void)tid;
     return;
 }
 

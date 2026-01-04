@@ -430,6 +430,7 @@ template<class T>
 void HtmlToSpan::InitDimension(
     const std::string& key, const std::string& value, const std::string& index, StyleValues& values)
 {
+    (void)key;
     if (value.compare(0, strlen("normal"), "normal") == 0) {
         return;
     }
@@ -490,6 +491,7 @@ Color HtmlToSpan::ToSpanColor(const std::string& value)
 void HtmlToSpan::InitTextShadow(
     const std::string& key, const std::string& value, const std::string& index, StyleValues& values)
 {
+    (void)key;
     auto [ret, styleValue] = GetStyleValue<std::vector<Shadow>>(index, values);
     if (!ret) {
         return;

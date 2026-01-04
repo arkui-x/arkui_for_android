@@ -1121,6 +1121,7 @@ Platform::JniEnvironment::JavaGlobalRef& JniWebOnSslErrorEventReceiveEventObject
 
 void JniWebOnSslErrorEventReceiveEventObject::Confirm(void* object, int index)
 {
+    (void)object;
     auto& objRef = GetSslErrorObject(index);
     if (!objRef) {
         LOGE("Confirm: GetSslErrorObject returned empty ref");
@@ -1136,6 +1137,7 @@ void JniWebOnSslErrorEventReceiveEventObject::Confirm(void* object, int index)
 
 void JniWebOnSslErrorEventReceiveEventObject::Cancel(void* object, int index)
 {
+    (void)object;
     auto& objRef = GetSslErrorObject(index);
     if (!objRef) {
         LOGE("Cancel: GetSslErrorObject returned empty ref");
@@ -1244,6 +1246,7 @@ std::vector<std::string> JniWebSslErrorEventObject::GetCertificateChain(void* ob
 
 void JniWebSslErrorEventObject::Confirm(void* object, int index)
 {
+    (void)object;
     auto& objRef = GetAllSslErrorObject(index);
     if (!objRef) {
         LOGE("Confirm: GetAllSslErrorObject returned empty ref");
@@ -1259,6 +1262,8 @@ void JniWebSslErrorEventObject::Confirm(void* object, int index)
 
 void JniWebSslErrorEventObject::Cancel(void* object, bool abortLoading, int index)
 {
+    (void)object;
+    (void)abortLoading;
     auto& objRef = GetAllSslErrorObject(index);
     if (!objRef) {
         LOGE("Cancel: GetAllSslErrorObject returned empty ref");

@@ -15,8 +15,6 @@
 
 package ohos.ace.adapter.capability.editing;
 
-import android.view.inputmethod.InputConnection;
-
 import ohos.ace.adapter.ALog;
 
 import org.json.JSONException;
@@ -705,7 +703,7 @@ public abstract class TextInputPluginBase {
         if (hasClient()) {
             Delegate.selectedRange.put(clientId(), range);
         }
-	}
+    }
 
     private static native void updateEditingState(int client, String state);
 
