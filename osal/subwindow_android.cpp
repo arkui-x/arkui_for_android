@@ -884,6 +884,16 @@ bool SubwindowAndroid::GetIsReceiveDragEventEnabled()
     return false;
 }
 
+bool SubwindowAndroid::GetDestroyInHide()
+{
+    return destroyInHide_;
+}
+
+void SubwindowAndroid::SetDestroyInHide(bool destroyInHide)
+{
+    destroyInHide_ = destroyInHide;
+}
+
 void SubwindowAndroid::RemoveFollowParentWindowLayoutNode(int32_t nodeId) {}
 
 void SubwindowAndroid::SetNodeId(int32_t nodeId) {}
