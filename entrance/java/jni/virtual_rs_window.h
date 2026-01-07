@@ -526,19 +526,9 @@ private:
         }                                                           \
     } while (0)
 
-    inline void NotifyAfterForeground(bool needNotifyListeners = true, bool needNotifyUiContent = true)
-    {
-        if (needNotifyListeners) {
-            CALL_LIFECYCLE_LISTENER(AfterForeground);
-        }
-    }
+    void NotifyAfterForeground(bool needNotifyListeners = true, bool needNotifyUiContent = true);
 
-    inline void NotifyAfterBackground(bool needNotifyListeners = true, bool needNotifyUiContent = true)
-    {
-        if (needNotifyListeners) {
-            CALL_LIFECYCLE_LISTENER(AfterBackground);
-        }
-    }
+    void NotifyAfterBackground(bool needNotifyListeners = true, bool needNotifyUiContent = true);
 
     inline void NotifyAfterActive()
     {
