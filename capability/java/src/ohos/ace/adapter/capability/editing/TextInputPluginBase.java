@@ -338,6 +338,9 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
         }
 
         private boolean isSingleLetterInput(String lastValue, String text, int composingStart, int composingEnd) {
+            if (lastValue == null) {
+                return false;
+            }
             if (composingEnd > text.length() || composingStart > text.length()) {
                 return false;
             }
@@ -433,8 +436,10 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
             String lastValue = lastValueMap.get(clientId);
             int selectionEnd = json.getInt("selectionEnd");
             if (lastCommittedTexts.containsKey(clientId)) {
-                appendText = getCommitText(lastValue, text, selectionEnd, json, clientId);
-                isAppendText = isAppendText(lastValue, text, appendText, selectionEnd);
+                if (lastValue != null) {
+                    appendText = getCommitText(lastValue, text, selectionEnd, json, clientId);
+                    isAppendText = isAppendText(lastValue, text, appendText, selectionEnd);
+                }
             } else {
                 appendText = getNewInputStr(lastValue, text, selectionEnd, composingStart, composingEnd);
             }
