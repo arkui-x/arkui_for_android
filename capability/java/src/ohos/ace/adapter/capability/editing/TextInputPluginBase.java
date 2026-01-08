@@ -88,6 +88,7 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
         private boolean isSelected = false;
         private boolean isComposing = false;
         private boolean isNewCommitText = false;
+        private boolean isDeleted = false;
         private int finishComposingTextStart = -1;
         private int lastComposingEnd = -1;
         private int lastComposingStart = -1;
@@ -189,10 +190,7 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
                     lastSelectionEnd = -1;
                     lastSelectionStart = -1;
                     setComposedState(false, -1, -1);
-                } else if (lastValue != null &&
-                    (lastValue.length() - text.length() == 1 &&
-                    text.equals(substringSafe(lastValue, 0, lastValue.length() - 1)) ||
-                    text.length() < lastValue.length() && text.isEmpty())) {
+                } else if (lastValue != null && isDelete(text, lastValue, selectionEnd)) {
                     json.put("isDelete", true);
                     setComposedState(false, -1, -1);
                 } else if (composingEnd > composingStart &&
@@ -209,6 +207,21 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
             }
             lastValueMap.put(clientId, text);
             reset();
+        }
+
+        private boolean isDelete(String text, String lastValue, int selectionEnd) {
+            if (text == null || lastValue == null) {
+                return false;
+            }
+            String newText = substringSafe(lastValue, 0, selectionEnd) +
+                substringSafe(lastValue, selectionEnd + 1, lastValue.length());
+            if ((lastValue.length() - text.length() == 1 &&
+                (text.equals(substringSafe(lastValue, 0, lastValue.length() - 1)) ||
+                text.equals(newText)) || text.length() < lastValue.length() && text.isEmpty())) {  // normal delete
+                return true;
+            } else {  // emoji delete
+                return isDeleted;
+            }
         }
 
         private String getNewInputStr(String lastValue,
@@ -250,6 +263,16 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
         @Override
         public void setComposingText(String composingText) {
             this.composingText = composingText;
+        }
+
+        /**
+         * Set whether to delete
+         *
+         * @param isDeleted Set whether to delete
+         */
+        @Override
+        public void setDeletedFlag(boolean isDeleted) {
+            this.isDeleted = isDeleted;
         }
 
         /**
@@ -375,6 +398,7 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
             needUpdatedText = null;
             finishComposingText = null;
             composingText = null;
+            isDeleted = false;
         }
 
         private boolean isAppendText(String lastValue, String text, String appendText, int selectionEnd) {
