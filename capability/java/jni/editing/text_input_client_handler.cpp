@@ -15,6 +15,10 @@
 
 #include "adapter/android/capability/java/jni/editing/text_input_client_handler.h"
 
+namespace OHOS::Ace {
+SINGLETON_INSTANCE_IMPL(Platform::TextInputClientHandler);
+}
+
 namespace OHOS::Ace::Platform {
 
 TextInputClientHandler::TextInputClientHandler() = default;
