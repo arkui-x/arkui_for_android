@@ -151,10 +151,12 @@ class InputConnectionWrapper extends BaseInputConnection {
     public boolean deleteSurroundingText(int deleteBeforeLength, int deleteAfterLength) {
         boolean deleted = true;
         if (Selection.getSelectionStart(this.editable) == -1) {
+            delegate.setDeletedFlag(true);
             return deleted;
         }
 
         deleted = super.deleteSurroundingText(deleteBeforeLength, deleteAfterLength);
+        delegate.setDeletedFlag(deleted);
         onStateUpdated();
         return deleted;
     }
@@ -332,6 +334,7 @@ class InputConnectionWrapper extends BaseInputConnection {
             return true;
         } else if (selStart > 0) {
             if (TextKeyListener.getInstance().onKeyDown(null, editable, event.getKeyCode(), event)) {
+                delegate.setDeletedFlag(true);
                 onStateUpdated();
                 return true;
             }
