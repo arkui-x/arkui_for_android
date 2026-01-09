@@ -80,6 +80,12 @@ void* UdmfClientImpl::TransformUnifiedDataPtr(RefPtr<UnifiedData>& unifiedData)
     return nullptr;
 }
 
+std::shared_ptr<void> UdmfClientImpl::TransformUnifiedDataSharedPtr(RefPtr<UnifiedData>& unifiedDataImpl)
+{
+    CHECK_NULL_RETURN(unifiedDataImpl, nullptr);
+    return AceType::DynamicCast<UnifiedDataImpl>(unifiedDataImpl)->GetUnifiedData();
+}
+
 RefPtr<DataLoadParams> UdmfClientImpl::TransformDataLoadParams(napi_env env, napi_value napiValue)
 {
     return nullptr;

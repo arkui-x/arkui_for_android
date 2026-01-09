@@ -75,6 +75,7 @@
       "OHOS::Ace::RoundToMaxPrecision(double)";
       "OHOS::Ace::NG::SwiperPattern::IsAtStart() const";
       "OHOS::Ace::NG::SwiperPattern::IsAtEnd() const";
+      "OHOS::Ace::Singleton<OHOS::Ace::DumpLog>::GetInstance()";
       OHOS::Ace::NG::ViewAbstract::*;
       OHOS::Ace::NG::ViewStackProcessor::*;
       OHOS::Ace::NG::UINode::*;
