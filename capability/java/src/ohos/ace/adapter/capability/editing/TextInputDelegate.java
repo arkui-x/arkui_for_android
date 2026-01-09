@@ -74,13 +74,6 @@ public interface TextInputDelegate {
     void setSelectedState(int selectionStart, int selectionEnd);
 
     /**
-     * Set whether to delete
-     *
-     * @param isDeleted Set whether to delete
-     */
-    void setDeletedFlag(boolean isDeleted);
-
-    /**
      * Finish composing text and update the composing state.
      *
      * @param finishComposingText The text to complete the composing
