@@ -189,10 +189,7 @@ public abstract class TextInputPluginBase implements TrackingInputConnection.Inp
                     lastSelectionEnd = -1;
                     lastSelectionStart = -1;
                     setComposedState(false, -1, -1);
-                } else if (lastValue != null &&
-                    (lastValue.length() - text.length() == 1 &&
-                    text.equals(substringSafe(lastValue, 0, lastValue.length() - 1)) ||
-                    text.length() < lastValue.length() && text.isEmpty())) {
+                 } else if (lastValue != null && text.length() < lastValue.length()) {
                     json.put("isDelete", true);
                     setComposedState(false, -1, -1);
                 } else if (composingEnd > composingStart &&
