@@ -517,6 +517,7 @@ WMError Window::ShowWindow()
 
     bool result = SubWindowManagerJni::ShowWindow(this->GetWindowName());
     if (result) {
+        isForground_ = true;
         NotifyAfterForeground();
         return WMError::WM_OK;
     } else {
@@ -939,6 +940,30 @@ void Window::NotifySizeChange(Rect rect)
     }
 }
 
+void Window::NotifyAfterForeground(bool needNotifyListeners, bool needNotifyUiContent)
+{
+    if (needNotifyUiContent) {
+        if (uiContent_ != nullptr) {
+            uiContent_->Foreground();
+        }
+    }
+    if (needNotifyListeners) {
+        CALL_LIFECYCLE_LISTENER(AfterForeground);
+    }
+}
+
+void Window::NotifyAfterBackground(bool needNotifyListeners, bool needNotifyUiContent)
+{
+    if (needNotifyUiContent) {
+        if (uiContent_ != nullptr) {
+            uiContent_->Background();
+        }
+    }
+    if (needNotifyListeners) {
+        CALL_LIFECYCLE_LISTENER(AfterBackground);
+    }
+}
+
 void Window::UpdateAvoidArea(const std::shared_ptr<Rosen::AvoidArea>& avoidArea, AvoidAreaType type)
 {
     LOGD("UpdateAvoidArea WindowId:%{public}d, type:%{public}d, top:{%{public}d,%{public}d,%{public}d,%{public}d}, "
@@ -1036,24 +1061,14 @@ void Window::WindowFocusChanged(bool hasWindowFocus)
 
 void Window::Foreground()
 {
-    if (!uiContent_) {
-        LOGW("Window::Foreground uiContent_ is nullptr");
-        return;
-    }
-    LOGI("Window: notify uiContent Foreground");
-    uiContent_->Foreground();
+    LOGI("Window: notify uiContent Background");
     NotifyAfterForeground();
     isForground_ = true;
 }
 
 void Window::Background()
 {
-    if (!uiContent_) {
-        LOGW("Window::Background uiContent_ is nullptr");
-        return;
-    }
     LOGI("Window: notify uiContent Background");
-    uiContent_->Background();
     NotifyAfterBackground();
     isForground_ = false;
 }
@@ -1158,8 +1173,11 @@ WMError Window::SetUIContent(const std::string& contentInfo, NativeEngine* engin
     }
     // make uiContent available after Initialize/Restore
     uiContent_ = std::move(uiContent);
+    if (isForground_) {
+        uiContent_->Foreground();
+    }
     DelayNotifyUIContentIfNeeded();
-    uiContent_->Foreground();
+  
     return WMError::WM_OK;
 }
 
@@ -1356,6 +1374,7 @@ WMError Window::Hide()
 
     bool result = SubWindowManagerJni::Hide(GetWindowName());
     if (result) {
+        isForground_ = false;
         NotifyAfterBackground();
         return WMError::WM_OK;
     } else {

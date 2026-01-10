@@ -111,6 +111,7 @@ public class WindowViewCommon {
     private float lastMouseY = 0f;
     private boolean delayNotifySurfaceChanged = false;
     private boolean delayNotifySurfaceDestroyed = false;
+    private boolean delayNotifyForeground = false;
     private boolean delayNotifyAvoidAreaChanged = false;
     private boolean enterPressed = false;
     private boolean numpadEnterPressed = false;
@@ -304,11 +305,12 @@ public class WindowViewCommon {
      */
     public void foreground() {
         if (nativeWindowPtr == 0L) {
-            ALog.w(TAG, "foreground: nativeWindow is null");
-            return;
+            ALog.w(TAG, "foreground: nativeWindow is null, delay notify");
+            delayNotifyForeground = true;
+        } else {
+            ALog.i(TAG, "foreground call");
+            nativeForeground(nativeWindowPtr);
         }
-        ALog.i(TAG, "foreground call");
-        nativeForeground(nativeWindowPtr);
     }
 
     /**
@@ -837,6 +839,12 @@ public class WindowViewCommon {
                     avoidAreaRect.bottomRect.width(), avoidAreaRect.bottomRect.height());
             }
             delayNotifyAvoidAreaChanged = false;
+        }
+
+        if (delayNotifyForeground) {
+            ALog.i(TAG, "delay notify foreground");
+            nativeForeground(nativeWindowPtr);
+            delayNotifyForeground = false;
         }
     }
 
