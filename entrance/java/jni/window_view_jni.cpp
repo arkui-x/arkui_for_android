@@ -159,7 +159,15 @@ void WindowViewJni::RegisterWindow(JNIEnv* env, void* window, jobject windowView
 
 void WindowViewJni::UnRegisterWindow(JNIEnv* env, jobject windowView)
 {
+    CHECK_NULL_VOID(env);
+    CHECK_NULL_VOID(windowView);
+    CHECK_NULL_VOID(gUnRegisterWindowMethodID);
     env->CallVoidMethod(windowView, gUnRegisterWindowMethodID);
+    if (env->ExceptionCheck()) {
+        LOGE("UnRegisterWindow: Exception occurred when calling unRegisterWindow");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
 }
 
 void WindowViewJni::OnWindowFocusChanged(JNIEnv* env, jobject myObject, jlong window, jboolean hasWindowFocus)
