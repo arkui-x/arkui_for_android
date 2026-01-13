@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Copyright (c) 2022-2026 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -125,6 +125,23 @@ foreach(module, arkui_x_components) {
   components_modules += [ ":$module_name" ]
 }
 
+# for arkui component modules
+component_modules = [ "gauge" ]
+component_modules_libs = []
+
+foreach(module, component_modules) {
+  sub_name = string_replace(module, "_", "")
+  module_name = "arkui_$sub_name"
+  ohos_shared_library(module_name) {
+    deps = [ "$ace_root/frameworks/core/components_ng/pattern/${module}:ace_core_components_${module}_pattern_ng_android" ]
+    deps += [ libace_target ]
+
+    part_name = ace_engine_part
+    subsystem_name = ace_engine_subsystem
+  }
+  component_modules_libs += [ ":$module_name" ]
+}
+
 # Install packages
 group("ace_packages") {
   deps = [
@@ -144,4 +161,5 @@ group("ace_packages") {
   if (defined(use_components_lib) && use_components_lib) {
     deps += component_plugin_modules
   }
+  deps += component_modules_libs
 }

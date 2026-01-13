@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,35 +15,17 @@
 
 #include "core/common/dynamic_module_helper.h"
 
+#include <dlfcn.h>
 #include <memory>
 
+#include "base/utils/utils.h"
 #include "compatible/components/component_loader.h"
 #include "interfaces/inner_api/ace/utils.h"
 
-#include "base/utils/utils.h"
-#include "core/common/dynamic_module.h"
-
 namespace OHOS::Ace {
 namespace {
-#ifdef WINDOWS_PLATFORM
-#ifdef UNICODE
-const std::wstring COMPATIABLE_LIB = L"libace_compatible_components.dll";
-const std::wstring DYNAMIC_MODULE_LIB_PREFIX = L"libarkui_";
-const std::wstring DYNAMIC_MODULE_LIB_POSTFIX = L".dll";
-#else
-const std::string COMPATIABLE_LIB = "libace_compatible_components.dll";
 const std::string DYNAMIC_MODULE_LIB_PREFIX = "libarkui_";
-const std::string DYNAMIC_MODULE_LIB_POSTFIX = ".dll";
-#endif
-#elif MAC_PLATFORM
-const std::string COMPATIABLE_LIB = "libace_compatible_components.dylib";
-const std::string DYNAMIC_MODULE_LIB_PREFIX = "libarkui_";
-const std::string DYNAMIC_MODULE_LIB_POSTFIX = ".dylib";
-#else
-const std::string COMPATIABLE_LIB = "libace_compatible_components.z.so";
-const std::string DYNAMIC_MODULE_LIB_PREFIX = "libarkui_";
-const std::string DYNAMIC_MODULE_LIB_POSTFIX = ".z.so";
-#endif
+const std::string DYNAMIC_MODULE_LIB_POSTFIX = ".so";
 } // namespace
 DynamicModuleHelper& DynamicModuleHelper::GetInstance()
 {
@@ -53,19 +35,7 @@ DynamicModuleHelper& DynamicModuleHelper::GetInstance()
 
 std::unique_ptr<ComponentLoader> DynamicModuleHelper::GetLoaderByName(const char* name)
 {
-    if (compatibleLoaderFunc_) {
-        return std::unique_ptr<ComponentLoader>(compatibleLoaderFunc_(name));
-    }
-    LIBHANDLE handle = LOADLIB(COMPATIABLE_LIB.c_str());
-#if defined(WINDOWS_PLATFORM) && defined(UNICODE)
-    LOGI("Load compatible lib %{public}ls", COMPATIABLE_LIB.c_str());
-#else
-    LOGI("Load compatible lib %{public}s", COMPATIABLE_LIB.c_str());
-#endif
-    auto* createSym = reinterpret_cast<ComponentLoaderFunc>(LOADSYM(handle, COMPATIABLE_COMPONENT_LOADER));
-    CHECK_NULL_RETURN(createSym, nullptr);
-    compatibleLoaderFunc_ = createSym;
-    return std::unique_ptr<ComponentLoader>(compatibleLoaderFunc_(name));
+    return nullptr;
 }
 
 DynamicModule* DynamicModuleHelper::GetDynamicModule(const std::string& name)
@@ -79,19 +49,26 @@ DynamicModule* DynamicModuleHelper::GetDynamicModule(const std::string& name)
         }
     }
 
-    // Load module without holding the lock (LOADLIB/LOADSYM may be slow)
-#ifdef WINDOWS_PLATFORM
-    std::wstring nameW = std::wstring(name.begin(), name.end());
-    auto libName = DYNAMIC_MODULE_LIB_PREFIX + nameW + DYNAMIC_MODULE_LIB_POSTFIX;
-#else
+    // Load module without holding the lock (dlopen/dlsym may be slow)
     auto libName = DYNAMIC_MODULE_LIB_PREFIX + name + DYNAMIC_MODULE_LIB_POSTFIX;
-#endif
-    LIBHANDLE handle = LOADLIB(libName.c_str());
-    CHECK_NULL_RETURN(handle, nullptr);
-    auto* createSym = reinterpret_cast<DynamicModuleCreateFunc>(LOADSYM(handle, DYNAMIC_MODULE_CREATE));
-    CHECK_NULL_RETURN(createSym, nullptr);
+    auto* handle = dlopen(libName.c_str(), RTLD_LAZY);
+    LOGI("First load %{public}s nativeModule start", name.c_str());
+    if (handle == nullptr) {
+        LOGE("Failed to load dynamic module library: %{public}s, error: %{public}s", name.c_str(), dlerror());
+        return nullptr;
+    }
+    auto* createSym = reinterpret_cast<DynamicModuleCreateFunc>(dlsym(handle, DYNAMIC_MODULE_CREATE));
+    if (createSym == nullptr) {
+        LOGE("Failed to find symbol in library %{public}s, error: %{public}s", name.c_str(), dlerror());
+        dlclose(handle);
+        return nullptr;
+    }
     DynamicModule* module = createSym();
-    CHECK_NULL_RETURN(module, nullptr);
+    if (module == nullptr) {
+        LOGE("Failed to create DynamicModule instance from library %{public}s", name.c_str());
+        dlclose(handle);
+        return nullptr;
+    }
     LOGI("First load %{public}s nativeModule finish", name.c_str());
 
     // Lock again to insert into map
@@ -102,6 +79,7 @@ DynamicModule* DynamicModuleHelper::GetDynamicModule(const std::string& name)
         if (iter != moduleMap_.end()) {
             // Another thread already loaded it, use that one
             delete module;
+            dlclose(handle);
             return iter->second.get();
         }
         moduleMap_.emplace(name, std::unique_ptr<DynamicModule>(module));
