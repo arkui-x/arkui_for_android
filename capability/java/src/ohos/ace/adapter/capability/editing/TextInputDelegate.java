@@ -62,8 +62,10 @@ public interface TextInputDelegate {
      *
      * @param isSelected The selected state
      * @param text The selected text content
+     * @param selectionStart The start position of the selection
+     * @param selectionEnd The end position of the selection
      */
-    void setSelectedState(boolean isSelected, CharSequence text);
+    void setSelectedState(boolean isSelected, CharSequence text, int selectionStart, int selectionEnd);
 
     /**
      * Set the selection range in the text.
@@ -72,6 +74,13 @@ public interface TextInputDelegate {
      * @param selectionEnd The end position of the selection
      */
     void setSelectedState(int selectionStart, int selectionEnd);
+
+    /**
+     * Set whether to delete
+     *
+     * @param isDeleted Set whether to delete
+     */
+    void setDeletedFlag(boolean isDeleted);
 
     /**
      * Finish composing text and update the composing state.
