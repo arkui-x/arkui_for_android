@@ -1745,7 +1745,7 @@ void JsAccessibilityManager::InitializeCallback()
     CHECK_NULL_VOID(pipelineContext);
     windowId_ = pipelineContext->GetWindowId();
 
-    bool isEnabled = JsAccessibilityManagerJni::isEnabled(windowId_);
+    bool isEnabled = JsAccessibilityManagerJni::IsAccessibilityEnabled(windowId_);
     AceApplicationInfo::GetInstance().SetAccessibilityEnabled(isEnabled);
 
     if (pipelineContext->IsFormRender() || pipelineContext->IsJsCard() || pipelineContext->IsJsPlugin()) {

@@ -107,6 +107,8 @@ void JsAccessibilityManagerJni::SetupJsAccessibilityManagerJni(JNIEnv* env, jobj
     jsAccessibilityManagerStruct_.objectMap[windowId] = env->NewGlobalRef(obj);
     jclass clazz = env->GetObjectClass(obj);
     jsAccessibilityManagerStruct_.isEnabledMethod = env->GetMethodID(clazz, "isEnabled", "()Z");
+    jsAccessibilityManagerStruct_.isAccessibilityEnabledMethod =
+        env->GetMethodID(clazz, "isAccessibilityEnabled", "()Z");
     jsAccessibilityManagerStruct_.registerJsAccessibilityManagerMethod =
         env->GetMethodID(clazz, "registerJsAccessibilityStateObserver", "(J)Z");
     jsAccessibilityManagerStruct_.unregisterJsAccessibilityManagerMethod =
@@ -340,6 +342,28 @@ bool JsAccessibilityManagerJni::isEnabled(int32_t windowId)
     }
 
     return ret == JNI_TRUE;
+}
+
+bool JsAccessibilityManagerJni::IsAccessibilityEnabled(int32_t windowId)
+{
+    auto env = JniEnvironment::GetInstance().GetJniEnv();
+    if (!env) {
+        TAG_LOGE(AceLogTag::ACE_ACCESSIBILITY, "JsAccessibilityManagerJni::IsAccessibilityEnabled: env is NULL");
+        return false;
+    }
+    jboolean ret = JNI_FALSE;
+    if (jsAccessibilityManagerStruct_.objectMap.find(windowId) != jsAccessibilityManagerStruct_.objectMap.end() &&
+        jsAccessibilityManagerStruct_.objectMap[windowId] != nullptr) {
+        ret = env->CallBooleanMethod(jsAccessibilityManagerStruct_.objectMap[windowId],
+            jsAccessibilityManagerStruct_.isAccessibilityEnabledMethod);
+    }
+    if (env->ExceptionCheck()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return false;
+    }
+
+    return ret;
 }
 
 bool JsAccessibilityManagerJni::RegisterJsAccessibilityStateObserver(void* jsAccessibilityManager, int32_t windowId)
