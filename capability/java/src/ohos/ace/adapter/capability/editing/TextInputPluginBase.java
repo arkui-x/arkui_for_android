@@ -164,7 +164,7 @@ public abstract class TextInputPluginBase {
         @Override
         public void updateEditingState(int clientId, String text, int selectionStart, int selectionEnd,
             int composingStart, int composingEnd) {
-            if (text == null) {
+            if (!validateInput(text, selectionStart, selectionEnd, composingStart, composingEnd)) {
                 return;
             }
             try {
@@ -204,6 +204,27 @@ public abstract class TextInputPluginBase {
             }
             lastValueMap.put(clientId, text);
             reset();
+        }
+
+        private boolean validateInput(String text, int selectionStart, int selectionEnd,
+            int composingStart, int composingEnd) {
+            if (text == null) {
+                return false;
+            }
+            int length = text.length();
+            if (selectionStart < 0 || selectionStart > length ||
+                selectionEnd < 0 || selectionEnd > length ||
+                selectionStart > selectionEnd) {
+                return false;
+            }
+            if (composingStart != -1 || composingEnd != -1) {
+                if (composingStart < 0 || composingStart > length ||
+                    composingEnd < 0 || composingEnd > length ||
+                    composingStart > composingEnd) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private boolean isDelete(String text, String lastValue, int selectionEnd) {
@@ -368,6 +389,9 @@ public abstract class TextInputPluginBase {
         }
 
         private boolean isSingleLetterInput(String lastValue, String text, int composingStart, int composingEnd) {
+            if (lastValue == null) {
+                return false;
+            }
             if (composingEnd > text.length() || composingStart > text.length()) {
                 return false;
             }
@@ -464,8 +488,10 @@ public abstract class TextInputPluginBase {
             String lastValue = lastValueMap.get(clientId);
             int selectionEnd = json.getInt("selectionEnd");
             if (lastCommittedTexts.containsKey(clientId)) {
-                appendText = getCommitText(lastValue, text, selectionEnd, json, clientId);
-                isAppendText = isAppendText(lastValue, text, appendText, selectionEnd);
+                if (lastValue != null) {
+                    appendText = getCommitText(lastValue, text, selectionEnd, json, clientId);
+                    isAppendText = isAppendText(lastValue, text, appendText, selectionEnd);
+                }
             } else {
                 appendText = getNewInputStr(lastValue, text, selectionEnd, composingStart, composingEnd);
             }
