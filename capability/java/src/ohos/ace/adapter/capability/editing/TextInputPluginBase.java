@@ -81,6 +81,13 @@ public abstract class TextInputPluginBase {
         private static Map<Integer, String> lastValueMap = new HashMap<>();
         private static final Map<Integer, String> lastCommittedTexts = new HashMap<>();
         private static final Map<Integer, SelectedRange> selectedRange = new HashMap<>();
+        private static final String TEXT = "text";
+        private static final String SELECTION_START = "selectionStart";
+        private static final String SELECTION_END = "selectionEnd";
+        private static final String COMPOSING_START = "composingStart";
+        private static final String COMPOSING_END = "composingEnd";
+        private static final String APPEND_TEXT = "appendText";
+        private static final String IS_DELETE = "isDelete";
 
         private boolean isSelected = false;
         private boolean isComposing = false;
@@ -91,6 +98,8 @@ public abstract class TextInputPluginBase {
         private int lastComposingStart = -1;
         private int lastSelectionEnd = -1;
         private int lastSelectionStart = -1;
+        private int lastSelectionEndFromCommit = -1;
+        private int lastSelectionStartFromCommit = -1;
         private String needUpdatedText = null;
         private String finishComposingText = null;
         private String composingText = null;
@@ -172,27 +181,19 @@ public abstract class TextInputPluginBase {
                 setJsonDefault(json, text, selectionStart, selectionEnd);
                 String lastValue = lastValueMap.get(clientId);
                 if (isSelected && needUpdatedText != null) {
-                    String newInputStr = "";
-                    if (lastCommittedTexts.containsKey(clientId)) {
-                        newInputStr = lastCommittedTexts.remove(clientId);
-                    }
-                    json.put("appendText", "".equals(needUpdatedText) &&
-                        !"".equals(newInputStr) ? newInputStr : needUpdatedText);
-                    isSelected = false;
-                    needUpdatedText = null;
-                    setComposedState(false, -1, -1);
+                    processSelectedFromCommitText(clientId, json, text, lastValue);
                 } else if (lastSelectionEnd > lastSelectionStart) {
                     String appendText = getAppendText(text, selectionEnd);
-                    json.put("appendText", appendText);
+                    json.put(APPEND_TEXT, appendText);
                     lastSelectionEnd = -1;
                     lastSelectionStart = -1;
                     setComposedState(false, -1, -1);
-                } else if (lastValue != null && isDelete(text, lastValue, selectionEnd)) {
-                    json.put("isDelete", true);
+                } else if (lastValue != null && isDelete(clientId, json, text, lastValue, selectionEnd)) {
+                    json.put(IS_DELETE, true);
                     setComposedState(false, -1, -1);
                 } else if (composingEnd > composingStart &&
                     isSingleLetterInput(lastValue, text, composingStart, composingEnd)) {
-                    json.put("appendText", substringSafe(text, composingEnd - 1, composingEnd));
+                    json.put(APPEND_TEXT, substringSafe(text, composingEnd - 1, composingEnd));
                     setComposedState(false, -1, -1);
                 } else {
                     handleOtherInput(json, text, clientId, composingStart, composingEnd);
@@ -204,6 +205,52 @@ public abstract class TextInputPluginBase {
             }
             lastValueMap.put(clientId, text);
             reset();
+        }
+
+        private boolean processDeletedFromCommitText(int clientId, String text, String lastValue,
+            JSONObject json) throws JSONException {
+            if (text == null || lastValue == null) {
+                return false;
+            }
+            int diffLength = lastValue.length() - text.length();
+            int selectionStart = json.getInt(SELECTION_START);
+            int selectionEnd = json.getInt(SELECTION_END);
+            if (diffLength <= 0 || selectionStart != selectionEnd) {
+                return false;
+            }
+
+            String expectedText = substringSafe(lastValue, 0, selectionStart) +
+                                    substringSafe(lastValue, selectionEnd + diffLength, lastValue.length());
+            if (text.equals(expectedText)) {
+                return true;
+            }
+            return false;
+        }
+
+        private void processSelectedFromCommitText(int clientId, JSONObject json,
+            String text, String lastValue) throws JSONException {
+            String newInputStr = "";
+            if (lastCommittedTexts.containsKey(clientId)) {
+                newInputStr = lastCommittedTexts.remove(clientId);
+            }
+            String needAppendText = "".equals(needUpdatedText) &&
+                                    !"".equals(newInputStr) ? newInputStr : needUpdatedText;
+            json.put(APPEND_TEXT, needAppendText);
+            if (needAppendText != null && needAppendText.isEmpty() && lastSelectionStartFromCommit >= 0 &&
+                lastSelectionEndFromCommit >= 0 && lastSelectionStartFromCommit < lastSelectionEndFromCommit) {
+                if (isDeleted) {
+                    json.put(IS_DELETE, true);
+                } else if (composingText != null && !composingText.isEmpty()) {
+                    json.put(APPEND_TEXT, composingText);
+                } else {
+                    if (processDeletedFromCommitText(clientId, text, lastValue, json)) {
+                        json.put(IS_DELETE, true);
+                    }
+                }
+            }
+            isSelected = false;
+            needUpdatedText = null;
+            setComposedState(false, -1, -1);
         }
 
         private boolean validateInput(String text, int selectionStart, int selectionEnd,
@@ -227,19 +274,49 @@ public abstract class TextInputPluginBase {
             return true;
         }
 
-        private boolean isDelete(String text, String lastValue, int selectionEnd) {
+        private boolean isDelete(int clientId, JSONObject json, String text,
+            String lastValue, int selectionEnd) throws JSONException {
             if (text == null || lastValue == null) {
                 return false;
             }
-            String newText = substringSafe(lastValue, 0, selectionEnd) +
-                substringSafe(lastValue, selectionEnd + 1, lastValue.length());
-            if ((lastValue.length() - text.length() == 1 &&
-                (text.equals(substringSafe(lastValue, 0, lastValue.length() - 1)) ||
-                text.equals(newText)) || text.length() < lastValue.length() && text.isEmpty())) {  // normal delete
-                return true;
-            } else {  // emoji delete
-                return isDeleted;
+
+            int lengthDiff = lastValue.length() - text.length();
+            if (lengthDiff <= 0) {
+                return false;
             }
+
+            if (lengthDiff == 1) {
+                String expectedText = substringSafe(lastValue, 0, selectionEnd) +
+                                    substringSafe(lastValue, selectionEnd + 1, lastValue.length());
+                if (text.equals(expectedText)) {
+                    return true;
+                }
+            }
+
+            if (selectedRange != null && selectedRange.containsKey(clientId)) {
+                SelectedRange range = selectedRange.get(clientId);
+                int start = range.selectionStart;
+                int end = range.selectionEnd;
+
+                if (start >= 0 && end > start && end - start == lengthDiff) {
+                    String expectedText = substringSafe(lastValue, 0, start) +
+                                        substringSafe(lastValue, end, lastValue.length());
+                    if (text.equals(expectedText)) {
+                        return true;
+                    }
+                }
+            }
+
+            String newText = substringSafe(lastValue, 0, selectionEnd) +
+                                    substringSafe(lastValue, selectionEnd + lengthDiff, lastValue.length());
+            int selectionStart = json.optInt(SELECTION_START);
+            if (selectionStart >= 0 && selectionStart == selectionEnd && text.equals(newText)) {
+                json.put(COMPOSING_START, selectionEnd);
+                json.put(COMPOSING_END, selectionEnd + lengthDiff);
+                return true;
+            }
+
+            return isDeleted;
         }
 
         private String getNewInputStr(String lastValue,
@@ -321,9 +398,11 @@ public abstract class TextInputPluginBase {
         }
 
         @Override
-        public void setSelectedState(boolean isSelected, CharSequence text) {
+        public void setSelectedState(boolean isSelected, CharSequence text, int selectionStart, int selectionEnd) {
             this.isSelected = isSelected;
             this.needUpdatedText = text.toString();
+            this.lastSelectionStartFromCommit = selectionStart;
+            this.lastSelectionEndFromCommit = selectionEnd;
         }
 
         @Override
@@ -344,32 +423,54 @@ public abstract class TextInputPluginBase {
 
         private void setJsonDefault(JSONObject json, String text,
                                     int selectionStart, int selectionEnd) throws JSONException {
-            json.put("text", text);
-            json.put("selectionStart", selectionStart);
-            json.put("selectionEnd", selectionEnd);
-            json.put("composingStart", -1);
-            json.put("composingEnd", -1);
-            json.put("isDelete", false);
+            json.put(TEXT, text);
+            json.put(SELECTION_START, selectionStart);
+            json.put(SELECTION_END, selectionEnd);
+            json.put(COMPOSING_START, -1);
+            json.put(COMPOSING_END, -1);
+            json.put(IS_DELETE, false);
         }
 
-        private void handleComposingText(JSONObject json, int composingStart, int composingEnd)
-            throws JSONException {
+        private void processSelectedInputEnglish(JSONObject json, String lastValue, int clientId,
+            int composingStart, int composingEnd) throws JSONException {
+            if (selectedRange != null && selectedRange.containsKey(clientId)) {
+                SelectedRange range = selectedRange.get(clientId);
+                int start = range.selectionStart;
+                int end = range.selectionEnd;
+                String text = json.optString(TEXT);
+                int lengthDiff = lastValue.length() - text.length() + (composingEnd - composingStart);
+                if (start >= 0 && end > start && end - start == lengthDiff) {
+                    String expectedText = substringSafe(lastValue, 0, start) +
+                                        substringSafe(lastValue, end, lastValue.length());
+                    String newText = substringSafe(text, 0, composingStart) +
+                                    substringSafe(text, composingEnd, text.length());
+                    if (newText.equals(expectedText)) {
+                        json.put(APPEND_TEXT, substringSafe(text, composingStart, composingEnd));
+                    }
+                }
+            }
+        }
+
+        private void handleComposingText(JSONObject json, String lastValue, int clientId,
+            int composingStart, int composingEnd) throws JSONException {
             if (isNewCommitText) {
                 isNewCommitText = false;
                 setComposedState(false, -1, -1);
                 return;
             }
             if (composingStart != -1 && (composingEnd > composingStart)) {
-                json.put("composingEnd", composingStart);
+                json.put(COMPOSING_END, composingStart);
                 if (isComposing && (lastComposingEnd < composingEnd)) {
-                    json.put("composingEnd", lastComposingEnd);
-                    json.put("composingStart", composingStart);
+                    json.put(COMPOSING_END, lastComposingEnd);
+                    json.put(COMPOSING_START, composingStart);
+                } else {
+                    processSelectedInputEnglish(json, lastValue, clientId, composingStart, composingEnd);
                 }
                 setComposedState(true, composingStart, composingEnd);
             } else {
                 if (isComposing) {
-                    json.put("composingStart", lastComposingStart);
-                    json.put("composingEnd", lastComposingEnd);
+                    json.put(COMPOSING_START, lastComposingStart);
+                    json.put(COMPOSING_END, lastComposingEnd);
                 }
                 setComposedState(false, -1, -1);
             }
@@ -427,6 +528,8 @@ public abstract class TextInputPluginBase {
             finishComposingText = null;
             composingText = null;
             isDeleted = false;
+            lastSelectionEndFromCommit = -1;
+            lastSelectionStartFromCommit = -1;
         }
 
         private boolean isAppendText(String lastValue, String text, String appendText, int selectionEnd) {
@@ -474,8 +577,8 @@ public abstract class TextInputPluginBase {
                 (newCommitText.equals(text) || isComposing)) {
                 return appendText;
             }
-            json.put("composingStart", appendStart);
-            json.put("composingEnd", appendStart + (appendText.length() - (text.length() - lastValue.length())));
+            json.put(COMPOSING_START, appendStart);
+            json.put(COMPOSING_END, appendStart + (appendText.length() - (text.length() - lastValue.length())));
             tryModifyComposeText(json, lastValue, text, appendText);
             isNewCommitText = true;
             return appendText;
@@ -486,7 +589,7 @@ public abstract class TextInputPluginBase {
             String appendText = null;
             boolean isAppendText = false;
             String lastValue = lastValueMap.get(clientId);
-            int selectionEnd = json.getInt("selectionEnd");
+            int selectionEnd = json.getInt(SELECTION_END);
             if (lastCommittedTexts.containsKey(clientId)) {
                 if (lastValue != null) {
                     appendText = getCommitText(lastValue, text, selectionEnd, json, clientId);
@@ -496,34 +599,34 @@ public abstract class TextInputPluginBase {
                 appendText = getNewInputStr(lastValue, text, selectionEnd, composingStart, composingEnd);
             }
             if (appendText != null && !appendText.isEmpty()) {
-                json.put("appendText", appendText);
+                json.put(APPEND_TEXT, appendText);
             }
 
             if (isAppendText && composingStart == -1) {
                 setComposedState(false, -1, -1);
             } else {
-                handleComposingText(json, composingStart, composingEnd);
+                handleComposingText(json, lastValue, clientId, composingStart, composingEnd);
             }
         }
 
         private void tryModifyComposeText(JSONObject json, String lastValue, String text,
             String appendText) throws JSONException {
-            int start = Math.max(0, json.getInt("composingStart"));
-            int end = Math.min(lastValue.length(), json.getInt("composingEnd"));
+            int start = Math.max(0, json.getInt(COMPOSING_START));
+            int end = Math.min(lastValue.length(), json.getInt(COMPOSING_END));
             if (start == end) {
                 return;
             }
             StringBuilder lastValueStr = new StringBuilder(lastValue);
             lastValueStr.replace(start, end, appendText);
             if (!lastValueStr.toString().equals(text)) {
-                start = Math.max(0, json.getInt("composingStart") - 1);
-                end = Math.min(lastValue.length(), json.getInt("composingEnd") - 1);
+                start = Math.max(0, json.getInt(COMPOSING_START) - 1);
+                end = Math.min(lastValue.length(), json.getInt(COMPOSING_END) - 1);
                 if (end <= 0) {
                     return;
                 }
                 if (new StringBuilder(lastValue).replace(start, end, appendText).toString().equals(text)) {
-                    json.put("composingStart", json.getInt("composingStart") - 1);
-                    json.put("composingEnd", json.getInt("composingEnd") - 1);
+                    json.put(COMPOSING_START, json.getInt(COMPOSING_START) - 1);
+                    json.put(COMPOSING_END, json.getInt(COMPOSING_END) - 1);
                 }
             }
         }
@@ -533,19 +636,19 @@ public abstract class TextInputPluginBase {
             if (text == null || lastValue == null || selectionEnd < 0 || selectionEnd > text.length()) {
                 return;
             }
-            int start = json.getInt("composingStart");
-            int end = json.getInt("composingEnd");
+            int start = json.getInt(COMPOSING_START);
+            int end = json.getInt(COMPOSING_END);
             if (start < 0 || end <= 0 || start == end) {
                 if (selectedRange.containsKey(clientId)) {
                     start = selectedRange.get(clientId).selectionStart;
                     end = selectedRange.get(clientId).selectionEnd;
                 }
             }
-            if (start > end || !json.has("appendText")) {
+            if (start > end || !json.has(APPEND_TEXT)) {
                 return;
             }
-            String curAppendText = json.getString("appendText");
-            if (isCorrectData(lastValue, text, start, end, json.getString("appendText"))) {
+            String curAppendText = json.getString(APPEND_TEXT);
+            if (isCorrectData(lastValue, text, start, end, json.getString(APPEND_TEXT))) {
                 return;
             }
             DiffResult diffResult = getDiffResult(lastValue, text, start, selectionEnd);
@@ -557,13 +660,13 @@ public abstract class TextInputPluginBase {
                         diffResult.setNewAppendText(newAppendText);
                     }
                 }
-                json.put("composingStart", -1);
-                json.put("composingEnd", -1);
+                json.put(COMPOSING_START, -1);
+                json.put(COMPOSING_END, -1);
             } else {
-                json.put("composingStart", diffResult.preSelStart);
-                json.put("composingEnd", diffResult.preSelEnd);
+                json.put(COMPOSING_START, diffResult.preSelStart);
+                json.put(COMPOSING_END, diffResult.preSelEnd);
             }
-            json.put("appendText", diffResult.getNewAppendText());
+            json.put(APPEND_TEXT, diffResult.getNewAppendText());
         }
 
         private boolean isCorrectData(String preText, String curText, int selectionStart,

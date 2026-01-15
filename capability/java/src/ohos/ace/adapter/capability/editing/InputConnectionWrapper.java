@@ -134,9 +134,11 @@ class InputConnectionWrapper extends BaseInputConnection {
 
     @Override
     public boolean commitText(CharSequence text, int newCursorPosition) {
-        boolean isSelected = Selection.getSelectionEnd(editable) - Selection.getSelectionStart(editable) > 0;
+        int selectedStart = Selection.getSelectionStart(editable);
+        int selectedEnd = Selection.getSelectionEnd(editable);
+        boolean isSelected = selectedEnd - selectedStart > 0;
         if (isSelected) {
-            delegate.setSelectedState(isSelected, text);
+            delegate.setSelectedState(isSelected, text, selectedStart, selectedEnd);
         }
         if (text != null && clientId != CLIENT_ID_NONE) {
             delegate.handleCommitTextForClient(clientId, text.toString());
@@ -232,6 +234,16 @@ class InputConnectionWrapper extends BaseInputConnection {
         return false;
     }
 
+    private void processNewLine() {
+        if (editable != null) {
+            int composingStart = BaseInputConnection.getComposingSpanStart(editable);
+            int composingEnd = BaseInputConnection.getComposingSpanEnd(editable);
+            if (composingEnd > composingStart) {
+                super.finishComposingText();
+            }
+        }
+    }
+
     @Override
     public boolean performEditorAction(int actionCode) {
         ALog.d(LOG_TAG, "performEditorAction: " + actionCode);
@@ -269,6 +281,7 @@ class InputConnectionWrapper extends BaseInputConnection {
             default: {
                 if (actionCode == TextInputAction.NEW_LINE.getValue()) {
                     action = TextInputAction.NEW_LINE;
+                    processNewLine();
                 } else {
                     action = TextInputAction.DONE;
                 }
@@ -329,6 +342,7 @@ class InputConnectionWrapper extends BaseInputConnection {
         if (selEnd > selStart) {
             Selection.setSelection(editable, selStart);
             editable.delete(selStart, selEnd);
+            delegate.setDeletedFlag(true);
             onStateUpdated();
             return true;
         } else if (selStart > 0) {
@@ -366,7 +380,6 @@ class InputConnectionWrapper extends BaseInputConnection {
             this.editable.insert(selectionStart, String.valueOf((char) unicodeChar));
             int newSelectionStart = selectionStart + 1;
             setSelection(newSelectionStart, newSelectionStart);
-            onStateUpdated();
             return true;
         }
         return false;
