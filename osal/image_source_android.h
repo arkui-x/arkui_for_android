@@ -41,6 +41,7 @@ public:
     std::vector<int32_t> GetDelayTime() override;
     std::string GetEncodedFormat() override;
     bool IsHeifWithoutAlpha() override;
+    ImageRotateOrientation GetImageOrientation() override;
 
 private:
     std::unique_ptr<Media::ImageSource> imageSource_;

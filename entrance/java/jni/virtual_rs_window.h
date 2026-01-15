@@ -135,6 +135,8 @@ public:
 
     virtual void NotifySnapshotUpdate() {}
 
+    virtual void FlushVsync() {}
+
     virtual uint32_t GetStatusBarHeight() const
     {
         return 0;

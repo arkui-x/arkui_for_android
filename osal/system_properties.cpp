@@ -50,8 +50,7 @@ std::string SystemProperties::paramDeviceType_ = INVALID_PARAM;
 int32_t SystemProperties::mcc_ = MCC_UNDEFINED;
 int32_t SystemProperties::mnc_ = MNC_UNDEFINED;
 ScreenShape SystemProperties::screenShape_ { ScreenShape::NOT_ROUND };
-LongScreenType SystemProperties::LongScreen_ { LongScreenType::NOT_LONG };
-bool SystemProperties::unZipHap_ = true;
+std::atomic<bool> SystemProperties::unZipHap_(true);
 bool SystemProperties::svgTraceEnable_ = false;
 bool SystemProperties::rosenBackendEnabled_ = true;
 bool SystemProperties::downloadByNetworkEnabled_ = false;
@@ -120,6 +119,7 @@ bool SystemProperties::isVelocityWithinTimeWindow_ = true;
 bool SystemProperties::isVelocityWithoutUpPoint_ = true;
 bool SystemProperties::prebuildInMultiFrameEnabled_ = false;
 bool SystemProperties::isOpenYuvDecode_ = false;
+std::once_flag SystemProperties::getSysPropertiesFlag_;
 
 bool SystemProperties::IsOpIncEnable()
 {
@@ -151,6 +151,8 @@ void SystemProperties::InitDeviceInfo(
         screenShape_ = ScreenShape::NOT_ROUND;
     }
 }
+
+void SystemProperties::ReadSystemParametersCallOnce() {}
 
 void SystemProperties::SetDeviceOrientation(int32_t orientation)
 {

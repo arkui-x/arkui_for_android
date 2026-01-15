@@ -95,6 +95,4 @@ void EventReport::FrameRateDurationsStatistics(int32_t expectedRate, const std::
 void EventReport::ReportPageSlidInfo(NG::SlidInfo &slidInfo) {}
 
 void EventReport::ReportGeneralInteractionError(const GeneralInteractionErrorInfo& generalEventErrorInfo) {}
-
-void EventReport::ReportTextDrawCmdListErrorEvent(const TextErrorInfo& textInfo) {}
 } // namespace OHOS::Ace
