@@ -30,6 +30,7 @@ namespace OHOS::Ace::Platform {
 struct JsAccessibilityManagerStruct {
     std::unordered_map<uint32_t, jobject> objectMap;
     jmethodID isEnabledMethod;
+    jmethodID isAccessibilityEnabledMethod;
     jmethodID registerJsAccessibilityManagerMethod;
     jmethodID unregisterJsAccessibilityManagerMethod;
     jmethodID sendAccessibilityEventJsonMethod;
@@ -43,6 +44,7 @@ public:
     static bool Register(const std::shared_ptr<JNIEnv>& env);
     static bool SendAccessibilityEvent(int32_t nodeId, int32_t eventType, std::string jsonValue, int32_t windowId);
     static bool isEnabled(int32_t windowId);
+    static bool IsAccessibilityEnabled(int32_t windowId);
     static bool RegisterJsAccessibilityStateObserver(void* jsAccessibilityManager, int32_t windowId);
     static bool UnregisterJsAccessibilityStateObserver(int32_t windowId);
     static bool RegisterJsInteractionOperation(
