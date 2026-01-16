@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -519,6 +519,27 @@ void AceContainerSG::InitializeEventHandler()
     auto instanceId = aceView_->GetInstanceId();
     InitializeFinishEventHandler(instanceId);
     InitializeStatusBarEventHandler(instanceId);
+    InitializeStartAbilityHandler(instanceId);
+}
+
+void AceContainerSG::InitializeStartAbilityHandler(int32_t instanceId)
+{
+    auto&& startAbilityHandler = [weak = WeakClaim(this), instanceId](const std::string& address) {
+        auto container = weak.Upgrade();
+        CHECK_NULL_VOID(container);
+        auto context = container->GetPipelineContext();
+        CHECK_NULL_VOID(context);
+        ContainerScope scope(instanceId);
+        context->GetTaskExecutor()->PostTask(
+            [weak = WeakPtr<AceContainerSG>(container), address] {
+                auto container = weak.Upgrade();
+                CHECK_NULL_VOID(container);
+                container->OnStartAbility(address);
+            },
+            TaskExecutor::TaskType::PLATFORM, "ArkUI-XAceContainerSGStartAbilityHandler");
+    };
+    CHECK_NULL_VOID(pipelineContext_);
+    pipelineContext_->SetStartAbilityHandler(startAbilityHandler);
 }
 
 void AceContainerSG::InitializeFinishEventHandler(int32_t instanceId)

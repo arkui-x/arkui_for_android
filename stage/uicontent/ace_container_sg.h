@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -272,6 +272,13 @@ public:
         }
     }
 
+    void OnStartAbility(const std::string& address)
+    {
+        if (platformEventCallback_) {
+            platformEventCallback_->OnStartAbility(address);
+        }
+    }
+
     ResourceConfiguration GetResourceConfiguration() const override
     {
         return resourceInfo_.GetResourceConfiguration();
@@ -371,6 +378,7 @@ private:
     void InitPiplineContext(std::unique_ptr<Window> window, double density, int32_t width, int32_t height,
         uint32_t windowId);
     void InitializeEventHandler();
+    void InitializeStartAbilityHandler(int32_t instanceId);
     void InitializeFinishEventHandler(int32_t instanceId);
     void InitializeStatusBarEventHandler(int32_t instanceId);
     void SetGetViewScaleCallback();
