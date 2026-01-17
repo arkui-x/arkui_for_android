@@ -32,6 +32,8 @@ void AceCountTrace(const char *key, int32_t count)
     CountTrace(HITRACE_TAG_ACE, keyStr, count);
 }
 
+void AceSetResTraceId(uint32_t traceType, uint64_t traceId, uint32_t* pOldTraceType, uint64_t* pOldTraceId) {}
+
 bool AceAsyncTraceEnable()
 {
     return IsTagEnabled(HITRACE_TAG_ACE);

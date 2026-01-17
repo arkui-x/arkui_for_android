@@ -175,4 +175,33 @@ bool ImageSourceAndroid::IsHeifWithoutAlpha()
 {
     return false;
 }
+
+ImageRotateOrientation GetImageSourceRotateOrientation(std::string origin)
+{
+    if (origin == "Top-right") {
+        return ImageRotateOrientation::UP_MIRRORED;
+    } else if (origin == "Bottom-right") {
+        return ImageRotateOrientation::DOWN;
+    } else if (origin == "Bottom-left") {
+        return ImageRotateOrientation::DOWN_MIRRORED;
+    } else if (origin == "Left-top") {
+        return ImageRotateOrientation::LEFT_MIRRORED;
+    } else if (origin == "Right-top") {
+        return ImageRotateOrientation::RIGHT;
+    } else if (origin == "Right-bottom") {
+        return ImageRotateOrientation::RIGHT_MIRRORED;
+    } else if (origin == "Left-bottom") {
+        return ImageRotateOrientation::LEFT;
+    } else if (origin == "Top-left") {
+        return ImageRotateOrientation::UP;
+    } else {
+        return ImageRotateOrientation::UP;
+    }
+}
+
+ImageRotateOrientation ImageSourceAndroid::GetImageOrientation()
+{
+    auto origin = GetProperty("Orientation");
+    return GetImageSourceRotateOrientation(origin);
+}
 } // namespace OHOS::Ace
