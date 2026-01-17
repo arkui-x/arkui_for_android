@@ -548,7 +548,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      * @return Returns ERR_OK on success, others on failure.
      */
     public int startActivity(String action, String uri, String[] entities) {
-        int error = ERR_OK;
+        int ret = ERR_OK;
         try {
             String intentAction = resolveAction(action);
             if (intentAction == null) {
@@ -556,10 +556,6 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
                 return ERR_INVALID_PARAMETERS;
             }
             Intent intent = new Intent(intentAction);
-            if (intent == null) {
-                Log.e(LOG_TAG, "Failed intent");
-                return ERR_INVALID_PARAMETERS;
-            }
             Uri parsedUri = Uri.parse(uri);
             String mimeType = getMimeType(this, parsedUri);
             if (mimeType != null) {
@@ -572,9 +568,9 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             this.startActivity(intent);
         } catch (ActivityNotFoundException | NullPointerException | FileUriExposedException e) {
             Log.w(LOG_TAG, "No available app found for implicit start");
-            error = ERR_INVALID_PARAMETERS;
+            ret = ERR_INVALID_PARAMETERS;
         }
-        return error;
+        return ret;
     }
 
     private int createPicker(String bundleName, String type, String value) {
@@ -934,21 +930,17 @@ private void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo) {
     }
 
     private void addCategoriesFromEntities(Intent intent, String[] entities) {
-        try {
-            if (intent == null || entities == null) {
-                return;
+        if (intent == null || entities == null) {
+            return;
+        }
+        for (String entity : entities) {
+            if (entity == null) {
+                continue;
             }
-            for (String entity : entities) {
-                if (entity == null) {
-                    continue;
-                }
-                String mappedCategory = ENTITY_MAPPING.get(entity);
-                if (mappedCategory != null) {
-                    intent.addCategory(mappedCategory);
-                }
+            String mappedCategory = ENTITY_MAPPING.get(entity);
+            if (mappedCategory != null) {
+                intent.addCategory(mappedCategory);
             }
-        } catch (NullPointerException e) {
-            Log.e(LOG_TAG, "addCategoriesFromEntities error, case NullPointerException");
         }
     }
 
@@ -968,37 +960,27 @@ private void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo) {
 
     private String getMimeTypeFromContent(Context context, Uri uri) {
         String mimeType;
-        try {
-            if (context == null || uri == null) {
-                return null;
-            }
-            ContentResolver contentResolver = context.getContentResolver();
-            mimeType = contentResolver.getType(uri);
-            if (mimeType == null) {
-                mimeType = getMimeTypeFromFilePath(uri.toString());
-            }
-        } catch (NullPointerException e) {
-            Log.e(LOG_TAG, "getMimeTypeFromContent error, case NullPointerException");
-            mimeType = null;
+        if (context == null || uri == null) {
+            return null;
+        }
+        ContentResolver contentResolver = context.getContentResolver();
+        mimeType = contentResolver.getType(uri);
+        if (mimeType == null) {
+            mimeType = getMimeTypeFromFilePath(uri.toString());
         }
         return mimeType;
     }
 
     private String getMimeTypeFromFilePath(String uri) {
         String mimeType;
-        try {
-            if (uri == null || uri.isEmpty()) {
-                return null;
-            }
-            String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri);
-            if (fileExtension == null || fileExtension.isEmpty()) {
-                return null;
-            }
-            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension.toLowerCase(Locale.ROOT));
-        } catch (NullPointerException e) {
-            Log.e(LOG_TAG, "getMimeTypeFromFilePath error, case NullPointerException");
-            mimeType = null;
+        if (uri == null || uri.isEmpty()) {
+            return null;
         }
+        String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri);
+        if (fileExtension == null || fileExtension.isEmpty()) {
+            return null;
+        }
+        mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension.toLowerCase(Locale.ROOT));
         return mimeType;
     }
 }
