@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -53,9 +53,11 @@ namespace OHOS::Ace::Platform {
 namespace {
 const std::string START_PARAMS_KEY = "__startParams";
 const std::string SUBWINDOW_PREFIX = "ARK_APP_SUBWINDOW_";
+const std::string HYPERLINK_BUNDLE_NAME = "com.ohos.hyperlink";
 // Device type, same as w/ java in AceView
 constexpr int32_t ORIENTATION_PORTRAIT = 1;
 constexpr int32_t ORIENTATION_LANDSCAPE = 2;
+constexpr int32_t REQUEST_CODE = -1;
 constexpr double DPI_BASE { 160.0f };
 } // namespace
 
@@ -346,7 +348,23 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
                     abilityContext->TerminateSelf();
                 }
             },
-            [](const std::string& address) { LOGI("start ability with url = %{private}s", address.c_str()); }),
+            [context = context_](const std::string& address) {
+                auto sharedContext = context.lock();
+                if (!sharedContext) {
+                    return;
+                }
+                auto abilityContext =
+                    OHOS::AbilityRuntime::Platform::Context::ConvertTo<OHOS::AbilityRuntime::Platform::AbilityContext>(
+                        sharedContext);
+                if (abilityContext != nullptr) {
+                    AAFwk::Want want;
+                    want.SetBundleName(HYPERLINK_BUNDLE_NAME);
+                    want.SetAction(AAFwk::Want::ACTION_VIEWDATA);
+                    want.SetUri(address);
+                    want.AddEntity(AAFwk::Want::ENTITY_BROWSER);
+                    abilityContext->StartAbility(want, REQUEST_CODE);
+                }
+            }),
         true);
 
     CHECK_NULL_VOID(container);

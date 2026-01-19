@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -98,7 +98,8 @@ const char* PATTERN_MAP[] = {
     THEME_PATTERN_SHEET,
     THEME_BLUR_STYLE_COMMON,
     THEME_PATTERN_SHADOW,
-    THEME_PATTERN_GAUGE
+    THEME_PATTERN_GAUGE,
+    THEME_PATTERN_HYPERLINK
 };
 
 bool IsDirExist(const std::string& path)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,6 +31,13 @@ import android.os.Trace;
 import android.util.Log;
 import android.view.View;
 import android.os.Build;
+import android.os.FileUriExposedException;
+import android.content.ContentResolver;
+import android.webkit.MimeTypeMap;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import java.util.List;
 import java.util.Set;
@@ -108,6 +115,10 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     private static final String ARKUI_X_DIR = "arkui-x";
 
+    private static final Map<String, String> ACTION_MAPPING = new ConcurrentHashMap<>();
+
+    private static final Map<String, String> ENTITY_MAPPING = new ConcurrentHashMap<>();
+
     private static boolean isForResult = true;
 
     private static final int RESULTCODE_OK = 0;
@@ -123,6 +134,11 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     private static boolean isFrist = false;
 
     private static final int ANDROID_API_31 = 31;
+
+    static {
+        ACTION_MAPPING.put("ohos.want.action.viewData", Intent.ACTION_VIEW);
+        ENTITY_MAPPING.put("entity.system.browsable", Intent.CATEGORY_BROWSABLE);
+    }
 
     private int requestCode = 0;
 
@@ -523,6 +539,40 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         }
     }
 
+    /**
+     * Start a new activity. Only for component Hyperlink link.
+     *
+     * @param action   the action to perform.
+     * @param uri      the URI of the data to operate on.
+     * @param entities the intent categories.
+     * @return Returns ERR_OK on success, others on failure.
+     */
+    public int startActivity(String action, String uri, String[] entities) {
+        int ret = ERR_OK;
+        try {
+            String intentAction = resolveAction(action);
+            if (intentAction == null) {
+                Log.e(LOG_TAG, "Unknown action: " + action);
+                return ERR_INVALID_PARAMETERS;
+            }
+            Intent intent = new Intent(intentAction);
+            Uri parsedUri = Uri.parse(uri);
+            String mimeType = getMimeType(this, parsedUri);
+            if (mimeType != null) {
+                intent.setDataAndType(parsedUri, mimeType);
+            } else {
+                intent.setData(parsedUri);
+            }
+            addCategoriesFromEntities(intent, entities);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            this.startActivity(intent);
+        } catch (ActivityNotFoundException | NullPointerException | FileUriExposedException e) {
+            Log.w(LOG_TAG, "No available app found for implicit start");
+            ret = ERR_INVALID_PARAMETERS;
+        }
+        return ret;
+    }
+
     private int createPicker(String bundleName, String type, String value) {
         Intent intent = null;
         try {
@@ -872,4 +922,65 @@ private void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo) {
         return foldWindowInfoCallback;
     }
 
+    private String resolveAction(String action) {
+        if (action == null || action.isEmpty()) {
+            return null;
+        }
+        return ACTION_MAPPING.get(action);
+    }
+
+    private void addCategoriesFromEntities(Intent intent, String[] entities) {
+        if (intent == null || entities == null) {
+            return;
+        }
+        for (String entity : entities) {
+            if (entity == null) {
+                continue;
+            }
+            String mappedCategory = ENTITY_MAPPING.get(entity);
+            if (mappedCategory != null) {
+                intent.addCategory(mappedCategory);
+            }
+        }
+    }
+
+    private String getMimeType(Context context, Uri uri) {
+        if (context == null || uri == null) {
+            return null;
+        }
+        String mimeType = null;
+        String scheme = uri.getScheme();
+        if (ContentResolver.SCHEME_CONTENT.equals(scheme)) {
+            mimeType = getMimeTypeFromContent(context, uri);
+        } else if (ContentResolver.SCHEME_FILE.equals(scheme)) {
+            mimeType = getMimeTypeFromFilePath(uri.toString());
+        }
+        return mimeType;
+    }
+
+    private String getMimeTypeFromContent(Context context, Uri uri) {
+        String mimeType;
+        if (context == null || uri == null) {
+            return null;
+        }
+        ContentResolver contentResolver = context.getContentResolver();
+        mimeType = contentResolver.getType(uri);
+        if (mimeType == null) {
+            mimeType = getMimeTypeFromFilePath(uri.toString());
+        }
+        return mimeType;
+    }
+
+    private String getMimeTypeFromFilePath(String uri) {
+        String mimeType;
+        if (uri == null || uri.isEmpty()) {
+            return null;
+        }
+        String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri);
+        if (fileExtension == null || fileExtension.isEmpty()) {
+            return null;
+        }
+        mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension.toLowerCase(Locale.ROOT));
+        return mimeType;
+    }
 }

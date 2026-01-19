@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -29,6 +29,7 @@ namespace Platform {
 namespace {
 const std::string ABILITY_NAME = "Ability";
 const std::string ACTIVITY_NAME = "Activity";
+const std::string HYPERLINK_BUNDLE_NAME = "com.ohos.hyperlink";
 } // namespace
 
 std::shared_ptr<AbilityContextAdapter> AbilityContextAdapter::instance_ = nullptr;
@@ -95,7 +96,10 @@ int32_t AbilityContextAdapter::StartAbility(const std::string& instanceName, con
     auto startActivityMethodNew =
         env->GetMethodID(objClass, "startActivity",
         "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
-    if (startActivityMethod == nullptr || startActivityMethodNew == nullptr) {
+    auto startActivityMethodForHyperlink =
+        env->GetMethodID(objClass, "startActivity", "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)I");
+    if (startActivityMethod == nullptr || startActivityMethodNew == nullptr ||
+        startActivityMethodForHyperlink == nullptr) {
         LOGE("fail to get the method StartActivity id");
         return AAFwk::INNER_ERR;
     }
@@ -119,6 +123,8 @@ int32_t AbilityContextAdapter::StartAbility(const std::string& instanceName, con
     if (bundleName == "com.ohos.filepicker" || bundleName == "com.ohos.photos") {
         result = env->CallIntMethod(
         stageActivity, startActivityMethodNew, jBundleName, jActivityName, jType, jParams);
+    } else if (bundleName == HYPERLINK_BUNDLE_NAME) {
+        result = StartActivityForHyperlink(want, stageActivity, startActivityMethodForHyperlink);
     } else {
         result = env->CallIntMethod(
         stageActivity, startActivityMethod, jBundleName, jActivityName, jParams);
@@ -134,7 +140,57 @@ int32_t AbilityContextAdapter::StartAbility(const std::string& instanceName, con
     return ERR_OK;
 }
 
-int32_t AbilityContextAdapter::DoAbilityForeground(const std::string &fullName)
+int32_t AbilityContextAdapter::StartActivityForHyperlink(
+    const AAFwk::Want& want, jobject stageActivity, jmethodID methodId)
+{
+    auto env = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv();
+    if (env == nullptr || stageActivity == nullptr || methodId == nullptr) {
+        LOGE("env or stageActivity or methodId is nullptr");
+        return AAFwk::INNER_ERR;
+    }
+
+    jclass jStringClass = env->FindClass("java/lang/String");
+    if (jStringClass == nullptr) {
+        LOGE("jStringClass is nullptr");
+        return AAFwk::INNER_ERR;
+    }
+
+    auto entities = want.GetEntities();
+    jobjectArray jEntities = env->NewObjectArray(entities.size(), jStringClass, nullptr);
+    if (jEntities == nullptr) {
+        LOGE("jEntities is nullptr");
+        env->DeleteLocalRef(jStringClass);
+        return AAFwk::INNER_ERR;
+    }
+
+    for (size_t i = 0; i < entities.size(); ++i) {
+        jstring jEntity = env->NewStringUTF(entities[i].c_str());
+        if (jEntity == nullptr) {
+            LOGE("jEntity is nullptr");
+            env->DeleteLocalRef(jStringClass);
+            env->DeleteLocalRef(jEntities);
+            return AAFwk::INNER_ERR;
+        }
+        env->SetObjectArrayElement(jEntities, i, jEntity);
+        env->DeleteLocalRef(jEntity);
+    }
+
+    int32_t res = AAFwk::INNER_ERR;
+    jstring jAction = env->NewStringUTF(want.GetAction().c_str());
+    jstring jUri = env->NewStringUTF(want.GetUri().c_str());
+    if (jAction != nullptr && jUri != nullptr) {
+        res = env->CallIntMethod(stageActivity, methodId, jAction, jUri, jEntities);
+    }
+
+    env->DeleteLocalRef(jStringClass);
+    env->DeleteLocalRef(jEntities);
+    env->DeleteLocalRef(jAction);
+    env->DeleteLocalRef(jUri);
+
+    return res;
+}
+
+int32_t AbilityContextAdapter::DoAbilityForeground(const std::string& fullName)
 {
     LOGI("Do ability foreground, caller full name: %{public}s", fullName.c_str());
     auto finder = jobjects_.find(fullName);
