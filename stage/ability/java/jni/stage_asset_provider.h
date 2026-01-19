@@ -21,6 +21,7 @@
 #include <mutex>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include "jni.h"
 #include "jni_environment.h"
 
@@ -126,6 +127,7 @@ public:
     bool GetAppDataModuleAssetList(const std::string& path, std::vector<std::string>& fileFullPaths, bool onlyChild);
     std::vector<std::string> GetAllFilePath();
     std::vector<uint8_t> GetBufferByAppDataPath(const std::string& fileFullPath);
+    std::pair<std::string, std::vector<uint8_t>> GetPkgPairByAppDataPath(const std::string& moduleName);
     bool CopyFile(std::string sourceFile, std::string newFile);
     bool ExistDir(std::string target);
     bool MakeDir(std::string target);
@@ -144,6 +146,10 @@ public:
     std::vector<uint8_t> GetFontConfigJsonBuffer(const std::string& moduleName);
     
 private:
+    std::vector<uint8_t> GetPkgJsonBufferFromAppData(const std::string& moduleName);
+    std::vector<uint8_t> GetPkgJsonBufferFromAssets(const std::string& moduleName);
+    bool ParseSharedModulePackageName(
+        const std::string& moduleName, const std::vector<uint8_t>& moduleJsonBuffer, std::string& packageName);
     bool MakeMultipleDir(const std::string& path);
     bool CopyBufferToFile(std::vector<uint8_t>& buffer, const std::string& newFile);
     bool IsDirectoryEmpty(const std::string& path) const;

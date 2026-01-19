@@ -111,8 +111,27 @@ jobject StageAssetProvider::GetAssetManager()
     return assetManager_.get();
 }
 
-std::vector<uint8_t> StageAssetProvider::GetPkgJsonBuffer(const std::string& moduleName)
+std::vector<uint8_t> StageAssetProvider::GetPkgJsonBufferFromAppData(const std::string& moduleName)
 {
+    std::vector<uint8_t> pkgJsonBuffer;
+    const std::string moduleDir = GetAppDataModuleDir() + SEPARATOR + moduleName;
+    const std::string moduleNameMark = SEPARATOR + moduleName + SEPARATOR;
+
+    std::vector<std::string> fileFullPaths;
+    GetAppDataModuleAssetList(moduleDir, fileFullPaths, false);
+    for (auto& filePath : fileFullPaths) {
+        if (filePath.find(moduleNameMark) != std::string::npos &&
+            filePath.find(PKG_CONTEXT_INFO_JSON) != std::string::npos) {
+            pkgJsonBuffer = GetBufferByAppDataPath(filePath);
+        }
+    }
+    return pkgJsonBuffer;
+}
+
+std::vector<uint8_t> StageAssetProvider::GetPkgJsonBufferFromAssets(const std::string& moduleName)
+{
+    std::vector<uint8_t> pkgJsonBuffer;
+
     std::string foundPath;
     std::string foundKey = moduleName + '/' + PKG_CONTEXT_INFO_JSON;
     {
@@ -125,7 +144,6 @@ std::vector<uint8_t> StageAssetProvider::GetPkgJsonBuffer(const std::string& mod
         }
     }
 
-    std::vector<uint8_t> pkgJsonBuffer = {};
     if (foundPath.empty()) {
         LOGE("Failed to find pkgContextInfo.json, moduleName is %{public}s", moduleName.c_str());
         return pkgJsonBuffer;
@@ -150,6 +168,96 @@ std::vector<uint8_t> StageAssetProvider::GetPkgJsonBuffer(const std::string& mod
     return pkgJsonBuffer;
 }
 
+std::vector<uint8_t> StageAssetProvider::GetPkgJsonBuffer(const std::string& moduleName)
+{
+    if (moduleName.empty()) {
+        LOGE("GetPkgJsonBuffer failed, moduleName is empty");
+        return {};
+    }
+
+    bool dynamicLoadFlag = true;
+    const std::string moduleNameMark = SEPARATOR + moduleName + SEPARATOR;
+    {
+        std::lock_guard<std::mutex> lock(allFilePathMutex_);
+        for (auto& path : allFilePath_) {
+            if (path.find(moduleNameMark) != std::string::npos) {
+                dynamicLoadFlag = false;
+                break;
+            }
+        }
+    }
+
+    return dynamicLoadFlag ? GetPkgJsonBufferFromAppData(moduleName) : GetPkgJsonBufferFromAssets(moduleName);
+}
+
+std::pair<std::string, std::vector<uint8_t>> StageAssetProvider::GetPkgPairByAppDataPath(const std::string& moduleName)
+{
+    std::pair<std::string, std::vector<uint8_t>> result = {"", {}};
+    auto appDataRootDir = GetAppDataModuleDir();
+    if (appDataRootDir.empty()) {
+        return result;
+    }
+
+    auto pkgJsonPath = appDataRootDir + SEPARATOR + moduleName + SEPARATOR + PKG_CONTEXT_INFO_JSON;
+    auto pkgJsonBuffer = GetBufferByAppDataPath(pkgJsonPath);
+    if (pkgJsonBuffer.empty()) {
+        LOGE("pkgJsonBuffer is empty");
+        return result;
+    }
+
+    auto moduleJsonPath = appDataRootDir + SEPARATOR + moduleName + SEPARATOR + MODULE_JSON_NAME;
+    auto moduleJsonBuffer = GetBufferByAppDataPath(moduleJsonPath);
+    if (moduleJsonBuffer.empty()) {
+        LOGE("The moduleJsonPath is not exist");
+        return result;
+    }
+    moduleJsonBuffer.push_back('\0');
+    std::string packageName;
+    if (!ParseSharedModulePackageName(moduleName, moduleJsonBuffer, packageName)) {
+        return result;
+    }
+
+    result.first = packageName;
+    result.second = std::move(pkgJsonBuffer);
+    return result;
+}
+
+bool StageAssetProvider::ParseSharedModulePackageName(
+    const std::string& moduleName, const std::vector<uint8_t>& moduleJsonBuffer, std::string& packageName)
+{
+    packageName.clear();
+    if (moduleName.empty() || moduleJsonBuffer.empty()) {
+        return false;
+    }
+
+    nlohmann::json moduleJson = nlohmann::json::parse(moduleJsonBuffer.data(), nullptr, false);
+    if (moduleJson.is_discarded()) {
+        return false;
+    }
+
+    auto it = versionCodes_.find(moduleName);
+    if (it != versionCodes_.end()) {
+        int32_t versionCode = 0;
+        if (moduleJson.contains("app") && moduleJson["app"].contains("versionCode")) {
+            versionCode = moduleJson["app"]["versionCode"].get<int>();
+        }
+        if (versionCode < it->second) {
+            return false;
+        }
+    }
+
+    if (moduleJson.contains("module") && moduleJson["module"].contains("type")) {
+        if (moduleJson["module"]["type"].get<std::string>() != "shared") {
+            return false;
+        }
+    }
+
+    if (moduleJson.contains("module") && moduleJson["module"].contains("packageName")) {
+        packageName = moduleJson["module"]["packageName"].get<std::string>();
+    }
+    return !packageName.empty();
+}
+
 std::list<std::vector<uint8_t>> StageAssetProvider::GetModuleJsonBufferList()
 {
     LOGI("Get module json buffer list");
@@ -157,7 +265,9 @@ std::list<std::vector<uint8_t>> StageAssetProvider::GetModuleJsonBufferList()
     {
         std::lock_guard<std::mutex> lock(allFilePathMutex_);
         for (auto& path : allFilePath_) {
-            if (path.find(MODULE_JSON_NAME) != std::string::npos) {
+            auto lastPos = path.find_last_of("/");
+            const std::string fileName = (lastPos == std::string::npos) ? path : path.substr(lastPos + 1);
+            if (fileName == MODULE_JSON_NAME) {
                 modulePath.emplace_back(path);
             }
         }
