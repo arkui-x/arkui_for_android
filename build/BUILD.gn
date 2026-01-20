@@ -78,6 +78,7 @@ foreach(module, common_napi_libs) {
   module_name = string_replace(module_name, "/", "_")
   ohos_shared_library(module_name) {
     deps = [ "$ace_root/interfaces/napi/kits/${module_path}:${module_name_ext}_static_android" ]
+    version_script = "empty_android_symbol.map"
 
     part_name = "ace_engine_cross"
     subsystem_name = "arkui"
@@ -91,6 +92,8 @@ foreach(module, common_plugin_libs) {
     platform = "android"
     if (module == "data/datasharepredicates") {
       version_script = "data_datasharepredicates.map"
+    } else {
+      version_script = "empty_android_symbol.map"
     }
   }
   module_name = string_replace(module, "_", "")
@@ -119,6 +122,7 @@ foreach(module, arkui_x_components) {
   module_name = "$sub_name"
   ohos_shared_library(module_name) {
     deps = [ "//plugins/component/${module}:arkui_x_components_${module}_source_android" ]
+    version_script = "empty_android_symbol.map"
     part_name = "arkui_components"
     subsystem_name = "arkui"
   }
@@ -135,6 +139,7 @@ foreach(module, component_modules) {
   ohos_shared_library(module_name) {
     deps = [ "$ace_root/frameworks/core/components_ng/pattern/${module}:ace_core_components_${module}_pattern_ng_android" ]
     deps += [ libace_target ]
+    version_script = "empty_android_symbol.map"
 
     part_name = ace_engine_part
     subsystem_name = ace_engine_subsystem
