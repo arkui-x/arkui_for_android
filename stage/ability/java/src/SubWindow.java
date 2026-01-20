@@ -207,7 +207,7 @@ public class SubWindow {
             @Override
             public void onGlobalLayout() {
                 int[] location = new int[2];
-                mainView.getLocationOnScreen(location);
+                mainView.getLocationInWindow(location);
                 mainWindowX = location[0];
                 mainWindowY = location[1];
                 if (isFullScreen) {
@@ -265,7 +265,7 @@ public class SubWindow {
 
         mainView = rootView.findViewById(parentId);
         int[] location = new int[2];
-        mainView.getLocationOnScreen(location);
+        mainView.getLocationInWindow(location);
         mainWindowX = location[0];
         mainWindowY = location[1];
     }
