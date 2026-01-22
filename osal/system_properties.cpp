@@ -65,6 +65,7 @@ bool SystemProperties::syntaxTraceEnable_ = false;
 bool SystemProperties::accessibilityEnabled_ = false;
 bool SystemProperties::windowAnimationEnabled_ = false;
 bool SystemProperties::debugEnabled_ = false;
+bool SystemProperties::eventBenchMarkEnabled_ = false;
 DebugFlags SystemProperties::debugFlags_ = 0;
 std::atomic<bool> SystemProperties::debugBoundaryEnabled_(false);
 bool SystemProperties::debugAutoUIEnabled_ = false;
@@ -367,6 +368,11 @@ std::string SystemProperties::GetWebDebugRenderMode()
 std::string SystemProperties::GetDebugInspectorId()
 {
     return UNDEFINED_PARAM;
+}
+
+bool SystemProperties::GetEventBenchMarkEnabled()
+{
+    return false;
 }
 
 double SystemProperties::GetSrollableVelocityScale()

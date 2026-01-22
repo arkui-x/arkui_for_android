@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,41 +13,26 @@
  * limitations under the License.
  */
 
-#include "base/utils/feature_param.h"
-
-namespace {
-constexpr int32_t DEFAULT_RESPONSE_DELAY = 50000000; // default max response delay is 50ms.
-} // namespace
+#include "core/common/click_effect/click_sound_effect_manager.h"
 
 namespace OHOS::Ace {
 
-bool FeatureParam::IsSyncLoadEnabled()
+ClickSoundEffectManager& ClickSoundEffectManager::GetInstance()
+{
+    static ClickSoundEffectManager instance;
+    return instance;
+}
+
+ClickSoundEffectManager::~ClickSoundEffectManager() {}
+
+bool ClickSoundEffectManager::LoadProductPolicy()
 {
     return false;
 }
 
-uint32_t FeatureParam::GetSyncloadResponseDeadline()
-{
-    return DEFAULT_RESPONSE_DELAY;
-}
+void ClickSoundEffectManager::UnloadProductPolicy() {}
 
-int64_t FeatureParam::GetSyncLoadStartupDelay()
-{
-    return 0;
-}
+void ClickSoundEffectManager::Close() {}
 
-bool FeatureParam::IsUINodeGcEnabled()
-{
-    return false;
-}
-
-bool FeatureParam::IsPageOverflowEnabled()
-{
-    return false;
-}
-
-bool FeatureParam::IsDialogCorrectionEnabled()
-{
-    return false;
-}
-} // OHOS::Ace
+void ClickSoundEffectManager::PlayClickSoundEffect(int32_t abscissa, int32_t ordinate) {}
+} // namespace OHOS::Ace
