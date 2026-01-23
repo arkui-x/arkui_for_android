@@ -75,6 +75,19 @@ RefPtr<DataLoadParams> UdmfClientImpl::TransformDataLoadParamsForNative(void* ra
     return nullptr;
 }
 
+RefPtr<UnifiedData> UdmfClientImpl::TransformUnifiedDataFromANI(void* rawData)
+{
+    return nullptr;
+}
+
+void UdmfClientImpl::TransformSummaryANI(std::map<std::string, int64_t>& summary, std::shared_ptr<void> summaryPtr)
+{}
+
+RefPtr<DataLoadParams> UdmfClientImpl::TransformDataLoadParamsFromANI(void* rawData)
+{
+    return nullptr;
+}
+
 void* UdmfClientImpl::TransformUnifiedDataPtr(RefPtr<UnifiedData>& unifiedData)
 {
     return nullptr;

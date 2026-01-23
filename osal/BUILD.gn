@@ -47,6 +47,7 @@ template("ace_osal_android_source_set") {
       "advance/text_share_adapter.cpp",
       "advance/text_translation_adapter.cpp",
       "app_bar_helper_impl.cpp",
+      "click_sound_effect_manager.cpp",
       "cpu_boost.cpp",
       "display_info_utils.cpp",
       "display_manager_android.cpp",

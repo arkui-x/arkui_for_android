@@ -36,6 +36,9 @@ public:
     int32_t SetDelayInfo(RefPtr<DataLoadParams> dataLoadParams, std::string& key) override;
     RefPtr<UnifiedData> TransformUnifiedDataForNative(void* rawData) override;
     RefPtr<DataLoadParams> TransformDataLoadParamsForNative(void* rawData) override;
+    RefPtr<UnifiedData> TransformUnifiedDataFromANI(void* rawData) override;
+    void TransformSummaryANI(std::map<std::string, int64_t>& summary, std::shared_ptr<void> summaryPtr) override;
+    RefPtr<DataLoadParams> TransformDataLoadParamsFromANI(void* rawData) override;
     void* TransformUnifiedDataPtr(RefPtr<UnifiedData>& unifiedData) override;
     std::shared_ptr<void> TransformUnifiedDataSharedPtr(RefPtr<UnifiedData>& unifiedDataImpl) override;
     napi_value TransformUdmfUnifiedData(RefPtr<UnifiedData>& UnifiedData) override;
