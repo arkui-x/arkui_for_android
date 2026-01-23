@@ -1,0 +1,11 @@
+{
+  global:
+    extern "C++" {
+      vtable?for?OHOS::Global::I18n::*;
+      OHOS::Global::I18n::IntlAddon::*;
+      OHOS::Global::I18n::NumberFormat::*;
+      OHOS::Global::I18n::*;
+    };
+  local:
+    *;
+};

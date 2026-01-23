@@ -19,7 +19,37 @@
 
       non-virtual?thunk?to?OHOS::Ace::Animator::~Animator*;
 
-
+      "icu_74::Locale::getISO3Language() const";
+      "icu_74::LocaleBuilder::setLanguage(icu_74::StringPiece)";
+      "icu_74::Locale::getISO3Country() const";
+      "icu_74::DateFormat::format(double, icu_74::UnicodeString&) const";
+      "icu_74::TimeZoneTransition::TimeZoneTransition()";
+      "icu_74::TimeZoneTransition::getFrom() const";
+      "icu_74::TimeZoneTransition::getTo() const";
+      "icu_74::TimeZoneTransition::getTime() const";
+      "icu_74::TimeZoneRule::getRawOffset() const";
+      "icu_74::TimeZoneRule::getDSTSavings() const";
+      "icu_74::TimeZoneTransition::~TimeZoneTransition()";
+      "icu_74::UnicodeString::trim()";
+      "icu_74::UnicodeString::UnicodeString(int)";
+      "icu_74::UnicodeString::doEquals(icu_74::UnicodeString const&, int) const";
+      "icu_74::UnicodeString::doIndexOf(int, int, int) const";
+      "icu_74::RegexMatcher::group(UErrorCode&) const";
+      "icu_74::UnicodeString::doEqualsSubstring(int, int, char16_t const*, int, int) const";
+      "icu_74::UnicodeString::doLastIndexOf(int, int, int) const";
+      "icu_74::RegexPattern::compile(icu_74::UnicodeString const&, unsigned int, UErrorCode&)";
+      "icu_74::RegexMatcher::start(UErrorCode&) const";
+      "icu_74::UnicodeString::UnicodeString(icu_74::UnicodeString&&)";
+      "icu_74::UnicodeString::indexOf(char16_t const*, int, int, int, int) const";
+      "u_isUUppercase_74";
+      "u_isUAlphabetic_74";
+      "u_isspace_74";
+      "icu_74::UnicodeString::doCompare(int, int, char16_t const*, int, int) const";
+      "icu_74::RegexMatcher::RegexMatcher(icu_74::UnicodeString const&, unsigned int, UErrorCode&)";
+      "icu_74::RegexMatcher::reset(icu_74::UnicodeString const&)";
+      "icu_74::operator+(icu_74::UnicodeString const&, icu_74::UnicodeString const&)";
+      "icu_74::UnicodeString::doIndexOf(char16_t, int, int) const";
+      OHOS::AbilityRuntime::Platform::StageAssetManager::*;
       OHOS::Ace::AceApplicationInfo::*;
       OHOS::Ace::AceEngine::*;
       OHOS::Ace::AceScopedTrace::*;
