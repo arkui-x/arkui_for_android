@@ -141,7 +141,13 @@ ImageSource::Size ImageSourceAndroid::GetImageSize()
 
 uint32_t ImageSourceAndroid::GetFrameCount()
 {
-    return 0;
+    uint32_t errorCode;
+    auto frameCount = imageSource_->GetFrameCount(errorCode);
+    if (errorCode != Media::SUCCESS) {
+        TAG_LOGW(AceLogTag::ACE_IMAGE, "Get image frame count failed, errorCode = %{public}u", errorCode);
+        return 0;
+    }
+    return frameCount;
 }
 
 int32_t ImageSourceAndroid::GetLoopCount()
