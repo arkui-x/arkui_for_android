@@ -63,7 +63,7 @@ bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
         },
         {
             .name = "nativeLaunchApplication",
-            .signature = "(Z)V",
+            .signature = "(ZZ)V",
             .fnPtr = reinterpret_cast<void*>(&LaunchApplication),
         },
         {
@@ -135,6 +135,11 @@ bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
             .name = "nativePreloadModule",
             .signature = "(Ljava/lang/String;Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&PreloadModule),
+        },
+        {
+            .name = "nativeLoadModule",
+            .signature = "(Ljava/lang/String;Ljava/lang/String;)V",
+            .fnPtr = reinterpret_cast<void*>(&LoadModule),
         }
     };
 
@@ -211,10 +216,11 @@ void StageApplicationDelegateJni::SetAssetsFileRelativePath(JNIEnv* env, jclass 
     }
 }
 
-void StageApplicationDelegateJni::LaunchApplication(JNIEnv* env, jclass clazz, jboolean isCopyNativeLibs)
+void StageApplicationDelegateJni::LaunchApplication(
+    JNIEnv* env, jclass clazz, jboolean isCopyNativeLibs, jboolean isNeedLoadAce)
 {
     LOGI("Launch application");
-    AppMain::GetInstance()->LaunchApplication(isCopyNativeLibs);
+    AppMain::GetInstance()->LaunchApplication(isCopyNativeLibs, isNeedLoadAce);
 }
 
 void StageApplicationDelegateJni::SetCacheDir(JNIEnv* env, jclass myclass, jstring str)
@@ -388,6 +394,32 @@ void StageApplicationDelegateJni::PreloadModule(JNIEnv* env, jclass myclass, jst
     AppMain::GetInstance()->PreloadModule(moduleName, abilityName);
     env->ReleaseStringUTFChars(jModuleName, moduleName);
     env->ReleaseStringUTFChars(jAbilityName, abilityName);
+}
+
+void StageApplicationDelegateJni::LoadModule(
+    JNIEnv* env, jclass myclass, jstring jModuleName, jstring jEntryFile)
+{
+    if (env == nullptr) {
+        LOGE("LoadModule env is nullptr");
+        return;
+    }
+
+    auto moduleName = env->GetStringUTFChars(jModuleName, nullptr);
+    if (moduleName == nullptr) {
+        LOGE("LoadModule moduleName is nullptr");
+        return;
+    }
+
+    auto entryFile = env->GetStringUTFChars(jEntryFile, nullptr);
+    if (entryFile == nullptr) {
+        LOGE("LoadModule path is nullptr");
+        env->ReleaseStringUTFChars(jModuleName, moduleName);
+        return;
+    }
+
+    AppMain::GetInstance()->LoadModule(moduleName, entryFile);
+    env->ReleaseStringUTFChars(jModuleName, moduleName);
+    env->ReleaseStringUTFChars(jEntryFile, entryFile);
 }
 
 OHOS::Ace::LogLevel StageApplicationDelegateJni::GetCurrentLogLevel()

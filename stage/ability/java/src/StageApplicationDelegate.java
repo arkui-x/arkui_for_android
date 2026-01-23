@@ -116,6 +116,8 @@ public class StageApplicationDelegate {
 
     private static final String KEY_LANGUAGE = "app_language";
 
+    private static final String LOAD_MODULE_PATH_REGEX = "^\\./ets/([^/]+/)*[^/]+$";
+
     private static final int ERR_INVALID_PARAMETERS = -1;
 
     private static final int ERR_OK = 0;
@@ -147,6 +149,8 @@ public class StageApplicationDelegate {
     private boolean isBackground = false;
 
     private String assetsModulePath = "";
+
+    private boolean shouldLoadUI = true;
 
     private ContentObserver fontScaleObserver = new ContentObserver(new Handler()) {
         @Override
@@ -745,7 +749,11 @@ public class StageApplicationDelegate {
      */
     public void launchApplication() {
         Log.i(LOG_TAG, "isCopyNativeLibs is " + isCopyNativeLibs);
-        nativeLaunchApplication(isCopyNativeLibs);
+        if (stageApplication != null && stageApplication instanceof StageApplication) {
+            StageApplication sApplication = (StageApplication) stageApplication;
+            this.shouldLoadUI = sApplication.onShouldLoadUI();
+        }
+        nativeLaunchApplication(isCopyNativeLibs, this.shouldLoadUI);
     }
 
     /**
@@ -1107,6 +1115,39 @@ public class StageApplicationDelegate {
         return savedLang;
     }
 
+    /**
+     * Initialize stage application.
+     *
+     * @param application the stage application.
+     * @param shouldLoadUI should load UI.
+     */
+    public void initApplication(Application application, boolean shouldLoadUI) {
+        this.shouldLoadUI = shouldLoadUI;
+        initApplication(application);
+    }
+
+    /**
+     * Load module.
+     *
+     * @param moduleName The module name.
+     * @param entryFile The entry file of the module. Example: "./ets/xxx.ets".
+     */
+    public static void loadModule(String moduleName, String entryFile) {
+        if (!isInitialized) {
+            Log.e(LOG_TAG, "Application is not initialized.");
+            return;
+        }
+        if (moduleName == null || moduleName.isEmpty()) {
+            Log.e(LOG_TAG, "moduleName is invalid.");
+            return;
+        }
+        if (entryFile == null || entryFile.isEmpty() || !entryFile.matches(LOAD_MODULE_PATH_REGEX)) {
+            Log.e(LOG_TAG, "entryFile is invalid.");
+            return;
+        }
+        nativeLoadModule(moduleName, entryFile);
+    }
+
     private native void nativeSetAssetManager(Object assetManager);
 
     private native void nativeSetIsDynamicLoadLibs(boolean isDynamic);
@@ -1115,7 +1156,7 @@ public class StageApplicationDelegate {
 
     private native void nativeSetPackageName(String hapPath);
 
-    private native void nativeLaunchApplication(boolean isCopyNativeLibs);
+    private native void nativeLaunchApplication(boolean isCopyNativeLibs, boolean shouldLoadUI);
 
     private native void nativeSetAssetsFileRelativePath(String path);
 
@@ -1152,4 +1193,12 @@ public class StageApplicationDelegate {
      * @param abilityName Preload the name of ability.
      */
     protected static native void nativePreloadModule(String moduleName, String abilityName);
+
+    /**
+     * Native calls the Load module.
+     *
+     * @param moduleName the module name.
+     * @param entryFile the path of load module.
+     */
+    protected static native void nativeLoadModule(String moduleName, String entryFile);
 }
