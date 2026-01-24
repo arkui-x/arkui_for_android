@@ -138,9 +138,11 @@ class InputConnectionWrapper extends BaseInputConnection {
 
     @Override
     public boolean commitText(CharSequence text, int newCursorPosition) {
-        boolean isSelected = Selection.getSelectionEnd(editable) - Selection.getSelectionStart(editable) > 0;
+        int selectedStart = Selection.getSelectionStart(editable);
+        int selectedEnd = Selection.getSelectionEnd(editable);
+        boolean isSelected = selectedEnd - selectedStart > 0;
         if (isSelected) {
-            delegate.setSelectedState(isSelected, text);
+            delegate.setSelectedState(isSelected, text, selectedStart, selectedEnd);
         }
         boolean result = super.commitText(text, newCursorPosition);
         onStateUpdated();
@@ -151,10 +153,12 @@ class InputConnectionWrapper extends BaseInputConnection {
     public boolean deleteSurroundingText(int deleteBeforeLength, int deleteAfterLength) {
         boolean deleted = true;
         if (Selection.getSelectionStart(this.editable) == -1) {
+            delegate.setDeletedFlag(true);
             return deleted;
         }
 
         deleted = super.deleteSurroundingText(deleteBeforeLength, deleteAfterLength);
+        delegate.setDeletedFlag(deleted);
         onStateUpdated();
         return deleted;
     }
@@ -231,6 +235,16 @@ class InputConnectionWrapper extends BaseInputConnection {
         return false;
     }
 
+    private void processNewLine() {
+        if (editable != null) {
+            int composingStart = BaseInputConnection.getComposingSpanStart(editable);
+            int composingEnd = BaseInputConnection.getComposingSpanEnd(editable);
+            if (composingEnd > composingStart) {
+                super.finishComposingText();
+            }
+        }
+    }
+
     @Override
     public boolean performEditorAction(int actionCode) {
         ALog.d(LOG_TAG, "performEditorAction: " + actionCode);
@@ -268,6 +282,7 @@ class InputConnectionWrapper extends BaseInputConnection {
             default: {
                 if (actionCode == TextInputAction.NEW_LINE.getValue()) {
                     action = TextInputAction.NEW_LINE;
+                    processNewLine();
                 } else {
                     action = TextInputAction.DONE;
                 }
@@ -328,10 +343,12 @@ class InputConnectionWrapper extends BaseInputConnection {
         if (selEnd > selStart) {
             Selection.setSelection(editable, selStart);
             editable.delete(selStart, selEnd);
+            delegate.setDeletedFlag(true);
             onStateUpdated();
             return true;
         } else if (selStart > 0) {
             if (TextKeyListener.getInstance().onKeyDown(null, editable, event.getKeyCode(), event)) {
+                delegate.setDeletedFlag(true);
                 onStateUpdated();
                 return true;
             }
@@ -364,7 +381,6 @@ class InputConnectionWrapper extends BaseInputConnection {
             this.editable.insert(selectionStart, String.valueOf((char) unicodeChar));
             int newSelectionStart = selectionStart + 1;
             setSelection(newSelectionStart, newSelectionStart);
-            onStateUpdated();
             return true;
         }
         return false;
