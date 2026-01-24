@@ -92,6 +92,8 @@ foreach(module, common_plugin_libs) {
     platform = "android"
     if (module == "data/datasharepredicates") {
       version_script = "data_datasharepredicates.map"
+    } else if (module == "intl") {
+      version_script = "intl.map"
     } else {
       version_script = "empty_android_symbol.map"
     }
