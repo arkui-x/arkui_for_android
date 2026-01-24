@@ -631,6 +631,17 @@ public abstract class TextInputPluginBase {
             }
         }
 
+        private void handleSelectionError(String text, String lastValue, JSONObject json,
+            int start, int end) throws JSONException {
+            if (text == null || lastValue == null) {
+                return;
+            }
+            if (start == end && text.length() == lastValue.length() &&
+                    !text.equals(lastValue) && !json.has(APPEND_TEXT)) {
+                json.put(APPEND_TEXT, "");
+            }
+        }
+
         private void tryModifyText(JSONObject json, String text, String lastValue, int selectionEnd,
             int clientId) throws JSONException {
             if (text == null || lastValue == null || selectionEnd < 0 || selectionEnd > text.length()) {
@@ -644,6 +655,7 @@ public abstract class TextInputPluginBase {
                     end = selectedRange.get(clientId).selectionEnd;
                 }
             }
+            handleSelectionError(text, lastValue, json, start, end);
             if (start > end || !json.has(APPEND_TEXT)) {
                 return;
             }
