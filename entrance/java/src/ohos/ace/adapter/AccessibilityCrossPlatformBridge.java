@@ -598,6 +598,10 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
     }
 
     private Rect getBoundsInScreen(Rect bounds) {
+        if (arkuiRootAccessibilityView == null) {
+            Log.w(TAG, "arkuiRootAccessibilityView is null, returning empty bounds");
+            return new Rect();
+        }
         int[] locationOnScreen = new int[2];
         arkuiRootAccessibilityView.getLocationOnScreen(locationOnScreen);
         int left = locationOnScreen[0];
@@ -1022,7 +1026,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         if (!isEnabled()) {
             return;
         }
-        if (viewId == ROOT_NODE_ID) {
+        if (viewId == ROOT_NODE_ID && arkuiRootAccessibilityView != null) {
             arkuiRootAccessibilityView.sendAccessibilityEvent(eventType);
         } else {
             sendAccessibilityEvent(obtainAccessibilityEvent(viewId, eventType));
@@ -1047,7 +1051,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
     }
 
     private boolean sendAccessibilityEvent(AccessibilityEvent event) {
-        if (!isEnabled()) {
+        if (!isEnabled() || arkuiRootAccessibilityView == null) {
             return false;
         }
         if (arkuiRootAccessibilityView.getParent() == null) {
