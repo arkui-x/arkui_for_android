@@ -62,6 +62,7 @@
 #include "frameworks/bridge/common/utils/engine_helper.h"
 #include "frameworks/bridge/js_frontend/engine/common/js_engine_loader.h"
 #include "frameworks/bridge/js_frontend/js_frontend.h"
+#include "stage_asset_provider.h"
 #include "unicode/locid.h"
 
 namespace OHOS::Ace::Platform {
@@ -154,6 +155,7 @@ void AceContainerSG::Destroy()
 {
     LOGI("AceContainerSG::Destroy start");
     ContainerScope scope(instanceId_);
+    ReleaseResourceAdapter();
     if (pipelineContext_ && taskExecutor_) {
         // 1. Destroy Pipeline on UI thread.
         RefPtr<PipelineBase> context;
@@ -895,13 +897,6 @@ void InitResourceAndThemeManager(const RefPtr<PipelineBase>& pipelineContext, co
         if (!moduleName.empty()) {
             ResourceManager::GetInstance().AddResourceAdapter(bundleName, moduleName, instanceId, resourceAdapter);
         }
-        auto dependencies = hapInfo->dependencies;
-        for (const auto& dependency : dependencies) {
-            if (dependency.empty()) {
-                continue;
-            }
-            ResourceManager::GetInstance().AddResourceAdapter(bundleName, dependency, instanceId, resourceAdapter);
-        }
     } else if (abilityInfo) {
         auto bundleName = abilityInfo->bundleName;
         auto moduleName = abilityInfo->moduleName;
@@ -1405,10 +1400,62 @@ bool AceContainerSG::GetLastMovingPointerPosition(DragPointerEvent& dragPointerE
     return true;
 }
 
-std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> AceContainerSG::GetAbilityContext()
+std::string EncodeBundleAndModule(const std::string& bundleName, const std::string& moduleName)
+{
+    return bundleName + " " + moduleName;
+}
+
+void DecodeBundleAndModule(const std::string& encode, std::string& bundleName, std::string& moduleName)
+{
+    std::vector<std::string> tokens;
+    StringUtils::StringSplitter(encode, ' ', tokens);
+    const int minTokensSize = 2;
+    if (tokens.size() < minTokensSize) {
+        bundleName = "";
+        moduleName = "";
+        return;
+    }
+    bundleName = tokens[0];
+    moduleName = tokens[1];
+}
+
+std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> AceContainerSG::GetAbilityContextByModule(
+    const std::string& bundleName, const std::string& moduleName)
 {
     auto context = runtimeContext_.lock();
-    return context;
+    CHECK_NULL_RETURN(context, nullptr);
+    if (!bundleName.empty() && !moduleName.empty()) {
+        std::string encode = EncodeBundleAndModule(bundleName, moduleName);
+        if (taskExecutor_->WillRunOnCurrentThread(TaskExecutor::TaskType::UI)) {
+            RecordResAdapter(encode);
+        } else {
+            taskExecutor_->PostTask(
+                [encode, instanceId = instanceId_]() -> void {
+                    auto container = AceContainerSG::GetContainer(instanceId);
+                    CHECK_NULL_VOID(container);
+                    container->RecordResAdapter(encode);
+                },
+                TaskExecutor::TaskType::UI, "ArkUIRecordResAdapter");
+        }
+    }
+    std::string fullModuleName =
+        AbilityRuntime::Platform::StageAssetProvider::GetInstance()->GetSplicingModuleName(moduleName);
+    return context->CreateModuleContext(fullModuleName);
+}
+
+void AceContainerSG::ReleaseResourceAdapter()
+{
+    for (auto& encode : resAdapterRecord_) {
+        std::string bundleName;
+        std::string moduleName;
+        DecodeBundleAndModule(encode, bundleName, moduleName);
+        ResourceManager::GetInstance().RemoveResourceAdapter(bundleName, moduleName, instanceId_);
+    }
+    resAdapterRecord_.clear();
+    ResourceManager::GetInstance().RemoveResourceAdapter("", "", instanceId_);
+    auto context = runtimeContext_.lock();
+    CHECK_NULL_VOID(context);
+    ResourceManager::GetInstance().RemoveResourceAdapter(context->GetBundleName(), GetModuleName(), instanceId_);
 }
 
 void AceContainerSG::RegisterStopDragCallback(int32_t pointerId, StopDragCallback&& stopDragCallback)
