@@ -54,6 +54,11 @@ Note:If the text contains special characters, please escape them according to th
 <configuration>
     <oatconfig>
         <licensefile></licensefile>
+        <policylist>
+            <policy name="projectPolicy" desc="">
+                <policyitem type="copyright" name="Huawei Technologies Co., Ltd." path=".*" desc="copyright"/>
+            </policy>
+        </policylist>
         <filefilterlist>
             <filefilter name="copyrightPolicyFilter" desc="Copyright文件头校验策略的过滤条件" >
                 <filteritem type="filepath" name="capability/java/.*.java" desc="add java file that need to check copyright license"/>
