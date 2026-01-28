@@ -365,7 +365,15 @@ public:
 
     bool GetLastMovingPointerPosition(DragPointerEvent& dragPointerEvent) override;
 
-    std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> GetAbilityContext();
+    std::shared_ptr<OHOS::AbilityRuntime::Platform::Context> GetAbilityContextByModule(const std::string& bundleName,
+        const std::string& moduleName);
+
+    void ReleaseResourceAdapter();
+
+    void RecordResAdapter(const std::string& key)
+    {
+        resAdapterRecord_.emplace(key);
+    }
 
     const ResourceInfo& GetResourceInfo() const
     {
@@ -441,6 +449,7 @@ private:
     std::shared_ptr<MMI::PointerEvent> currentPointerEvent_;
     std::unordered_map<int32_t, std::list<StopDragCallback>> stopDragCallbackMap_;
     std::map<int32_t, std::shared_ptr<MMI::PointerEvent>> currentEvents_;
+    std::unordered_set<std::string> resAdapterRecord_;
     ACE_DISALLOW_COPY_AND_MOVE(AceContainerSG);
 };
 } // namespace OHOS::Ace::Platform

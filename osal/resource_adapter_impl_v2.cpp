@@ -107,7 +107,7 @@ RefPtr<ResourceAdapter> ResourceAdapter::CreateNewResourceAdapter(
     CHECK_NULL_RETURN(aceContainer, nullptr);
     
     RefPtr<ResourceAdapter> newResourceAdapter = nullptr;
-    auto context = aceContainer->GetAbilityContext();
+    auto context = aceContainer->GetAbilityContextByModule(bundleName, moduleName);
     if (context) {
         auto resourceManager = context->GetResourceManager();
         newResourceAdapter = AceType::MakeRefPtr<ResourceAdapterImplV2>(resourceManager);
