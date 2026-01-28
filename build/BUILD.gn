@@ -137,6 +137,10 @@ component_modules = [
   "checkbox",
   "rating",
   "waterflow",
+  "counter",
+  "linear_split",
+  "side_bar",
+  "radio",
 ]
 
 component_modules_libs = []
