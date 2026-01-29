@@ -27,6 +27,10 @@ namespace {
 const std::string DYNAMIC_MODULE_LIB_PREFIX = "libarkui_";
 const std::string DYNAMIC_MODULE_LIB_POSTFIX = ".so";
 const std::unordered_map<std::string, std::string> soMap = {
+    {"Marquee", "marquee"},
+    {"Stepper", "stepper"},
+    {"StepperItem", "stepper"},
+    {"Slider", "slider"},
     {"Checkbox", "checkbox"},
     {"CheckboxGroup", "checkbox"},
     {"Gauge", "gauge"},
