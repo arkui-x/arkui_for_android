@@ -16,6 +16,7 @@
 package ohos.ace.adapter.capability.platformview;
 
 import android.content.Context;
+import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -33,6 +34,9 @@ import ohos.ace.adapter.IAceOnResourceEvent;
 import ohos.ace.adapter.capability.platformview.IPlatformView;
 
 import java.util.Map;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -52,6 +56,13 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
     private static final String PLATFORM_VIEW_LEFT = "platformViewLeft";
     private static final String PLATFORM_VIEW_TOUCH_POINT_OFFSET_X = "platformViewTouchPointOffsetX";
     private static final String PLATFORM_VIEW_TOUCH_POINT_OFFSET_Y = "platformViewTouchPointOffsetY";
+    private static final String X = "X";
+    private static final String Y = "Y";
+    private static final String Z = "Z";
+    private static final String ANGLE = "angle";
+    private static final String CENTER_X = "centerX";
+    private static final String CENTER_Y = "centerY";
+    private static final String PERSPECTIVE = "perspective";
     private static final Object PLATFORM_VIEW_LOCK = new Object();
 
     private final Context context;
@@ -71,6 +82,23 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
     private int offsetY = 0;
     private int width = 0;
     private int height = 0;
+    private float scaleX = 1.0f;
+    private float scaleY = 1.0f;
+    private float scaleZ = 1.0f;
+    private float axisX = 0.0f;
+    private float axisY = 0.0f;
+    private float axisZ = 0.0f;
+    private float rotationX = 0.0f;
+    private float rotationY = 0.0f;
+    private float rotationZ = 0.0f;
+    private float rotationAngle = 0.0f;
+    private float translationX = 0.0f;
+    private float translationY = 0.0f;
+    private float translationZ = 0.0f;
+    private String centerX = "50%";
+    private String centerY = "50%";
+    private String perspective = "1";
+    private float[] transformMatrix;
 
     /**
      * constructor of PlatformView on AOSP platform
@@ -126,20 +154,18 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
             ALog.e(LOG_TAG, "registerPlatformView failed: params is null");
             return FAIL;
         }
-        if (!params.containsKey(KEY_TEXTUREID)) {
-            ALog.e(LOG_TAG, "registerPlatformView failed: Textureid is illegal");
-            return FAIL;
+        if (viewWrapper == null) {
+            viewWrapper = new PlatformViewWrapper(this.context);
         }
-
-        try {
-            this.textureId = Integer.parseInt(params.get(KEY_TEXTUREID));
-        } catch (NumberFormatException ignored) {
-            return FAIL;
+        if (params.containsKey(KEY_TEXTUREID)) {
+            try {
+                this.textureId = Integer.parseInt(params.get(KEY_TEXTUREID));
+            } catch (NumberFormatException ignored) {
+                return FAIL;
+            }
+            Surface newSurface = getSurface();
+            viewWrapper.setSurface(newSurface);
         }
-
-        Surface newSurface = getSurface();
-        viewWrapper = new PlatformViewWrapper(this.context);
-        viewWrapper.setSurface(newSurface);
 
         runOnUIThread(() -> {
             synchronized (PLATFORM_VIEW_LOCK) {
@@ -161,6 +187,9 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
 
     @Override
     public String updateLayout(Map<String, String> params) {
+        if (viewWrapper == null) {
+            viewWrapper = new PlatformViewWrapper(this.context);
+        }
         if (params == null) {
             ALog.e(LOG_TAG, "updateLayout failed: params is null");
             return FAIL;
@@ -208,8 +237,11 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
             ALog.e(LOG_TAG, "updateLayout failed: viewWrapper is null");
             return;
         }
+        updateMatrix();
         viewWrapper.resize(width, height);
         final FrameLayout.LayoutParams viewWrapperLayoutParams = new FrameLayout.LayoutParams(width, height);
+        viewWrapperLayoutParams.leftMargin = offsetX;
+        viewWrapperLayoutParams.topMargin = offsetY;
         viewWrapper.setLayoutParams(viewWrapperLayoutParams);
         synchronized (PLATFORM_VIEW_LOCK) {
             if (platformView != null) {
@@ -217,6 +249,57 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
                 embeddedView.setLayoutParams(new FrameLayout.LayoutParams(width, height));
             }
         }
+    }
+
+    private float calculateCameraDistance() {
+        float density = context.getResources().getDisplayMetrics().density;
+        BigDecimal dist = BigDecimal.valueOf(Math.sqrt(width * width + height * height) * 0.5f * density);
+        return dist.floatValue() * 4;
+    }
+
+    private void updateMatrix() {
+        if (viewWrapper == null) {
+            viewWrapper = new PlatformViewWrapper(this.context);
+        }
+        float pivotX = viewWrapper.getPivotX();
+        float pivotY = viewWrapper.getPivotY();
+
+        pivotX = centerX.contains("%") ? width * (Float.parseFloat(centerX.replace("%", "")) / 100)
+                : Float.parseFloat(centerX);
+        pivotY = centerY.contains("%") ? height * (Float.parseFloat(centerY.replace("%", "")) / 100)
+                : Float.parseFloat(centerY);
+
+        float perspectiveValue = 0.0f;
+        try {
+            perspectiveValue = Float.parseFloat(perspective);
+        } catch (NumberFormatException ignored) {
+            perspectiveValue = 0.0f;
+        }
+
+        BigDecimal cameraDistance;
+        int densityDpi = context.getResources().getDisplayMetrics().densityDpi;
+        if (perspectiveValue > 0.00f) {
+            viewWrapper.setRotationX(-rotationX);
+            viewWrapper.setRotationY(-rotationY);
+            cameraDistance = BigDecimal.valueOf(perspectiveValue).multiply(BigDecimal.valueOf(densityDpi));
+        } else if (perspectiveValue < -0.00f) {
+            viewWrapper.setRotationX(rotationX);
+            viewWrapper.setRotationY(rotationY);
+            cameraDistance = BigDecimal.valueOf(perspectiveValue).multiply(BigDecimal.valueOf(densityDpi));
+        } else {
+            viewWrapper.setRotationX(rotationX);
+            viewWrapper.setRotationY(rotationY);
+            cameraDistance = BigDecimal.valueOf(calculateCameraDistance());
+        }
+        viewWrapper.setRotation(rotationZ);
+        viewWrapper.setTranslationX(translationX);
+        viewWrapper.setTranslationY(translationY);
+        viewWrapper.setTranslationZ(translationZ);
+        viewWrapper.setPivotX(pivotX);
+        viewWrapper.setPivotY(pivotY);
+        viewWrapper.setScaleX(scaleX);
+        viewWrapper.setScaleY(scaleY);
+        viewWrapper.setCameraDistance(cameraDistance.floatValue());
     }
 
     /**
@@ -227,7 +310,7 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
         if (eventClone != null) {
             synchronized (PLATFORM_VIEW_LOCK) {
                 if (platformView != null) {
-                    platformView.getView().dispatchTouchEvent(eventClone);
+                    viewWrapper.dispatchTouchEvent(eventClone);
                 }
             }
         }
@@ -237,10 +320,10 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
         if (motionEvent == null) {
             return null;
         }
-        if (offsetX == 0 && offsetY == 0) {
-            return MotionEvent.obtain(motionEvent);
-        }
         int pointerCount = motionEvent.getPointerCount();
+        Matrix viewMatrix = new Matrix(viewWrapper.getMatrix());
+        Matrix inverseMatrix = new Matrix();
+        boolean hasInverse = viewMatrix.invert(inverseMatrix);
         MotionEvent.PointerProperties[] pointerProperties = new MotionEvent.PointerProperties[pointerCount];
         MotionEvent.PointerCoords[] pointerCoords = new MotionEvent.PointerCoords[pointerCount];
         for (int i = 0; i < motionEvent.getPointerCount(); i++) {
@@ -250,10 +333,19 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
             MotionEvent.PointerCoords originCoords = new MotionEvent.PointerCoords();
             motionEvent.getPointerCoords(i, originCoords);
 
+            float[] pts = new float[] {
+                originCoords.x - offsetX,
+                originCoords.y - offsetY
+            };
+
+            if (hasInverse) {
+                inverseMatrix.mapPoints(pts);
+            }
             pointerCoords[i] = new MotionEvent.PointerCoords(originCoords);
-            pointerCoords[i].x -= offsetX;
-            pointerCoords[i].y -= offsetY;
+            pointerCoords[i].x = pts[0];
+            pointerCoords[i].y = pts[1];
         }
+
         MotionEvent translatedEvent = MotionEvent.obtain(
                 motionEvent.getDownTime(),
                 motionEvent.getEventTime(),
@@ -282,8 +374,6 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
             ALog.e(LOG_TAG, "touchDown failed: platformViewTouchPointOffsetX is illegal");
             return FAIL;
         }
-        offsetX = toPhysicalPixels(Double.parseDouble(params.get(PLATFORM_VIEW_TOUCH_POINT_OFFSET_X)));
-        offsetY = toPhysicalPixels(Double.parseDouble(params.get(PLATFORM_VIEW_TOUCH_POINT_OFFSET_Y)));
         processTouchEvent();
         return SUCCESS;
     }
@@ -298,8 +388,6 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
             ALog.e(LOG_TAG, "touchUp failed: platformViewTouchPointOffsetX is illegal");
             return FAIL;
         }
-        offsetX = toPhysicalPixels(Double.parseDouble(params.get(PLATFORM_VIEW_TOUCH_POINT_OFFSET_X)));
-        offsetY = toPhysicalPixels(Double.parseDouble(params.get(PLATFORM_VIEW_TOUCH_POINT_OFFSET_Y)));
         processTouchEvent();
         return SUCCESS;
     }
@@ -314,8 +402,6 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
             ALog.e(LOG_TAG, "touchMove failed: platformViewTouchPointOffsetX is illegal");
             return FAIL;
         }
-        offsetX = toPhysicalPixels(Double.parseDouble(params.get(PLATFORM_VIEW_TOUCH_POINT_OFFSET_X)));
-        offsetY = toPhysicalPixels(Double.parseDouble(params.get(PLATFORM_VIEW_TOUCH_POINT_OFFSET_Y)));
         processTouchEvent();
         return SUCCESS;
     }
@@ -330,8 +416,6 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
             ALog.e(LOG_TAG, "touchCancel failed: platformViewTouchPointOffsetX is illegal");
             return FAIL;
         }
-        offsetX = toPhysicalPixels(Double.parseDouble(params.get(PLATFORM_VIEW_TOUCH_POINT_OFFSET_X)));
-        offsetY = toPhysicalPixels(Double.parseDouble(params.get(PLATFORM_VIEW_TOUCH_POINT_OFFSET_Y)));
         processTouchEvent();
         return SUCCESS;
     }
@@ -344,6 +428,157 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
                 platformView = null;
             }
         }
+        return SUCCESS;
+    }
+
+    @Override
+    public String setScale(Map<String, String> params) {
+        if (params.containsKey(X)) {
+            try {
+                scaleX = Float.parseFloat(params.get(X));
+            } catch (NumberFormatException ignored) {
+                ALog.e(LOG_TAG, "parse scaleX failed");
+                return FAIL;
+            }
+        }
+        if (params.containsKey(Y)) {
+            try {
+                scaleY = Float.parseFloat(params.get(Y));
+            } catch (NumberFormatException ignored) {
+                ALog.e(LOG_TAG, "parse scaleY failed");
+                return FAIL;
+            }
+        }
+        if (params.containsKey(CENTER_X)) {
+            try {
+                centerX = params.get(CENTER_X);
+            } catch (NumberFormatException ignored) {
+                ALog.e(LOG_TAG, "parse centerX failed");
+                return FAIL;
+            }
+        }
+        if (params.containsKey(CENTER_Y)) {
+            try {
+                centerY = params.get(CENTER_Y);
+            } catch (NumberFormatException ignored) {
+                ALog.e(LOG_TAG, "parse centerY failed");
+                return FAIL;
+            }
+        }
+        return SUCCESS;
+    }
+
+    private static BigDecimal sqrt(BigDecimal value, int scale) {
+        if (value.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal two = BigDecimal.valueOf(2);
+        BigDecimal x = new BigDecimal(Math.sqrt(value.doubleValue()));
+        BigDecimal prev;
+        do {
+            prev = x;
+            x = value.divide(x, scale, RoundingMode.HALF_UP).add(x).divide(two, scale, RoundingMode.HALF_UP);
+        } while (!x.equals(prev));
+        return x;
+    }
+
+    private void calculateRotationComponents(float axisX, float axisY, float axisZ, float rotationAngle) {
+        MathContext mc = new MathContext(20, RoundingMode.HALF_UP);
+        BigDecimal bdAxisX = BigDecimal.valueOf(axisX);
+        BigDecimal bdAxisY = BigDecimal.valueOf(axisY);
+        BigDecimal bdAxisZ = BigDecimal.valueOf(axisZ);
+
+        BigDecimal sumOfSquares = bdAxisX.multiply(bdAxisX, mc)
+                .add(bdAxisY.multiply(bdAxisY, mc), mc)
+                .add(bdAxisZ.multiply(bdAxisZ, mc), mc);
+
+        BigDecimal norm = sqrt(sumOfSquares, 20);
+        if (norm.compareTo(BigDecimal.ZERO) <= 0) {
+            norm = BigDecimal.ONE;
+        }
+
+        BigDecimal bdRotationAngle = BigDecimal.valueOf(rotationAngle);
+        BigDecimal scale = bdRotationAngle.divide(norm, mc);
+
+        rotationX = scale.multiply(bdAxisX, mc).floatValue();
+        rotationY = scale.multiply(bdAxisY, mc).floatValue();
+        rotationZ = scale.multiply(bdAxisZ, mc).floatValue();
+    }
+
+    @Override
+    public String setRotation(Map<String, String> params) {
+        if (!params.containsKey(X)) {
+            ALog.e(LOG_TAG, "setRotation failed: X is illegal");
+            return FAIL;
+        }
+        if (!params.containsKey(Y)) {
+            ALog.e(LOG_TAG, "setRotation failed: Y is illegal");
+            ALog.e(LOG_TAG, "setRotation failed: Y is illegal");
+            return FAIL;
+        }
+        if (!params.containsKey(Z)) {
+            ALog.e(LOG_TAG, "setRotation failed: Z is illegal");
+            return FAIL;
+        }
+        if (!params.containsKey(ANGLE)) {
+            ALog.e(LOG_TAG, "setRotation failed: ANGLE is illegal");
+            return FAIL;
+        }
+        if (!params.containsKey(CENTER_X)) {
+            ALog.e(LOG_TAG, "setRotation failed: CENTER_X is illegal");
+            return FAIL;
+        }
+        if (!params.containsKey(CENTER_Y)) {
+            ALog.e(LOG_TAG, "setRotation failed: CENTER_Y is illegal");
+            return FAIL;
+        }
+        if (!params.containsKey(PERSPECTIVE)) {
+            ALog.e(LOG_TAG, "setRotation failed: PERSPECTIVE is illegal");
+            return FAIL;
+        }
+
+        axisX = Float.parseFloat(params.get(X));
+        axisY = Float.parseFloat(params.get(Y));
+        axisZ = Float.parseFloat(params.get(Z));
+        rotationAngle = Float.parseFloat(params.get(ANGLE));
+        centerX = params.get(CENTER_X);
+        centerY = params.get(CENTER_Y);
+        perspective = params.get(PERSPECTIVE);
+        calculateRotationComponents(axisX, axisY, axisZ, rotationAngle);
+        return SUCCESS;
+    }
+
+    @Override
+    public String setTranslation(Map<String, String> params) {
+        if (params.containsKey(X)) {
+            try {
+                translationX = Float.parseFloat(params.get(X));
+            } catch (NumberFormatException ignored) {
+                ALog.e(LOG_TAG, "parse scaleX failed");
+                return FAIL;
+            }
+        }
+        if (params.containsKey(Y)) {
+            try {
+                translationY = Float.parseFloat(params.get(Y));
+            } catch (NumberFormatException ignored) {
+                ALog.e(LOG_TAG, "parse scaleY failed");
+                return FAIL;
+            }
+        }
+        if (params.containsKey(Z)) {
+            try {
+                translationZ = Float.parseFloat(params.get(Z));
+            } catch (NumberFormatException ignored) {
+                ALog.e(LOG_TAG, "parse scaleY failed");
+                return FAIL;
+            }
+        }
+        return SUCCESS;
+    }
+
+    @Override
+    public String setTransformMatrix(Map<String, String> params) {
         return SUCCESS;
     }
 
