@@ -133,10 +133,17 @@ foreach(module, arkui_x_components) {
 
 # for arkui component modules
 component_modules = [
+  "marquee",
+  "stepper",
+  "slider",
   "gauge",
   "checkbox",
   "rating",
   "waterflow",
+  "counter",
+  "linear_split",
+  "side_bar",
+  "radio",
 ]
 
 component_modules_libs = []
