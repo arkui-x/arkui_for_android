@@ -35,8 +35,13 @@ const std::unordered_map<std::string, std::string> soMap = {
     {"CheckboxGroup", "checkbox"},
     {"Gauge", "gauge"},
     {"Rating", "rating"},
-    {"FlowItem", "waterflow"},
-    {"WaterFlow", "waterflow"},
+    {"FlowItem", "waterflow" },
+    {"WaterFlow", "waterflow" },
+    {"Counter", "counter"},
+    {"Sidebar", "sidebar"},
+    {"ColumnSplit", "linearsplit"},
+    {"RowSplit", "linearsplit"},
+    {"Radio", "radio"},
 };
 } // namespace
 DynamicModuleHelper& DynamicModuleHelper::GetInstance()
