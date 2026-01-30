@@ -424,6 +424,7 @@ void SubwindowAndroid::ShowMenuNG(std::function<void()>&& buildFunc, std::functi
     auto overlay = context->GetOverlayManager();
     CHECK_NULL_VOID(overlay);
     ShowWindow();
+    window_->SetFullScreen(true);
     ResizeWindow();
     isMenuWindow_ = isShowed_;
     window_->SetTouchable(true);
