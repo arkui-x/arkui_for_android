@@ -147,6 +147,8 @@
       OHOS::Ace::ShadowTheme::*;
       OHOS::Ace::PerfMonitor::*;
       WorkerManager::*;
+      "OHOS::Ace::ResTracer::~ResTracer()";
+      "OHOS::Ace::UINodeTracer::UINodeTracer(char const*, OHOS::Ace::NG::UINode const*)";
       "DataProtector::AutDecrypt(unsigned long, unsigned long) const";
       "DataProtector::AutDecrypt(unsigned int, unsigned int) const";
       "DataProtector::PacEncrypt(unsigned long, unsigned long)";
@@ -984,6 +986,8 @@
       OHOS::Ace::NG::SwiperPattern::*;
       VTT?for?OHOS::Ace::NG::LoadingProgressPattern;
       vtable?for?OHOS::Ace::NG::LoadingProgressPattern;
+      VTT?for?OHOS::Ace::NG::StackPattern;
+      vtable?for?OHOS::Ace::NG::StackPattern;
       "OHOS::Ace::NG::CalcSize::IsValid() const";
       OHOS::Ace::InspectorJsonUtil::*;
       OHOS::Ace::InspectorJsonValue::*;
