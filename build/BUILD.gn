@@ -144,6 +144,13 @@ component_modules = [
   "linear_split",
   "side_bar",
   "radio",
+  "data_panel",
+  "hyperlink",
+  "patternlock",
+  "qrcode",
+  "time_picker",
+  "indexer",
+  "calendar_picker",
 ]
 
 component_modules_libs = []
