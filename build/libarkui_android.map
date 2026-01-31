@@ -195,6 +195,10 @@
       vtable?for?OHOS::Ace::NG::TouchEventActuator;
       vtable?for?OHOS::Ace::ResourceWrapper;
 
+      VTT?for?OHOS::Ace::NG::PanGesture;
+      vtable?for?OHOS::Ace::NG::PanGesture;
+      "OHOS::Ace::Matrix4::Matrix4()";
+
       vtable?for?OHOS::NetStack::Socks5::Socks5ProxyResponse;
       vtable?for?OHOS::NetStack::Socks5::Socks5MethodRequest;
       vtable?for?OHOS::NetStack::Socks5::Socks5NoneMethod;

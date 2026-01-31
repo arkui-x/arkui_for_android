@@ -134,6 +134,30 @@ public abstract class AcePlatformViewBase {
                 "dispose" +
                 PARAM_BEGIN,
                 callDispose);
+        IAceOnCallResourceMethod callSetScale = (param) -> setScale(param);
+        this.callMethodMap.put(PLATFORM_VIEW_FLAG + id + METHOD +
+                PARAM_EQUALS +
+                "setScale" +
+                PARAM_BEGIN,
+                callSetScale);
+        IAceOnCallResourceMethod callSetTranslation = (param) -> setTranslation(param);
+        this.callMethodMap.put(PLATFORM_VIEW_FLAG + id + METHOD +
+                PARAM_EQUALS +
+                "setTranslate" +
+                PARAM_BEGIN,
+                callSetTranslation);
+        IAceOnCallResourceMethod callSetRotation = (param) -> setRotation(param);
+        this.callMethodMap.put(PLATFORM_VIEW_FLAG + id + METHOD +
+                PARAM_EQUALS +
+                "setRotation" +
+                PARAM_BEGIN,
+                callSetRotation);
+        IAceOnCallResourceMethod callSetTransformMatrix = (param) -> setTransformMatrix(param);
+        this.callMethodMap.put(PLATFORM_VIEW_FLAG + id + METHOD +
+                PARAM_EQUALS +
+                "setTransformMatrix" +
+                PARAM_BEGIN,
+                callSetTransformMatrix);
     }
 
     /**
@@ -183,6 +207,38 @@ public abstract class AcePlatformViewBase {
      * @return result of call.
      */
     public abstract String updateLayout(Map<String, String> params);
+
+    /**
+     * This is called to set scale.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String setScale(Map<String, String> params);
+
+    /**
+     * This is called to set rotation.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String setRotation(Map<String, String> params);
+
+    /**
+     * This is called to set translation.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String setTranslation(Map<String, String> params);
+
+    /**
+     * This is called to set transform.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String setTransformMatrix(Map<String, String> params);
 
     /**
      * This is called to set touch event.

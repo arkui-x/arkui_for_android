@@ -27,8 +27,6 @@ import android.view.ViewParent;
 import android.view.Surface;
 import android.widget.FrameLayout;
 
-import ohos.ace.adapter.ALog;
-
 /**
  * The class for creating PlatformViewWrapper on Android platform.
  *
@@ -66,6 +64,9 @@ public class PlatformViewWrapper extends FrameLayout {
     public void displayPlatformView() {
         FrameLayout.LayoutParams layoutParams = buildLayoutParams(left, top, bufferWidth, bufferHeight);
         setLayoutParams(layoutParams);
+        if (getParent() != null) {
+            return;
+        }
         Activity activity = (Activity) context;
         this.setZ(-1.f);
         activity.addContentView(this, layoutParams);
@@ -111,7 +112,7 @@ public class PlatformViewWrapper extends FrameLayout {
      */
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-        return true;
+        return super.onInterceptTouchEvent(event);
     }
 
     /**
@@ -148,7 +149,6 @@ public class PlatformViewWrapper extends FrameLayout {
     public void draw(Canvas canvas) {
         if (surface == null) {
             super.draw(canvas);
-            ALog.e(LOG_TAG, "PlatformView cannot be composed without a Render.");
             return;
         }
         final Canvas newCanvas = surface.lockHardwareCanvas();
