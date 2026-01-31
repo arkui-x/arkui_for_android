@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -137,8 +137,7 @@ void ClipboardImpl::GetSpanStringData(
 }
 
 void ClipboardImpl::GetSpanStringDataHelper(
-    const std::function<void(std::vector<std::vector<uint8_t>>&, const std::string&, bool&)>& callback,
-    bool syncMode)
+    const std::function<void(std::vector<std::vector<uint8_t>>&, const std::string&, bool&)>& callback, bool syncMode)
 {
     auto task = [callback, weakExecutor = WeakClaim(RawPtr(taskExecutor_)), weak = WeakClaim(this)]() {
         auto clip = weak.Upgrade();
@@ -150,16 +149,11 @@ void ClipboardImpl::GetSpanStringDataHelper(
         std::vector<std::vector<uint8_t>> arrays;
         std::string text;
         bool isMultiTypeRecord = false;
-        auto IsMultiType = ClipboardJni::IsMultiTypeData();
-        if (IsMultiType) {
-            auto result = ClipboardJni::GetMultiTypeData();
-            auto pasteData = std::make_shared<PasteData>();
-            CHECK_NULL_VOID(pasteData);
-            pasteData->FromJsonString(result);
-            clip->ProcessSpanStringData(arrays, *pasteData, text, isMultiTypeRecord);
-        } else {
-            text = ClipboardJni::GetData();
-        }
+        auto result = ClipboardJni::GetMultiTypeData();
+        auto pasteData = std::make_shared<PasteData>();
+        CHECK_NULL_VOID(pasteData);
+        pasteData->FromJsonString(result);
+        clip->ProcessSpanStringData(arrays, *pasteData, text, isMultiTypeRecord);
         taskExecutor->PostTask(
             [callback, arrays, text, isMultiTypeRecord]() mutable { callback(arrays, text, isMultiTypeRecord); },
             TaskExecutor::TaskType::UI, "ArkUIClipboardGetSpanStringDataCallback", PriorityType::IMMEDIATE);
@@ -167,8 +161,8 @@ void ClipboardImpl::GetSpanStringDataHelper(
     if (syncMode) {
         taskExecutor_->PostSyncTask(task, TaskExecutor::TaskType::BACKGROUND, "ArkUIClipboardGetSpanStringDataSync");
     } else {
-        taskExecutor_->PostTask(task, TaskExecutor::TaskType::BACKGROUND, "ArkUIClipboardGetSpanStringDataAsync",
-            PriorityType::IMMEDIATE);
+        taskExecutor_->PostTask(
+            task, TaskExecutor::TaskType::BACKGROUND, "ArkUIClipboardGetSpanStringDataAsync", PriorityType::IMMEDIATE);
     }
 }
 
