@@ -46,6 +46,11 @@ bool FeatureParam::IsPageOverflowEnabled()
     return false;
 }
 
+bool FeatureParam::IsRnOverflowEnable()
+{
+    return false;
+}
+
 bool FeatureParam::IsDialogCorrectionEnabled()
 {
     return false;
