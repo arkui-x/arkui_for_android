@@ -51,4 +51,9 @@ RefPtr<NG::FrameNode> DataDetectorAdapter::CreateAIEntityMenu(
 {
     return nullptr;
 }
+
+bool DataDetectorAdapter::IsAskCeliaSupported()
+{
+    return false;
+}
 } // namespace OHOS::Ace
