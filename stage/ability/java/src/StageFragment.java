@@ -21,7 +21,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Trace;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,26 +33,27 @@ import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.AcePlatformPlugin;
+import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.ArkUIXPluginRegistry;
 import ohos.ace.adapter.PluginContext;
-import ohos.ace.adapter.WindowViewInterface;
 import ohos.ace.adapter.WindowViewAospInterface;
 import ohos.ace.adapter.WindowViewBuilder;
+import ohos.ace.adapter.WindowViewInterface;
 import ohos.ace.adapter.capability.bridge.BridgeManager;
 import ohos.ace.adapter.capability.grantresult.GrantResult;
 import ohos.ace.adapter.capability.keyboard.KeyboardHeightObserver;
 import ohos.ace.adapter.capability.keyboard.KeyboardHeightProvider;
+import ohos.ace.adapter.capability.platformview.AcePlatformViewPluginAosp;
+import ohos.ace.adapter.capability.platformview.PlatformViewFactory;
 import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginAosp;
 import ohos.ace.adapter.capability.web.AceWebPluginBase;
-import ohos.ace.adapter.capability.platformview.PlatformViewFactory;
-import ohos.ace.adapter.capability.platformview.AcePlatformViewPluginAosp;
 
 /**
  * A base class for the Ability Cross-platform Environment of the stage model to
@@ -152,7 +152,7 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i(LOG_TAG, "OnCreate called, instance name:" + getInstanceName());
+        ALog.i(LOG_TAG, "OnCreate called, instance name:" + getInstanceName());
         super.onCreate(savedInstanceState);
         Trace.beginSection("StageFragment::onCreate");
 
@@ -191,7 +191,7 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.i(LOG_TAG, "OnCreateView called, instance name:" + getInstanceName());
+        ALog.i(LOG_TAG, "OnCreateView called, instance name:" + getInstanceName());
         if (framelayout == null) {
             framelayout = new FrameLayout(getActivity());
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
@@ -204,16 +204,16 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
 
     @Override
     public void onResume() {
-        Log.i(LOG_TAG, "OnResume called, instance name:" + getInstanceName());
+        ALog.i(LOG_TAG, "OnResume called, instance name:" + getInstanceName());
         super.onResume();
     }
 
     @Override
     public void onStart() {
-        Log.i(LOG_TAG, "onStart called, instance name:" + getInstanceName());
+        ALog.i(LOG_TAG, "onStart called, instance name:" + getInstanceName());
         super.onStart();
         if (isHidden()) {
-            Log.i(LOG_TAG, "onStart called, isHidden");
+            ALog.i(LOG_TAG, "onStart called, isHidden");
             isToResume = true;
             return;
         }
@@ -238,7 +238,7 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
     @Override
     public void onHiddenChanged(boolean isHidden) {
         super.onHiddenChanged(isHidden);
-        Log.i(LOG_TAG, "onHiddenChanged called, isHidden:" + isHidden);
+        ALog.i(LOG_TAG, "onHiddenChanged called, isHidden:" + isHidden);
         if (!isHidden && isToResume) {
             isToResume = false;
 
@@ -261,12 +261,12 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
         }
         Trace.beginSection("StageFragment::setUserVisibleHint");
         if (isVisibleToUser) {
-            Log.i(LOG_TAG, "StageFragment isVisible to User, instance name:" + getInstanceName());
+            ALog.i(LOG_TAG, "StageFragment isVisible to User, instance name:" + getInstanceName());
             if (platformPlugin != null) {
                 platformPlugin.notifyLifecycleChanged(false);
             }
         } else {
-            Log.i(LOG_TAG, "StageFragment is not visible to User, instance name:" + getInstanceName());
+            ALog.i(LOG_TAG, "StageFragment is not visible to User, instance name:" + getInstanceName());
             if (platformPlugin != null) {
                 platformPlugin.notifyLifecycleChanged(true);
             }
@@ -276,14 +276,14 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
 
     @Override
     public void onStop() {
-        Log.i(LOG_TAG, "OnStop called, instance name:" + getInstanceName());
+        ALog.i(LOG_TAG, "OnStop called, instance name:" + getInstanceName());
         super.onStop();
         background();
     }
 
     @Override
     public void onPause() {
-        Log.i(LOG_TAG, "onPause called, instance name:" + getInstanceName());
+        ALog.i(LOG_TAG, "onPause called, instance name:" + getInstanceName());
         super.onPause();
     }
 
@@ -301,7 +301,7 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
 
     @Override
     public void onDestroy() {
-        Log.i(LOG_TAG, "OnDestroy called, instance name:" + getInstanceName());
+        ALog.i(LOG_TAG, "OnDestroy called, instance name:" + getInstanceName());
         super.onDestroy();
         fragmentDelegate.dispatchOnDestroy(getInstanceName());
         windowView.destroy();
@@ -309,13 +309,13 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
         keyboardHeightProvider.close();
         if (platformPlugin != null) {
             platformPlugin.release();
-            Log.i(LOG_TAG, "StageFragment onDestroy releseResRegister called");
+            ALog.i(LOG_TAG, "StageFragment onDestroy releseResRegister called");
         }
     }
 
     @Override
     public void dump(String prefix, FileDescriptor fd, PrintWriter writer, String[] args) {
-        Log.i(LOG_TAG, "StageFragment dump called");
+        ALog.i(LOG_TAG, "StageFragment dump called");
         AceEnv.dump(instanceId, prefix, fd, writer, args);
     }
 
@@ -325,7 +325,7 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
      * @return Returns true then nativeActivity should call super.onBackPressed()
      */
     public boolean onBackPressed() {
-        Log.i(LOG_TAG, "StageFragment onBackPressed called");
+        ALog.i(LOG_TAG, "StageFragment onBackPressed called");
         return !windowView.backPressed();
     }
 
@@ -335,7 +335,7 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
      * @param isTop fragment is the top view
      */
     public void setWindowOnTop(boolean isTop) {
-        Log.i(LOG_TAG, "setWindowOnTop " + isTop);
+        ALog.i(LOG_TAG, "setWindowOnTop " + isTop);
         if (windowView != null) {
             windowView.setHide(!isTop);
         }
@@ -350,12 +350,12 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
      * @return Returns ERR_OK on success, others on failure.
      */
     public int startActivity(String bundleName, String activityName, String params) {
-        Log.i(LOG_TAG, "startActivity called, bundleName: " + bundleName + ", activityName: " + activityName);
+        ALog.i(LOG_TAG, "startActivity called, bundleName: " + bundleName + ", activityName: " + activityName);
         int error = ERR_OK;
         try {
             Intent intent = new Intent();
             String packageName = this.getActivity().getApplicationContext().getPackageName();
-            Log.i(LOG_TAG, "Current package name: " + packageName);
+            ALog.i(LOG_TAG, "Current package name: " + packageName);
             ComponentName componentName = null;
             if (packageName.equals(bundleName)) {
                 componentName = new ComponentName(this.getActivity().getBaseContext(), activityName);
@@ -366,7 +366,7 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
             intent.putExtra(WANT_PARAMS, params);
             this.startActivity(intent);
         } catch (ActivityNotFoundException exception) {
-            Log.e("StageApplication", "start activity err: " + exception.getMessage());
+            ALog.e("StageApplication", "start activity err: " + exception.getMessage());
             error = ERR_INVALID_PARAMETERS;
         }
         return error;
@@ -395,7 +395,7 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
             }
             return createPicker(bundleName, type, value);
         } catch (JSONException e) {
-            Log.e(LOG_TAG, "json parse error: " + e.getMessage());
+            ALog.e(LOG_TAG, "json parse error: " + e.getMessage());
             return ERR_INVALID_PARAMETERS;
         }
     }
@@ -423,7 +423,7 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
             }
             return ERR_OK;
         } catch (ActivityNotFoundException e) {
-            Log.e(LOG_TAG, "Activity not found: " + e.getMessage());
+            ALog.e(LOG_TAG, "Activity not found: " + e.getMessage());
             return ERR_INVALID_PARAMETERS;
         }
     }
@@ -438,13 +438,13 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
      * @return Returns ERR_OK on success, others on failure.
      */
     public int startActivityForResult(String bundleName, String activityName, String params, int requestCode) {
-        Log.i(LOG_TAG, "startActivityForResult called, bundleName: " + bundleName + ", activityName: " + activityName
+        ALog.i(LOG_TAG, "startActivityForResult called, bundleName: " + bundleName + ", activityName: " + activityName
             + ", requestCode: " + requestCode);
         int error = ERR_OK;
         try {
             Intent intent = new Intent();
             String packageName = this.getActivity().getApplicationContext().getPackageName();
-            Log.i(LOG_TAG, "Current package name: " + packageName);
+            ALog.i(LOG_TAG, "Current package name: " + packageName);
             ComponentName componentName = null;
             if (packageName.equals(bundleName)) {
                 componentName = new ComponentName(this.getActivity().getBaseContext(), activityName);
@@ -455,7 +455,7 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
             intent.putExtra(WANT_PARAMS, params);
             this.startActivityForResult(intent, requestCode);
         } catch (ActivityNotFoundException exception) {
-            Log.e(LOG_TAG, "start activity for result err: " + exception.getMessage());
+            ALog.e(LOG_TAG, "start activity for result err: " + exception.getMessage());
             error = ERR_INVALID_PARAMETERS;
         }
         return error;
@@ -488,7 +488,7 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
             }
             return createPicker(bundleName, type, value);
         } catch (JSONException e) {
-            Log.e(LOG_TAG, "json parse error: " + e.getMessage());
+            ALog.e(LOG_TAG, "json parse error: " + e.getMessage());
             return ERR_INVALID_PARAMETERS;
         }
     }
@@ -526,11 +526,11 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
      */
     public void registerPlatformViewFactory(PlatformViewFactory platformViewFactory) {
         if (platformViewPluginAosp == null) {
-            Log.w(LOG_TAG, "PlatformViewPluginAosp is null");
+            ALog.w(LOG_TAG, "PlatformViewPluginAosp is null");
             return;
         }
         if (platformViewFactory == null) {
-            Log.w(LOG_TAG, "PlatformViewFactory is null");
+            ALog.w(LOG_TAG, "PlatformViewFactory is null");
             return;
         }
         platformViewPluginAosp.registerPlatformViewFactory(platformViewFactory);
@@ -570,7 +570,7 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
      * @param grantResults grantResults The grant results for the corresponding permissions.
      */
     public synchronized void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        Log.i(LOG_TAG, "onRequestPermissionsResult");
+        ALog.i(LOG_TAG, "onRequestPermissionsResult");
         Context context = getActivity().getApplicationContext();
         GrantResult grantResultsClass = new GrantResult(context);
         grantResultsClass.onRequestPremissionCallback(permissions, grantResults);
@@ -609,7 +609,7 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
      * Call this when your fragment is done and should be closed.
      */
     public void finish() {
-        Log.i(LOG_TAG, "StageFragment finish called.");
+        ALog.i(LOG_TAG, "StageFragment finish called.");
         return;
     }
 }

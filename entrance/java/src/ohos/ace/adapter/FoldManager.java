@@ -17,17 +17,20 @@ package ohos.ace.adapter;
 
 import android.app.Activity;
 import android.os.Build;
-import android.util.Log;
+
 import androidx.core.util.Consumer;
 import androidx.window.java.layout.WindowInfoTrackerCallbackAdapter;
 import androidx.window.layout.DisplayFeature;
 import androidx.window.layout.FoldingFeature;
 import androidx.window.layout.WindowInfoTracker;
 import androidx.window.layout.WindowLayoutInfo;
-import java.lang.reflect.Method;
+
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+
+import ohos.ace.adapter.ALog;
 
 /** 
  * fold manager that get fold status and fold display mode.
@@ -94,7 +97,7 @@ public class FoldManager {
      */
     public static int getStatusFromFeature(Activity activity, FoldingFeature foldingFeature) {
         if (foldingFeature == null) {
-            Log.e(TAG, "foldingFeature is null.");
+            ALog.e(TAG, "foldingFeature is null.");
             return FoldInfo.FOLD_STATUS_UNKNOWN;
         }
         if (foldingFeature.getState() == FoldingFeature.State.FLAT) {
@@ -127,7 +130,7 @@ public class FoldManager {
             windowInfoTrackerCallbackAdapter.removeWindowLayoutInfoListener(consumerWindowLayout);
             return foldingFeature.get();
         } catch (NoClassDefFoundError e) {
-            Log.e(TAG, "androidx.window is not support!\n" + e.toString());
+            ALog.e(TAG, "androidx.window is not support!\n" + e.toString());
             return null;
         }
     }
@@ -145,13 +148,13 @@ public class FoldManager {
             Object result = getFoldMethod.invoke(activity);
             return result != null;
         } catch (InvocationTargetException e) {
-            Log.e(TAG, "invoke WindowInfoCallback fail:" + e.getMessage());
+            ALog.e(TAG, "invoke WindowInfoCallback fail:" + e.getMessage());
             return false;
         } catch (NoSuchMethodException e) {
-            Log.e(TAG, "invoke WindowInfoCallback fail:" + e.getMessage());
+            ALog.e(TAG, "invoke WindowInfoCallback fail:" + e.getMessage());
             return false;
         } catch (IllegalAccessException e) {
-            Log.e(TAG, "invoke WindowInfoCallback fail:" + e.getMessage());
+            ALog.e(TAG, "invoke WindowInfoCallback fail:" + e.getMessage());
             return false;
         }
     }
@@ -175,13 +178,13 @@ public class FoldManager {
             }
             return null;
         } catch (InvocationTargetException e) {
-            Log.e(TAG, "invoke getFoldingFeature fail:" + e.getMessage());
+            ALog.e(TAG, "invoke getFoldingFeature fail:" + e.getMessage());
             return null;
         } catch (NoSuchMethodException e) {
-            Log.e(TAG, "invoke getFoldingFeature fail:" + e.getMessage());
+            ALog.e(TAG, "invoke getFoldingFeature fail:" + e.getMessage());
             return null;
         } catch (IllegalAccessException e) {
-            Log.e(TAG, "invoke getFoldingFeature fail:" + e.getMessage());
+            ALog.e(TAG, "invoke getFoldingFeature fail:" + e.getMessage());
             return null;
         }
     }

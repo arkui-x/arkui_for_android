@@ -15,7 +15,6 @@
 
 package ohos.ace.adapter;
 
-import android.util.Log;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -65,7 +64,7 @@ public class WantParams {
             JSONObject wantObject = new JSONObject(wantParamsStr);
             parseWantParams(wantObject, WANT_PARAMS_PARAMS);
         } catch (JSONException jsonException) {
-            Log.e(LOG_TAG, "WantParams parse error.");
+            ALog.e(LOG_TAG, "WantParams parse error.");
             jsonException.printStackTrace();
         }
     }
@@ -108,7 +107,7 @@ public class WantParams {
             JSONObject jsonElement = wantArray.getJSONObject(i);
             if (!jsonElement.has(WANT_PARAMS_KEY) || !jsonElement.has(WANT_PARAMS_TYPE)
                     || !jsonElement.has(WANT_PARAMS_VALUE)) {
-                Log.e(LOG_TAG, "WantParams data format error.");
+                ALog.e(LOG_TAG, "WantParams data format error.");
                 return false;
             }
             int typeId = jsonElement.getInt(WANT_PARAMS_TYPE);
@@ -141,7 +140,7 @@ public class WantParams {
                     parseWantArray(jsonElement);
                     break;
                 default:
-                    Log.e(LOG_TAG, "Not supported data type");
+                    ALog.e(LOG_TAG, "Not supported data type");
                     break;
             }
         }
@@ -197,7 +196,7 @@ public class WantParams {
             }
             wantValue = new WantValue(VALUE_TYPE_WANT_PARAMS_ARRAY, convertArray);
         } else {
-            Log.e(LOG_TAG, "Not supported data type");
+            ALog.e(LOG_TAG, "Not supported data type");
             return;
         }
         this.wantParamsMap.put(wantKey, wantValue);
@@ -217,7 +216,7 @@ public class WantParams {
         if (wantObject.get(wantKay) instanceof JSONArray) {
             JSONArray wantArray = (JSONArray) wantObject.get(wantKay);
             if (!parse(wantArray)) {
-                Log.e(LOG_TAG, "WantParams data format error.");
+                ALog.e(LOG_TAG, "WantParams data format error.");
             }
         }
     }
@@ -441,7 +440,7 @@ public class WantParams {
                 try {
                     valueStr = new JSONArray(entry.getValue().value).toString();
                 } catch (JSONException jsonException) {
-                    Log.e(LOG_TAG, "WantParams array toString failed.");
+                    ALog.e(LOG_TAG, "WantParams array toString failed.");
                     continue;
                 }
             } else if (typeId == VALUE_TYPE_WANT_PARAMS) {
