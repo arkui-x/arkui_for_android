@@ -232,7 +232,7 @@ void ClipboardImpl::GetData(const std::function<void(const std::string&)>& callb
     }
 }
 
-void ClipboardImpl::HasData(const std::function<void(bool hasData)>& callback)
+void ClipboardImpl::HasData(const std::function<void(bool hasData, bool isAutoFill)>& callback)
 {
     if (taskExecutor_) {
         auto task = [callback, taskExecutor = WeakClaim(RawPtr(taskExecutor_))] {
@@ -242,8 +242,8 @@ void ClipboardImpl::HasData(const std::function<void(bool hasData)>& callback)
     }
 }
 
-void ClipboardImpl::HasDataType(
-    const std::function<void(bool hasData)>& callback, const std::vector<std::string>& mimeTypes)
+void ClipboardImpl::HasDataType(const std::function<void(bool hasData, bool isAutoFill)>& callback,
+    const std::vector<std::string>& mimeTypes)
 {
     HasData(callback);
 }

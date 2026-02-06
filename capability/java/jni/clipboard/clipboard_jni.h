@@ -40,7 +40,8 @@ public:
     static bool GetData(
         const std::function<void(const std::string&)>& callback, const WeakPtr<TaskExecutor>& taskExecutor);
 
-    static bool HasData(const std::function<void(const bool)>& callback, const WeakPtr<TaskExecutor>& taskExecutor);
+    static bool HasData(const std::function<void(bool hasData, bool isAutoFill)>& callback,
+        const WeakPtr<TaskExecutor>& taskExecutor);
 
     static bool HasPasteData();
 

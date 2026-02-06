@@ -29,4 +29,8 @@ bool DisplayManagerAndroid::ConvertScreenIdToRsScreenId(uint64_t screenId, uint6
     return true;
 }
 
+FoldDisplayMode DisplayManagerAndroid::GetFoldDisplayMode()
+{
+    return FoldDisplayMode::UNKNOWN;
+}
 } // namespace OHOS::Ace

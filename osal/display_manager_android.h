@@ -25,6 +25,7 @@ class DisplayManagerAndroid : public DisplayManager {
 
 public:
     bool ConvertScreenIdToRsScreenId(uint64_t screenId, uint64_t& rsScreenId) override;
+    FoldDisplayMode GetFoldDisplayMode() override;
 };
 
 } // namespace OHOS::Ace
