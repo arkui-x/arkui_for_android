@@ -14,7 +14,7 @@
  */
 package ohos.ace.adapter;
 
-import android.util.Log;
+import ohos.ace.adapter.ALog;
 
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,29 +42,29 @@ public class ArkUIXPluginRegistry implements IPluginRegistry {
      */
     @Override
     public void registryPlugin(String name) {
-        Log.d(LOG_TAG, "registry plugin: " + name);
+        ALog.d(LOG_TAG, "registry plugin: " + name);
         Class pluginClass = null;
         try {
             pluginClass = Class.forName(name);
         } catch (ClassNotFoundException e) {
-            Log.e(LOG_TAG, "pluginClass do not found: " + e.getMessage());
+            ALog.e(LOG_TAG, "pluginClass do not found: " + e.getMessage());
             return;
         }
 
         try {
             if (hasPlugin(name)) {
-                Log.e(LOG_TAG, "plugin:" + name + "already registered");
+                ALog.e(LOG_TAG, "plugin:" + name + "already registered");
             } else {
                 IArkUIXPlugin plugin = null;
                 plugin = (IArkUIXPlugin) pluginClass.newInstance();
                 pluginMap.put(name, plugin);
                 plugin.onRegistry(this.pluginContext);
-                Log.d(LOG_TAG, "plugin: " + name + "is successfully registered");
+                ALog.d(LOG_TAG, "plugin: " + name + "is successfully registered");
             }
         } catch (IllegalAccessException e) {
-            Log.e(LOG_TAG, "registry plugin fail: " + e.getMessage());
+            ALog.e(LOG_TAG, "registry plugin fail: " + e.getMessage());
         } catch (InstantiationException e) {
-            Log.e(LOG_TAG, "registry plugin fail: " + e.getMessage());
+            ALog.e(LOG_TAG, "registry plugin fail: " + e.getMessage());
         }
     }
 
@@ -89,7 +89,7 @@ public class ArkUIXPluginRegistry implements IPluginRegistry {
     public void unRegistryPlugin(String name) {
         IArkUIXPlugin plugin = pluginMap.get(name);
         if (plugin != null) {
-            Log.d(LOG_TAG, "unregistry plugin: " + name);
+            ALog.d(LOG_TAG, "unregistry plugin: " + name);
             plugin.onUnRegistry(this.pluginContext);
             pluginMap.remove(name);
         }
@@ -138,7 +138,7 @@ public class ArkUIXPluginRegistry implements IPluginRegistry {
         if (hasPlugin(name)) {
             return pluginMap.get(name);
         }
-        Log.e(LOG_TAG, "get plugin: " + name + " failed!");
+        ALog.e(LOG_TAG, "get plugin: " + name + " failed!");
         return null;
     }
 }

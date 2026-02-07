@@ -18,12 +18,13 @@ import android.content.ContentResolver;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
+
+import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.AccessibilityCrossPlatformBridge.ArkUiAccessibilityNodeInfo;
 
 import java.lang.reflect.InvocationTargetException;
@@ -203,7 +204,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
                         childIds[index] = jsonChildIDArray.getInt(index);
                     }
                 } catch (JSONException e) {
-                    Log.e(TAG, "createAccessibilityNodeInfo failed; err is " + e.getMessage());
+                    ALog.e(TAG, "createAccessibilityNodeInfo failed; err is " + e.getMessage());
                 }
             }
         }
@@ -577,7 +578,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
         String jsonStr = nativeCreateAccessibilityNodeInfo(virtualViewId, this.windowId);
         result = convertJsonToNodeInfo(jsonStr);
         if (result == null) {
-            Log.e(TAG, "Failed to convert JSON to NodeInfo for virtualViewId: " + virtualViewId + ", windowId: "
+            ALog.e(TAG, "Failed to convert JSON to NodeInfo for virtualViewId: " + virtualViewId + ", windowId: "
                     + this.windowId + ", JSON: " + jsonStr);
             return result;
         }
@@ -599,7 +600,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
 
     private Rect getBoundsInScreen(Rect bounds) {
         if (arkuiRootAccessibilityView == null) {
-            Log.w(TAG, "arkuiRootAccessibilityView is null, returning empty bounds");
+            ALog.w(TAG, "arkuiRootAccessibilityView is null, returning empty bounds");
             return new Rect();
         }
         int[] locationOnScreen = new int[2];
@@ -656,11 +657,11 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
                 setChildren(result, jsonObject, isTextInputChild || isSideBarChild || isArrayButton
                         || ACE_COMPONENT_SLIDER.equals(componentType));
                 if (!setTooltipTextAndText(result, jsonObject)) {
-                    Log.e(TAG, "!setTooltipTextAndText, jsonStr: " + jsonStr);
+                    ALog.e(TAG, "!setTooltipTextAndText, jsonStr: " + jsonStr);
                     return null;
                 }
             } catch (JSONException e) {
-                Log.e(TAG, "createAccessibilityNodeInfo failed; err is " + e.getMessage());
+                ALog.e(TAG, "createAccessibilityNodeInfo failed; err is " + e.getMessage());
                 return null;
             }
         }
@@ -688,7 +689,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
             nodeInfo.setChecked(jsonObject.getBoolean("IsChecked"));
             nodeInfo.setSelected(jsonObject.getBoolean("IsSelected"));
         } catch (JSONException e) {
-            Log.e(TAG, "populateNodeInfoFromJson failed; err is " + e.getMessage());
+            ALog.e(TAG, "populateNodeInfoFromJson failed; err is " + e.getMessage());
         }
     }
 
@@ -823,13 +824,13 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
                 Method setHeading = a11yNodeInfoClazz.getMethod("setHeading", boolean.class);
                 setHeading.invoke(result, jsonObject.getBoolean("GridItemIsHeading"));
             } catch (NoSuchMethodException e) {
-                Log.e(TAG, "createAccessibilityNodeInfo failed, NoSuchMethodException.");
+                ALog.e(TAG, "createAccessibilityNodeInfo failed, NoSuchMethodException.");
                 return false;
             } catch (IllegalAccessException e) {
-                Log.e(TAG, "createAccessibilityNodeInfo failed, IllegalAccessException.");
+                ALog.e(TAG, "createAccessibilityNodeInfo failed, IllegalAccessException.");
                 return false;
             } catch (InvocationTargetException e) {
-                Log.e(TAG, "createAccessibilityNodeInfo failed, InvocationTargetException.");
+                ALog.e(TAG, "createAccessibilityNodeInfo failed, InvocationTargetException.");
                 return false;
             }
         }
@@ -959,7 +960,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
                 setScrollAmountArg(arguments, jsonObject);
                 jsonString = jsonObject.toString();
             } catch (JSONException e) {
-                Log.e(TAG, "performAction failed; err is " + e.getMessage());
+                ALog.e(TAG, "performAction failed; err is " + e.getMessage());
                 return false;
             }
         }
@@ -1055,7 +1056,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
             return false;
         }
         if (arkuiRootAccessibilityView.getParent() == null) {
-            Log.e(TAG, "sendAccessibilityEvent getParent is null");
+            ALog.e(TAG, "sendAccessibilityEvent getParent is null");
             accessibilityManager.sendAccessibilityEvent(event);
             return false;
         }
@@ -1163,7 +1164,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
             }
             pageID = jsonObject.getInt("PageId");
         } catch (JSONException e) {
-            Log.e(TAG, "onSendAccessibilityEvent failed; err is " + e.getMessage());
+            ALog.e(TAG, "onSendAccessibilityEvent failed; err is " + e.getMessage());
             return false;
         }
         boolean[] isDrop = {false};
@@ -1197,7 +1198,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
             event.setScrollable(jsonObject.getBoolean("IsScrollable"));
             event.getText().add(jsonObject.getString("textAnnouncedForAccessibility"));
         } catch (JSONException e) {
-            Log.e(TAG, "ConvertJsonToEvent failed; err is " + e.getMessage());
+            ALog.e(TAG, "ConvertJsonToEvent failed; err is " + e.getMessage());
         }
     }
 
