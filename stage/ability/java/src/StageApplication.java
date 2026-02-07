@@ -18,7 +18,7 @@ package ohos.stage.ability.adapter;
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.util.Log;
+import ohos.ace.adapter.ALog;
 
 /**
  * This class extends from Android Application, the entry of app
@@ -34,7 +34,7 @@ public class StageApplication extends Application {
      */
     @Override
     public void onCreate() {
-        Log.i(LOG_TAG, "StageApplication onCreate called");
+        ALog.i(LOG_TAG, "StageApplication onCreate called");
         super.onCreate();
 
         appDelegate = new StageApplicationDelegate();
@@ -48,10 +48,10 @@ public class StageApplication extends Application {
      */
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        Log.i(LOG_TAG, "StageApplication onConfigurationChanged called");
+        ALog.i(LOG_TAG, "StageApplication onConfigurationChanged called");
         super.onConfigurationChanged(newConfig);
         if (appDelegate == null) {
-            Log.e(LOG_TAG, "appDelegate is null");
+            ALog.e(LOG_TAG, "appDelegate is null");
             return;
         }
         appDelegate.onConfigurationChanged(newConfig);
@@ -59,9 +59,9 @@ public class StageApplication extends Application {
 
     @Override
     public void attachBaseContext(Context context) {
-        Log.i(LOG_TAG, "StageApplication attachBaseContext called");
+        ALog.i(LOG_TAG, "StageApplication attachBaseContext called");
         if (context == null) {
-            Log.e(LOG_TAG, "context is null");
+            ALog.e(LOG_TAG, "context is null");
             return;
         }
         super.attachBaseContext(StageApplicationDelegate.attachLanguageContext(context));
@@ -75,11 +75,11 @@ public class StageApplication extends Application {
      */
     public static void preloadEtsModule(String moduleName, String abilityName) {
         if (moduleName == null || moduleName.isEmpty()) {
-            Log.e(LOG_TAG, "moduleName is null");
+            ALog.e(LOG_TAG, "moduleName is null");
             return;
         }
         if (abilityName == null || abilityName.isEmpty()) {
-            Log.e(LOG_TAG, "abilityName is null");
+            ALog.e(LOG_TAG, "abilityName is null");
             return;
         }
         StageApplicationDelegate.nativePreloadModule(moduleName, abilityName);

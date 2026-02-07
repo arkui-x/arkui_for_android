@@ -25,10 +25,10 @@ import android.view.Surface;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
-import android.util.Log;
 import android.os.Build;
 import android.graphics.Rect;
 
+import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.WindowViewInterface;
 
 import java.lang.reflect.Field;
@@ -75,7 +75,7 @@ public class SubWindowManager {
     private int uiOptions_ = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
     private SubWindowManager() {
-        Log.d(TAG, "SubWindowManager created.");
+        ALog.d(TAG, "SubWindowManager created.");
         nativeSetupSubWindowManager();
     }
 
@@ -103,7 +103,7 @@ public class SubWindowManager {
      * @param instanceName  the activity instance name.
      */
     public void setActivity(Activity activity, String instanceName) {
-        Log.d(TAG, "setActivity called, instanceName: " + instanceName);
+        ALog.d(TAG, "setActivity called, instanceName: " + instanceName);
         mRootActivity = activity;
         mInstanceName = instanceName;
         if (mRootActivity != null) {
@@ -121,7 +121,7 @@ public class SubWindowManager {
      * @param instanceName the activity instance name.
      */
     public void releaseActivity(String instanceName) {
-        Log.d(TAG, "releaseActivity called, instanceName: " + instanceName + ", mInstanceName: " + mInstanceName);
+        ALog.d(TAG, "releaseActivity called, instanceName: " + instanceName + ", mInstanceName: " + mInstanceName);
         if (instanceName == mInstanceName) {
             mRootActivity = null;
         }
@@ -144,12 +144,12 @@ public class SubWindowManager {
      */
     public boolean createSubWindow(String name, int type, int mode, int tag, int parentId, int x, int y, int width,
         int height) {
-        Log.d(TAG,
+        ALog.d(TAG,
             "createSubWindow called: " + String.format(Locale.ENGLISH,
                 "name=%s type=%d mode=%d tag=%d parentId=%d x=%d y=%d width=%d height=%d", name, type, mode, tag,
                 parentId, x, y, width, height));
         if (mRootActivity == null) {
-            Log.e(TAG, "createSubWindow failed mRootActivity is invalid");
+            ALog.e(TAG, "createSubWindow failed mRootActivity is invalid");
             return false;
         }
         SubWindow subWindow = mSubWindowMap.get(name);
@@ -159,7 +159,7 @@ public class SubWindowManager {
             mSubWindowMap.put(name, subWindow);
             return true;
         } else {
-            Log.e(TAG, "SubWindow " + name + " already created.");
+            ALog.e(TAG, "SubWindow " + name + " already created.");
             return false;
         }
     }
@@ -171,7 +171,7 @@ public class SubWindowManager {
      * @return the content view
      */
     public View getContentView(String name) {
-        Log.d(TAG, "getContentView called. name=" + name);
+        ALog.d(TAG, "getContentView called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow != null) {
             return subWindow.getContentView();
@@ -186,7 +186,7 @@ public class SubWindowManager {
      * @return the window id
      */
     public int getWindowId(String name) {
-        Log.d(TAG, "getWindowId called. name=" + name);
+        ALog.d(TAG, "getWindowId called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow != null) {
             return subWindow.getWindowId();
@@ -200,7 +200,7 @@ public class SubWindowManager {
      * @return the top window
      */
     public View getTopWindow() {
-        Log.d(TAG, "getTopWindow called. ");
+        ALog.d(TAG, "getTopWindow called. ");
         if (mRootActivity != null) {
             View rootView = mRootActivity.getWindow().getDecorView();
             View topView = rootView.findFocus();
@@ -218,18 +218,18 @@ public class SubWindowManager {
      * @return the boolean
      */
     public boolean showWindow(String name) {
-        Log.d(TAG, "showWindow called. name=" + name);
+        ALog.d(TAG, "showWindow called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow != null) {
             subWindow.showWindow();
             if (subWindow.getSubWindowView().isShowing()) {
                 return true;
             } else {
-                Log.e(TAG, "showWindow failed due to not shown.");
+                ALog.e(TAG, "showWindow failed due to not shown.");
                 return false;
             }
         }
-        Log.e(TAG, "not found SubWindow: " + name);
+        ALog.e(TAG, "not found SubWindow: " + name);
         return false;
     }
 
@@ -240,18 +240,18 @@ public class SubWindowManager {
      * @return the popup window is showing or not
      */
     public boolean isShowing(String name) {
-        Log.d(TAG, "isShowing called. name=" + name);
+        ALog.d(TAG, "isShowing called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow != null) {
             if (subWindow.getSubWindowView().isShowing()) {
-                Log.e(TAG, "sub window is shown.");
+                ALog.e(TAG, "sub window is shown.");
                 return true;
             } else {
-                Log.e(TAG, "sub window is not shown.");
+                ALog.e(TAG, "sub window is not shown.");
                 return false;
             }
         }
-        Log.e(TAG, "not found SubWindow: " + name);
+        ALog.e(TAG, "not found SubWindow: " + name);
         return false;
     }
 
@@ -264,13 +264,13 @@ public class SubWindowManager {
      * @return the boolean
      */
     public boolean resize(String name, int width, int height) {
-        Log.d(TAG, "resize called. name=" + name + ", width=" + width + ", height=" + height);
+        ALog.d(TAG, "resize called. name=" + name + ", width=" + width + ", height=" + height);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow != null) {
             subWindow.resize(width, height);
             return true;
         }
-        Log.e(TAG, "not found SubWindow: " + name);
+        ALog.e(TAG, "not found SubWindow: " + name);
         return false;
     }
 
@@ -283,13 +283,13 @@ public class SubWindowManager {
      * @return the boolean
      */
     public boolean moveWindowTo(String name, int x, int y) {
-        Log.d(TAG, "moveWindowTo called. name=" + name + ", x=" + x + ", y=" + y);
+        ALog.d(TAG, "moveWindowTo called. name=" + name + ", x=" + x + ", y=" + y);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow != null) {
             subWindow.moveWindowTo(x, y);
             return true;
         }
-        Log.e(TAG, "not found SubWindow: " + name);
+        ALog.e(TAG, "not found SubWindow: " + name);
         return false;
     }
 
@@ -300,14 +300,14 @@ public class SubWindowManager {
      * @return the boolean
      */
     public boolean destroyWindow(String name) {
-        Log.d(TAG, "destroyWindow called. name=" + name);
+        ALog.d(TAG, "destroyWindow called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow != null) {
             subWindow.destroyWindow();
             mSubWindowMap.remove(name);
             return true;
         }
-        Log.e(TAG, "not found SubWindow: " + name);
+        ALog.e(TAG, "not found SubWindow: " + name);
         return false;
     }
 
@@ -318,7 +318,7 @@ public class SubWindowManager {
      * @return the background color
      */
     public boolean setBackgroundColor(int color) {
-        Log.d(TAG, "setBackgroundColor called: color=" + color);
+        ALog.d(TAG, "setBackgroundColor called: color=" + color);
 
         if (mRootActivity != null) {
             mRootActivity.getCurrentFocus().setBackgroundColor(color);
@@ -334,7 +334,7 @@ public class SubWindowManager {
      * @return the app screen brightness
      */
     public boolean setAppScreenBrightness(float birghtessValue) {
-        Log.d(TAG, "setAppScreenBrightness called: birghtessValue=" + birghtessValue);
+        ALog.d(TAG, "setAppScreenBrightness called: birghtessValue=" + birghtessValue);
 
         if (mRootActivity != null) {
             Window window = mRootActivity.getWindow();
@@ -353,7 +353,7 @@ public class SubWindowManager {
      */
     public float getAppScreenBrightness() {
         if (mRootActivity == null) {
-            Log.e(TAG, "getAppScreenBrightness failed, mRootActivity is null");
+            ALog.e(TAG, "getAppScreenBrightness failed, mRootActivity is null");
             return 0.0f;
         }
         Window window = mRootActivity.getWindow();
@@ -361,10 +361,10 @@ public class SubWindowManager {
 
         if (wlp != null) {
             if (wlp.screenBrightness != WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE) {
-                Log.d(TAG, "getAppScreenBrightness called: brightnessValue=" + wlp.screenBrightness);
+                ALog.d(TAG, "getAppScreenBrightness called: brightnessValue=" + wlp.screenBrightness);
                 return wlp.screenBrightness;
             } else {
-                Log.e(TAG, "getAppScreenBrightness is not set, use system brightness");
+                ALog.e(TAG, "getAppScreenBrightness is not set, use system brightness");
             }
         }
         int systemBrightness = 0;
@@ -372,10 +372,10 @@ public class SubWindowManager {
             systemBrightness =
                 Settings.System.getInt(mRootActivity.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS);
         } catch (Settings.SettingNotFoundException exception) {
-            Log.e(TAG, "getAppScreenBrightness is not set, query system brightness exception");
+            ALog.e(TAG, "getAppScreenBrightness is not set, query system brightness exception");
         }
         float appBrightness = systemBrightness / 255f;
-        Log.d(TAG, "getAppScreenBrightness called: system brightnessValue=" + appBrightness);
+        ALog.d(TAG, "getAppScreenBrightness called: system brightnessValue=" + appBrightness);
         return appBrightness;
     }
 
@@ -386,7 +386,7 @@ public class SubWindowManager {
      * @return the keep screen on
      */
     public boolean setKeepScreenOn(boolean keepScreenOn) {
-        Log.d(TAG, "setKeepScreenOn called: keepScreenOn=" + keepScreenOn);
+        ALog.d(TAG, "setKeepScreenOn called: keepScreenOn=" + keepScreenOn);
 
         if (mRootActivity != null) {
             Window window = mRootActivity.getWindow();
@@ -407,7 +407,7 @@ public class SubWindowManager {
      * @return the boolean
      */
     public boolean isKeepScreenOn() {
-        Log.d(TAG, "isKeepScreenOn called");
+        ALog.d(TAG, "isKeepScreenOn called");
 
         if (mRootActivity != null) {
             Window window = mRootActivity.getWindow();
@@ -426,7 +426,7 @@ public class SubWindowManager {
      * @return the boolean
      */
     public boolean requestOrientation(int direction) {
-        Log.d(TAG, "requestOrientation called: direction=" + direction);
+        ALog.d(TAG, "requestOrientation called: direction=" + direction);
 
         if (mRootActivity != null) {
             int orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
@@ -448,7 +448,7 @@ public class SubWindowManager {
                     orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
                     break;
                 default:
-                    Log.e(TAG, "unspecified orientation: " + orientation);
+                    ALog.e(TAG, "unspecified orientation: " + orientation);
                     break;
             }
 
@@ -468,14 +468,14 @@ public class SubWindowManager {
                 displayCutoutModeField.setInt(layoutParams, LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES);
                 window.setAttributes(layoutParams);
             } catch (ClassNotFoundException e) {
-                Log.e(TAG, "layoutParamsClass Class.forName failed, ClassNotFoundException.");
+                ALog.e(TAG, "layoutParamsClass Class.forName failed, ClassNotFoundException.");
             } catch (IllegalAccessException e) {
-                Log.e(TAG, "layoutParamsClass AccessException failed, IllegalAccessException.");
+                ALog.e(TAG, "layoutParamsClass AccessException failed, IllegalAccessException.");
             } catch (NoSuchFieldException e) {
-                Log.e(TAG, "layoutParamsClass getDeclaredField failed, NoSuchFieldException.");
+                ALog.e(TAG, "layoutParamsClass getDeclaredField failed, NoSuchFieldException.");
             }
         } else {
-            Log.e(TAG, "setLayoutInDisplayCutoutMode failed.");
+            ALog.e(TAG, "setLayoutInDisplayCutoutMode failed.");
             return;
         }
     }
@@ -559,7 +559,7 @@ public class SubWindowManager {
         if (Build.VERSION.SDK_INT >= API_29) {
             return setNavigationBarStatus(status);
         } else {
-            Log.e(TAG, "Not supported by the Android version.");
+            ALog.e(TAG, "Not supported by the Android version.");
             return false;
         }
     }
@@ -588,7 +588,7 @@ public class SubWindowManager {
      * @return the action bar status
      */
     public boolean setActionBarStatus(boolean hide) {
-        Log.d(TAG, "setActionBarStatus called: hide=" + hide);
+        ALog.d(TAG, "setActionBarStatus called: hide=" + hide);
 
         if (mRootActivity != null) {
             Window window = mRootActivity.getWindow();
@@ -652,17 +652,17 @@ public class SubWindowManager {
     public int getScreenOrientation() {
         int result = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
         if (mRootActivity == null) {
-            Log.e(TAG, "The mRootActivity is null, getScreenOrientation failed.");
+            ALog.e(TAG, "The mRootActivity is null, getScreenOrientation failed.");
             return result;
         }
         WindowManager windowManager = (WindowManager) mRootActivity.getSystemService(mRootActivity.WINDOW_SERVICE);
         if (windowManager == null) {
-            Log.e(TAG, "The windowManager is null, getScreenOrientation failed.");
+            ALog.e(TAG, "The windowManager is null, getScreenOrientation failed.");
             return result;
         }
         Display display = windowManager.getDefaultDisplay();
         if (display == null) {
-            Log.e(TAG, "The display is null, getScreenOrientation failed.");
+            ALog.e(TAG, "The display is null, getScreenOrientation failed.");
             return result;
         }
         int rotation = display.getRotation();
@@ -694,7 +694,7 @@ public class SubWindowManager {
             int y = location[LOCATION_Y];
             rect.set(x, y, width, height);
         } else {
-            Log.e(TAG, "The mRootActivity is null or of the wrong type, getSafeArea failed.");
+            ALog.e(TAG, "The mRootActivity is null or of the wrong type, getSafeArea failed.");
         }
         return rect;
     }
@@ -710,20 +710,20 @@ public class SubWindowManager {
         if (mRootActivity != null) {
             Window window = mRootActivity.getWindow();
             if (window == null) {
-                Log.e(TAG, "Window is null for activity: " + mRootActivity.getClass().getSimpleName());
+                ALog.e(TAG, "Window is null for activity: " + mRootActivity.getClass().getSimpleName());
                 return result;
             }
 
             View decorView = window.getDecorView();
             if (decorView == null) {
-                Log.e(TAG, "DecorView is null for activity: " + mRootActivity.getClass().getSimpleName());
+                ALog.e(TAG, "DecorView is null for activity: " + mRootActivity.getClass().getSimpleName());
                 return result;
             }
 
             int flags = decorView.getSystemUiVisibility();
             result = (flags & flag) == 0;
         } else {
-            Log.e(TAG, "mRootActivity is null");
+            ALog.e(TAG, "mRootActivity is null");
         }
 
         return result;
@@ -742,7 +742,7 @@ public class SubWindowManager {
                 result = mRootActivity.getResources().getDimensionPixelSize(resourceId);
             }
         } else {
-            Log.e(TAG, "The mRootActivity is null, getStatusBarHeight failed.");
+            ALog.e(TAG, "The mRootActivity is null, getStatusBarHeight failed.");
         }
         return result;
     }
@@ -756,7 +756,7 @@ public class SubWindowManager {
         if (Build.VERSION.SDK_INT >= API_28) {
             return getStatusBarHeight();
         } else {
-            Log.e(TAG, "Not supported by the Android version.");
+            ALog.e(TAG, "Not supported by the Android version.");
             return NO_HEIGHT;
         }
     }
@@ -790,21 +790,21 @@ public class SubWindowManager {
      * @return the boolean
      */
     public boolean hide(String name) {
-        Log.d(TAG, "hide called. name=" + name);
+        ALog.d(TAG, "hide called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow == null) {
-            Log.e(TAG, "not found SubWindow: " + name);
+            ALog.e(TAG, "not found SubWindow: " + name);
             return false;
         }
 
         if (!subWindow.getSubWindowView().isShowing()) {
-            Log.e(TAG, "not showing.");
+            ALog.e(TAG, "not showing.");
             return false;
         }
 
         subWindow.destroyWindow();
         if (subWindow.getSubWindowView().isShowing()) {
-            Log.e(TAG, "hide failed.");
+            ALog.e(TAG, "hide failed.");
             return false;
         }
         return true;
@@ -818,10 +818,10 @@ public class SubWindowManager {
      * @return the boolean
      */
     public boolean setFocusable(String name, boolean isFocusable) {
-        Log.d(TAG, "setFocusable called. name=" + name + ", isFocusable=" + isFocusable);
+        ALog.d(TAG, "setFocusable called. name=" + name + ", isFocusable=" + isFocusable);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow == null) {
-            Log.e(TAG, "not found SubWindow: " + name);
+            ALog.e(TAG, "not found SubWindow: " + name);
             return false;
         }
 
@@ -840,16 +840,16 @@ public class SubWindowManager {
      * @return the boolean
      */
     public boolean setTouchable(String name, boolean isTouchable) {
-        Log.d(TAG, "setTouchable called. name=" + name + ", isFocusable=" + isTouchable);
+        ALog.d(TAG, "setTouchable called. name=" + name + ", isFocusable=" + isTouchable);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow == null) {
-            Log.e(TAG, "not found SubWindow: " + name);
+            ALog.e(TAG, "not found SubWindow: " + name);
             return false;
         }
 
         subWindow.setTouchable(isTouchable);
         if (subWindow.getSubWindowView().isTouchable() != isTouchable) {
-            Log.e(TAG, "setTouchable to " + isTouchable + " failed.");
+            ALog.e(TAG, "setTouchable to " + isTouchable + " failed.");
             return false;
         }
 
@@ -866,10 +866,10 @@ public class SubWindowManager {
      * @return the boolean
      */
     public boolean requestFocus(String name) {
-        Log.d(TAG, "requestFocus called. name=" + name);
+        ALog.d(TAG, "requestFocus called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow == null) {
-            Log.e(TAG, "not found SubWindow: " + name);
+            ALog.e(TAG, "not found SubWindow: " + name);
             return false;
         }
 
@@ -884,10 +884,10 @@ public class SubWindowManager {
      * @return the boolean
      */
     public boolean setTouchHotArea(String name, Rect[] rectArray) {
-        Log.d(TAG, "setTouchHotArea called. name=" + name);
+        ALog.d(TAG, "setTouchHotArea called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow == null) {
-            Log.e(TAG, "not found SubWindow: " + name);
+            ALog.e(TAG, "not found SubWindow: " + name);
             return false;
         }
 
@@ -903,10 +903,10 @@ public class SubWindowManager {
      * @return Setting successful or failed.
      */
     public boolean setFullScreen(String name, boolean status) {
-        Log.d(TAG, "setFullScreen called. name=" + name);
+        ALog.d(TAG, "setFullScreen called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow == null) {
-            Log.e(TAG, "not found SubWindow: " + name);
+            ALog.e(TAG, "not found SubWindow: " + name);
             return false;
         }
 
@@ -924,7 +924,7 @@ public class SubWindowManager {
     public boolean setOnTop(String name, boolean status) {
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow == null) {
-            Log.e(TAG, "not found SubWindow: " + name);
+            ALog.e(TAG, "not found SubWindow: " + name);
             return false;
         }
 
@@ -940,10 +940,10 @@ public class SubWindowManager {
      * @return the boolean
      */
     public boolean registerSubWindow(String name, long subWindowHandle) {
-        Log.d(TAG, "registerSubWindow called. name=" + name);
+        ALog.d(TAG, "registerSubWindow called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow == null) {
-            Log.e(TAG, "not found SubWindow: " + name);
+            ALog.e(TAG, "not found SubWindow: " + name);
             return false;
         }
 
@@ -958,10 +958,10 @@ public class SubWindowManager {
      * @return the boolean
      */
     public boolean unregisterSubWindow(String name) {
-        Log.d(TAG, "unRegisterSubWindow called. name=" + name);
+        ALog.d(TAG, "unRegisterSubWindow called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow == null) {
-            Log.e(TAG, "not found SubWindow: " + name);
+            ALog.e(TAG, "not found SubWindow: " + name);
             return false;
         }
 
@@ -977,7 +977,7 @@ public class SubWindowManager {
      * @return Setting successful or failed.
      */
     public boolean setStatusBar(int backgroundColor, int contentColor) {
-        Log.d(TAG, "setStatusBar called: backgroundColor=" + backgroundColor + ", contentColor=" + contentColor);
+        ALog.d(TAG, "setStatusBar called: backgroundColor=" + backgroundColor + ", contentColor=" + contentColor);
 
         if (mRootActivity != null) {
             Window window = mRootActivity.getWindow();
@@ -1003,7 +1003,7 @@ public class SubWindowManager {
      * @return Setting successful or failed.
      */
     public boolean setNavigationBar(int backgroundColor, int contentColor) {
-        Log.d(TAG, "setNavigationBar called: backgroundColor=" + backgroundColor + ", contentColor=" + contentColor);
+        ALog.d(TAG, "setNavigationBar called: backgroundColor=" + backgroundColor + ", contentColor=" + contentColor);
 
         if (mRootActivity != null) {
             Window window = mRootActivity.getWindow();
@@ -1034,7 +1034,7 @@ public class SubWindowManager {
      * @return Set privacy mode success or not
      */
     public boolean setWindowPrivacyMode(boolean isPrivacyMode) {
-        Log.d(TAG, "setWindowPrivacyMode called: windowPrivacyMode=" + isPrivacyMode);
+        ALog.d(TAG, "setWindowPrivacyMode called: windowPrivacyMode=" + isPrivacyMode);
 
         if (mRootActivity != null) {
             Window window = mRootActivity.getWindow();
@@ -1065,7 +1065,7 @@ public class SubWindowManager {
             int y = location[LOCATION_Y];
             rect.set(x, y, decorView.getWidth(), decorView.getHeight());
         } else {
-            Log.e(TAG, "mRootActivity is null");
+            ALog.e(TAG, "mRootActivity is null");
         }
         return rect;
     }

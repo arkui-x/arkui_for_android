@@ -15,7 +15,7 @@
 package ohos.stage.ability.adapter;
 
 import android.content.res.Configuration;
-import android.util.Log;
+import ohos.ace.adapter.ALog;
 import org.json.JSONObject;
 import org.json.JSONException;
 
@@ -62,7 +62,7 @@ public class StageConfiguration {
                 json.put(SYSTEM_FONT_SIZE_SCALE, String.valueOf(fontscale));
             }
         } catch (JSONException e) {
-            Log.w(LOG_TAG, "Same Backup FontScale");
+            ALog.w(LOG_TAG, "Same Backup FontScale");
         }
     }
 
@@ -117,10 +117,10 @@ public class StageConfiguration {
             }
             setFontScale(config.fontScale, json);
         } catch (JSONException ignored) {
-            Log.e(LOG_TAG, "convertConfiguration parse Configuration failed");
+            ALog.e(LOG_TAG, "convertConfiguration parse Configuration failed");
             return json;
         }
-        Log.i(LOG_TAG, "convertConfiguration json:" + json.toString());
+        ALog.i(LOG_TAG, "convertConfiguration json:" + json.toString());
         return json;
     }
 }

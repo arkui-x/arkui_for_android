@@ -15,7 +15,7 @@
 
 package ohos.stage.ability.adapter;
 
-import android.util.Log;
+import ohos.ace.adapter.ALog;
 
 /**
  * This class is responsible for loading abilities.
@@ -30,7 +30,7 @@ public class AbilityLoader {
      * Constructor.
      */
     public AbilityLoader() {
-        Log.i(LOG_TAG, "Constructor called.");
+        ALog.i(LOG_TAG, "Constructor called.");
     }
 
     /**
@@ -43,15 +43,15 @@ public class AbilityLoader {
      */
     public static void loadAbility(String bundleName, String moduleName, String abilityName, String params) {
         if (bundleName == null || bundleName.isEmpty()) {
-            Log.e(LOG_TAG, "bundleName is invalid.");
+            ALog.e(LOG_TAG, "bundleName is invalid.");
             return;
         }
         if (moduleName == null || moduleName.isEmpty()) {
-            Log.e(LOG_TAG, "moduleName is invalid.");
+            ALog.e(LOG_TAG, "moduleName is invalid.");
             return;
         }
         if (abilityName == null || abilityName.isEmpty()) {
-            Log.e(LOG_TAG, "abilityName is invalid.");
+            ALog.e(LOG_TAG, "abilityName is invalid.");
             return;
         }
         String instanceName = bundleName + ":" + moduleName + ":" + abilityName + ":" + ABILITY_LOADER_INSTANCE_ID;
@@ -68,15 +68,15 @@ public class AbilityLoader {
      */
     public static void unloadAbility(String bundleName, String moduleName, String abilityName) {
         if (bundleName == null || bundleName.isEmpty()) {
-            Log.e(LOG_TAG, "bundleName is invalid.");
+            ALog.e(LOG_TAG, "bundleName is invalid.");
             return;
         }
         if (moduleName == null || moduleName.isEmpty()) {
-            Log.e(LOG_TAG, "moduleName is invalid.");
+            ALog.e(LOG_TAG, "moduleName is invalid.");
             return;
         }
         if (abilityName == null || abilityName.isEmpty()) {
-            Log.e(LOG_TAG, "abilityName is invalid.");
+            ALog.e(LOG_TAG, "abilityName is invalid.");
             return;
         }
         String instanceName = bundleName + ":" + moduleName + ":" + abilityName + ":" + ABILITY_LOADER_INSTANCE_ID;

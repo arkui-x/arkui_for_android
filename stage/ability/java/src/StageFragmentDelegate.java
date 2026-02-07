@@ -16,7 +16,7 @@
 package ohos.stage.ability.adapter;
 
 import android.os.Trace;
-import android.util.Log;
+import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.WindowViewInterface;
 import ohos.ace.adapter.DisplayInfo;
 import ohos.ace.adapter.DisplayManagerAgent;
@@ -35,7 +35,7 @@ public class StageFragmentDelegate {
      * Constructor.
      */
     public StageFragmentDelegate() {
-        Log.i(LOG_TAG, "Constructor called.");
+        ALog.i(LOG_TAG, "Constructor called.");
     }
 
     /**
