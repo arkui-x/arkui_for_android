@@ -235,6 +235,11 @@ bool SystemProperties::GetIsUseMemoryMonitor()
     return false;
 }
 
+int32_t SystemProperties::GetComponentLoadNumber()
+{
+    return 1;
+}
+
 bool SystemProperties::IsFormAnimationLimited()
 {
     return false;

@@ -34,14 +34,4 @@ void NotifyForceExpandStateFunc(int32_t state, bool isTid, uint64_t tid)
     (void)tid;
     return;
 }
-
-SetNotifyForceExpandStateFunc LoadSetNotifyForceExpandStateFunc()
-{
-    return nullptr;
-}
-
-NotifyAppSceneFunc LoadNotifyAppSceneFunc()
-{
-    return nullptr;
-}
 } // namespace OHOS::Ace

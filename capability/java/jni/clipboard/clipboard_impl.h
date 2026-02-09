@@ -44,9 +44,9 @@ public:
     void SetPixelMapData(const RefPtr<PixelMap>& pixmap, CopyOptions copyOption = CopyOptions::InApp) override;
     void GetPixelMapData(const std::function<void(const RefPtr<PixelMap>&)>& callback, bool syncMode = false) override;
     void Clear() override;
-    void HasData(const std::function<void(bool hasData)>& callback) override;
-    void HasDataType(
-        const std::function<void(bool hasData)>& callback, const std::vector<std::string>& mimeTypes) override;
+    void HasData(const std::function<void(bool hasData, bool isAutoFill)>& callback) override;
+    void HasDataType(const std::function<void(bool hasData, bool isAutoFill)>& callback,
+        const std::vector<std::string>& mimeTypes) override;
     void RegisterCallbackSetClipboardPixmapData(CallbackSetClipboardPixmapData callback);
     void RegisterCallbackGetClipboardPixmapData(CallbackGetClipboardPixmapData callback);
     void AddPixelMapRecord(const RefPtr<PasteDataMix>& pasteData, const RefPtr<PixelMap>& pixmap) override;

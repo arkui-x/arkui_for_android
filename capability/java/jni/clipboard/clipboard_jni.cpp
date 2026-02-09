@@ -280,7 +280,8 @@ std::string ClipboardJni::GetData()
     return result;
 }
 
-bool ClipboardJni::HasData(const std::function<void(const bool)>& callback, const WeakPtr<TaskExecutor>& taskExecutor)
+bool ClipboardJni::HasData(const std::function<void(bool hasData, bool isAutoFill)>& callback,
+    const WeakPtr<TaskExecutor>& taskExecutor)
 {
     auto env = JniEnvironment::GetInstance().GetJniEnv();
     if (!env) {
@@ -305,7 +306,8 @@ bool ClipboardJni::HasData(const std::function<void(const bool)>& callback, cons
         executor->PostTask(
             [callback, jResult] {
                 if (callback) {
-                    callback(jResult);
+                    bool isAutoFill = false;
+                    callback(jResult, isAutoFill);
                 }
             },
             TaskExecutor::TaskType::UI, "ArkUI-XClipboardJniHasData");
