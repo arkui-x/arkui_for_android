@@ -17,12 +17,13 @@
 
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
 #include "adapter/android/entrance/java/jni/display_info.h"
-#include "core/components_ng/pattern/menu/menu_view.h"
 #include "core/components_ng/pattern/menu/wrapper/menu_wrapper_pattern.h"
 #include "display_manager.h"
 #include "frameworks/bridge/common/utils/engine_helper.h"
 #include "interfaces/inner_api/ace/viewport_config.h"
 #include "core/components_ng/pattern/overlay/sheet_manager.h"
+#include "core/interfaces/arkoala/arkoala_api.h"
+#include "core/interfaces/native/node/menu_modifier.h"
 
 namespace OHOS::Ace {
 namespace {
@@ -436,8 +437,11 @@ void SubwindowAndroid::ShowMenuNG(std::function<void()>&& buildFunc, std::functi
         previewBuildFunc();
         previewCustomNode = NG::ViewStackProcessor::GetInstance()->Finish();
     }
-    auto menuNode =
-        NG::MenuView::Create(customNode, targetNode->GetId(), targetNode->GetTag(), menuParam, true, previewCustomNode);
+    const auto* menuViewModifier = NG::NodeModifier::GetMenuViewInnerModifier();
+    CHECK_NULL_VOID(menuViewModifier);
+    auto menuNode = menuViewModifier->createWithCustomNode(
+        customNode, targetNode->GetId(), targetNode->GetTag(), menuParam, true, previewCustomNode);
+    CHECK_NULL_VOID(menuNode);
     auto menuWrapperPattern = menuNode->GetPattern<NG::MenuWrapperPattern>();
     CHECK_NULL_VOID(menuWrapperPattern);
     menuWrapperPattern->RegisterMenuCallback(menuNode, menuParam);
