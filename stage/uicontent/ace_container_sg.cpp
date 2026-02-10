@@ -699,6 +699,7 @@ void AceContainerSG::AttachView(
     if (resRegister_) {
         resRegister_->SetPipelineContext(pipelineContext_);
     }
+    InitWindowCallback();
     InitializeCallback();
     InitializeEventHandler();
     SetGetViewScaleCallback();
@@ -1336,6 +1337,28 @@ void AceContainerSG::InitializeSubContainer(int32_t parentContainerId)
     GetSettings().useUIAsJSThread = parentSettings.useUIAsJSThread;
     GetSettings().usePlatformAsUIThread = parentSettings.usePlatformAsUIThread;
     GetSettings().usingSharedRuntime = parentSettings.usingSharedRuntime;
+}
+
+void AceContainerSG::InitWindowCallback()
+{
+    if (!pipelineContext_ || !uiWindow_) {
+        return;
+    }
+    auto& windowManager = pipelineContext_->GetWindowManager();
+    windowManager->SetHeightBreakpointCallback(
+        [window = pipelineContext_->GetWindow()]() -> HeightBreakpoint {
+        CHECK_NULL_RETURN(window, HeightBreakpoint::HEIGHT_SM);
+        HeightLayoutBreakPoint layoutHeightBreakpoints =
+            SystemProperties::GetHeightLayoutBreakpoints();
+        return window->GetHeightBreakpoint(layoutHeightBreakpoints);
+    });
+    windowManager->SetWidthBreakpointCallback(
+        [window = pipelineContext_->GetWindow()]() -> WidthBreakpoint {
+        CHECK_NULL_RETURN(window, WidthBreakpoint::WIDTH_SM);
+        WidthLayoutBreakPoint layoutWidthBreakpoints =
+            SystemProperties::GetWidthLayoutBreakpoints();
+        return window->GetWidthBreakpoint(layoutWidthBreakpoints);
+    });
 }
 
 void AceContainerSG::SetCurPointerEvent(const std::shared_ptr<MMI::PointerEvent>& currentEvent)
