@@ -151,6 +151,11 @@ component_modules = [
   "time_picker",
   "indexer",
   "calendar_picker",
+  "symbol",
+  "rich_editor",
+  "search",
+  "menu",
+  "text_clock",
 ]
 
 component_modules_libs = []

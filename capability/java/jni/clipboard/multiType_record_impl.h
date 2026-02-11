@@ -20,7 +20,7 @@
 
 namespace OHOS::Ace {
 
-class MultiTypeRecordImpl : public MultiTypeRecordMix {
+class ACE_FORCE_EXPORT MultiTypeRecordImpl : public MultiTypeRecordMix {
     DECLARE_ACE_TYPE(MultiTypeRecordImpl, MultiTypeRecordMix);
 
 public:

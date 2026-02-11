@@ -50,6 +50,14 @@ const std::unordered_map<std::string, std::string> soMap = {
     {"PatternLock", "patternlock"},
     {"CalendarPicker", "calendarpicker"},
     {"CalendarPickerDialog", "calendarpicker"},
+    {"SymbolGlyph", "symbol"},
+    {"DataPanel", "datapanel"},
+    {"Richeditor", "richeditor"},
+    {"Search", "search"},
+    {"Menu", "menu"},
+    {"MenuItem", "menu"},
+    {"MenuItemGroup", "menu"},
+    {"TextClock", "textclock"},
 };
 } // namespace
 DynamicModuleHelper& DynamicModuleHelper::GetInstance()
