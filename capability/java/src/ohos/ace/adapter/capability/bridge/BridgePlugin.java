@@ -237,7 +237,15 @@ public abstract class BridgePlugin {
      */
     protected void onRegisterResult(boolean available) {
         this.isAvailable_ = available;
+        if (this.isAvailable_) {
+            onPeerReady();
+        }
     }
+
+    /**
+     * Callback when the peer is ready.
+     */
+    public void onPeerReady() {}
 
     /**
      * Unregister the created bridge
