@@ -84,6 +84,7 @@ template("ace_osal_android_source_set") {
       "resource_convertor.cpp",
       "resource_theme_style.cpp",
       "ressched_report.cpp",
+      "screen_lock_manager_android.cpp",
       "socperf_client_impl.cpp",
       "statistic_event_adapter.cpp",
       "statusbar_event_proxy_android.cpp",

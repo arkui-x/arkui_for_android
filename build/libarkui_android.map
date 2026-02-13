@@ -902,8 +902,7 @@
       "OHOS::Ace::NG::ScrollableUtils::CheckHeightExpansion(OHOS::Ace::RefPtr<OHOS::Ace::NG::LayoutProperty> const&, OHOS::Ace::Axis)";
       "OHOS::Ace::NG::ScopedLayout::ScopedLayout(OHOS::Ace::NG::PipelineContext*)";
       "OHOS::Ace::NG::ScopedLayout::~ScopedLayout()";
-      "OHOS::Ace::NG::SymbolEffectOptions::~SymbolEffectOptions()";
-      "OHOS::Ace::NG::SymbolSourceInfo::~SymbolSourceInfo()";
+      "void OHOS::Ace::StringUtils::TransformStrCase<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > >(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >&, int)";
       "OHOS::Ace::NG::ConvertToMarginPropertyF(OHOS::Ace::NG::PaddingPropertyT<OHOS::Ace::NG::CalcLength> const&, OHOS::Ace::NG::ScaleProperty const&, float, bool)";
       OHOS::Ace::SystemProperties::pageCount_;
       "OHOS::Ace::NG::ConvertToOptionalSize(OHOS::Ace::NG::CalcSize const&, OHOS::Ace::NG::ScaleProperty const&, OHOS::Ace::NG::SizeT<float> const&, std::__ndk1::pair<std::__ndk1::vector<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, std::__ndk1::allocator<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > > >, std::__ndk1::vector<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, std::__ndk1::allocator<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > > > > const&)";
@@ -915,6 +914,10 @@
       "OHOS::Ace::NG::GetCrossAxisSize(OHOS::Ace::NG::SizeT<float> const&, OHOS::Ace::Axis)";
       "OHOS::Ace::NG::GetMainAxisSize(OHOS::Ace::NG::SizeT<float> const&, OHOS::Ace::Axis)";
       "OHOS::Ace::NG::MeasureProperty::UpdateMaxSizeWithCheck(OHOS::Ace::NG::CalcSize const&)";
+      "OHOS::Ace::NG::MinusPaddingToSize(OHOS::Ace::NG::PaddingPropertyF const&, OHOS::Ace::NG::SizeT<float>&)";
+      "OHOS::Ace::NG::AddPaddingToSize(OHOS::Ace::NG::PaddingPropertyF const&, OHOS::Ace::NG::SizeT<float>&)";
+      "OHOS::Ace::NG::AddPaddingToSize(OHOS::Ace::NG::PaddingPropertyF const&, OHOS::Ace::NG::OptionalSize<float>&)";
+      "OHOS::Ace::NG::MinusPaddingToSize(OHOS::Ace::NG::PaddingPropertyF const&, OHOS::Ace::NG::OptionalSize<float>&)";
       "OHOS::Ace::ElementRegister::AddUINode(OHOS::Ace::RefPtr<OHOS::Ace::NG::UINode> const&)";
       vtable?for?OHOS::Ace::NG::Pattern;
       "OHOS::Ace::SystemProperties::WaterFlowUseSegmentedLayout()";
@@ -923,6 +926,9 @@
       OHOS::Ace::NG::ScrollablePaintProperty::*;
       OHOS::Ace::NG::ScrollablePaintMethod::*;
       OHOS::Ace::NG::ScrollAdjustmanager::*;
+      OHOS::Ace::NG::PaddingPropertyT*;
+      OHOS::Ace::NG::PaddingPropertyF::*;
+      OHOS::Ace::NG::LayoutConstraintT*;
       "OHOS::Ace::NG::BuildItemFillPolicyColumns(OHOS::Ace::PresetFillType, float, double)";
       VTT?for?OHOS::Ace::NG::ScrollableLayoutProperty;
       vtable?for?OHOS::Ace::NG::ScrollableLayoutProperty;
@@ -969,6 +975,7 @@
       OHOS::Ace::ElementRegister::*;
       "OHOS::Ace::NG::UpdateOptionSizeByCalcLayoutConstraint(OHOS::Ace::NG::OptionalSize<float> const&, std::__ndk1::unique_ptr<OHOS::Ace::NG::MeasureProperty, std::__ndk1::default_delete<OHOS::Ace::NG::MeasureProperty> > const&, OHOS::Ace::NG::SizeT<float>)";
       "OHOS::Ace::NG::MinusPaddingToNonNegativeSize(OHOS::Ace::NG::PaddingPropertyT<float> const&, OHOS::Ace::NG::SizeT<float>&)";
+      "OHOS::Ace::NG::MinusPaddingToNonNegativeSize(OHOS::Ace::NG::PaddingPropertyF const&, OHOS::Ace::NG::SizeT<float>&)";
       "OHOS::Ace::NG::ScaleProperty::CreateScaleProperty(OHOS::Ace::PipelineBase*)";
       "OHOS::Ace::NG::CheckNoChanged(unsigned int)";
       "OHOS::Ace::NG::CreateIdealSizeByPercentRef(OHOS::Ace::NG::LayoutConstraintT<float> const&, OHOS::Ace::Axis, OHOS::Ace::NG::MeasureType, bool, std::__ndk1::unique_ptr<OHOS::Ace::NG::MeasureProperty, std::__ndk1::default_delete<OHOS::Ace::NG::MeasureProperty> > const&)";
