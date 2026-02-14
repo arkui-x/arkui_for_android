@@ -28,6 +28,7 @@
 #include "base/log/event_report.h"
 #include "base/log/log.h"
 #include "base/subwindow/subwindow_manager.h"
+#include "base/utils/layout_break_point.h"
 #include "base/utils/system_properties.h"
 #include "base/utils/utils.h"
 #include "core/common/ace_engine.h"
