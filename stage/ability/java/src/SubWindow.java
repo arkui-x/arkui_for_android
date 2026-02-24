@@ -16,17 +16,19 @@ package ohos.stage.ability.adapter;
 
 import android.app.Activity;
 import android.graphics.Rect;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
+
+import java.util.Arrays;
+
+import ohos.ace.adapter.AcePlatformPlugin;
+import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.WindowViewAospInterface;
 import ohos.ace.adapter.WindowViewBuilder;
-import ohos.ace.adapter.AcePlatformPlugin;
-import java.util.Arrays;
 
 /**
  * The type Sub window.
@@ -149,7 +151,7 @@ public class SubWindow {
      * @param param the param
      */
     public void createSubWindow(WindowParam param) {
-        Log.d(TAG, "createSubwindow called. name=" + name);
+        ALog.d(TAG, "createSubwindow called. name=" + name);
         subWindowView = new PopupSubWindow();
         subWindowView.setOutsideTouchable(true);
         subWindowView.setFocusable(isFocusable);
@@ -169,10 +171,10 @@ public class SubWindow {
             public boolean onTouch(View v, MotionEvent event) {
                 int x = (int) event.getX();
                 int y = (int) event.getY();
-                Log.d(TAG, "subWindowView onTouch. event.getAction()=" + event.getAction() + ", x=" + x + ", y=" + y);
+                ALog.d(TAG, "subWindowView onTouch. event.getAction()=" + event.getAction() + ", x=" + x + ", y=" + y);
                 if ((event.getAction() == MotionEvent.ACTION_OUTSIDE) || ((event.getAction() == MotionEvent.ACTION_DOWN)
                         && (x < 0 || x > subWindowView.getWidth() || y < 0 || y > subWindowView.getHeight()))) {
-                    Log.d(TAG, "touch outside");
+                    ALog.d(TAG, "touch outside");
                     if (nativeSubWindowPtr != 0L) {
                         nativeOnWindowTouchOutside(nativeSubWindowPtr);
                     }
@@ -281,7 +283,7 @@ public class SubWindow {
 
         int screenX = windowParam.x + mainWindowX;
         int screenY = windowParam.y + mainWindowY;
-        Log.d(TAG, "showWindow called. x=" + windowParam.x + ", y=" + windowParam.y + ", screenX=" + screenX +
+        ALog.d(TAG, "showWindow called. x=" + windowParam.x + ", y=" + windowParam.y + ", screenX=" + screenX +
             ", screenY=" + screenY + ", width=" + windowParam.width + ", height=" + windowParam.height);
         subWindowView.showAtLocation(rootView, Gravity.TOP | Gravity.START, screenX, screenY);
         getFocus();
@@ -294,7 +296,7 @@ public class SubWindow {
         int screenX = windowParam.x + mainWindowX;
         int screenY = windowParam.y + mainWindowY;
 
-        Log.d(TAG, "updateWindow called. x=" + windowParam.x + ", y=" + windowParam.y + ", screenX=" + screenX +
+        ALog.d(TAG, "updateWindow called. x=" + windowParam.x + ", y=" + windowParam.y + ", screenX=" + screenX +
             ", screenY=" + screenY + ", width=" + windowParam.width + ", height=" + windowParam.height);
         subWindowView.update(screenX, screenY, windowParam.width, windowParam.height, true);
     }
@@ -382,12 +384,12 @@ public class SubWindow {
      */
     public boolean requestFocus() {
         if (!subWindowView.isShowing()) {
-            Log.e(TAG, "not showing.");
+            ALog.e(TAG, "not showing.");
             return false;
         }
 
         if (!this.isFocusable) {
-            Log.e(TAG, "not focusable.");
+            ALog.e(TAG, "not focusable.");
             return false;
         }
 
@@ -399,7 +401,7 @@ public class SubWindow {
      * release focus.
      */
     public void getFocus() {
-        Log.d(TAG, "getFocus(), isFocusable=" + this.isFocusable);
+        ALog.d(TAG, "getFocus(), isFocusable=" + this.isFocusable);
         if (this.isFocusable) {
             subWindowView.setFocusable(true);
             subWindowView.update();
@@ -410,7 +412,7 @@ public class SubWindow {
      * release focus.
      */
     public void releaseFocus() {
-        Log.d(TAG, "releaseFocus(), isFocusable=" + this.isFocusable);
+        ALog.d(TAG, "releaseFocus(), isFocusable=" + this.isFocusable);
         if (this.isFocusable) {
             subWindowView.setFocusable(false);
             subWindowView.update();
@@ -423,9 +425,9 @@ public class SubWindow {
      * @param rectArray the rect array
      */
     public void setTouchHotArea(Rect[] rectArray) {
-        Log.d(TAG, "setTouchHotArea(), rectArray:");
+        ALog.d(TAG, "setTouchHotArea(), rectArray:");
         for (Rect rect : rectArray) {
-            Log.d(TAG, "left=" + rect.left + ", top=" + rect.top + ", right=" + rect.right + ", bottom=" + rect.bottom);
+            ALog.d(TAG, "left=" + rect.left + ", top=" + rect.top + ", right=" + rect.right + ", bottom=" + rect.bottom);
         }
         hotAreas = Arrays.copyOf(rectArray, rectArray.length);
     }

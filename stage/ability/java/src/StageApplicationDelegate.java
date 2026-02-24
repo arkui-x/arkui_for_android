@@ -37,7 +37,6 @@ import android.os.LocaleList;
 import android.os.Process;
 import android.os.Trace;
 import android.provider.Settings;
-import android.util.Log;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
@@ -62,7 +61,6 @@ import ohos.ace.adapter.AcePlatformCapability;
 import ohos.ace.adapter.AceEnv;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.AppModeConfig;
-import ohos.ace.adapter.LoggerAosp;
 import ohos.ace.adapter.ILogger;
 
 import org.json.JSONException;
@@ -156,7 +154,7 @@ public class StageApplicationDelegate {
         @Override
         public void onChange(boolean selfChange) {
             if (stageApplication == null) {
-                Log.e(LOG_TAG, "stageApplication is null");
+                ALog.e(LOG_TAG, "stageApplication is null");
                 return;
             }
             float fontScale = Settings.System.getFloat(stageApplication.getContentResolver(),
@@ -171,7 +169,7 @@ public class StageApplicationDelegate {
      * Constructor.
      */
     public StageApplicationDelegate() {
-        Log.i(LOG_TAG, "Constructor called.");
+        ALog.i(LOG_TAG, "Constructor called.");
     }
 
     /**
@@ -190,10 +188,10 @@ public class StageApplicationDelegate {
             } else {
                 architecture = ARCH_X86;
             }
-            Log.i(LOG_TAG, "Current system CPU architecture : " + architecture);
+            ALog.i(LOG_TAG, "Current system CPU architecture : " + architecture);
             String path = stageApplication.getApplicationContext().getFilesDir().getPath() + ARKUIX_LIBS
                             + architecture + ARKUIX_LIB_NAME;
-            Log.i(LOG_TAG, "Dynamically loading path : " + path);
+            ALog.i(LOG_TAG, "Dynamically loading path : " + path);
             System.load(path);
             return true;
         } catch (UnsatisfiedLinkError error) {
@@ -208,10 +206,10 @@ public class StageApplicationDelegate {
      * @param application the stage application.
      */
     public void initApplication(Application application) {
-        Log.i(LOG_TAG, "init application.");
+        ALog.i(LOG_TAG, "init application.");
         if (isInitialized) {
             if (!isCopyResources) {
-                Log.i(LOG_TAG, "The application is initialized, but copy resource failed.");
+                ALog.i(LOG_TAG, "The application is initialized, but copy resource failed.");
                 stageApplication = application;
                 copyAllModuleResources();
             }
@@ -219,8 +217,6 @@ public class StageApplicationDelegate {
         }
         isInitialized = true;
         stageApplication = application;
-
-        ALog.setLogger(new LoggerAosp());
         boolean isDynamic = isDynamicUpdateLibs();
         if (isDynamic) {
             if (!loadLibraryFromAppData()) {
@@ -234,6 +230,10 @@ public class StageApplicationDelegate {
         Trace.beginSection("initApplication");
         AppModeConfig.initAppMode();
 
+        if (ALog.getLogger() != null) {
+            nativeSetLogger(ALog.getLogger());
+            nativeSetLogLevel(ALog.getLoggerLevel());
+        }
         attachStageApplication();
 
         Context context = stageApplication.getApplicationContext();
@@ -254,7 +254,7 @@ public class StageApplicationDelegate {
                 setAssetsFileRelativePath(assetsModulePath);
             }
         } catch (Exception e) {
-            Log.e(LOG_TAG, "get Assets path failed, error: " + e.getMessage());
+            ALog.e(LOG_TAG, "get Assets path failed, error: " + e.getMessage());
         }
         setResourcesFilePrefixPath(stageApplication.getApplicationContext().getFilesDir().getPath() +
                                     "/" + ASSETS_SUB_PATH);
@@ -328,28 +328,28 @@ public class StageApplicationDelegate {
         try {
             PackageManager pm = context.getPackageManager();
             if (pm == null) {
-                Log.d(LOG_TAG, "get uid when package manager is null");
+                ALog.d(LOG_TAG, "get uid when package manager is null");
                 return uid;
             }
             ApplicationInfo applicationInfo = pm.getApplicationInfo(
                     stageApplication.getPackageName(), PackageManager.GET_META_DATA);
             uid = applicationInfo.uid;
         } catch (PackageManager.NameNotFoundException e) {
-            Log.e(LOG_TAG, "get uid failed, error: " + e.getMessage());
+            ALog.e(LOG_TAG, "get uid failed, error: " + e.getMessage());
         }
         return uid;
     }
 
     private String getAssetsPath(boolean isNewVersion) {
         if (stageApplication == null) {
-            Log.e(LOG_TAG, "stageApplication is null");
+            ALog.e(LOG_TAG, "stageApplication is null");
             return "";
         }
 
         SharedPreferences sharedPreferences =
                 stageApplication.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
         if (sharedPreferences == null) {
-            Log.e(LOG_TAG, "sharedPreferences is null");
+            ALog.e(LOG_TAG, "sharedPreferences is null");
             return "";
         }
 
@@ -360,7 +360,7 @@ public class StageApplicationDelegate {
 
         SharedPreferences.Editor edit = sharedPreferences.edit();
         if (edit == null) {
-            Log.e(LOG_TAG, "edit is null");
+            ALog.e(LOG_TAG, "edit is null");
             return "";
         }
 
@@ -443,18 +443,18 @@ public class StageApplicationDelegate {
      */
     private void copyAllModuleResources() {
         if (stageApplication == null) {
-            Log.e(LOG_TAG, "stageApplication is null");
+            ALog.e(LOG_TAG, "stageApplication is null");
             return;
         }
         int versionCode = getAppVersionCode();
         if (versionCode == DEFAULT_VERSION_CODE) {
-            Log.e(LOG_TAG, "Getting app version code failed.");
+            ALog.e(LOG_TAG, "Getting app version code failed.");
             return;
         }
         SharedPreferences sharedPreferences =
                 stageApplication.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
         if (sharedPreferences == null) {
-            Log.e(LOG_TAG, "sharedPreferences is null");
+            ALog.e(LOG_TAG, "sharedPreferences is null");
             return;
         }
 
@@ -462,19 +462,19 @@ public class StageApplicationDelegate {
 
         int oldVersionCode = sharedPreferences.getInt(APP_VERSION_CODE, DEFAULT_VERSION_CODE);
         boolean isDebug = isApkInDebug(stageApplication);
-        Log.i(LOG_TAG, "Old version code is: " + oldVersionCode +
+        ALog.i(LOG_TAG, "Old version code is: " + oldVersionCode +
             ", current version code is: " + versionCode +
             ", apk is debug: " + isDebug);
         if (!isDebug && oldVersionCode >= versionCode) {
             assetsModulePath = getAssetsPath(false);
-            Log.i(LOG_TAG, "The resource has been copied.");
+            ALog.i(LOG_TAG, "The resource has been copied.");
             return;
         }
 
         isCopyNativeLibs = true;
         assetsModulePath = getAssetsPath(true);
 
-        Log.i(LOG_TAG, "Start copying resources.");
+        ALog.i(LOG_TAG, "Start copying resources.");
         AssetManager assets = stageApplication.getAssets();
         String moduleResourcesDirectory = "";
         String moduleResourcesIndex = "";
@@ -492,12 +492,12 @@ public class StageApplicationDelegate {
                 }
             }
         } catch (IOException e) {
-            Log.e(LOG_TAG, "read resources err: " + e.getMessage());
+            ALog.e(LOG_TAG, "read resources err: " + e.getMessage());
             isCopyResources = false;
         }
 
         if (moduleResources.isEmpty()) {
-            Log.e(LOG_TAG, "The moduleResources is empty.");
+            ALog.e(LOG_TAG, "The moduleResources is empty.");
         }
 
         for (String resourcesName : moduleResources) {
@@ -508,10 +508,11 @@ public class StageApplicationDelegate {
 
         SharedPreferences.Editor edit = sharedPreferences.edit();
         if (edit == null) {
-            Log.e(LOG_TAG, "edit is null");
+            ALog.e(LOG_TAG, "edit is null");
             return;
         }
         if (isCopyResources) {
+            ALog.i(LOG_TAG, "resource copy success.");
             edit.putInt(APP_VERSION_CODE, versionCode);
             edit.commit();
         }
@@ -547,28 +548,28 @@ public class StageApplicationDelegate {
                 fos.flush();
             }
         } catch (IOException e) {
-            Log.e(LOG_TAG, "read or write data err: " + e.getMessage());
+            ALog.e(LOG_TAG, "read or write data err: " + e.getMessage());
             isCopyResources = false;
         } finally {
             if (is != null) {
                 try {
                     is.close();
                 } catch (IOException e) {
-                    Log.e(LOG_TAG, "InputStream close err: " + e.getMessage());
+                    ALog.e(LOG_TAG, "InputStream close err: " + e.getMessage());
                 }
             }
             if (fos != null) {
                 try {
                     fos.close();
                 } catch (IOException e) {
-                    Log.e(LOG_TAG, "FileOutputStream close err: " + e.getMessage());
+                    ALog.e(LOG_TAG, "FileOutputStream close err: " + e.getMessage());
                 }
             }
         }
     }
 
     private void initConfiguration() {
-        Log.i(LOG_TAG, "StageApplication initConfiguration called");
+        ALog.i(LOG_TAG, "StageApplication initConfiguration called");
         float fontScale = Settings.System.getFloat(stageApplication.getContentResolver(), Settings.System.FONT_SCALE,
             1.0f);
         Configuration cfg = stageApplication.getResources().getConfiguration();
@@ -614,12 +615,12 @@ public class StageApplicationDelegate {
         ActivityManager activityMgr =
                 (ActivityManager) stageApplication.getSystemService(stageApplication.ACTIVITY_SERVICE);
         if (activityMgr == null) {
-            Log.e(LOG_TAG, "activityMgr is null");
+            ALog.e(LOG_TAG, "activityMgr is null");
             return processInfos;
         }
         List<ActivityManager.RunningAppProcessInfo> processList = activityMgr.getRunningAppProcesses();
         if (processList == null) {
-            Log.e(LOG_TAG, "processList is null");
+            ALog.e(LOG_TAG, "processList is null");
             return processInfos;
         }
         for (ActivityManager.RunningAppProcessInfo info : processList) {
@@ -638,7 +639,7 @@ public class StageApplicationDelegate {
      * @return Returns ERR_OK on success, others on failure.
      */
     public int finishUserTest() {
-        Log.i(LOG_TAG, "Finish user test called");
+        ALog.i(LOG_TAG, "Finish user test called");
         int error = ERR_OK;
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_HOME);
@@ -671,9 +672,9 @@ public class StageApplicationDelegate {
      */
     public void print(String msg) {
         if (msg.length() <= 1000) {
-            Log.i(LOG_TAG, "print message: " + msg);
+            ALog.i(LOG_TAG, "print message: " + msg);
         } else {
-            Log.w(LOG_TAG, "print: The total length of the message exceed 1000 characters.");
+            ALog.w(LOG_TAG, "print: The total length of the message exceed 1000 characters.");
         }
     }
 
@@ -686,7 +687,7 @@ public class StageApplicationDelegate {
      * @return Returns ERR_OK on success, others on failure.
      */
     public int startActivity(String bundleName, String activityName, String params) {
-        Log.i(LOG_TAG, "startActivity called, bundleName: " + bundleName + ", activityName: " + activityName);
+        ALog.i(LOG_TAG, "startActivity called, bundleName: " + bundleName + ", activityName: " + activityName);
         int error = ERR_OK;
         try {
             Intent intent = new Intent();
@@ -702,7 +703,7 @@ public class StageApplicationDelegate {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             stageApplication.getApplicationContext().startActivity(intent);
         } catch (ActivityNotFoundException exception) {
-            Log.e("StageApplication", "start activity err.");
+            ALog.e("StageApplication", "start activity err.");
             error = ERR_INVALID_PARAMETERS;
         }
         return error;
@@ -748,7 +749,7 @@ public class StageApplicationDelegate {
      * Launch application.
      */
     public void launchApplication() {
-        Log.i(LOG_TAG, "isCopyNativeLibs is " + isCopyNativeLibs);
+        ALog.i(LOG_TAG, "isCopyNativeLibs is " + isCopyNativeLibs);
         if (stageApplication != null && stageApplication instanceof StageApplication) {
             StageApplication sApplication = (StageApplication) stageApplication;
             this.shouldLoadUI = sApplication.onShouldLoadUI();
@@ -844,7 +845,7 @@ public class StageApplicationDelegate {
             locale = Locale.forLanguageTag(preferredLanguage);
         }
         String language = locale.getLanguage();
-        Log.i(LOG_TAG, "language: " + language);
+        ALog.i(LOG_TAG, "language: " + language);
         String script;
         switch (language) {
             case "ug": {
@@ -879,9 +880,9 @@ public class StageApplicationDelegate {
                 reader.close();
             }
         } catch (FileNotFoundException e) {
-            Log.e(LOG_TAG, "read cacert err: " + e.getMessage());
+            ALog.e(LOG_TAG, "read cacert err: " + e.getMessage());
         } catch (IOException e) {
-            Log.e(LOG_TAG, "read cacert err: " + e.getMessage());
+            ALog.e(LOG_TAG, "read cacert err: " + e.getMessage());
         }
     }
 
@@ -895,7 +896,7 @@ public class StageApplicationDelegate {
                 return;
             }
         } catch (IOException e) {
-            Log.e(LOG_TAG, "write cacert err: " + e.getMessage());
+            ALog.e(LOG_TAG, "write cacert err: " + e.getMessage());
         }
 
         try {
@@ -913,9 +914,9 @@ public class StageApplicationDelegate {
                 writer.close();
             }
         } catch (FileNotFoundException e) {
-            Log.e(LOG_TAG, "read cacert err: " + e.getMessage());
+            ALog.e(LOG_TAG, "read cacert err: " + e.getMessage());
         } catch (IOException e) {
-            Log.e(LOG_TAG, "read cacert err: " + e.getMessage());
+            ALog.e(LOG_TAG, "read cacert err: " + e.getMessage());
         }
     }
 
@@ -927,7 +928,7 @@ public class StageApplicationDelegate {
                     .getPackageInfo(stageApplication.getPackageName(), 0);
             appVersionCode = packageInfo.versionCode;
         } catch (PackageManager.NameNotFoundException e) {
-            Log.e(LOG_TAG, "Getting package info err: " + e.getMessage());
+            ALog.e(LOG_TAG, "Getting package info err: " + e.getMessage());
         }
         return appVersionCode;
     }
@@ -937,9 +938,25 @@ public class StageApplicationDelegate {
             ApplicationInfo info = context.getApplicationInfo();
             return (info.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
         } catch (Exception e) {
-            Log.e(LOG_TAG, "Getting is apk in debug err: " + e.getMessage());
+            ALog.e(LOG_TAG, "Getting is apk in debug err: " + e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * Set log interface.
+     * called before initApplication.
+     *
+     * @param logger the log interface.
+     * @param level the log level.
+     */
+    public void setLogger(ILogger logger, int level) {
+        if (level < LOG_MIN || level > LOG_MAX) {
+            ALog.e(LOG_TAG, "logLevel is invalid.");
+            return;
+        }
+        ALog.setLogger(logger);
+        ALog.setLoggerLevel(level);
     }
 
     /**
@@ -952,7 +969,7 @@ public class StageApplicationDelegate {
             ALog.setLogger(logger);
             nativeSetLogger(logger);
         } catch (UnsatisfiedLinkError e) {
-            Log.e(LOG_TAG, "logInterface: JNI is not registered.");
+            ALog.e(LOG_TAG, "logInterface: JNI is not registered.");
         }
     }
 
@@ -964,13 +981,13 @@ public class StageApplicationDelegate {
     public void setLogLevel(int logLevel) {
         try {
             if (logLevel < LOG_MIN || logLevel > LOG_MAX) {
-                Log.e(LOG_TAG, "logLevel is invalid.");
+                ALog.e(LOG_TAG, "logLevel is invalid.");
                 return;
             }
             ALog.setLoggerLevel(logLevel);
             nativeSetLogLevel(logLevel);
         } catch (UnsatisfiedLinkError e) {
-            Log.e(LOG_TAG, "logInterface: JNI is not registered.");
+            ALog.e(LOG_TAG, "logInterface: JNI is not registered.");
         }
     }
 
@@ -981,7 +998,7 @@ public class StageApplicationDelegate {
             String sandBoxJsonContent = readJsonFile(
                     stageApplication.getApplicationContext().getFilesDir().getPath() + "/" + jsonPath);
             if (assetsJsonContent == null || sandBoxJsonContent == null) {
-                Log.w(LOG_TAG, "File JsonContent is null");
+                ALog.w(LOG_TAG, "File JsonContent is null");
                 return false;
             }
             String assetsVersion = extractVersionFromJson(assetsJsonContent);
@@ -1007,7 +1024,7 @@ public class StageApplicationDelegate {
                     return false;
                 }
             } catch (NumberFormatException e) {
-                Log.e(LOG_TAG, "Error NumberFormat : " + e.getMessage());
+                ALog.e(LOG_TAG, "Error NumberFormat : " + e.getMessage());
                 return false;
             }
         }
@@ -1025,7 +1042,7 @@ public class StageApplicationDelegate {
                 return version;
             }
         } catch (JSONException e) {
-            Log.e(LOG_TAG, "Error JSON : " + e.getMessage());
+            ALog.e(LOG_TAG, "Error JSON : " + e.getMessage());
         }
         return "";
     }
@@ -1053,7 +1070,7 @@ public class StageApplicationDelegate {
             }
             return content.toString();
         } catch (IOException e) {
-            Log.e(LOG_TAG, "assets reading err: " + e.getMessage());
+            ALog.e(LOG_TAG, "assets reading err: " + e.getMessage());
         }
         return null;
     }
@@ -1061,7 +1078,7 @@ public class StageApplicationDelegate {
     private String readJsonFile(String path) {
         File file = new File(path);
         if (!file.exists()) {
-            Log.e(LOG_TAG, "File does not exist: " + path);
+            ALog.e(LOG_TAG, "File does not exist: " + path);
             return null;
         }
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -1072,7 +1089,7 @@ public class StageApplicationDelegate {
             }
             return content.toString();
         } catch (IOException e) {
-            Log.e(LOG_TAG, "reading err: " + e.getMessage());
+            ALog.e(LOG_TAG, "reading err: " + e.getMessage());
         }
         return null;
     }
@@ -1134,15 +1151,15 @@ public class StageApplicationDelegate {
      */
     public static void loadModule(String moduleName, String entryFile) {
         if (!isInitialized) {
-            Log.e(LOG_TAG, "Application is not initialized.");
+            ALog.e(LOG_TAG, "Application is not initialized.");
             return;
         }
         if (moduleName == null || moduleName.isEmpty()) {
-            Log.e(LOG_TAG, "moduleName is invalid.");
+            ALog.e(LOG_TAG, "moduleName is invalid.");
             return;
         }
         if (entryFile == null || entryFile.isEmpty() || !entryFile.matches(LOAD_MODULE_PATH_REGEX)) {
-            Log.e(LOG_TAG, "entryFile is invalid.");
+            ALog.e(LOG_TAG, "entryFile is invalid.");
             return;
         }
         nativeLoadModule(moduleName, entryFile);

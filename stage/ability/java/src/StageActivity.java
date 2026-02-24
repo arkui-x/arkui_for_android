@@ -15,63 +15,59 @@
 
 package ohos.stage.ability.adapter;
 
-import java.io.FileDescriptor;
-import java.io.PrintWriter;
-import java.util.HashSet;
-import java.util.Set;
-
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Trace;
-import android.util.Log;
 import android.view.View;
-import android.os.Build;
 
-import java.util.List;
-import java.util.Set;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicReference;
-
-import android.content.ClipData;
-import android.net.Uri;
-
-import org.json.JSONObject;
-import org.json.JSONArray;
-import org.json.JSONException;
-
-import ohos.ace.adapter.AceEnv;
-import ohos.ace.adapter.AcePlatformPlugin;
-import ohos.ace.adapter.ArkUIXPluginRegistry;
-import ohos.ace.adapter.IArkUIXPlugin;
-import ohos.ace.adapter.PluginContext;
-import ohos.ace.adapter.WindowViewInterface;
-import ohos.ace.adapter.WindowViewAospInterface;
-import ohos.ace.adapter.WindowViewBuilder;
-import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
-import ohos.ace.adapter.capability.web.AceWebPluginAosp;
-import ohos.ace.adapter.capability.platformview.IPlatformView;
-import ohos.ace.adapter.capability.platformview.PlatformViewFactory;
-import ohos.ace.adapter.capability.platformview.AcePlatformViewPluginAosp;
-import ohos.ace.adapter.capability.web.AceWebPluginBase;
-import ohos.ace.adapter.capability.bridge.BridgeManager;
-import ohos.ace.adapter.capability.grantresult.GrantResult;
-import ohos.ace.adapter.capability.keyboard.KeyboardHeightObserver;
-import ohos.ace.adapter.capability.keyboard.KeyboardHeightProvider;
-import android.view.View;
-import android.content.res.Configuration;
-
-import ohos.ace.adapter.FoldManager;
 import androidx.core.util.Consumer;
 import androidx.window.java.layout.WindowInfoTrackerCallbackAdapter;
 import androidx.window.layout.DisplayFeature;
 import androidx.window.layout.FoldingFeature;
 import androidx.window.layout.WindowInfoTracker;
 import androidx.window.layout.WindowLayoutInfo;
+
+import java.io.FileDescriptor;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import ohos.ace.adapter.AceEnv;
+import ohos.ace.adapter.AcePlatformPlugin;
+import ohos.ace.adapter.ALog;
+import ohos.ace.adapter.ArkUIXPluginRegistry;
+import ohos.ace.adapter.FoldManager;
+import ohos.ace.adapter.IArkUIXPlugin;
+import ohos.ace.adapter.PluginContext;
+import ohos.ace.adapter.WindowViewAospInterface;
+import ohos.ace.adapter.WindowViewBuilder;
+import ohos.ace.adapter.WindowViewInterface;
+import ohos.ace.adapter.capability.bridge.BridgeManager;
+import ohos.ace.adapter.capability.grantresult.GrantResult;
+import ohos.ace.adapter.capability.keyboard.KeyboardHeightObserver;
+import ohos.ace.adapter.capability.keyboard.KeyboardHeightProvider;
+import ohos.ace.adapter.capability.platformview.AcePlatformViewPluginAosp;
+import ohos.ace.adapter.capability.platformview.IPlatformView;
+import ohos.ace.adapter.capability.platformview.PlatformViewFactory;
+import ohos.ace.adapter.capability.video.AceVideoPluginAosp;
+import ohos.ace.adapter.capability.web.AceWebPluginAosp;
+import ohos.ace.adapter.capability.web.AceWebPluginBase;
 /**
  * A base class for the Ability Cross-platform Environment of the stage model to
  * run on Android.
@@ -173,7 +169,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.i(LOG_TAG, "StageActivity onCreate called");
+        ALog.i(LOG_TAG, "StageActivity onCreate called");
         super.onCreate(savedInstanceState);
         Trace.beginSection("StageActivity::onCreate");
 
@@ -216,7 +212,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     @Override
     protected void onStart() {
-        Log.i(LOG_TAG, "StageActivity onStart called");
+        ALog.i(LOG_TAG, "StageActivity onStart called");
         super.onStart();
         Trace.beginSection("StageActivity::onStart");
         activityDelegate.dispatchOnForeground(getInstanceName(), this);
@@ -232,13 +228,13 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     @Override
     protected void onResume() {
-        Log.i(LOG_TAG, "StageActivity onResume called");
+        ALog.i(LOG_TAG, "StageActivity onResume called");
         super.onResume();
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
-        Log.i(LOG_TAG, "StageActivity onNewIntent called");
+        ALog.i(LOG_TAG, "StageActivity onNewIntent called");
         super.onNewIntent(intent);
 
         String params = "";
@@ -253,13 +249,13 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     @Override
     protected void onRestart() {
-        Log.i(LOG_TAG, "StageActivity onRestart called");
+        ALog.i(LOG_TAG, "StageActivity onRestart called");
         super.onRestart();
     }
 
     @Override
     protected void onStop() {
-        Log.i(LOG_TAG, "StageActivity onStop called");
+        ALog.i(LOG_TAG, "StageActivity onStop called");
         super.onStop();
         activityDelegate.dispatchOnBackground(getInstanceName());
         windowView.background();
@@ -270,7 +266,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     @Override
     protected void onDestroy() {
-        Log.i(LOG_TAG, "StageActivity onDestroy called");
+        ALog.i(LOG_TAG, "StageActivity onDestroy called");
         activityDelegate.dispatchOnDestroy(getInstanceName());
         windowView.destroy();
         arkUIXPluginRegistry.unRegistryAllPlugins();
@@ -278,16 +274,16 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         this.bridgeManager = null;
         if (platformPlugin != null) {
             platformPlugin.release();
-            Log.i(LOG_TAG, "StageActivity onDestroy platformPlugin release called");
+            ALog.i(LOG_TAG, "StageActivity onDestroy platformPlugin release called");
         }
         super.onDestroy();
-        Log.i(LOG_TAG, "StageActivity onDestroy end");
+        ALog.i(LOG_TAG, "StageActivity onDestroy end");
         offFoldStatusChange();
     }
 
     @Override
     public void onBackPressed() {
-        Log.i(LOG_TAG, "StageActivity onBackPressed called");
+        ALog.i(LOG_TAG, "StageActivity onBackPressed called");
         if (!windowView.backPressed()) {
             super.onBackPressed();
         }
@@ -295,7 +291,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     @Override
     public void dump(String prefix, FileDescriptor fd, PrintWriter writer, String[] args) {
-        Log.i(LOG_TAG, "StageActivity dump called");
+        ALog.i(LOG_TAG, "StageActivity dump called");
         AceEnv.dump(instanceId, prefix, fd, writer, args);
     }
 
@@ -311,7 +307,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         }
         List<String> uriList = extractUriList(intent);
         if (uriList.isEmpty()) {
-            Log.w(LOG_TAG, "No data or clip data found in the intent");
+            ALog.w(LOG_TAG, "No data or clip data found in the intent");
             return;
         }
         String resultWantParams = buildResultJson(uriList);
@@ -320,7 +316,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     }
 
     private void handleNonPickerActivityResult(int requestCode, int resultCode, Intent intent) {
-        Log.i(LOG_TAG, "onActivityResult called");
+        ALog.i(LOG_TAG, "onActivityResult called");
         super.onActivityResult(requestCode, resultCode, intent);
         String resultWantParams = "";
         if (intent != null) {
@@ -363,7 +359,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             jsonObject.put("value", valueArray.toString());
             resultJson.put(WANT_PARAMS, new JSONArray(Arrays.asList(jsonObject)));
         } catch (JSONException e) {
-            Log.e(LOG_TAG, "Error creating JSON object: " + e.getMessage());
+            ALog.e(LOG_TAG, "Error creating JSON object: " + e.getMessage());
         }
         return resultJson.toString();
     }
@@ -431,7 +427,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     private void getIntentToCreateDelegator(Intent intent) {
         if (intent == null) {
-            Log.w(LOG_TAG, "Intent is null.");
+            ALog.w(LOG_TAG, "Intent is null.");
             return;
         }
         boolean hasTestValue = intent.hasExtra(TEST_PARAMS);
@@ -442,11 +438,11 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         boolean isExist = !(testBundleName == null || testModuleName == null ||
                 testRunerName == null || timeout == null);
         if (hasTestValue && !isFrist && isExist) {
-            Log.i(LOG_TAG, "Start creating abilityDelegate");
+            ALog.i(LOG_TAG, "Start creating abilityDelegate");
             activityDelegate.createAbilityDelegator(testBundleName, testModuleName, testRunerName, timeout);
             isFrist = true;
         } else {
-            Log.i(LOG_TAG, "No need to start creating abilityDelegate");
+            ALog.i(LOG_TAG, "No need to start creating abilityDelegate");
         }
     }
 
@@ -459,12 +455,12 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      * @return Returns ERR_OK on success, others on failure.
      */
     public int startActivity(String bundleName, String activityName, String params) {
-        Log.i(LOG_TAG, "startActivity called, bundleName: " + bundleName + ", activityName: " + activityName);
+        ALog.i(LOG_TAG, "startActivity called, bundleName: " + bundleName + ", activityName: " + activityName);
         int error = ERR_OK;
         try {
             Intent intent = new Intent();
             String packageName = getApplicationContext().getPackageName();
-            Log.i(LOG_TAG, "Current package name: " + packageName);
+            ALog.i(LOG_TAG, "Current package name: " + packageName);
             ComponentName componentName = null;
             if (packageName.equals(bundleName)) {
                 componentName = new ComponentName(getBaseContext(), activityName);
@@ -475,7 +471,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             intent.putExtra(WANT_PARAMS, params);
             this.startActivity(intent);
         } catch (ActivityNotFoundException exception) {
-            Log.e("StageApplication", "start activity err: " + exception.getMessage());
+            ALog.e("StageApplication", "start activity err: " + exception.getMessage());
             error = ERR_INVALID_PARAMETERS;
         }
         return error;
@@ -504,7 +500,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             }
             return createPicker(bundleName, type, value);
         } catch (JSONException e) {
-            Log.e(LOG_TAG, "json parse error: " + e.getMessage());
+            ALog.e(LOG_TAG, "json parse error: " + e.getMessage());
             return ERR_INVALID_PARAMETERS;
         }
     }
@@ -532,7 +528,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             }
             return ERR_OK;
         } catch (ActivityNotFoundException e) {
-            Log.e(LOG_TAG, "Activity not found: " + e.getMessage());
+            ALog.e(LOG_TAG, "Activity not found: " + e.getMessage());
             return ERR_INVALID_PARAMETERS;
         }
     }
@@ -547,13 +543,13 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      * @return Returns ERR_OK on success, others on failure.
      */
     public int startActivityForResult(String bundleName, String activityName, String params, int requestCode) {
-        Log.i(LOG_TAG, "startActivityForResult called, bundleName: " + bundleName + ", activityName: " + activityName
+        ALog.i(LOG_TAG, "startActivityForResult called, bundleName: " + bundleName + ", activityName: " + activityName
             + ", requestCode: " + requestCode);
         int error = ERR_OK;
         try {
             Intent intent = new Intent();
             String packageName = getApplicationContext().getPackageName();
-            Log.i(LOG_TAG, "Current package name: " + packageName);
+            ALog.i(LOG_TAG, "Current package name: " + packageName);
             ComponentName componentName = null;
             if (packageName.equals(bundleName)) {
                 componentName = new ComponentName(getBaseContext(), activityName);
@@ -564,7 +560,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             intent.putExtra(WANT_PARAMS, params);
             this.startActivityForResult(intent, requestCode);
         } catch (ActivityNotFoundException exception) {
-            Log.e(LOG_TAG, "start activity for result err: " + exception.getMessage());
+            ALog.e(LOG_TAG, "start activity for result err: " + exception.getMessage());
             error = ERR_INVALID_PARAMETERS;
         }
         return error;
@@ -597,7 +593,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
             }
             return createPicker(bundleName, type, value);
         } catch (JSONException e) {
-            Log.e(LOG_TAG, "json parse error: " + e.getMessage());
+            ALog.e(LOG_TAG, "json parse error: " + e.getMessage());
             return ERR_INVALID_PARAMETERS;
         }
     }
@@ -609,7 +605,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      * @param resultCode        the result code returned after the ability is destroyed.
      */
     public void terminateActivityWithResult(String resultWantParams, int resultCode) {
-        Log.i(LOG_TAG, "terminateActivityWithResult called, resultCode: " + resultCode);
+        ALog.i(LOG_TAG, "terminateActivityWithResult called, resultCode: " + resultCode);
         Intent intent = new Intent();
         intent.putExtra(WANT_PARAMS, resultWantParams);
         setResult(resultCode, intent);
@@ -622,14 +618,14 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      * @return Returns ERR_OK on success, others on failure.
      */
     public int doActivityForeground() {
-        Log.i(LOG_TAG, "doActivityForeground called");
+        ALog.i(LOG_TAG, "doActivityForeground called");
         int error = ERR_OK;
         try {
             Intent intent = new Intent(getApplicationContext(), this.getClass());
             intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             this.startActivity(intent);
         } catch (ActivityNotFoundException exception) {
-            Log.e(LOG_TAG, "switch foreground err.");
+            ALog.e(LOG_TAG, "switch foreground err.");
             error = ERR_INVALID_PARAMETERS;
         }
         return error;
@@ -641,14 +637,14 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      * @return Returns ERR_OK on success, others on failure.
      */
     public int doActivityBackground() {
-        Log.i(LOG_TAG, "doActivityBackground called");
+        ALog.i(LOG_TAG, "doActivityBackground called");
         int error = ERR_OK;
         try {
             Intent intent = new Intent(getApplicationContext(), this.getClass());
             intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             this.startActivity(intent);
         } catch (ActivityNotFoundException exception) {
-            Log.e(LOG_TAG, "switch background err.");
+            ALog.e(LOG_TAG, "switch background err.");
             error = ERR_INVALID_PARAMETERS;
         }
         return error;
@@ -658,7 +654,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      * Call this when your activity is done and should be closed.
      */
     public void finish() {
-        Log.i(LOG_TAG, "StageActivity finish called");
+        ALog.i(LOG_TAG, "StageActivity finish called");
         super.finish();
     }
 
@@ -708,9 +704,9 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      */
     public void addPlugin(String pluginName) {
         if (pluginName == null) {
-            Log.e(LOG_TAG, "plugin name is null!");
+            ALog.e(LOG_TAG, "plugin name is null!");
         } else {
-            Log.d(LOG_TAG, "add plugin: " + pluginName);
+            ALog.d(LOG_TAG, "add plugin: " + pluginName);
             pluginList.add(pluginName);
         }
     }
@@ -741,9 +737,9 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      * Report to the system that your app is now fully drawn.
      */
     public void reportDrawnCompleted() {
-        Log.i(LOG_TAG, "Report fully drawn start." + System.nanoTime());
+        ALog.i(LOG_TAG, "Report fully drawn start." + System.nanoTime());
         reportFullyDrawn();
-        Log.i(LOG_TAG, "Report fully drawn end." + System.nanoTime());
+        ALog.i(LOG_TAG, "Report fully drawn end." + System.nanoTime());
     }
 
     /**
@@ -753,11 +749,11 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
      */
     public void registerPlatformViewFactory(PlatformViewFactory platformViewFactory) {
         if (platformViewPluginAosp == null) {
-            Log.i(LOG_TAG, "PlatformViewPluginAosp is null");
+            ALog.i(LOG_TAG, "PlatformViewPluginAosp is null");
             return;
         }
         if (platformViewFactory == null) {
-            Log.i(LOG_TAG, "PlatformViewFactory is null");
+            ALog.i(LOG_TAG, "PlatformViewFactory is null");
             return;
         }
         platformViewPluginAosp.registerPlatformViewFactory(platformViewFactory);
@@ -802,7 +798,7 @@ private void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo) {
      */
     public String onFoldStatusChange() {
         if (Build.VERSION.SDK_INT < ANDROID_API_31) {
-            Log.e(LOG_TAG, "Android SDK needs to be greater than 31!");
+            ALog.e(LOG_TAG, "Android SDK needs to be greater than 31!");
             return null;
         }
         if (foldWindowInfoCallback != null && foldConsumer != null) {
@@ -815,7 +811,7 @@ private void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo) {
         } catch (NoClassDefFoundError e) {
             foldWindowInfoCallback = null;
             foldConsumer = null;
-            Log.e(LOG_TAG, "androidx.window is not support!\n" + e.toString());
+            ALog.e(LOG_TAG, "androidx.window is not support!\n" + e.toString());
             return null;
         }
         return instanceName;

@@ -18,7 +18,8 @@ import android.content.Context;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.WindowManager;
-import android.util.Log;
+
+import ohos.ace.adapter.ALog;
 
 /**
  * The type Display info.
@@ -32,7 +33,7 @@ public class DisplayInfo {
     private WindowManager mWindowManager;
 
     private DisplayInfo() {
-        Log.d(TAG, "DisplayInfo created.");
+        ALog.d(TAG, "DisplayInfo created.");
     }
 
     /**
@@ -68,7 +69,7 @@ public class DisplayInfo {
      * @return the display id
      */
     public int getDisplayId() {
-        Log.d(TAG, "getDisplayId called.");
+        ALog.d(TAG, "getDisplayId called.");
         Display defaultDisplay = mWindowManager.getDefaultDisplay();
         return defaultDisplay.getDisplayId();
     }
@@ -79,7 +80,7 @@ public class DisplayInfo {
      * @return the orentation
      */
     public int getOrentation() {
-        Log.d(TAG, "getOrentation called.");
+        ALog.d(TAG, "getOrentation called.");
         Display defaultDisplay = mWindowManager.getDefaultDisplay();
         return defaultDisplay.getRotation();
     }
@@ -90,7 +91,7 @@ public class DisplayInfo {
      * @return the width
      */
     public int getWidth() {
-        Log.d(TAG, "getWidth called.");
+        ALog.d(TAG, "getWidth called.");
         DisplayMetrics metrics = new DisplayMetrics();
         Display defaultDisplay = mWindowManager.getDefaultDisplay();
         defaultDisplay.getRealMetrics(metrics);
@@ -103,7 +104,7 @@ public class DisplayInfo {
      * @return the height
      */
     public int getHeight() {
-        Log.d(TAG, "getHeight called.");
+        ALog.d(TAG, "getHeight called.");
         DisplayMetrics metrics = new DisplayMetrics();
         Display defaultDisplay = mWindowManager.getDefaultDisplay();
         defaultDisplay.getRealMetrics(metrics);
@@ -116,7 +117,7 @@ public class DisplayInfo {
      * @return the refresh rate
      */
     public float getRefreshRate() {
-        Log.d(TAG, "getRefreshRate called.");
+        ALog.d(TAG, "getRefreshRate called.");
         Display defaultDisplay = mWindowManager.getDefaultDisplay();
         return defaultDisplay.getRefreshRate();
     }
@@ -127,7 +128,7 @@ public class DisplayInfo {
      * @return the density pixels.
      */
     public float getDensityPixels() {
-        Log.d(TAG, "getDensityPixels called.");
+        ALog.d(TAG, "getDensityPixels called.");
         DisplayMetrics metrics = new DisplayMetrics();
         mWindowManager.getDefaultDisplay().getMetrics(metrics);
         return metrics.density;
@@ -139,7 +140,7 @@ public class DisplayInfo {
      * @return the density dpi.
      */
     public int getDensityDpi() {
-        Log.d(TAG, "getDensityDpi called.");
+        ALog.d(TAG, "getDensityDpi called.");
         DisplayMetrics metrics = new DisplayMetrics();
         mWindowManager.getDefaultDisplay().getMetrics(metrics);
         return metrics.densityDpi;
@@ -151,7 +152,7 @@ public class DisplayInfo {
      * @return the scaled density.
      */
     public float getScaledDensity() {
-        Log.d(TAG, "getScaledDensity called.");
+        ALog.d(TAG, "getScaledDensity called.");
         DisplayMetrics metrics = new DisplayMetrics();
         mWindowManager.getDefaultDisplay().getMetrics(metrics);
         return metrics.scaledDensity;
@@ -163,7 +164,7 @@ public class DisplayInfo {
      * @return the dpi in horizontal direction.
      */
     public float getXDpi() {
-        Log.d(TAG, "getXDpi called.");
+        ALog.d(TAG, "getXDpi called.");
         if (mWindowManager == null) {
             return 0.0f;
         }
@@ -178,7 +179,7 @@ public class DisplayInfo {
      * @return the dpi in vertical direction.
      */
     public float getYDpi() {
-        Log.d(TAG, "getYDpi called.");
+        ALog.d(TAG, "getYDpi called.");
         if (mWindowManager == null) {
             return 0.0f;
         }

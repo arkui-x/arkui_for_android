@@ -15,14 +15,15 @@
 
 package ohos.stage.ability.adapter;
 
-import android.os.Trace;
-import android.util.Log;
-
-import ohos.ace.adapter.DisplayManagerAgent;
 import android.content.Intent;
-import ohos.ace.adapter.WindowViewInterface;
-import java.util.List;
+import android.os.Trace;
+
 import java.util.ArrayList;
+import java.util.List;
+
+import ohos.ace.adapter.ALog;
+import ohos.ace.adapter.DisplayManagerAgent;
+import ohos.ace.adapter.WindowViewInterface;
 
 /**
  * This class is responsible for communicating with the stage activity delegate jni.
@@ -77,7 +78,7 @@ public class StageActivityDelegate {
      * Constructor.
      */
     public StageActivityDelegate() {
-        Log.i(LOG_TAG, "Constructor called.");
+        ALog.i(LOG_TAG, "Constructor called.");
     }
 
     /**
@@ -112,7 +113,7 @@ public class StageActivityDelegate {
      * @param instanceName the activity instance name.
      */
     public void dispatchOnDestroy(String instanceName) {
-        Log.i(LOG_TAG, "dispatchOnDestroy called");
+        ALog.i(LOG_TAG, "dispatchOnDestroy called");
         nativeDispatchOnDestroy(instanceName);
         SubWindowManager.getInstance().releaseActivity(instanceName);
     }
@@ -124,7 +125,7 @@ public class StageActivityDelegate {
      * @param params       the want params.
      */
     public void dispatchOnNewWant(String instanceName, String params) {
-        Log.i(LOG_TAG, "dispatchOnNewWant called");
+        ALog.i(LOG_TAG, "dispatchOnNewWant called");
         nativeDispatchOnNewWant(instanceName, params);
     }
 
@@ -135,7 +136,7 @@ public class StageActivityDelegate {
      * @param object       the stage activity.
      */
     public void dispatchOnForeground(String instanceName, StageActivity object) {
-        Log.i(LOG_TAG, "DispatchOnForeground called");
+        ALog.i(LOG_TAG, "DispatchOnForeground called");
         nativeDispatchOnForeground(instanceName);
         SubWindowManager.getInstance().setActivity(object, instanceName);
     }
@@ -146,7 +147,7 @@ public class StageActivityDelegate {
      * @param instanceName the activity instance name.
      */
     public void dispatchOnBackground(String instanceName) {
-        Log.i(LOG_TAG, "DispatchOnBackground called");
+        ALog.i(LOG_TAG, "DispatchOnBackground called");
         nativeDispatchOnBackground(instanceName);
     }
 
@@ -185,7 +186,7 @@ public class StageActivityDelegate {
      */
     public void dispatchOnActivityResult(
         String instanceName, int requestCode, int resultCode, String resultWantParams, Intent intent) {
-        Log.i(LOG_TAG, "dispatchOnActivityResult called");
+        ALog.i(LOG_TAG, "dispatchOnActivityResult called");
         triggerIntentCallback(requestCode, resultCode, intent);
         nativeDispatchOnAbilityResult(instanceName, requestCode, resultCode, resultWantParams);
     }

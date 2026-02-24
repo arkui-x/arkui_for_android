@@ -51,7 +51,6 @@ java_library("ace_platform_android_java") {
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/AceTextureHolder.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/DownloadManager.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/InputConnectionClient.java",
-    "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/LoggerAosp.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/WantParams.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/WindowViewSurface.java",
     "$ace_root/adapter/android/entrance/java/src/ohos/ace/adapter/WindowViewTexture.java",

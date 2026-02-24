@@ -17,8 +17,9 @@ package ohos.ace.adapter;
 
 import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
 import android.hardware.display.DisplayManager;
+
+import ohos.ace.adapter.ALog;
 
 /**
  * the display manager agent, a shared instance to get the fold info or connection info from the activity.
@@ -35,7 +36,7 @@ public class DisplayManagerAgent {
     private DisplayManager.DisplayListener displayListener;
 
     private DisplayManagerAgent() {
-        Log.d(TAG, "DisplayManagerAgent created.");
+        ALog.d(TAG, "DisplayManagerAgent created.");
     }
 
     /**
@@ -71,11 +72,11 @@ public class DisplayManagerAgent {
      * @return true: foldable, false: not foldable
      */
     public boolean isFoldable() {
-        Log.d(TAG, "isFoldable called.");
+        ALog.d(TAG, "isFoldable called.");
         if (this.activity != null) {
             return FoldManager.isFoldable(this.activity);
         } else {
-            Log.e(TAG, "activity is null");
+            ALog.e(TAG, "activity is null");
             return false;
         }
     }
@@ -86,11 +87,11 @@ public class DisplayManagerAgent {
      * @return the fold status
      */
     public int getFoldStatus() {
-        Log.d(TAG, "getFoldStatus called.");
+        ALog.d(TAG, "getFoldStatus called.");
         if (this.activity != null) {
             return FoldManager.getFoldStatus(this.activity);
         } else {
-            Log.e(TAG, "activity is null");
+            ALog.e(TAG, "activity is null");
             return FoldInfo.FOLD_STATUS_UNKNOWN;
         }
     }
@@ -99,7 +100,7 @@ public class DisplayManagerAgent {
      * register display listener.
      */
     public void registerDisplayListener() {
-        Log.d(TAG, "onChange called.");
+        ALog.d(TAG, "onChange called.");
         if (displayListener == null) {
             displayListener = new DisplayManager.DisplayListener() {
 
@@ -115,7 +116,7 @@ public class DisplayManagerAgent {
 
                 @Override
                 public void onDisplayChanged(int displayId) {
-                    Log.d(TAG, "displayId = " + displayId);
+                    ALog.d(TAG, "displayId = " + displayId);
                     nativeOnDisplayChanged(displayId);
                 }
             };
@@ -128,7 +129,7 @@ public class DisplayManagerAgent {
      * unregister display listener.
      */
     public void unregisterDisplayListener() {
-        Log.d(TAG, "offChange called.");
+        ALog.d(TAG, "offChange called.");
         if (displayListener != null) {
             displayManager.unregisterDisplayListener(displayListener);
             displayListener = null;
