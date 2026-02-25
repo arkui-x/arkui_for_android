@@ -800,7 +800,6 @@ public class AceWeb extends AceWebBase {
         }
         webView.setFocusable(true);
         webView.setFocusableInTouchMode(true);
-        webView.requestFocus();
         initWebSetting();
         initWebEventListener();
         initWebCallBack();
