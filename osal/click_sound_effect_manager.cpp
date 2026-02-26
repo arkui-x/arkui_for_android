@@ -34,5 +34,7 @@ void ClickSoundEffectManager::UnloadProductPolicy() {}
 
 void ClickSoundEffectManager::Close() {}
 
-void ClickSoundEffectManager::PlayClickSoundEffect(int32_t abscissa, int32_t ordinate) {}
+void ClickSoundEffectManager::PlayClickSoundEffect(
+    const RefPtr<NG::FrameNode>& frameNode, int32_t abscissa, int32_t ordinate)
+{}
 } // namespace OHOS::Ace
