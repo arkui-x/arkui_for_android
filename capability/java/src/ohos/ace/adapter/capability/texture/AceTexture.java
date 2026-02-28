@@ -39,6 +39,7 @@ public class AceTexture {
     private static final String FALSE = "false";
 
     private static final String PARAM_EQUALS = "#HWJS-=-#";
+    private static final String PARAM_AND = "#HWJS-&-#";
     private static final String PARAM_BEGIN = "#HWJS-?-#";
     private static final String METHOD = "method";
     private static final String EVENT = "event";
