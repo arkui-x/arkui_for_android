@@ -575,6 +575,9 @@
       OHOS::Rosen::RSRenderServiceClient::*;
       OHOS::Rosen::DisplayInfo::*;
       OHOS::Rosen::DisplayManagerAgent::*;
+      "OHOS::Rosen::RsVulkanInterface::~RsVulkanInterface()";
+      "OHOS::Rosen::RsVulkanInterface::DoCreateDrawingContext(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >)";
+      "OHOS::Rosen::RsVulkanInterface::Init(OHOS::Rosen::VulkanInterfaceType, bool, bool)";
       "OHOS::AbilityRuntime::Platform::ApplicationContext::GetInstance()";
       "OHOS::AbilityRuntime::Platform::ApplicationContext::SetLanguage(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::AbilityRuntime::GetNativePointerFromCallbackInfo(napi_env__*, napi_callback_info__*, char const*)";
