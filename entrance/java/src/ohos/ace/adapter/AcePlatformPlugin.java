@@ -206,10 +206,22 @@ public class AcePlatformPlugin implements InputConnectionClient {
         return true;
     }
 
+    /**
+     * Get native window pointer for a surface
+     *
+     * @param instanceId instance id
+     * @param textureId texture id
+     * @return native window pointer as long, or 0L if not found
+     */
+    public long getNativeWindow(int instanceId, long textureId) {
+        return nativeGetNativeWindow(instanceId, textureId);
+    }
+
     private native long nativeInitResRegister(AceResourceRegister resRegister, int instanceId);
     private native void nativeRegisterSurface(int instanceId, long textureId, Object surface);
     private native void nativeUnregisterSurface(int instanceId, long textureId);
     private native void nativeRegisterTexture(int instanceId, long textureId, Object surfaceTexture);
     private native void nativeUnregisterTexture(int instanceId, long textureId);
     private native long nativeAttachSurface(Object surface);
+    private native long nativeGetNativeWindow(int instanceId, long textureId);
 }
