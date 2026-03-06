@@ -869,6 +869,7 @@
       "OHOS::Rosen::FontFeatures::GetFontFeatures() const";
       "OHOS::Rosen::FontFeatures::SetFeature(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, int)";
       "OHOS::Rosen::FontVariations::SetAxisValue(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, float)";
+      "OHOS::Rosen::FontVariations::SetAxisValue(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, float, bool)";
       "OHOS::Rosen::IsUtf8(char const*, int)";
       "OHOS::Rosen::SPText::TextBundleConfigParser::InitBundleInfo()";
       "OHOS::Rosen::SPText::TextBundleConfigParser::IsTargetApiVersion(unsigned int) const";
