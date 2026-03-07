@@ -27,37 +27,22 @@ namespace {
 const std::string DYNAMIC_MODULE_LIB_PREFIX = "libarkui_";
 const std::string DYNAMIC_MODULE_LIB_POSTFIX = ".so";
 const std::unordered_map<std::string, std::string> soMap = {
-    {"Marquee", "marquee"},
+    {"Gauge", "gauge"},
     {"Stepper", "stepper"},
     {"StepperItem", "stepper"},
     {"Slider", "slider"},
     {"Checkbox", "checkbox"},
     {"CheckboxGroup", "checkbox"},
-    {"Gauge", "gauge"},
     {"Rating", "rating"},
-    {"FlowItem", "waterflow" },
-    {"WaterFlow", "waterflow" },
-    {"Counter", "counter"},
     {"Sidebar", "sidebar"},
     {"ColumnSplit", "linearsplit"},
     {"RowSplit", "linearsplit"},
     {"Radio", "radio"},
-    {"QRCode", "qrcode"},
     {"TimePicker", "timepicker"},
     {"TimePickerDialog", "timepicker"},
     {"Indexer", "indexer"},
-    {"Hyperlink", "hyperlink"},
-    {"PatternLock", "patternlock"},
     {"CalendarPicker", "calendarpicker"},
     {"CalendarPickerDialog", "calendarpicker"},
-    {"SymbolGlyph", "symbol"},
-    {"DataPanel", "datapanel"},
-    {"Richeditor", "richeditor"},
-    {"Search", "search"},
-    {"Menu", "menu"},
-    {"MenuItem", "menu"},
-    {"MenuItemGroup", "menu"},
-    {"TextClock", "textclock"},
 };
 } // namespace
 DynamicModuleHelper& DynamicModuleHelper::GetInstance()

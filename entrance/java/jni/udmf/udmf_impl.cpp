@@ -80,7 +80,8 @@ RefPtr<UnifiedData> UdmfClientImpl::TransformUnifiedDataFromANI(void* rawData)
     return nullptr;
 }
 
-void UdmfClientImpl::TransformSummaryANI(std::map<std::string, int64_t>& summary, std::shared_ptr<void> summaryPtr)
+void UdmfClientImpl::TransformSummaryANI(
+    std::map<std::string, int64_t>& summary, std::shared_ptr<UDMF::Summary> summaryPtr)
 {}
 
 RefPtr<DataLoadParams> UdmfClientImpl::TransformDataLoadParamsFromANI(void* rawData)
