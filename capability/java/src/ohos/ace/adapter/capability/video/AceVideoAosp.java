@@ -277,28 +277,83 @@ public class AceVideoAosp extends AceVideoBase
         ALog.i(LOG_TAG, "onPrepared");
         mediaPlayerLock.lock();
         try {
-            if (handleStoppedOnPrepared()) {
+            if (isStoped && state == PlayState.STOPPED) {
+                mediaPlayer.stop();
+                ALog.e(LOG_TAG, "media player is STOPPED.");
                 return;
             }
-            if (isMediaPlayerInvalid(mp)) {
+            if (mp == null || mediaPlayer == null) {
+                ALog.e(LOG_TAG, "onPrepared failed, MediaPlayer is null");
                 return;
             }
-            if (shouldAutoPlayOnPrepared()) {
-                startPlaybackAndNotify();
+            if (!isNeedResume && isAutoPlay()) {
+                mediaPlayer.start();
+                state = PlayState.STARTED;
+                setKeepScreenOn(true);
+                runOnUIThread(() -> {
+                    firePlayStatusChange(true);
+                });
             }
             resetFromParams(mediaPlayer);
             try {
-                if (handleResumeOnPreparedInternal()) {
+                if (isNeedResume) {
+                    if (isResumePlaying) {
+                        if (!mediaPlayer.isPlaying()) {
+                            mediaPlayer.start();
+                        }
+                        state = PlayState.STARTED;
+                        setKeepScreenOn(true);
+                        runOnUIThread(() -> {
+                            firePlayStatusChange(true);
+                        });
+                        isResumePlaying = false;
+                    } else {
+                        if (isStoped) {
+                            if (mediaPlayer.isPlaying()) {
+                                mediaPlayer.stop();
+                            }
+                            state = PlayState.STOPPED;
+                        } else {
+                            if (mediaPlayer.isPlaying()) {
+                                mediaPlayer.pause();
+                            }
+                            state = PlayState.PAUSED;
+                        }
+                    }
+                    isNeedResume = false;
                     return;
                 }
-                handlePauseWhenNotAutoPlay();
+                if (!isAutoPlay() && mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                    state = PlayState.PAUSED;
+                }
             } catch (IllegalStateException ignored) {
                 ALog.e(LOG_TAG, "run onPrepared, IllegalStateException.");
             }
         } finally {
             mediaPlayerLock.unlock();
         }
-        runOnUIThread(() -> handlePreparedOnUiThread());
+        runOnUIThread(
+            new Runnable() {
+                /**
+                 * This is called to fire prepared event.
+                 */
+                public void run() {
+                    mediaPlayerLock.lock();
+                    try {
+                        if (mediaPlayer != null) {
+                            try {
+                                firePrepared(mediaPlayer.getVideoWidth(), mediaPlayer.getVideoHeight(),
+                                mediaPlayer.getDuration(), isAutoPlay(), false);
+                            } catch (IllegalStateException ignored) {
+                                ALog.e(LOG_TAG, "run firePrepared, IllegalStateException.");
+                            }
+                        }
+                    } finally {
+                        mediaPlayerLock.unlock();
+                    }
+                }
+            });
     }
 
     private void resetFromParams(MediaPlayer mp) {
@@ -325,102 +380,6 @@ public class AceVideoAosp extends AceVideoBase
             ALog.e(LOG_TAG, "resetFromParams, IllegalArgumentException.");
         } catch (IllegalStateException e) {
             ALog.e(LOG_TAG, "resetFromParams, IllegalStateException.");
-        }
-    }
-
-    private boolean handleStoppedOnPrepared() {
-        if (isStoped && state == PlayState.STOPPED) {
-            mediaPlayer.stop();
-            ALog.e(LOG_TAG, "media player is STOPPED.");
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isMediaPlayerInvalid(MediaPlayer mp) {
-        if (mp == null || mediaPlayer == null) {
-            ALog.e(LOG_TAG, "onPrepared failed, MediaPlayer is null");
-            return true;
-        }
-        return false;
-    }
-
-    private boolean shouldAutoPlayOnPrepared() {
-        return !isNeedResume && isAutoPlay();
-    }
-
-    private void startPlaybackAndNotify() {
-        mediaPlayer.start();
-        state = PlayState.STARTED;
-        setKeepScreenOn(true);
-        runOnUIThread(() -> firePlayStatusChange(true));
-    }
-
-    private boolean handleResumeOnPreparedInternal() {
-        if (!isNeedResume) {
-            return false;
-        }
-        if (isResumePlaying) {
-            if (!mediaPlayer.isPlaying()) {
-                mediaPlayer.start();
-            }
-            state = PlayState.STARTED;
-            setKeepScreenOn(true);
-            runOnUIThread(() -> firePlayStatusChange(true));
-            isResumePlaying = false;
-        } else if (isStoped) {
-            if (mediaPlayer.isPlaying()) {
-                mediaPlayer.stop();
-            }
-            state = PlayState.STOPPED;
-        } else {
-            if (mediaPlayer.isPlaying()) {
-                mediaPlayer.pause();
-            }
-            state = PlayState.PAUSED;
-        }
-        isNeedResume = false;
-        return true;
-    }
-
-    private void handlePauseWhenNotAutoPlay() {
-        if (!isAutoPlay() && mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
-            state = PlayState.PAUSED;
-        }
-    }
-
-    private boolean setupTextureIfNeeded(int videoWidth, int videoHeight) {
-        if (!isTexture) {
-            return true;
-        }
-        SurfaceTexture surfaceTexture = AceTextureHolder.getSurfaceTexture(surfaceId);
-        if (surfaceTexture == null) {
-            return false;
-        }
-        surfaceTexture.setDefaultBufferSize(videoWidth, videoHeight);
-        return true;
-    }
-
-    private void handlePreparedOnUiThread() {
-        mediaPlayerLock.lock();
-        try {
-            if (mediaPlayer == null) {
-                return;
-            }
-            try {
-                int videoWidth = mediaPlayer.getVideoWidth();
-                int videoHeight = mediaPlayer.getVideoHeight();
-                int duration = mediaPlayer.getDuration();
-                if (!setupTextureIfNeeded(videoWidth, videoHeight)) {
-                    return;
-                }
-                firePrepared(videoWidth, videoHeight, duration, isAutoPlay(), false);
-            } catch (IllegalStateException ignored) {
-                ALog.e(LOG_TAG, "run firePrepared, IllegalStateException.");
-            }
-        } finally {
-            mediaPlayerLock.unlock();
         }
     }
 
