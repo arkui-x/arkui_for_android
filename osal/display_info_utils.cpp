@@ -51,6 +51,11 @@ FoldStatus DisplayInfoUtils::GetCurrentFoldStatus()
     return FoldStatus::UNKNOWN;
 }
 
+DisplaySourceMode DisplayInfoUtils::GetDisplaySourceMode()
+{
+    return DisplaySourceMode::NONE;
+}
+
 std::vector<Rect> DisplayInfoUtils::GetCurrentFoldCreaseRegion()
 {
     hasInitFoldCreaseRegion_ = true;
