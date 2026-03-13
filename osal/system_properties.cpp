@@ -126,6 +126,7 @@ bool SystemProperties::isVelocityWithinTimeWindow_ = true;
 bool SystemProperties::isVelocityWithoutUpPoint_ = true;
 bool SystemProperties::prebuildInMultiFrameEnabled_ = false;
 bool SystemProperties::isOpenYuvDecode_ = false;
+bool SystemProperties::autoResizeEnabled_ = false;
 std::once_flag SystemProperties::getSysPropertiesFlag_;
 
 bool SystemProperties::IsOpIncEnable()
