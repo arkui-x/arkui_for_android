@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -311,6 +311,28 @@ public abstract class AceVideoBase {
             updateResource(param);
         });
         callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "updateresource" + PARAM_BEGIN, callUpdateSrc);
+
+        IAceOnCallResourceMethod callSetRenderFirstFrame = new IAceOnCallResourceMethod() {
+            /**
+             * This is called to set video render first frame
+             *
+             * @param param calling param
+             * @return unused
+             */
+            public String onCall(Map<String, String> param) {
+                runAsync(new InnerProcessor(param) {
+                    /**
+                     * This is called to set video render first frame
+                     */
+                    public void run() {
+                        setRenderFirstFrame(param);
+                    }
+                });
+                return "";
+            }
+        };
+        callMethodMap.put(VIDEO_FLAG + id + METHOD + PARAM_EQUALS + "setRenderFirstFrame" + PARAM_BEGIN,
+            callSetRenderFirstFrame);
     }
 
     /**
@@ -543,6 +565,14 @@ public abstract class AceVideoBase {
     public abstract String updateResource(Map<String, String> params);
 
     /**
+     * This is called to set render first frame.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String setRenderFirstFrame(Map<String, String> params);
+
+    /**
      * This is called to fire prepared event.
      *
      * @param width width of video.
@@ -580,6 +610,13 @@ public abstract class AceVideoBase {
     public void fireSeekComplete(int position) {
         callback.onEvent(VIDEO_FLAG + id + EVENT + PARAM_EQUALS + "seekcomplete" + PARAM_BEGIN,
             "currentpos=" + position);
+    }
+
+    /**
+     * This is called to fire stop event.
+     */
+    public void fireStop() {
+        callback.onEvent(VIDEO_FLAG + id + EVENT + PARAM_EQUALS + "stop" + PARAM_BEGIN, "");
     }
 
     /**
