@@ -383,6 +383,7 @@ private:
     virtual bool MaybeRelease() override;
     void InitializeFrontend();
     void InitializeCallback();
+    void InitWindowCallback();
     void InitPiplineContext(std::unique_ptr<Window> window, double density, int32_t width, int32_t height,
         uint32_t windowId);
     void InitializeEventHandler();
