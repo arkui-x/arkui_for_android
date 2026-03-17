@@ -54,7 +54,7 @@ Ace::KeyCode KeyCodeToAceKeyCode(int keyCode)
 {
     Ace::KeyCode aceKeyCode = Ace::KeyCode::KEY_UNKNOWN;
     const static std::map<int32_t, Ace::KeyCode> TO_OHOS_KEYCODE_MAP = {
-        { 4 /* KEYCODE_BACK */, Ace::KeyCode::KEY_ESCAPE },
+        { 4 /* KEYCODE_BACK */, Ace::KeyCode::KEY_BACK },
         { 7 /* KEYCODE_0 */, Ace::KeyCode::KEY_0 },
         { 8 /* KEYCODE_1 */, Ace::KeyCode::KEY_1 },
         { 9 /* KEYCODE_2 */, Ace::KeyCode::KEY_2 },
