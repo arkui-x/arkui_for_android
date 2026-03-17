@@ -112,7 +112,7 @@ public class PlatformViewWrapper extends FrameLayout {
      */
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-        return super.onInterceptTouchEvent(event);
+        return true;
     }
 
     /**
