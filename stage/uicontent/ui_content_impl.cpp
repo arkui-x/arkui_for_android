@@ -21,6 +21,7 @@
 #include "ability_context.h"
 #include "ability_info.h"
 #include "js_runtime_utils.h"
+#include "module_load_callback.h"
 #include "res_config.h"
 #include "resource_manager.h"
 #include "stage_asset_provider.h"
@@ -405,7 +406,15 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     container->SetIsModule(info->compileMode == AppExecFwk::CompileMode::ES_MODULE);
     container->SetPageUrlChecker(AceType::MakeRefPtr<PageUrlCheckerAndroid>());
     container->SetNavigationRoute(AceType::MakeRefPtr<NavigationRoute>(context->GetBundleName()));
-
+    auto weakContainer = AceType::WeakClaim(AceType::RawPtr(container));
+    OHOS::AbilityRuntime::Platform::ModuleLoadCallbackManager::GetInstance().RegisterCallback(
+        instanceId_, [weakContainer]() {
+            auto container = weakContainer.Upgrade();
+            CHECK_NULL_VOID(container);
+            auto navigationRoute = container->GetNavigationRoute();
+            CHECK_NULL_VOID(navigationRoute);
+            navigationRoute->InitRouteMap();
+        });
     std::vector<std::string> resourcePaths;
     std::string sysResPath { "" };
     abilityContext->GetResourcePaths(resourcePaths, sysResPath);
@@ -553,6 +562,7 @@ void UIContentImpl::UnFocus()
 void UIContentImpl::Destroy()
 {
     LOGI("UIContentImpl: window destroy");
+    OHOS::AbilityRuntime::Platform::ModuleLoadCallbackManager::GetInstance().UnregisterCallback(instanceId_);
     auto container = AceEngine::Get().GetContainer(instanceId_);
     CHECK_NULL_VOID(container);
     Platform::AceContainerSG::DestroyContainer(instanceId_);
