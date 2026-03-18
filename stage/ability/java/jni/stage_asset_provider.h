@@ -167,7 +167,7 @@ private:
     std::string databaseDir_;
     std::string appLibDir_;
     std::string appDataLibDir_;
-    std::string arkuiXAssetsDir_;
+    std::string arkuiXSandboxDir_;
     std::string preferenceDir_;
     std::string resourcesFilePrefixPath_;
     std::string architecture_;
