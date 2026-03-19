@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,6 +19,7 @@
 #include "app_main.h"
 #include "application_context_adapter.h"
 #include "foundation/arkui/ace_engine/adapter/android/entrance/java/jni/apk_asset_provider.h"
+#include "foundation/arkui/ace_engine/adapter/android/osal/high_contrast_observer.h"
 #include "stage_application_info_adapter.h"
 #include "stage_asset_provider.h"
 
@@ -140,7 +141,12 @@ bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
             .name = "nativeLoadModule",
             .signature = "(Ljava/lang/String;Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&LoadModule),
-        }
+        },
+        {
+            .name = "nativeOnHighContrastChanged",
+            .signature = "(Z)V",
+            .fnPtr = reinterpret_cast<void*>(&OnHighContrastChanged),
+        },
     };
 
     if (!env) {
@@ -420,6 +426,12 @@ void StageApplicationDelegateJni::LoadModule(
     AppMain::GetInstance()->LoadModule(moduleName, entryFile);
     env->ReleaseStringUTFChars(jModuleName, moduleName);
     env->ReleaseStringUTFChars(jEntryFile, entryFile);
+}
+
+void StageApplicationDelegateJni::OnHighContrastChanged(JNIEnv* env, jclass myclass, jboolean isEnabled)
+{
+    CHECK_NULL_VOID(env);
+    Ace::Platform::HighContrastObserver::GetInstance().OnHighContrastChange(isEnabled);
 }
 
 OHOS::Ace::LogLevel StageApplicationDelegateJni::GetCurrentLogLevel()

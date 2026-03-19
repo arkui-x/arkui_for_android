@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -51,6 +51,7 @@ public:
     static void DispatchApplicationOnBackground(JNIEnv* env, jclass myclass);
     static void PreloadModule(JNIEnv* env, jclass myclass, jstring jModuleName, jstring jAbilityName);
     static void LoadModule(JNIEnv* env, jclass myclass, jstring jModuleName, jstring jEntryFile);
+    static void OnHighContrastChanged(JNIEnv* env, jclass myclass, jboolean isEnabled);
     static OHOS::Ace::LogLevel GetCurrentLogLevel();
 };
 } // namespace Platform
