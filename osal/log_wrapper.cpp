@@ -120,7 +120,7 @@ void Platform::StopLogProcessingThread()
     }
 }
 
-void PassLogMessage(LogDomain domain, LogLevel level, std::string newFmt, va_list args)
+void PassLogMessage(LogDomain domain, LogLevel level, const char* fmt)
 {
     if (fmt == nullptr) {
         return;
