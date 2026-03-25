@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -123,6 +123,22 @@ public class AceVideoAosp extends AceVideoBase
     private boolean isTexture = false;
 
     private boolean isStoped = false;
+
+    private boolean isShowFirstFrame = false;
+
+    private boolean isInternalFirstFrameSeeking = false;
+
+    private boolean isMediaPrepared = false;
+
+    private boolean isPendingRenderFirstFrameUpdate = false;
+
+    private boolean shouldDelaySurfaceAttachForReset = false;
+
+    private boolean shouldDelaySurfaceAttachForSourceSwitch = false;
+
+    private boolean isManualStartFromStopped = false;
+
+    private boolean shouldNotifyCurrentTimeOnPrepared = false;
 
     /**
      * constructor of AceVideo on AOSP platform
@@ -259,6 +275,7 @@ public class AceVideoAosp extends AceVideoBase
                 mediaPlayer.setOnSeekCompleteListener(this);
                 mediaPlayer.setOnCompletionListener(this);
                 mediaPlayer.setOnBufferingUpdateListener(this);
+                isMediaPrepared = false;
                 mediaPlayer.prepareAsync();
                 state = PlayState.PREPARED;
             } catch (IllegalStateException ignored) {
@@ -275,85 +292,53 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public void onPrepared(MediaPlayer mp) {
         ALog.i(LOG_TAG, "onPrepared");
+        boolean isSkipPauseForManualStart = false;
+        boolean isManualStartFromStoppedPrepared = false;
+        boolean shouldNotifyCurrentTime = false;
         mediaPlayerLock.lock();
         try {
-            if (isStoped && state == PlayState.STOPPED) {
-                mediaPlayer.stop();
-                ALog.e(LOG_TAG, "media player is STOPPED.");
+            if (handleStoppedOnPrepared()) {
                 return;
             }
-            if (mp == null || mediaPlayer == null) {
-                ALog.e(LOG_TAG, "onPrepared failed, MediaPlayer is null");
+            if (isMediaPlayerInvalid(mp)) {
                 return;
             }
-            if (!isNeedResume && isAutoPlay()) {
-                mediaPlayer.start();
-                state = PlayState.STARTED;
-                setKeepScreenOn(true);
-                runOnUIThread(() -> {
-                    firePlayStatusChange(true);
-                });
+            isMediaPrepared = true;
+            try {
+                boolean isManualStartPlaying = mediaPlayer.isPlaying() && !isPaused;
+                isManualStartFromStoppedPrepared = isManualStartFromStopped;
+                if (isManualStartFromStopped || isManualStartPlaying) {
+                    isSkipPauseForManualStart = true;
+                    isManualStartFromStopped = false;
+                }
+            } catch (IllegalStateException ignored) {
+                ALog.e(LOG_TAG, "onPrepared check isPlaying failed, IllegalStateException.");
+            }
+            if (shouldAutoPlayOnPrepared(isManualStartFromStoppedPrepared)) {
+                startPlaybackAndNotify();
             }
             resetFromParams(mediaPlayer);
             try {
-                if (isNeedResume) {
-                    if (isResumePlaying) {
-                        if (!mediaPlayer.isPlaying()) {
-                            mediaPlayer.start();
-                        }
-                        state = PlayState.STARTED;
-                        setKeepScreenOn(true);
-                        runOnUIThread(() -> {
-                            firePlayStatusChange(true);
-                        });
-                        isResumePlaying = false;
-                    } else {
-                        if (isStoped) {
-                            if (mediaPlayer.isPlaying()) {
-                                mediaPlayer.stop();
-                            }
-                            state = PlayState.STOPPED;
-                        } else {
-                            if (mediaPlayer.isPlaying()) {
-                                mediaPlayer.pause();
-                            }
-                            state = PlayState.PAUSED;
-                        }
-                    }
-                    isNeedResume = false;
+                if (handleResumeOnPreparedInternal()) {
                     return;
                 }
-                if (!isAutoPlay() && mediaPlayer.isPlaying()) {
-                    mediaPlayer.pause();
-                    state = PlayState.PAUSED;
-                }
+                handlePauseWhenNotAutoPlay(isSkipPauseForManualStart);
             } catch (IllegalStateException ignored) {
                 ALog.e(LOG_TAG, "run onPrepared, IllegalStateException.");
             }
+            shouldNotifyCurrentTime = shouldNotifyCurrentTimeOnPrepared;
+            shouldNotifyCurrentTimeOnPrepared = false;
         } finally {
             mediaPlayerLock.unlock();
         }
-        runOnUIThread(
-            new Runnable() {
-                /**
-                 * This is called to fire prepared event.
-                 */
-                public void run() {
-                    mediaPlayerLock.lock();
-                    try {
-                        if (mediaPlayer != null) {
-                            try {
-                                firePrepared(mediaPlayer.getVideoWidth(), mediaPlayer.getVideoHeight(),
-                                mediaPlayer.getDuration(), isAutoPlay(), false);
-                            } catch (IllegalStateException ignored) {
-                                ALog.e(LOG_TAG, "run firePrepared, IllegalStateException.");
-                            }
-                        }
-                    } finally {
-                        mediaPlayerLock.unlock();
-                    }
-                }
-            });
+        updateFirstFrameVisibility();
+        boolean finalShouldNotifyCurrentTime = shouldNotifyCurrentTime;
+        runOnUIThread(() -> {
+            if (finalShouldNotifyCurrentTime) {
+                fireGetCurrenttime(0);
+            }
+            handlePreparedOnUiThread();
+        });
     }
 
     private void resetFromParams(MediaPlayer mp) {
@@ -383,6 +368,88 @@ public class AceVideoAosp extends AceVideoBase
         }
     }
 
+    private boolean handleStoppedOnPrepared() {
+        if (isStoped && state == PlayState.STOPPED) {
+            mediaPlayer.stop();
+            ALog.e(LOG_TAG, "media player is STOPPED.");
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isMediaPlayerInvalid(MediaPlayer mp) {
+        if (mp == null || mediaPlayer == null) {
+            ALog.e(LOG_TAG, "onPrepared failed, MediaPlayer is null");
+            return true;
+        }
+        return false;
+    }
+
+    private boolean shouldAutoPlayOnPrepared(boolean isManualStartFromStoppedPrepared) {
+        return !isNeedResume && isAutoPlay() && !isManualStartFromStoppedPrepared;
+    }
+
+    private void startPlaybackAndNotify() {
+        mediaPlayer.start();
+        state = PlayState.STARTED;
+        setKeepScreenOn(true);
+        runOnUIThread(() -> firePlayStatusChange(true));
+    }
+
+    private boolean handleResumeOnPreparedInternal() {
+        if (!isNeedResume) {
+            return false;
+        }
+        if (isResumePlaying) {
+            if (!mediaPlayer.isPlaying()) {
+                mediaPlayer.start();
+            }
+            state = PlayState.STARTED;
+            setKeepScreenOn(true);
+            runOnUIThread(() -> firePlayStatusChange(true));
+            isResumePlaying = false;
+        } else if (isStoped) {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+            }
+            state = PlayState.STOPPED;
+        } else {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.pause();
+            }
+            state = PlayState.PAUSED;
+        }
+        isNeedResume = false;
+        return true;
+    }
+
+    private void handlePauseWhenNotAutoPlay(boolean isSkipPauseForManualStart) {
+        if (!isAutoPlay() && mediaPlayer.isPlaying() && !isSkipPauseForManualStart) {
+            mediaPlayer.pause();
+            state = PlayState.PAUSED;
+        }
+    }
+
+    private void handlePreparedOnUiThread() {
+        mediaPlayerLock.lock();
+        try {
+            if (mediaPlayer == null) {
+                return;
+            }
+            try {
+                int videoWidth = mediaPlayer.getVideoWidth();
+                int videoHeight = mediaPlayer.getVideoHeight();
+                int duration = mediaPlayer.getDuration();
+                boolean isPlaying = mediaPlayer.isPlaying();
+                firePrepared(videoWidth, videoHeight, duration, isPlaying, false);
+            } catch (IllegalStateException ignored) {
+                ALog.e(LOG_TAG, "run firePrepared, IllegalStateException.");
+            }
+        } finally {
+            mediaPlayerLock.unlock();
+        }
+    }
+
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         ALog.i(LOG_TAG, "onError");
@@ -401,6 +468,7 @@ public class AceVideoAosp extends AceVideoBase
         runAsync(() -> {
             mediaPlayerLock.lock();
             isNeedResume = true;
+            isMediaPrepared = false;
             try {
                 reset();
                 if (!resume()) {
@@ -431,6 +499,21 @@ public class AceVideoAosp extends AceVideoBase
 
     @Override
     public void onSeekComplete(MediaPlayer mp) {
+        boolean isInternalFirstFrameSeek = false;
+        mediaPlayerLock.lock();
+        try {
+            if (isInternalFirstFrameSeeking) {
+                isInternalFirstFrameSeek = true;
+                isInternalFirstFrameSeeking = false;
+            }
+        } finally {
+            mediaPlayerLock.unlock();
+        }
+
+        if (isInternalFirstFrameSeek) {
+            return;
+        }
+
         runOnUIThread(
             new Runnable() {
                 /**
@@ -441,7 +524,9 @@ public class AceVideoAosp extends AceVideoBase
                     try {
                         if (mediaPlayer != null) {
                             try {
-                                fireSeekComplete(mediaPlayer.getCurrentPosition() / SECOND_TO_MSEC);
+                                int currentPosition = mediaPlayer.getCurrentPosition() / SECOND_TO_MSEC;
+                                fireGetCurrenttime(currentPosition);
+                                fireSeekComplete(currentPosition);
                             } catch (IllegalStateException ignored) {
                                 ALog.e(LOG_TAG, "run failed, IllegalStateException.");
                             }
@@ -465,25 +550,20 @@ public class AceVideoAosp extends AceVideoBase
                 ALog.w(LOG_TAG, "media player is null.");
                 return FAIL;
             }
-            isPaused = false;
+            if (isPendingRenderFirstFrameUpdate) {
+                isPendingRenderFirstFrameUpdate = false;
+            }
             if (!isSetSurfaced) {
                 Surface surface = getSurface();
                 if (surface != null && mediaPlayer != null) {
                     mediaPlayer.setSurface(surface);
                     isSetSurfaced = true;
+                    shouldDelaySurfaceAttachForReset = false;
+                    shouldDelaySurfaceAttachForSourceSwitch = false;
                 }
             }
             if (state == PlayState.STOPPED) {
-                try {
-                    if (mediaPlayer != null) {
-                        mediaPlayer.prepare();
-                    }
-                    state = PlayState.PREPARED;
-                } catch (IOException ignored) {
-                    ALog.e(LOG_TAG, "start failed, IOException");
-                    return FAIL;
-                } catch (IllegalStateException ignored) {
-                    ALog.e(LOG_TAG, "start failed, IllegalStateException.");
+                if (!preparePlayerFromStopped(true, "start")) {
                     return FAIL;
                 }
             }
@@ -492,6 +572,7 @@ public class AceVideoAosp extends AceVideoBase
                 isSpeedChanged = false;
             }
             if (mediaPlayer != null) {
+                isPaused = false;
                 mediaPlayer.start();
                 isStoped = false;
             }
@@ -534,6 +615,7 @@ public class AceVideoAosp extends AceVideoBase
     @Override
     public String stop(Map<String, String> params) {
         ALog.i(LOG_TAG, "stop param:" + params);
+        boolean isStopSuccess = false;
         mediaPlayerLock.lock();
         try {
             isPaused = true;
@@ -562,7 +644,8 @@ public class AceVideoAosp extends AceVideoBase
                 mediaPlayer.setOnSeekCompleteListener(this);
                 mediaPlayer.setOnCompletionListener(this);
                 mediaPlayer.setOnBufferingUpdateListener(this);
-                mediaPlayer.prepareAsync();
+                isMediaPrepared = false;
+                isStopSuccess = true;
             } catch (IllegalStateException ignored) {
                 ALog.e(LOG_TAG, "stop failed, IllegalStateException.");
                 return FAIL;
@@ -571,7 +654,11 @@ public class AceVideoAosp extends AceVideoBase
             mediaPlayerLock.unlock();
             state = PlayState.STOPPED;
             isStoped = true;
+            isManualStartFromStopped = false;
             setKeepScreenOn(false);
+        }
+        if (isStopSuccess) {
+            runOnUIThread(() -> fireStop());
         }
         return SUCCESS;
     }
@@ -592,12 +679,13 @@ public class AceVideoAosp extends AceVideoBase
                 ALog.w(LOG_TAG, "media player is null.");
                 return FAIL;
             }
-            if (state == PlayState.STOPPED || state == PlayState.PREPARED) {
-                ALog.w(LOG_TAG, "media player is not STARTED.");
+            if (state == PlayState.STOPPED) {
+                ALog.i(LOG_TAG, "seekTo ignored because player is STOPPED.");
                 return SUCCESS;
             }
             try {
                 int msec = Integer.parseInt(params.get(KEY_VALUE));
+                attachSurfaceIfNeededForSeek();
                 if (params.containsKey("seekMode")) {
                     int mode = Integer.parseInt(params.get("seekMode"));
                     mediaPlayer.seekTo(msec, mode);
@@ -632,10 +720,11 @@ public class AceVideoAosp extends AceVideoBase
             }
             try {
                 float volume = Float.parseFloat(params.get(KEY_VALUE));
-                mediaPlayer.setVolume(volume, volume);
                 if (Math.abs(volume) < 0.00001) {
+                    mediaPlayer.setVolume(0.0f, 0.0f);
                     setIsMute(true);
                 } else {
+                    mediaPlayer.setVolume(volume, volume);
                     setIsMute(false);
                 }
                 ALog.i(LOG_TAG, "setVolume ." + volume);
@@ -671,6 +760,9 @@ public class AceVideoAosp extends AceVideoBase
             }
         } finally {
             mediaPlayerLock.unlock();
+        }
+        if (isShowFirstFrame || isPendingRenderFirstFrameUpdate) {
+            updateFirstFrameVisibility();
         }
         runOnUIThread(
             new Runnable() {
@@ -784,23 +876,34 @@ public class AceVideoAosp extends AceVideoBase
                     isTexture = true;
                 }
                 ALog.i(LOG_TAG, "setSurface id:" + surfaceId);
-                Surface surface = getSurface();
-                if (surface != null && mediaPlayer != null) {
-                    ALog.i(LOG_TAG, "MediaPlayer SetSurface");
-                    mediaPlayer.setSurface(surface);
-                    isSetSurfaced = true;
+                if (shouldDelaySurfaceAttachForReset || shouldDelaySurfaceAttachForSourceSwitch ||
+                    isPendingRenderFirstFrameUpdate) {
+                    isSetSurfaced = false;
+                    return SUCCESS;
                 }
+                Surface surface = getSurface();
+                if (surface == null || mediaPlayer == null) {
+                    isSetSurfaced = false;
+                    ALog.e(LOG_TAG, "setSurface failed: surface or mediaPlayer is null.");
+                    return FAIL;
+                }
+                mediaPlayer.setSurface(surface);
+                isSetSurfaced = true;
             } catch (NumberFormatException ignored) {
                 ALog.e(LOG_TAG, "NumberFormatException, setSurface failed. value = " + params.get(KEY_VALUE));
                 return FAIL;
             } catch (IllegalArgumentException ignored) {
                 ALog.e(LOG_TAG, "IllegalArgumentException, setSurface failed. value = " + params.get(KEY_VALUE));
                 return FAIL;
+            } catch (IllegalStateException ignored) {
+                ALog.e(LOG_TAG, "IllegalStateException, setSurface failed. value = " + params.get(KEY_VALUE));
+                return FAIL;
             }
         } finally {
             mediaPlayerLock.unlock();
         }
-        return FAIL;
+        updateFirstFrameVisibility();
+        return SUCCESS;
     }
 
     @Override
@@ -812,31 +915,72 @@ public class AceVideoAosp extends AceVideoBase
                 ALog.e(LOG_TAG, "updateResource failed, param is null");
                 return FAIL;
             }
-            try {
-                ALog.i(LOG_TAG, "updateResource state:" + state.toString());
-                mediaPlayer.reset();
-                state = PlayState.IDLE;
-                if (!params.containsKey(KEY_SOURCE) || !setDataSource(params.get(KEY_SOURCE))) {
-                    return FAIL;
-                }
-                mediaPlayer.prepare();
-                state = PlayState.PREPARED;
-                mediaPlayer.start();
-                state = PlayState.STARTED;
-                mediaPlayer.pause();
-                state = PlayState.PAUSED;
-                setKeepScreenOn(false);
-            } catch (IOException ignored) {
-                ALog.e(LOG_TAG, "updateResource failed, IOException");
-                return FAIL;
-            } catch (IllegalStateException ignored) {
-                ALog.e(LOG_TAG, "updateResource failed, IllegalStateException.");
-                return FAIL;
-            }
+            return updateResourceInternal(params);
         } finally {
             mediaPlayerLock.unlock();
         }
-        return SUCCESS;
+    }
+
+    @Override
+    public String setRenderFirstFrame(Map<String, String> params) {
+        if (params == null) {
+            return FAIL;
+        }
+        String showFirstFrameValue = params.get("showFirstFrame");
+        if (showFirstFrameValue == null) {
+            return FAIL;
+        }
+        try {
+            isShowFirstFrame = Integer.parseInt(showFirstFrameValue) != 0;
+        } catch (NumberFormatException ignored) {
+            ALog.e(LOG_TAG, "setRenderFirstFrame failed: invalid showFirstFrame value.");
+            return FAIL;
+        }
+        return handleSetRenderFirstFrame();
+    }
+
+    private void updateFirstFrameVisibility() {
+        if (isPendingRenderFirstFrameUpdate) {
+            return;
+        }
+        if (!isShowFirstFrame) {
+            return;
+        }
+        if (!isMediaPrepared || !isSetSurfaced) {
+            return;
+        }
+        MediaPlayer currentPlayer = null;
+        mediaPlayerLock.lock();
+        try {
+            if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
+                if (mediaPlayer.getCurrentPosition() > 0) {
+                    return;
+                }
+                isInternalFirstFrameSeeking = true;
+                currentPlayer = mediaPlayer;
+            }
+        } catch (IllegalStateException e) {
+            isInternalFirstFrameSeeking = false;
+            ALog.e(LOG_TAG, "updateFirstFrameVisibility seekTo failed, IllegalStateException.");
+        } finally {
+            mediaPlayerLock.unlock();
+        }
+        if (currentPlayer == null) {
+            return;
+        }
+        try {
+            currentPlayer.seekTo(0);
+        } catch (IllegalStateException e) {
+            mediaPlayerLock.lock();
+            try {
+                if (mediaPlayer == currentPlayer) {
+                    isInternalFirstFrameSeeking = false;
+                }
+            } finally {
+                mediaPlayerLock.unlock();
+            }
+            ALog.e(LOG_TAG, "updateFirstFrameVisibility seekTo failed, IllegalStateException.");
+        }
     }
 
     @Override
@@ -945,6 +1089,12 @@ public class AceVideoAosp extends AceVideoBase
         state = PlayState.IDLE;
         isSetSurfaced = false;
         isSpeedChanged = true;
+        isMediaPrepared = false;
+        isPendingRenderFirstFrameUpdate = false;
+        isInternalFirstFrameSeeking = false;
+        shouldDelaySurfaceAttachForReset = false;
+        shouldDelaySurfaceAttachForSourceSwitch = false;
+        isManualStartFromStopped = false;
 
         if (mediaPlayer == null) {
             ALog.w(LOG_TAG, "media player is null.");
@@ -988,6 +1138,7 @@ public class AceVideoAosp extends AceVideoBase
             mediaPlayer.setOnSeekCompleteListener(this);
             mediaPlayer.setOnCompletionListener(this);
             mediaPlayer.setOnBufferingUpdateListener(this);
+            isMediaPrepared = false;
             mediaPlayer.prepareAsync();
             state = PlayState.PREPARED;
         } catch (IllegalStateException ignored) {
@@ -1040,6 +1191,209 @@ public class AceVideoAosp extends AceVideoBase
             return false;
         }
         return true;
+    }
+
+    private boolean preparePlayerFromStopped(boolean isManualStart, String action) {
+        try {
+            isManualStartFromStopped = isManualStart;
+            isStoped = false;
+            if (mediaPlayer != null) {
+                mediaPlayer.prepare();
+                isMediaPrepared = true;
+                state = PlayState.PREPARED;
+            }
+            return true;
+        } catch (IOException ignored) {
+            isManualStartFromStopped = false;
+            isStoped = true;
+            state = PlayState.STOPPED;
+            ALog.e(LOG_TAG, action + " failed, IOException");
+            return false;
+        } catch (IllegalStateException ignored) {
+            isManualStartFromStopped = false;
+            isStoped = true;
+            state = PlayState.STOPPED;
+            ALog.e(LOG_TAG, action + " failed, IllegalStateException.");
+            return false;
+        }
+    }
+
+    private String updateResourceInternal(Map<String, String> params) {
+        try {
+            boolean isResetRequest = isResetRequest(params);
+            prepareUpdateFlags(isResetRequest);
+            detachSurfaceBeforeUpdate(isResetRequest);
+            if (!resetAndPreparePlayer(params)) {
+                resetUpdateFlags();
+                return FAIL;
+            }
+            if (isResetRequest) {
+                return keepFrameAfterReset();
+            }
+            return handleSourceSwitchAfterPrepare();
+        } catch (IOException ignored) {
+            resetUpdateFlags();
+            ALog.e(LOG_TAG, "updateResource failed, IOException");
+            return FAIL;
+        } catch (IllegalStateException ignored) {
+            resetUpdateFlags();
+            ALog.e(LOG_TAG, "updateResource failed, IllegalStateException.");
+            return FAIL;
+        }
+    }
+
+    private void resetUpdateFlags() {
+        isPendingRenderFirstFrameUpdate = false;
+        shouldDelaySurfaceAttachForReset = false;
+        shouldDelaySurfaceAttachForSourceSwitch = false;
+        shouldNotifyCurrentTimeOnPrepared = false;
+    }
+
+    private boolean isResetRequest(Map<String, String> params) {
+        if (!params.containsKey("reset")) {
+            return false;
+        }
+        try {
+            return Integer.parseInt(params.get("reset")) != 0;
+        } catch (NumberFormatException ignored) {
+            ALog.e(LOG_TAG, "isResetRequest failed: invalid reset value.");
+            return false;
+        }
+    }
+
+    private void prepareUpdateFlags(boolean isResetRequest) {
+        isPendingRenderFirstFrameUpdate = !isResetRequest;
+        shouldDelaySurfaceAttachForReset = isResetRequest;
+        shouldDelaySurfaceAttachForSourceSwitch = !isResetRequest && !isShowFirstFrame;
+        shouldNotifyCurrentTimeOnPrepared = isResetRequest;
+    }
+
+    private void detachSurfaceBeforeUpdate(boolean isResetRequest) {
+        if (!isSetSurfaced) {
+            return;
+        }
+        try {
+            mediaPlayer.setSurface(null);
+            isSetSurfaced = false;
+        } catch (IllegalArgumentException ignored) {
+            ALog.e(LOG_TAG, isResetRequest
+                ? "updateResource detach current surface before reset failed, IllegalArgumentException."
+                : "updateResource detach current surface before source switch failed, IllegalArgumentException.");
+        }
+    }
+
+    private boolean resetAndPreparePlayer(Map<String, String> params) throws IOException {
+        mediaPlayer.reset();
+        state = PlayState.IDLE;
+        position = 0;
+        isSetSurfaced = false;
+        if (!params.containsKey(KEY_SOURCE) || !setDataSource(params.get(KEY_SOURCE))) {
+            return false;
+        }
+        mediaPlayer.prepare();
+        isMediaPrepared = true;
+        state = PlayState.PREPARED;
+        return true;
+    }
+
+    private String keepFrameAfterReset() {
+        setKeepScreenOn(false);
+        return SUCCESS;
+    }
+
+    private String handleSourceSwitchAfterPrepare() {
+        if (isShowFirstFrame) {
+            return renderFirstFrameAfterSourceSwitch();
+        }
+        isPendingRenderFirstFrameUpdate = false;
+        setKeepScreenOn(false);
+        return SUCCESS;
+    }
+
+    private String renderFirstFrameAfterSourceSwitch() {
+        shouldDelaySurfaceAttachForSourceSwitch = false;
+        bindSurfaceForCurrentPlayer();
+        if (!isSetSurfaced) {
+            return SUCCESS;
+        }
+        isPendingRenderFirstFrameUpdate = false;
+        mediaPlayer.start();
+        state = PlayState.STARTED;
+        mediaPlayer.pause();
+        state = PlayState.PAUSED;
+        setKeepScreenOn(false);
+        return SUCCESS;
+    }
+
+    private String handleSetRenderFirstFrame() {
+        if (shouldDelaySurfaceAttachForReset) {
+            return SUCCESS;
+        }
+        if (shouldDelaySurfaceAttachForSourceSwitch && !isShowFirstFrame) {
+            return SUCCESS;
+        }
+        if (shouldDelaySurfaceAttachForSourceSwitch) {
+            shouldDelaySurfaceAttachForSourceSwitch = false;
+        }
+        boolean isSourceUpdatePending = isPendingRenderFirstFrameUpdate;
+        isPendingRenderFirstFrameUpdate = false;
+        maybeRestoreSurfaceForFirstFrame(isSourceUpdatePending);
+        updateFirstFrameVisibility();
+        return SUCCESS;
+    }
+
+    private void maybeRestoreSurfaceForFirstFrame(boolean isSourceUpdatePending) {
+        if (!isShowFirstFrame || isSetSurfaced) {
+            return;
+        }
+        mediaPlayerLock.lock();
+        try {
+            if (mediaPlayer == null) {
+                return;
+            }
+            bindSurfaceForCurrentPlayer();
+            refreshSourceUpdateFirstFrame(isSourceUpdatePending);
+        } catch (IllegalArgumentException ignored) {
+            ALog.e(LOG_TAG, "setRenderFirstFrame restore surface failed, IllegalArgumentException.");
+        } catch (IllegalStateException ignored) {
+            ALog.e(LOG_TAG, "setRenderFirstFrame refresh first frame failed, IllegalStateException.");
+        } finally {
+            mediaPlayerLock.unlock();
+        }
+    }
+
+    private void refreshSourceUpdateFirstFrame(boolean isSourceUpdatePending) {
+        if (!isSourceUpdatePending || !isShowFirstFrame || !isMediaPrepared || !isSetSurfaced) {
+            return;
+        }
+        mediaPlayer.start();
+        state = PlayState.STARTED;
+        mediaPlayer.pause();
+        state = PlayState.PAUSED;
+        setKeepScreenOn(false);
+    }
+
+    private void bindSurfaceForCurrentPlayer() {
+        Surface surface = getSurface();
+        if (surface == null || mediaPlayer == null) {
+            return;
+        }
+        mediaPlayer.setSurface(surface);
+        isSetSurfaced = true;
+    }
+
+    private void attachSurfaceIfNeededForSeek() {
+        if (isSetSurfaced) {
+            return;
+        }
+        Surface surface = getSurface();
+        if (surface == null || mediaPlayer == null) {
+            return;
+        }
+        mediaPlayer.setSurface(surface);
+        isSetSurfaced = true;
+        shouldDelaySurfaceAttachForReset = false;
+        shouldDelaySurfaceAttachForSourceSwitch = false;
     }
 
     @Override
