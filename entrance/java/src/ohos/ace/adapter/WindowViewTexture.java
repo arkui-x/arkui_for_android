@@ -165,6 +165,7 @@ public class WindowViewTexture extends TextureView implements TextureView.Surfac
         }
         if (surface != null) {
             Surface s = new Surface(surface);
+            this.setOpaque(false);
             windowViewCommon.surfaceCreated(s);
             windowViewCommon.surfaceSizeChanged(width, height, getResources().getDisplayMetrics().density);
         }
