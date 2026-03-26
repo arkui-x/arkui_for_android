@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -92,7 +92,6 @@ public class DownloadManager {
                 return NULL_BYTE;
             }
             conn = (HttpURLConnection) connection;
-            conn.setRequestProperty("Content-Type", "plain/text;charset=" + DEFAULT_CHARSET);
             conn.setRequestProperty("charset", DEFAULT_CHARSET);
             conn.setRequestProperty("User-agent", "Ace");
             conn.setDoInput(true);
