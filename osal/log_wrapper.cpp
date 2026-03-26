@@ -31,6 +31,7 @@
 #include "log_interface_jni.h"
 #include "securec.h"
 #include "stage_application_delegate_jni.h"
+#include "vsnprintf_s_p.h"
 
 #ifdef ACE_INSTANCE_LOG
 #include "core/common/container.h"
@@ -119,13 +120,12 @@ void Platform::StopLogProcessingThread()
     }
 }
 
-void PassLogMessage(LogDomain domain, LogLevel level, std::string newFmt, va_list args)
+void PassLogMessage(LogDomain domain, LogLevel level, const char* fmt)
 {
-    char buf[MAX_BUFFER_SIZE];
-    if (vsnprintf_s(buf, sizeof(buf), sizeof(buf) - 1, newFmt.c_str(), args) < 0 && errno == EINVAL) {
+    if (fmt == nullptr) {
         return;
     }
-    std::string str(buf);
+    std::string str(fmt);
     std::unique_lock<std::mutex> lock(g_logTaskQueueMutex);
     g_logTaskQueue.emplace([=]() {
         OHOS::Ace::Platform::LogInterfaceJni::PassLogMessage(
@@ -140,9 +140,16 @@ void LogWrapper::PrintLog(LogDomain domain, LogLevel level, AceLogTag tag, const
     if (!OHOS::Ace::LogWrapper::JudgeLevel(level)) {
         return;
     }
-    std::string newFmt(fmt);
-    StripFormatString("{public}", newFmt);
-    StripFormatString("{private}", newFmt);
+
+    if (fmt == nullptr) {
+        return;
+    }
+
+    char buffer[MAX_BUFFER_SIZE] = {0};
+    int charsOut = vsnprintfp_s(buffer, MAX_BUFFER_SIZE, MAX_BUFFER_SIZE - 1, 1, fmt, args);
+    if (charsOut < 0) {
+            return;
+    }
     
     bool uselogInterface_ = false;
     {
@@ -152,10 +159,10 @@ void LogWrapper::PrintLog(LogDomain domain, LogLevel level, AceLogTag tag, const
     }
     
     if (uselogInterface_) {
-        PassLogMessage(domain, level, newFmt, args);
+        PassLogMessage(domain, level, buffer);
     } else {
-        __android_log_vprint(
-            LOG_LEVEL[static_cast<int>(level)], LOG_TAGS[static_cast<uint32_t>(domain)], newFmt.c_str(), args);
+        __android_log_write(
+            LOG_LEVEL[static_cast<int>(level)], LOG_TAGS[static_cast<uint32_t>(domain)], buffer);
     }
 }
 

@@ -19,6 +19,7 @@ ability_runtime_cross_platform_path =
     "//foundation/appframework/ability/ability_runtime/cross_platform"
 app_framework_resource_path = "//foundation/appframework/resource_management"
 app_framework_window_path = "//foundation/appframework/window_manager"
+app_framework_hiviewdfx_path = "//foundation/appframework/hiviewdfx"
 
 # build static
 template("ace_osal_android_source_set") {
@@ -113,6 +114,8 @@ template("ace_osal_android_source_set") {
       "$ace_root/adapter/android/osal/mock",
       "//foundation/graphic/graphic_surface/interfaces/inner_api/surface",
       "//base/hiviewdfx/hitrace/interfaces/native/innerkits/include/hitrace_meter",
+      "$app_framework_hiviewdfx_path/vsnprintf/include",
+      "$app_framework_hiviewdfx_path/hilog/include"
     ]
 
     deps = [
@@ -123,6 +126,7 @@ template("ace_osal_android_source_set") {
       "$app_framework_resource_path/interfaces/js/kits:resourcemanager",
       "$app_framework_resource_path/interfaces/native/resource:rawfile",
       "$app_framework_window_path/dm:dm",
+      "$app_framework_hiviewdfx_path/hilog:hiviewdfx_hilog_base",
     ]
 
     configs = [
