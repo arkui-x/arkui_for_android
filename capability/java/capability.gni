@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+# Copyright (c) 2022-2026 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -61,9 +61,9 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/texture/AceTexture.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/texture/AceTexturePluginAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/vibrator/VibratorAosp.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/vibrator/AudioHapticPlayer.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/video/AceVideoPluginAosp.java",
-
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseColumns.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseHelper.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/webdatabase/WebDataBaseCredential.java",
@@ -152,7 +152,11 @@ capability_cpp_files = [
   "$ace_root/adapter/android/capability/java/jni/storage/storage_jni.cpp",
   "$ace_root/adapter/android/capability/java/jni/storage/storage_proxy_impl.cpp",
   "$ace_root/adapter/android/capability/java/jni/vibrator/vibrator_impl.cpp",
+  "$ace_root/adapter/android/capability/java/jni/vibrator/vibrator_controller_impl.cpp",
   "$ace_root/adapter/android/capability/java/jni/vibrator/vibrator_jni.cpp",
+  "$ace_root/adapter/android/capability/java/jni/vibrator/vibrator_controller_jni.cpp",
   "$ace_root/adapter/android/capability/java/jni/vibrator/vibrator_proxy_impl.cpp",
+  "$ace_root/adapter/android/capability/java/jni/vibrator/audio_haptic_player_jni.cpp",
+  "$ace_root/adapter/android/capability/java/jni/vibrator/audio_haptic_player_impl.cpp",
   "$ace_root/adapter/android/capability/java/jni/plugin/plugin_manager_jni.cpp",
 ]

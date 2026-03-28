@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,20 +13,40 @@
  * limitations under the License.
  */
 
-#include "adapter/android/entrance/java/jni/picker/picker_haptic_factory.h"
 #include "adapter/android/entrance/java/jni/picker/picker_haptic_impl.h"
 
 namespace OHOS::Ace::NG {
-std::shared_ptr<IPickerAudioHaptic> PickerAudioHapticFactory::instance_ { nullptr };
-std::mutex PickerAudioHapticFactory::mutex_;
 
-std::shared_ptr<IPickerAudioHaptic> PickerAudioHapticFactory::GetInstance(
-    const std::string& uri, const std::string& effectId)
+PickerAudioHapticImpl::PickerAudioHapticImpl(const std::string& uri, const std::string& effectId)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
-    if (instance_ == nullptr) {
-        instance_ = std::make_shared<PickerAudioHapticImpl>(uri, effectId);
+    handler_ = std::make_unique<PickerHapticController>(uri, effectId);
+}
+
+void PickerAudioHapticImpl::Play(size_t speed)
+{
+    if (handler_ != nullptr) {
+        handler_->Play(speed);
     }
-    return instance_;
+}
+
+void PickerAudioHapticImpl::PlayOnce()
+{
+    if (handler_ != nullptr) {
+        handler_->PlayOnce();
+    }
+}
+
+void PickerAudioHapticImpl::Stop()
+{
+    if (handler_ != nullptr) {
+        handler_->Stop();
+    }
+}
+
+void PickerAudioHapticImpl::HandleDelta(double dy)
+{
+    if (handler_ != nullptr) {
+        handler_->HandleDelta(dy);
+    }
 }
 } // namespace OHOS::Ace::NG

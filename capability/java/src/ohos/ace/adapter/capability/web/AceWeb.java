@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -97,6 +97,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import ohos.ace.adapter.capability.web.AceWebScrollObject;
 import ohos.ace.adapter.capability.web.AceWebSchemeHandler;
 import ohos.ace.adapter.capability.web.AceWebNestedScrollOptionsExtObject;
+import ohos.ace.adapter.capability.vibrator.VibratorAosp;
 
 /**
  * This class handles the lifecycle of a AceWebview.
@@ -245,6 +246,10 @@ public class AceWeb extends AceWebBase {
 
     private static final int DEFAULT_LAYOUT_SIZE = 1;
 
+    private static final int DRAG_HAPTIC_THROTTLE_MS = 40;
+
+    private static final long SELECTION_HAPTIC_DEDUP_INTERVAL_MS = 500L;
+
     private static String currentPageUrl;
 
     private static String routerUrl;
@@ -317,6 +322,12 @@ public class AceWeb extends AceWebBase {
     private int initialPointerCount = 0;
 
     private AceWebNestedScrollOptionsExtObject nestedScrollOptionsExtObject = new AceWebNestedScrollOptionsExtObject();
+
+    private VibratorAosp vibratorAosp;
+    private volatile boolean enableHapticFeedbackSwitch = true;
+    private volatile long lastDragHapticTimeMs = 0L;
+    private volatile long lastLongPressSelectionTimeMs = 0L;
+    private String lastSelectionText = "";
 
     public AceWeb(long id, Context context, View view, IAceOnResourceEvent callback) {
         super(id, callback);
@@ -682,6 +693,8 @@ public class AceWeb extends AceWebBase {
                     isJavaScriptEnabled = true;
                 }
                 AceWeb.this.onPageLoaded(url);
+                injectTextSelectionScript();
+
                 if (url != null && (url.startsWith("http") || url.startsWith("https"))) {
                     ThreadPoolExecutor executorService = new ThreadPoolExecutor(
                             CORE_POOL_SIZE,
@@ -964,6 +977,19 @@ public class AceWeb extends AceWebBase {
 
         CookieManager.getInstance().setAcceptCookie(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
+
+        try {
+            webView.getSettings().setJavaScriptEnabled(true);
+            webView.addJavascriptInterface(new TextSelectionJSInterface(), "AceWebSelectionHandler");
+            String url = webView.getUrl();
+            if (url != null && !url.isEmpty()) {
+                injectTextSelectionScript();
+            }
+        } catch (IllegalArgumentException | SecurityException e) {
+            ALog.e(LOG_TAG, "initWeb injection failed");
+        } catch (RuntimeException e) {
+            ALog.e(LOG_TAG, "initWeb injection runtime error");
+        }
     }
 
     /**
@@ -2798,5 +2824,223 @@ public class AceWeb extends AceWebBase {
     @Override
     public String getDefaultUserAgent() {
         return WebSettings.getDefaultUserAgent(context);
+    }
+
+    /**
+     * Injects a JavaScript snippet into the WebView to detect touch/selection
+     * events
+     * (long press, selection change) and forward them to the Java-side JS bridge.
+     * Handles SDK compatibility (evaluateJavascript vs loadUrl).
+     */
+    private void injectTextSelectionScript() {
+        if (webView == null) {
+            return;
+        }
+
+        final String selectionJS = buildSelectionScript();
+
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                webView.evaluateJavascript(selectionJS, null);
+            } else {
+                webView.loadUrl("javascript:" + selectionJS);
+            }
+        } catch (IllegalArgumentException | SecurityException | IllegalStateException e) {
+            ALog.e(LOG_TAG, "inject selectionJS failed");
+        } catch (RuntimeException e) {
+            ALog.e(LOG_TAG, "inject selectionJS runtime error");
+        }
+    }
+
+    /**
+     * Builds JavaScript for detecting touch/selection events.
+     *
+     * @return JavaScript code string
+     */
+    private String buildSelectionScript() {
+        return "(function() {" +
+                "    var lp = false, timer = null;" +
+                "    " +
+                "    function getSelectedText() {" +
+                "        try {" +
+                "            var s = window.getSelection ? window.getSelection() : null;" +
+                "            return s ? String(s) : '';" +
+                "        } catch (e) {" +
+                "            return '';" +
+                "        }" +
+                "    }" +
+                "    " +
+                "    function notifySelectionChanged(type) {" +
+                "        var text = getSelectedText();" +
+                "        try {" +
+                "            if (window.AceWebSelectionHandler && " +
+                "                window.AceWebSelectionHandler.onTextSelectionChanged) {" +
+                "                window.AceWebSelectionHandler.onTextSelectionChanged(type, text);" +
+                "            }" +
+                "        } catch (e) {}" +
+                "    }" +
+                "    " +
+                "    function startLongPressTimer() {" +
+                "        lp = false;" +
+                "        if (timer) {" +
+                "            clearTimeout(timer);" +
+                "        }" +
+                "        timer = setTimeout(function() {" +
+                "            lp = true;" +
+                "            notifySelectionChanged('longPressSelect');" +
+                "        }, 380);" +
+                "    }" +
+                "    " +
+                "    function cancelLongPressTimer() {" +
+                "        if (timer) {" +
+                "            clearTimeout(timer);" +
+                "            timer = null;" +
+                "        }" +
+                "    }" +
+                "    " +
+                "    document.addEventListener('touchstart', startLongPressTimer, true);" +
+                "    document.addEventListener('touchmove', cancelLongPressTimer, true);" +
+                "    document.addEventListener('touchend', cancelLongPressTimer, true);" +
+                "    document.addEventListener('touchcancel', cancelLongPressTimer, true);" +
+                "    document.addEventListener('selectionchange', function() {" +
+                "        var type = lp ? 'selectionChangeAfterLongPress' : 'selectionChange';" +
+                "        notifySelectionChanged(type);" +
+                "    }, true);" +
+                "})();";
+    }
+
+    /**
+     * JavaScript interface exposed to the WebView. Methods must be annotated with
+     *
+     * @JavascriptInterface to be callable from injected JS.
+     */
+    private class TextSelectionJSInterface {
+        /**
+         * Called from injected JavaScript when a selection-related event occurs.
+         *
+         * @param eventType    one of "longPressSelect",
+         *                     "selectionChangeAfterLongPress",
+         *                     or "selectionChange"
+         * @param selectedText the currently selected text (may be empty)
+         */
+        @android.webkit.JavascriptInterface
+        public void onTextSelectionChanged(final String eventType, final String selectedText) {
+            if (webView == null) {
+                return;
+            }
+            webView.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (!enableHapticFeedbackSwitch) {
+                        return;
+                    }
+                    boolean shouldVibrateType = "longPressSelect".equals(eventType) ||
+                            "selectionChangeAfterLongPress".equals(eventType) ||
+                            "selectionChange".equals(eventType);
+                    if (!shouldVibrateType || !shouldTriggerSelectionHaptic(eventType, selectedText)) {
+                        return;
+                    }
+                    // throttle continuous drag/selection haptics to DRAG_HAPTIC_THROTTLE_MS
+                    long now = System.currentTimeMillis();
+                    if (now - lastDragHapticTimeMs < DRAG_HAPTIC_THROTTLE_MS) {
+                        return;
+                    }
+                    lastDragHapticTimeMs = now;
+                    callVibrator();
+                }
+            });
+        }
+    }
+
+    /**
+     * Decide whether a selection event should trigger haptic feedback.
+     * Records long-press and suppresses immediate
+     * identical selectionChangeAfterLongPress events within a configured interval.
+     *
+     * @param eventType    event type as sent from injected JS
+     * @param selectedText current selected text
+     * @return true if haptic feedback should be triggered, false to suppress
+     */
+    private boolean shouldTriggerSelectionHaptic(String eventType, String selectedText) {
+        long now = System.currentTimeMillis();
+        if ("longPressSelect".equals(eventType)) {
+            lastLongPressSelectionTimeMs = now;
+            lastSelectionText = selectedText == null ? "" : selectedText;
+            return false;
+        }
+        if ("selectionChangeAfterLongPress".equals(eventType) &&
+                now - lastLongPressSelectionTimeMs < SELECTION_HAPTIC_DEDUP_INTERVAL_MS &&
+                lastSelectionText != null && lastSelectionText.equals(selectedText == null ? "" : selectedText)) {
+            return false;
+        }
+        lastSelectionText = selectedText == null ? "" : selectedText;
+        return true;
+    }
+
+    /**
+     * Initialize and invoke the platform vibrator through VibratorAosp.
+     * Catches permission and runtime errors and logs them.
+     */
+    private void callVibrator() {
+        try {
+            if (vibratorAosp == null && context != null) {
+                vibratorAosp = new VibratorAosp(context);
+            }
+            if (vibratorAosp != null) {
+                vibratorAosp.vibrate("slide");
+            }
+        } catch (IllegalArgumentException | IllegalStateException | SecurityException e) {
+            ALog.e(LOG_TAG, "callVibrator failed");
+        } catch (RuntimeException e) {
+            ALog.e(LOG_TAG, "callVibrator runtime error");
+        }
+    }
+
+    /**
+     * Update the enabled haptic feedback flag.
+     *
+     * @param enable true to enable haptic feedback, false to disable
+     */
+    public synchronized void updateEnabledHapticFeedback(boolean enable) {
+        if (enableHapticFeedbackSwitch != enable) {
+            enableHapticFeedbackSwitch = enable;
+            if (enable) {
+                lastLongPressSelectionTimeMs = 0;
+                lastDragHapticTimeMs = 0;
+            }
+        }
+    }
+
+    /**
+     * Handle a bridge request to enable or disable haptic feedback.
+     *
+     * Expects params to contain the key "enableHapticFeedback" with a value
+     * of "true"/"false" (case-insensitive) or "1"/"0".
+     *
+     * @param params the parameter map from the JS/C++ bridge
+     * @return SUCCESS_TAG when the switch is updated, otherwise FAIL_TAG
+     */
+    @Override
+    public String enableHapticFeedbackMethod(Map<String, String> params) {
+        if (params == null || !params.containsKey("enableHapticFeedback")) {
+            ALog.e(LOG_TAG, "enableHapticFeedback params missing");
+            return FAIL_TAG;
+        }
+        String value = params.get("enableHapticFeedback");
+        if (value == null) {
+            ALog.e(LOG_TAG, "enableHapticFeedback value is null");
+            return FAIL_TAG;
+        }
+        try {
+            boolean enable = "1".equals(value) || "true".equalsIgnoreCase(value);
+            updateEnabledHapticFeedback(enable);
+            return SUCCESS_TAG;
+        } catch (NullPointerException | IllegalArgumentException | SecurityException e) {
+            ALog.e(LOG_TAG, "enableHapticFeedback failed");
+            return FAIL_TAG;
+        } catch (RuntimeException e) {
+            ALog.e(LOG_TAG, "enableHapticFeedback unexpected runtime error");
+            return FAIL_TAG;
+        }
     }
 }
