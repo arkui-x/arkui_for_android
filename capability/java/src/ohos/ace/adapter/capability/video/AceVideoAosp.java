@@ -295,6 +295,7 @@ public class AceVideoAosp extends AceVideoBase
         boolean isSkipPauseForManualStart = false;
         boolean isManualStartFromStoppedPrepared = false;
         boolean shouldNotifyCurrentTime = false;
+        MediaPlayer restoreSurfaceTarget = null;
         mediaPlayerLock.lock();
         try {
             if (handleStoppedOnPrepared()) {
@@ -327,17 +328,26 @@ public class AceVideoAosp extends AceVideoBase
                 ALog.e(LOG_TAG, "run onPrepared, IllegalStateException.");
             }
             shouldNotifyCurrentTime = shouldNotifyCurrentTimeOnPrepared;
+            if (shouldDelaySurfaceAttachForReset && isShowFirstFrame && !isSetSurfaced) {
+                restoreSurfaceTarget = mediaPlayer;
+                shouldDelaySurfaceAttachForReset = false;
+            }
             shouldNotifyCurrentTimeOnPrepared = false;
         } finally {
             mediaPlayerLock.unlock();
         }
-        updateFirstFrameVisibility();
+
         boolean finalShouldNotifyCurrentTime = shouldNotifyCurrentTime;
+        MediaPlayer finalRestoreSurfaceTarget = restoreSurfaceTarget;
         runOnUIThread(() -> {
+            if (finalRestoreSurfaceTarget != null) {
+                restoreSurfaceAfterResetIfNeeded(finalRestoreSurfaceTarget);
+            }
             if (finalShouldNotifyCurrentTime) {
                 fireGetCurrenttime(0);
             }
             handlePreparedOnUiThread();
+            updateFirstFrameVisibility();
         });
     }
 
@@ -1301,6 +1311,19 @@ public class AceVideoAosp extends AceVideoBase
         return SUCCESS;
     }
 
+    private void restoreSurfaceAfterResetIfNeeded(MediaPlayer targetPlayer) {
+        if (targetPlayer == null || mediaPlayer != targetPlayer || isSetSurfaced) {
+            return;
+        }
+        try {
+            bindSurfaceForPlayer(targetPlayer);
+        } catch (IllegalArgumentException ignored) {
+            ALog.e(LOG_TAG, "reset restore surface failed, IllegalArgumentException.");
+        } catch (IllegalStateException ignored) {
+            ALog.e(LOG_TAG, "reset restore surface failed, IllegalStateException.");
+        }
+    }
+
     private String handleSourceSwitchAfterPrepare() {
         if (isShowFirstFrame) {
             return renderFirstFrameAfterSourceSwitch();
@@ -1380,6 +1403,17 @@ public class AceVideoAosp extends AceVideoBase
         }
         mediaPlayer.setSurface(surface);
         isSetSurfaced = true;
+    }
+
+    private void bindSurfaceForPlayer(MediaPlayer targetPlayer) {
+        Surface surface = getSurface();
+        if (surface == null || targetPlayer == null) {
+            return;
+        }
+        targetPlayer.setSurface(surface);
+        if (mediaPlayer == targetPlayer) {
+            isSetSurfaced = true;
+        }
     }
 
     private void attachSurfaceIfNeededForSeek() {
