@@ -91,6 +91,7 @@ private:
     void CommonInitialize(OHOS::Rosen::Window* window, const std::string& url, napi_value storage);
     void InitializeSubWindow();
     void DestroyCallback() const;
+    void ProcessWindowSizeLayoutBreakPointChange();
 
     void InitOnceAceInfo();
     void InitAceInfoFromResConfig();
