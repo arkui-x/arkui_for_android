@@ -93,6 +93,7 @@ template("ace_osal_android_source_set") {
       "system_bar_style_ohos.cpp",
       "system_properties.cpp",
       "system_properties_multi_thread.cpp",
+      "utils.cpp",
       "thread_priority.cpp",
       "time_event_proxy_android.cpp",
       "trace_id_impl.cpp",
