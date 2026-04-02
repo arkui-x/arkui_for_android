@@ -19,6 +19,7 @@
 #include "media_errors.h"
 #include "image_type.h"
 #include "base/image/pixel_map.h"
+#include "base/log/log_wrapper.h"
 
 namespace OHOS::Ace {
 RefPtr<ImageSource> ImageSource::Create(int32_t fd)

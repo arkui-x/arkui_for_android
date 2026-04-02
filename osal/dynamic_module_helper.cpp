@@ -18,6 +18,7 @@
 #include <dlfcn.h>
 #include <memory>
 
+#include "base/log/log_wrapper.h"
 #include "base/utils/utils.h"
 #include "compatible/components/component_loader.h"
 #include "interfaces/inner_api/ace/utils.h"

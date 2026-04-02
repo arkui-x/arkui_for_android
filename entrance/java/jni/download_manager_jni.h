@@ -17,6 +17,7 @@
 #define FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_DOWNLOAD_MANAGER_JNI_H
 
 #include <memory>
+#include <vector>
 
 #include "jni.h"
 
