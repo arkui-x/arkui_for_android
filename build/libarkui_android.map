@@ -58,6 +58,9 @@
       "OHOS::Ace::ACE_PI";
       "OHOS::Ace::BaseId::BaseId()";
       "OHOS::Ace::CheckThread(OHOS::Ace::TaskExecutor::TaskType)";
+      "OHOS::Ace::TaskExecutor::GetPriorityTypeWithCheck(OHOS::Ace::PriorityType, OHOS::Ace::PriorityType)";
+      OHOS::Ace::TaskExecutor::PostDelayedTask*;
+      OHOS::Ace::TaskExecutor::PostSyncTask*;
       OHOS::Ace::Color::*;
       OHOS::Ace::CommonNapiUtils::*;
       OHOS::Ace::Container::*;
@@ -77,6 +80,7 @@
       "OHOS::Ace::NG::CreateIdealSize(OHOS::Ace::NG::LayoutConstraintT<float> const&, OHOS::Ace::Axis, OHOS::Ace::NG::MeasureType)";
       "OHOS::Ace::NG::CreateIdealSize(OHOS::Ace::NG::LayoutConstraintT<float> const&, OHOS::Ace::Axis, OHOS::Ace::NG::MeasureType, bool)";
       "OHOS::Ace::NG::DragControllerFuncWrapper::SubWindowShow(OHOS::Ace::RefPtr<OHOS::Ace::PipelineBase> const&)";
+      "OHOS::Ace::NG::DialogView::IsSupportBlurStyle(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, bool)";
       "OHOS::Ace::NG::DragControllerFuncWrapper::TryDoDragStartAnimation(OHOS::Ace::RefPtr<OHOS::Ace::Subwindow> const&, OHOS::Ace::NG::PreparedInfoForDrag&, OHOS::Ace::NG::PreparedAsyncCtxForAnimate&)";
       "OHOS::Ace::NG::DragControllerFuncWrapper::GetUpdateDragMovePosition(int)";
       "OHOS::Ace::NG::DragControllerFuncWrapper::ResetContextMenuDragPosition(int)";
@@ -141,7 +145,9 @@
       OHOS::Rosen::Drawing::Pen::*;
       OHOS::Rosen::Drawing::ShaderEffect::*;
       OHOS::Rosen::Drawing::Brush::*;
+      "OHOS::Rosen::Drawing::UIColor::UIColor(OHOS::Rosen::Drawing::UIColor const&)";
       "OHOS::Rosen::Occlusion::Region::OrSelf(OHOS::Rosen::Occlusion::Region&)";
+      "OHOS::Rosen::RSColor::Float32ToFloat16(float) const";
       OHOS::Ace::ResourceManager::*;
       OHOS::Ace::SpringMotion::*;
       OHOS::Ace::ShadowTheme::*;

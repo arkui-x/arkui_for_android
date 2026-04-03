@@ -15,6 +15,7 @@
 #include "adapter/android/capability/java/jni/clipboard/paste_data_impl.h"
 
 #include "adapter/android/capability/java/jni/clipboard/clipboard_utils.h"
+#include "base/log/log_wrapper.h"
 #include "base/json/json_util.h"
 #include "frameworks/base/utils/utils.h"
 
