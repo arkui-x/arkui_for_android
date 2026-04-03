@@ -69,7 +69,14 @@ AlphaType PixelMapAndroid::AlphaTypeConverter(Media::AlphaType alphaType)
 
 RefPtr<PixelMap> PixelMap::CopyPixelMap(const RefPtr<PixelMap>& pixelMap)
 {
-    return nullptr;
+    CHECK_NULL_RETURN(pixelMap, nullptr);
+    auto mediaPixelMap = pixelMap->GetPixelMapSharedPtr();
+    CHECK_NULL_RETURN(mediaPixelMap, nullptr);
+    Media::InitializationOptions opts;
+    std::unique_ptr<Media::PixelMap> uniquePixelMap = Media::PixelMap::Create(*mediaPixelMap, opts);
+    std::shared_ptr<Media::PixelMap> newPixelMap(std::move(uniquePixelMap));
+    CHECK_NULL_RETURN(newPixelMap, nullptr);
+    return AceType::MakeRefPtr<PixelMapAndroid>(newPixelMap);
 }
 
 int32_t PixelMapAndroid::GetWidth() const
