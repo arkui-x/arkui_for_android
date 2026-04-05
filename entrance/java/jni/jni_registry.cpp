@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,6 +24,8 @@
 #include "adapter/android/capability/java/jni/plugin/plugin_manager_jni.h"
 #include "adapter/android/capability/java/jni/storage/storage_jni.h"
 #include "adapter/android/capability/java/jni/vibrator/vibrator_jni.h"
+#include "adapter/android/capability/java/jni/vibrator/vibrator_controller_jni.h"
+#include "adapter/android/capability/java/jni/vibrator/audio_haptic_player_jni.h"
 #include "adapter/android/entrance/java/jni/ace_platform_plugin_jni.h"
 #include "adapter/android/entrance/java/jni/display_info_jni.h"
 #include "adapter/android/entrance/java/jni/download_manager_jni.h"
@@ -88,6 +90,16 @@ bool JniRegistry::Register()
         return false;
     }
 
+    if (!VibratorControllerJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register VibratorJni");
+        return false;
+    }
+
+    if (!AudioHapticPlayerJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register AudioHapticPlayerJni");
+        return false;
+    }
+
     if (!PluginManagerJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register PluginManagerJni");
         return false;
@@ -114,12 +126,12 @@ bool JniRegistry::Register()
     }
 
     if (!SubWindowManagerJni::Register(jniEnv)) {
-        LOGE("JNI Initialize: failed to register GrantResultJni");
+        LOGE("JNI Initialize: failed to register SubWindowManagerJni");
         return false;
     }
 
     if (!DisplayInfoJni::Register(jniEnv)) {
-        LOGE("JNI Initialize: failed to register GrantResultJni");
+        LOGE("JNI Initialize: failed to register DisplayInfoJni");
         return false;
     }
 

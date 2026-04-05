@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -52,6 +52,8 @@ public abstract class AceWebBase {
 
     private static final String WEB_FLAG = "web@";
 
+    private static final String HAPTIC_FEEDBACK_METHOD = "enableHapticFeedback";
+
     private final long id;
 
     private final IAceOnResourceEvent callback;
@@ -68,6 +70,7 @@ public abstract class AceWebBase {
         this.callMethodMapPutPageChange();
         this.callMethodMapWebPlugin();
         this.callMethodMapWebAtrribute();
+        this.callMethodMapWebHaptic();
     }
 
     private void callMethodMapWebAtrribute() {
@@ -284,6 +287,15 @@ public abstract class AceWebBase {
             "setNestedScrollExt" +
             PARAM_BEGIN,
             callSetNestedScrollExt);
+    }
+
+    /**
+     * Maps haptic feedback related methods.
+     */
+    private void callMethodMapWebHaptic() {
+        IAceOnCallResourceMethod enableHapticFeedback = (param) -> enableHapticFeedbackMethod(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + HAPTIC_FEEDBACK_METHOD + PARAM_BEGIN,
+                enableHapticFeedback);
     }
 
     /**
@@ -1325,4 +1337,12 @@ public abstract class AceWebBase {
      * @return result of call.
      */
     public abstract String setNestedScrollExt(Map<String, String> params);
+
+    /**
+     * Updates the enabled haptic feedback.
+     *
+     * @param params the param map containing the enable value.
+     * @return result of call.
+     */
+    public abstract String enableHapticFeedbackMethod(Map<String, String> params);
 }

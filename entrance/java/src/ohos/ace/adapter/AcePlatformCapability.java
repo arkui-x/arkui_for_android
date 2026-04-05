@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,6 +22,7 @@ import ohos.ace.adapter.capability.environment.EnvironmentAosp;
 import ohos.ace.adapter.capability.font.SystemFontManager;
 import ohos.ace.adapter.capability.plugin.PluginManager;
 import ohos.ace.adapter.capability.storage.PersistentStorageAosp;
+import ohos.ace.adapter.capability.vibrator.AudioHapticPlayer;
 import ohos.ace.adapter.capability.vibrator.VibratorAosp;
 import ohos.ace.adapter.DisplayInfo;
 
@@ -43,6 +44,8 @@ public class AcePlatformCapability {
 
     private VibratorAosp vibratorAosp;
 
+    private AudioHapticPlayer audioHapticPlayer;
+
     private PluginManager pluginManager;
 
     /**
@@ -62,6 +65,8 @@ public class AcePlatformCapability {
         persistentStorage = new PersistentStorageAosp(context);
 
         vibratorAosp = new VibratorAosp(context);
+
+        audioHapticPlayer = new AudioHapticPlayer(context);
 
         pluginManager = new PluginManager(context);
 
