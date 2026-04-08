@@ -90,9 +90,6 @@ public class VibratorAosp extends VibratorPluginBase {
             if (!hasVibratePermission()) {
                 return;
             }
-            if (!canVibrate() || isSilentMode() || isDoNotDisturbMode()) {
-                return;
-            }
             if (duration < 0) {
                 return;
             }
@@ -115,9 +112,6 @@ public class VibratorAosp extends VibratorPluginBase {
 
         try {
             if (!hasVibratePermission()) {
-                return;
-            }
-            if (!canVibrate() || isSilentMode() || isDoNotDisturbMode()) {
                 return;
             }
             String mappedEffectId = mapEffectId(effectId);
