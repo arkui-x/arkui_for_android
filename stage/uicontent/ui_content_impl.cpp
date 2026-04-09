@@ -41,6 +41,8 @@
 #include "base/log/log.h"
 #include "base/perfmonitor/perf_monitor.h"
 #include "base/subwindow/subwindow_manager.h"
+#include "base/utils/layout_break_point.h"
+#include "base/utils/system_properties.h"
 #include "core/common/ace_engine.h"
 #include "core/common/ace_view.h"
 #include "core/common/asset_manager_impl.h"
@@ -742,9 +744,41 @@ void UIContentImpl::UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRunti
     LOGI("UIContentImpl: UpdateConfiguration called End");
 }
 
+void UIContentImpl::ProcessWindowSizeLayoutBreakPointChange()
+{
+    auto container = Platform::AceContainerSG::GetContainer(instanceId_);
+    CHECK_NULL_VOID(container);
+    auto taskExecutor = container->GetTaskExecutor();
+    CHECK_NULL_VOID(taskExecutor);
+
+    auto uiTaskRunner = SingleTaskExecutor::Make(taskExecutor, TaskExecutor::TaskType::UI);
+
+    auto task = [instanceId = instanceId_]() {
+        auto container = Platform::AceContainerSG::GetContainer(instanceId);
+        CHECK_NULL_VOID(container);
+
+        WidthLayoutBreakPoint layoutWidthBreakpoints = SystemProperties::GetWidthLayoutBreakpoints();
+        HeightLayoutBreakPoint layoutHeightBreakpoints = SystemProperties::GetHeightLayoutBreakpoints();
+        auto pipelineContext = container->GetPipelineContext();
+        CHECK_NULL_VOID(pipelineContext);
+        auto window = pipelineContext->GetWindow();
+        CHECK_NULL_VOID(window);
+
+        window->NotifyBreakpointChangeIfNeeded(instanceId, layoutWidthBreakpoints, layoutHeightBreakpoints);
+    };
+
+    if (uiTaskRunner.IsRunOnCurrentThread()) {
+        task();
+    } else {
+        taskExecutor->PostTask(
+            std::move(task), TaskExecutor::TaskType::UI, "ArkUIProcessWindowSizeLayoutBreakPointChange");
+    }
+}
+
 void UIContentImpl::UpdateViewportConfig(const ViewportConfig& config, OHOS::Rosen::WindowSizeChangeReason reason)
 {
     LOGI("UIContentImpl: UpdateViewportConfig %{public}s", config.ToString().c_str());
+    ProcessWindowSizeLayoutBreakPointChange();
     ACE_SCOPED_TRACE("UpdateViewportConfig %s", config.ToString().c_str());
     
     auto orientation = config.Height() >= config.Width() ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE;
