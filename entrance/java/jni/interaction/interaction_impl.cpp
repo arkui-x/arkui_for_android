@@ -85,6 +85,10 @@ int32_t InteractionImpl::StartDrag(
     RegisterDragWindow();
     SetSVGFilePath();
     std::shared_ptr<OHOS::Rosen::Window> window = GetDragWindow();
+    if (!window) {
+        LOGE("InteractionImpl::StartDrag get drag window failed");
+        return -1;
+    }
     surfaceNodeListener_ = new SurfaceNodeListener(window, dragData);
     window->RegisterSurfaceNodeListener(surfaceNodeListener_);
     window->ShowWindow();
@@ -338,18 +342,21 @@ int32_t InteractionImpl::UpdatePointAction(const std::shared_ptr<MMI::PointerEve
 void InteractionImpl::RegisterDragWindow()
 {
     auto containerId = Container::CurrentId();
-    auto Destroycallback = [this, containerId] {
+    auto interactionPtr = AceType::Claim(this);
+    auto Destroycallback = [interactionPtr, containerId] {
         auto container = Platform::AceContainerSG::GetContainer(containerId);
         CHECK_NULL_VOID(container);
         auto taskExecutor = container->GetTaskExecutor();
         CHECK_NULL_VOID(taskExecutor);
         ContainerScope scope(containerId);
-        auto task = [weak = AceType::WeakClaim(this)] {
-            auto interaction = weak.Upgrade();
-            auto window = interaction->surfaceNodeListener_->dragWindow_;
-            window->UnregisterSurfaceNodeListener(interaction->surfaceNodeListener_);
+        auto task = [interactionPtr] {
+            CHECK_NULL_VOID(interactionPtr);
+            CHECK_NULL_VOID(interactionPtr->surfaceNodeListener_);
+            auto window = interactionPtr->surfaceNodeListener_->dragWindow_;
+            CHECK_NULL_VOID(window);
+            window->UnregisterSurfaceNodeListener(interactionPtr->surfaceNodeListener_);
             window->Destroy();
-            interaction->surfaceNodeListener_->dragWindow_ = nullptr;
+            interactionPtr->surfaceNodeListener_->dragWindow_ = nullptr;
         };
         taskExecutor->PostTask(task, TaskExecutor::TaskType::UI, "ArkUI-XInteractionImplStopDrag");
     };
@@ -362,6 +369,7 @@ void InteractionImpl::SetSVGFilePath()
 {
     auto containerId = Container::CurrentId();
     auto container = Platform::AceContainerSG::GetContainer(containerId);
+    CHECK_NULL_VOID(container);
     std::string packagePath = container->GetPackagePathStr();
     std::string filePath = packagePath + "/systemres" + "/resources";
 #ifdef ENABLE_DRAG_FRAMEWORK
@@ -373,7 +381,9 @@ std::shared_ptr<OHOS::Rosen::Window> InteractionImpl::GetDragWindow()
 {
     auto containerId = Container::CurrentId();
     auto container = Platform::AceContainerSG::GetContainer(containerId);
+    CHECK_NULL_RETURN(container, nullptr);
     sptr<Rosen::Window> window = container->GetUIWindow(containerId);
+    CHECK_NULL_RETURN(window, nullptr);
     auto dragWindow = Rosen::Window::CreateDragWindow(window->GetContext());
     return dragWindow;
 }
