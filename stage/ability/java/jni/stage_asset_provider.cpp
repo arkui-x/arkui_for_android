@@ -95,7 +95,9 @@ void StageAssetProvider::SetAssetsFileRelativePaths(const std::string& path)
 
 void StageAssetProvider::RemoveModuleFilePath(const std::string& moduleName)
 {
-    auto shouldRemove = [moduleName](const std::string& path) { return path.find(moduleName) != std::string::npos; };
+    const std::string moduleNameMark = SEPARATOR + moduleName + SEPARATOR;
+    auto shouldRemove = [moduleNameMark](
+                            const std::string& path) { return path.find(moduleNameMark) != std::string::npos; };
     auto removeIndex = std::remove_if(allFilePath_.begin(), allFilePath_.end(), shouldRemove);
     allFilePath_.erase(removeIndex, allFilePath_.end());
 }
@@ -500,7 +502,7 @@ void StageAssetProvider::SetFileDir(const std::string& filesRootDir)
     filesDir_ = filesRootDir + FILES_DIR;
     preferenceDir_ = filesRootDir + PREFERENCE_DIR;
     databaseDir_ = filesRootDir + DATABASE_DIR;
-    arkuiXAssetsDir_ = filesRootDir + ARKUI_X_DIR;
+    arkuiXSandboxDir_ = filesRootDir + ARKUI_X_DIR;
     size_t lastSlashPos = appLibDir_.find_last_of('/');
     if (lastSlashPos != std::string::npos) {
         if (appLibDir_.substr(lastSlashPos) == "/arm64") {
@@ -577,7 +579,7 @@ void StageAssetProvider::SetResourcesFilePrefixPath(const std::string& resources
 
 std::string StageAssetProvider::GetAppDataModuleDir() const
 {
-    return arkuiXAssetsDir_;
+    return arkuiXSandboxDir_;
 }
 
 std::string StageAssetProvider::GetAppDataLibDir() const
