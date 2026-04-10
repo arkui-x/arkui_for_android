@@ -531,6 +531,16 @@ std::string StageAssetProvider::GetAppLibDir() const
     return appLibDir_;
 }
 
+void StageAssetProvider::SetStubFilePath(const std::string& stubPath)
+{
+    stubFilePath_ = stubPath;
+}
+
+std::string StageAssetProvider::GetStubFilePath() const
+{
+    return stubFilePath_;
+}
+
 std::string StageAssetProvider::GetBundleCodeDir() const
 {
     return appPath_ + ASSETS_DIR;

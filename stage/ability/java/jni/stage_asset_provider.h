@@ -113,6 +113,8 @@ public:
     void SetFileDir(const std::string& filesRootDir);
     void SetAppLibDir(const std::string& libDir);
     std::string GetAppLibDir() const;
+    void SetStubFilePath(const std::string& stubPath);
+    std::string GetStubFilePath() const;
     std::string GetBundleCodeDir() const;
     std::string GetCacheDir() const;
     std::string GetTempDir() const;
@@ -167,6 +169,7 @@ private:
     std::string databaseDir_;
     std::string appLibDir_;
     std::string appDataLibDir_;
+    std::string stubFilePath_;
     std::string arkuiXSandboxDir_;
     std::string preferenceDir_;
     std::string resourcesFilePrefixPath_;
