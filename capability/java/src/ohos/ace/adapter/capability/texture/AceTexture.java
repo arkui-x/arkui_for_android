@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,8 +21,6 @@ import java.util.Map;
 import android.graphics.SurfaceTexture;
 import android.view.Surface;
 
-import ohos.ace.adapter.AceSurfaceHolder;
-import ohos.ace.adapter.AceTextureHolder;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.IAceOnCallResourceMethod;
 import ohos.ace.adapter.IAceOnResourceEvent;
@@ -49,6 +47,7 @@ public class AceTexture {
     private static final String TEXTURE_SET_TEXTURE_SIZE_KEY = "setTextureSize";
     private static final String TEXTURE_UPDATE_TEXTURE_IMAGE_KEY = "updateTextureImage";
     private static final String TEXTURE_ATTACH_TO_GL_CONTEXT_KEY = "attachToGLContext";
+    private static final String TEXTURE_GET_TEXTURE_ID_KEY = "getTextureId";
     private static final String TEXTURE_INIT_PARAM_KEY = "initParam";
     private static final String TEXTURE_REGISTER_SURFACE_VALUE = "registerSurface";
     private static final String TEXTURE_ID_KEY = "textureId";
@@ -62,12 +61,7 @@ public class AceTexture {
     /**
      * SurfaceTexture.
      */
-    protected final SurfaceTexture surfaceTexture;
-
-    /**
-     * surface.
-     */
-    protected Surface surface = null;
+    protected final IAceSurfaceTexture surfaceTexture;
 
     /**
      * hasRegisterSurface.
@@ -93,9 +87,12 @@ public class AceTexture {
 
     private float[] transform = new float[16];
 
-    private SurfaceTexture.OnFrameAvailableListener onFrameListener = new SurfaceTexture.OnFrameAvailableListener() {
+    private boolean useImageReaderMode = false;
+
+    private IAceSurfaceTexture.OnFrameAvailableListener onFrameListener =
+        new IAceSurfaceTexture.OnFrameAvailableListener() {
         @Override
-        public void onFrameAvailable(SurfaceTexture texture) {
+        public void onFrameAvailable(IAceSurfaceTexture texture) {
             markTextureFrame();
         }
     };
@@ -111,14 +108,31 @@ public class AceTexture {
      */
     public AceTexture(int instanceId, long id, IAceTexture textureImpl, IAceOnResourceEvent callback,
             Map<String, String> initParam) {
-        this.surfaceTexture = new SurfaceTexture(0);
-        this.surfaceTexture.detachFromGLContext();
-        this.surfaceTexture.setOnFrameAvailableListener(onFrameListener);
         this.instanceId = instanceId;
         this.id = id;
         this.textureImpl = textureImpl;
         this.callback = callback;
         this.callMethodMap = new HashMap<String, IAceOnCallResourceMethod>();
+        registerCallMethods();
+        if (getTextureMode(initParam)) {
+            ALog.i(LOG_TAG, "AceTexture: Using ImageReader mode for textureId=" + id);
+            surfaceTexture = new AceImageTexture(instanceId, id, textureImpl);
+        } else {
+            ALog.i(LOG_TAG, "AceTexture: Using SurfaceTexture mode for textureId=" + id);
+            this.surfaceTexture = new AceSurfaceTexture(instanceId, id, textureImpl);
+        }
+        surfaceTexture.setOnFrameAvailableListener(onFrameListener);
+    }
+
+    private boolean getTextureMode(Map<String, String> initParam) {
+        if (initParam != null && initParam.containsKey("useImageReader")) {
+            String useImageReader = initParam.get("useImageReader");
+            useImageReaderMode = "true".equalsIgnoreCase(useImageReader);
+        }
+        return useImageReaderMode;
+    }
+
+    private void registerCallMethods() {
         IAceOnCallResourceMethod callSetTextureSize = new IAceOnCallResourceMethod() {
             /**
              * Set the size of the texture
@@ -175,10 +189,19 @@ public class AceTexture {
 
         this.callMethodMap.put("texture@" + id + METHOD + PARAM_EQUALS + "attachNativeWindow" + PARAM_BEGIN,
                 callAttachNativeWindow);
-
-        registerSurface();
-
-        AceTextureHolder.addSurfaceTexture(id, surfaceTexture);
+        IAceOnCallResourceMethod callGetTextureId = new IAceOnCallResourceMethod() {
+            /**
+             * get texture id
+             *
+             * @param params size params
+             * @return result of get texture id
+             */
+            public String onCall(Map<String, String> param) {
+                return getTextureId(param);
+            }
+        };
+        this.callMethodMap.put("texture@" + id + METHOD + PARAM_EQUALS + TEXTURE_GET_TEXTURE_ID_KEY +
+                PARAM_BEGIN, callGetTextureId);
     }
 
     /**
@@ -188,6 +211,23 @@ public class AceTexture {
      */
     public Map<String, IAceOnCallResourceMethod> getCallMethod() {
         return callMethodMap;
+    }
+
+    /**
+     * Retrieves the texture ID from the current SurfaceTexture instance.
+     *
+     * @param params A map of parameters (currently unused).
+     * @return A string in the format "textureId:{id}" containing the texture ID,
+     *         or an empty string if the SurfaceTexture is null.
+     */
+    public String getTextureId(Map<String, String> params) {
+        if (surfaceTexture == null) {
+            ALog.e(LOG_TAG, "surfaceTexture is null.");
+            return "";
+        }
+
+        long textureId = surfaceTexture.getTextureId();
+        return "textureId:" + textureId;
     }
 
     /**
@@ -208,7 +248,7 @@ public class AceTexture {
             return FALSE;
         }
 
-        setDefaultBufferSize(textureWidth, textureHeight);
+        surfaceTexture.setTextureSize(textureWidth, textureHeight);
         String param = "textureWidth=" + textureWidth + "&textureHeight=" + textureHeight;
         callback.onEvent(TEXTURE_FLAG + id + EVENT + PARAM_EQUALS + "onChanged" + PARAM_BEGIN, param);
         return SUCCESS;
@@ -227,11 +267,11 @@ public class AceTexture {
         }
 
         surfaceTexture.updateTexImage();
-        surfaceTexture.getTransformMatrix(transform);
-        long timestamp = surfaceTexture.getTimestamp();
-        if (timestamp == 0) {
-            ALog.e(LOG_TAG, "updateTextureImage etimestamp " + timestamp);
+        transform = surfaceTexture.getTransformMatrix();
+        if (transform == null || transform.length < 16) {
+            return FALSE;
         }
+
         String param = "transform=" + "[" + transform[0];
         for (int i = 1; i < transform.length; i++) {
             param += ",";
@@ -277,36 +317,10 @@ public class AceTexture {
      * @return SurfaceTexture
      */
     public SurfaceTexture getSurfaceTexture() {
-        return surfaceTexture;
-    }
-
-    /**
-     * Set default buffer size.
-     *
-     * @param width The surface width.
-     * @param height The surface height.
-     */
-    public void setDefaultBufferSize(int width, int height) {
-        if (this.surfaceTexture != null) {
-            this.surfaceTexture.setDefaultBufferSize(width, height);
+        if (surfaceTexture == null) {
+            return null;
         }
-    }
-
-    /**
-     * Create and register new surface
-     *
-     */
-    public void registerSurface() {
-        if (surface == null) {
-            surface = new Surface(this.surfaceTexture);
-            AceSurfaceHolder.addSurface(instanceId, id, surface);
-        }
-
-        if (!hasRegisterSurface) {
-            ALog.i(LOG_TAG, "registerSurface, id:" + this.id);
-            this.textureImpl.registerSurface(this.id, surface);
-            hasRegisterSurface = true;
-        }
+        return surfaceTexture.getTexture();
     }
 
     /**
@@ -317,6 +331,7 @@ public class AceTexture {
      */
     private String attachNativeWindow(Map<String, String> params) {
         ALog.d(LOG_TAG, "attachNativeWindow called.");
+        Surface surface = getSurface();
         if (surface == null) {
             ALog.e(LOG_TAG, "surface is null, attachNativeWindow failed");
             return FALSE;
@@ -332,7 +347,10 @@ public class AceTexture {
      * @return Surface
      */
     public Surface getSurface() {
-        return new Surface(surfaceTexture);
+        if (surfaceTexture == null) {
+            return null;
+        }
+        return surfaceTexture.getSurface();
     }
 
     /**
@@ -349,23 +367,7 @@ public class AceTexture {
      *
      */
     public void release() {
-        surfaceTexture.setOnFrameAvailableListener(null);
-        textureImpl.unregisterTexture(id);
-        textureImpl.unregisterSurface(id);
-        AceTextureHolder.removeSurfaceTexture(id);
-        if (surface != null) {
-            AceSurfaceHolder.removeSurface(instanceId, id);
-            surface.release();
-        }
         surfaceTexture.release();
-    }
-
-    /**
-     * Set the surface texture. This method applies to SurfaceView but not NativeView.
-     *
-     */
-    public void setSurfaceTexture() {
-        this.textureImpl.registerTexture(this.id, surfaceTexture);
     }
 
     /**
@@ -373,10 +375,6 @@ public class AceTexture {
      *
      */
     public void markTextureFrame() {
-        if (!hasRegisterTexture) {
-            setSurfaceTexture();
-            hasRegisterTexture = true;
-        }
         this.textureImpl.markTextureFrameAvailable(id);
         String param = "instanceId=" + instanceId + "&textureId=" + id;
         callback.onEvent(TEXTURE_FLAG + id + EVENT + PARAM_EQUALS + "markTextureAvailable" + PARAM_BEGIN, param);

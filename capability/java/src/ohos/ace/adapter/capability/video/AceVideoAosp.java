@@ -19,7 +19,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
-import android.graphics.SurfaceTexture;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.Build;
@@ -304,6 +303,7 @@ public class AceVideoAosp extends AceVideoBase
                 return;
             }
             isMediaPrepared = true;
+            attachSurfaceIfNeededForSeek();
             try {
                 boolean isManualStartPlaying = mediaPlayer.isPlaying() && !isPaused;
                 isManualStartFromStoppedPrepared = isManualStartFromStopped;
@@ -628,6 +628,7 @@ public class AceVideoAosp extends AceVideoBase
                 mediaPlayer.reset();
                 mediaPlayer.release();
                 mediaPlayer = new MediaPlayer();
+                isSetSurfaced = false;
                 Surface surface = getSurface();
                 if (surface != null) {
                     ALog.i(LOG_TAG, "MediaPlayer SetSurface");
@@ -761,6 +762,9 @@ public class AceVideoAosp extends AceVideoBase
         } finally {
             mediaPlayerLock.unlock();
         }
+        if (!isSetSurfaced && surfaceId > 0) {
+            attachSurfaceIfNeededForSeek();
+        }
         if (isShowFirstFrame || isPendingRenderFirstFrameUpdate) {
             updateFirstFrameVisibility();
         }
@@ -884,8 +888,8 @@ public class AceVideoAosp extends AceVideoBase
                 Surface surface = getSurface();
                 if (surface == null || mediaPlayer == null) {
                     isSetSurfaced = false;
-                    ALog.e(LOG_TAG, "setSurface failed: surface or mediaPlayer is null.");
-                    return FAIL;
+                    ALog.w(LOG_TAG, "setSurface deferred: surface or mediaPlayer not ready yet.");
+                    return SUCCESS;
                 }
                 mediaPlayer.setSurface(surface);
                 isSetSurfaced = true;
@@ -946,8 +950,14 @@ public class AceVideoAosp extends AceVideoBase
         if (!isShowFirstFrame) {
             return;
         }
-        if (!isMediaPrepared || !isSetSurfaced) {
+        if (!isMediaPrepared) {
             return;
+        }
+        if (!isSetSurfaced) {
+            attachSurfaceIfNeededForSeek();
+            if (!isSetSurfaced) {
+                return;
+            }
         }
         MediaPlayer currentPlayer = null;
         mediaPlayerLock.lock();
@@ -1120,6 +1130,7 @@ public class AceVideoAosp extends AceVideoBase
         }
         isTrueBack = false;
         mediaPlayer = new MediaPlayer();
+        isSetSurfaced = false;
         Surface surface = getSurface();
         if (surface != null) {
             ALog.i(LOG_TAG, "MediaPlayer SetSurface");
@@ -1227,6 +1238,7 @@ public class AceVideoAosp extends AceVideoBase
                 resetUpdateFlags();
                 return FAIL;
             }
+            runOnUIThread(() -> handlePreparedOnUiThread());
             if (isResetRequest) {
                 return keepFrameAfterReset();
             }
@@ -1305,7 +1317,9 @@ public class AceVideoAosp extends AceVideoBase
         if (isShowFirstFrame) {
             return renderFirstFrameAfterSourceSwitch();
         }
+        shouldDelaySurfaceAttachForSourceSwitch = false;
         isPendingRenderFirstFrameUpdate = false;
+        bindSurfaceForCurrentPlayer();
         setKeepScreenOn(false);
         return SUCCESS;
     }
@@ -1405,12 +1419,13 @@ public class AceVideoAosp extends AceVideoBase
     private Surface getSurface() {
         Surface surface = null;
         if (isTexture) {
-            SurfaceTexture surfaceTexture = AceTextureHolder.getSurfaceTexture(surfaceId);
-            if (surfaceTexture != null) {
-                surface = new Surface(surfaceTexture);
-            }
+            surface = AceTextureHolder.getSurface(surfaceId);
         } else {
             surface = AceSurfaceHolder.getSurface(instanceId, surfaceId);
+        }
+        if (surface != null && !surface.isValid()) {
+            ALog.w(LOG_TAG, "getSurface returns an invalid(released) surface, ignore.");
+            return null;
         }
         return surface;
     }
