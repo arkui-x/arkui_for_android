@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,6 +27,8 @@ import android.view.ViewParent;
 import android.view.Surface;
 import android.widget.FrameLayout;
 
+import ohos.ace.adapter.AceTextureHolder;
+
 /**
  * The class for creating PlatformViewWrapper on Android platform.
  *
@@ -40,6 +42,7 @@ public class PlatformViewWrapper extends FrameLayout {
 
     private int bufferWidth = 0;
     private int bufferHeight = 0;
+    private long textureId = 0L;
 
     private Surface surface;
     private Context context;
@@ -140,6 +143,19 @@ public class PlatformViewWrapper extends FrameLayout {
         return super.invalidateChildInParent(location, dirty);
     }
 
+    private Surface getSurface() {
+        return AceTextureHolder.getSurface(textureId);
+    }
+
+    /**
+     * Sets the texture ID for this PlatformViewWrapper.
+     *
+     * @param textureId the unique identifier of the texture to be associated with this view
+     */
+    public void setTextureId(long textureId) {
+        this.textureId = textureId;
+    }
+
     /**
      * This is draw.
      *
@@ -147,6 +163,7 @@ public class PlatformViewWrapper extends FrameLayout {
      */
     @Override
     public void draw(Canvas canvas) {
+        surface = getSurface();
         if (surface == null) {
             super.draw(canvas);
             return;
