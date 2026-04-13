@@ -148,6 +148,7 @@
       "OHOS::Rosen::Drawing::UIColor::UIColor(OHOS::Rosen::Drawing::UIColor const&)";
       "OHOS::Rosen::Occlusion::Region::OrSelf(OHOS::Rosen::Occlusion::Region&)";
       "OHOS::Rosen::RSColor::Float32ToFloat16(float) const";
+      "OHOS::Rosen::RSNGShapeBase::Create(OHOS::Rosen::RSNGEffectType)";
       OHOS::Ace::ResourceManager::*;
       OHOS::Ace::SpringMotion::*;
       OHOS::Ace::ShadowTheme::*;
@@ -1041,7 +1042,7 @@
       OHOS::Ace::PickerDate::*;
       "OHOS::Ace::Date::CalculateWeekDay(int, int, int)";
       OHOS::Ace::V2::COLUMN_ETS_TAG;
-      "OHOS::Ace::NG::DialogView::CreateDialogNode(OHOS::Ace::DialogProperties const&, OHOS::Ace::RefPtr<OHOS::Ace::NG::UINode> const&)";
+      "OHOS::Ace::NG::DialogView::CreateDialogNode(OHOS::Ace::DialogProperties const&, OHOS::Ace::RefPtr<OHOS::Ace::NG::UINode> const&, OHOS::Ace::RefPtr<OHOS::Ace::NG::UINode> const&)";
       OHOS::Ace::V2::CALENDAR_ETS_TAG;
       OHOS::Ace::V2::SCROLL_ETS_TAG;
       OHOS::Ace::V2::SWIPER_ETS_TAG;
@@ -1145,6 +1146,7 @@
       VTT?for?OHOS::Ace::NG::ParallelRecognizer;
       vtable?for?OHOS::Ace::NG::ParallelRecognizer;
       "OHOS::Ace::NG::NGGestureRecognizer::SetGestureGroup(OHOS::Ace::WeakPtr<OHOS::Ace::NG::NGGestureRecognizer> const&)";
+      "OHOS::Ace::NG::NGGestureRecognizer::GetGestureInfo()";
       "OHOS::Ace::NG::TextFieldPattern::InitValueText(std::__ndk1::basic_string<char16_t, std::__ndk1::char_traits<char16_t>, std::__ndk1::allocator<char16_t> >)";
       VTT?for?OHOS::Ace::NG::TextFieldController;
       vtable?for?OHOS::Ace::NG::TextFieldController;
@@ -1154,6 +1156,7 @@
       OHOS::Ace::NG::DragDropRelatedConfigurations::*;
       OHOS::Ace::DataDetectorAdapter::*;
       "OHOS::Ace::ClipboardProxy::GetInstance()";
+      "OHOS::Ace::ConvertFontWeight(OHOS::Ace::FontWeight)";
       OHOS::Ace::NG::MagnifierController::*;
       OHOS::Ace::NG::TextFieldManagerNG::*;
       "OHOS::Ace::NG::ScrollBar::ScheduleDisappearDelayTask()";
