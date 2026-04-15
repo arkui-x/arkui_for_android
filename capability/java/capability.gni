@@ -58,6 +58,9 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/storage/PersistentStorageAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/surface/AceSurfacePluginAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/surface/AceSurfaceView.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/texture/AceSurfaceTexture.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/texture/AceImageTexture.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/texture/IAceSurfaceTexture.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/texture/AceTexture.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/texture/AceTexturePluginAosp.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/vibrator/VibratorAosp.java",
@@ -159,4 +162,5 @@ capability_cpp_files = [
   "$ace_root/adapter/android/capability/java/jni/vibrator/audio_haptic_player_jni.cpp",
   "$ace_root/adapter/android/capability/java/jni/vibrator/audio_haptic_player_impl.cpp",
   "$ace_root/adapter/android/capability/java/jni/plugin/plugin_manager_jni.cpp",
+  "$ace_root/adapter/android/capability/java/jni/texture/image_texture_jni.cpp",
 ]

@@ -106,6 +106,7 @@ template("ace_common_jni_source_set") {
       "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/inner_api/base",
       "//foundation/appframework/arkui",
       "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
+      "$ace_root/adapter/android/capability/java/jni/texture",
     ]
 
     if (defined(config.use_curl_download) && config.use_curl_download) {
@@ -127,6 +128,7 @@ template("ace_common_jni_source_set") {
 
     if (is_arkui_x) {
       defines += [ "CROSS_PLATFORM" ]
+      libs = [ "mediandk" ]
     }
 
     defines += ["ARKUI_X_VERSION=\"$arkuix_sdk_version\""]
