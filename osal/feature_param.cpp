@@ -55,4 +55,9 @@ bool FeatureParam::IsDialogCorrectionEnabled()
 {
     return false;
 }
+
+bool FeatureParam::IsSmartLayoutEnabled()
+{
+    return false;
+}
 } // OHOS::Ace

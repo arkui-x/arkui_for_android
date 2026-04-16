@@ -15,6 +15,8 @@
 
 #include "base/utils/system_properties.h"
 
+#include "ui/properties/ui_material_enums.h"
+
  #include "base/utils/layout_break_point.h"
 
 #include "base/log/log.h"
@@ -71,6 +73,7 @@ bool SystemProperties::debugEnabled_ = false;
 bool SystemProperties::eventBenchMarkEnabled_ = false;
 DebugFlags SystemProperties::debugFlags_ = 0;
 std::atomic<bool> SystemProperties::debugBoundaryEnabled_(false);
+bool SystemProperties::gestureDebugBoundaryEnabled_ = false;
 bool SystemProperties::debugAutoUIEnabled_ = false;
 bool SystemProperties::debugOffsetLogEnabled_ = false;
 bool SystemProperties::extSurfaceEnabled_ = true;
@@ -105,8 +108,6 @@ bool SystemProperties::faultInjectEnabled_ = false;
 bool SystemProperties::taskPriorityAdjustmentEnable_ = false;
 
 int32_t SystemProperties::dragDropFrameworkStatus_ = 0;
-
-int32_t SystemProperties::pageLoadTimethreshold_ = 1000; // page load max timethreshold is 1000ms.
 
 bool SystemProperties::pageTransitionFrzEnabled_ = false;
 bool SystemProperties::softPagetransition_ = false;
@@ -240,16 +241,6 @@ int32_t SystemProperties::GetSvgMode()
 bool SystemProperties::GetIsUseMemoryMonitor()
 {
     return false;
-}
-
-int32_t SystemProperties::GetComponentLoadNumber()
-{
-    return 1;
-}
-
-int32_t SystemProperties::GetStopCollectTimeWait()
-{
-    return 800; // 800 : Stop collecting asynchronous task waiting time.
 }
 
 bool SystemProperties::IsFormAnimationLimited()
@@ -427,11 +418,6 @@ bool SystemProperties::IsSuperFoldDisplayDevice()
     return false;
 }
 
-int32_t SystemProperties::GetPageLoadTimethreshold()
-{
-    return pageLoadTimethreshold_;
-}
-
 bool SystemProperties::GetContainerDeleteFlag()
 {
     return false;
@@ -575,5 +561,10 @@ void SystemProperties::SetPerformanceMonitorEnabled(bool performanceMonitorEnabl
 void SystemProperties::SetFocusCanBeActive(bool focusCanBeActive)
 {
     focusCanBeActive_.store(focusCanBeActive);
+}
+
+UiMaterialLevel SystemProperties::GetUiMaterialLevel()
+{
+    return UiMaterialLevel::DEFAULT;
 }
 } // namespace OHOS::Ace

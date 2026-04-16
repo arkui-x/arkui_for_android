@@ -205,6 +205,7 @@
       VTT?for?OHOS::Ace::NG::PanGesture;
       vtable?for?OHOS::Ace::NG::PanGesture;
       "OHOS::Ace::Matrix4::Matrix4()";
+      "OHOS::Ace::MaterialUtils::CheckMaterialValid(int)";
 
       vtable?for?OHOS::NetStack::Socks5::Socks5ProxyResponse;
       vtable?for?OHOS::NetStack::Socks5::Socks5MethodRequest;
@@ -240,6 +241,9 @@
       OHOS::Ace::NG::UIObserverHandler::*;
       "OHOS::Ace::NG::Pattern::OnColorModeChange(unsigned int)";
       "OHOS::Ace::NG::Pattern::UnRegisterResource(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "OHOS::Ace::NG::TokenThemeStorage::GetInstance()";
+      "OHOS::Ace::NG::TokenThemeStorage::GetTheme(int)";
+      "OHOS::Ace::NG::TokenThemeStorage::ObtainSystemTheme(OHOS::Ace::ColorMode)";
 
       "OHOS::AppExecFwk::AbilityDelegatorRegistry::GetAbilityDelegator()";
       "OHOS::AppExecFwk::AbilityDelegator::GetCurrentTopAbility()";
@@ -969,6 +973,9 @@
       OHOS::Ace::NG::ScopedViewStackProcessor::*;
       "panda::StringRef::ToString(panda::ecmascript::EcmaVM const*)";
       "OHOS::Ace::UiSessionManager::GetInstance()";
+      "OHOS::Ace::UiMaterial::SetImmersiveOptions(OHOS::Ace::ImmersiveOptions const&)";
+      "OHOS::Ace::TokenColors::CompBackgroundPrimary() const";
+      "OHOS::Ace::MaterialUtils::GetImmersiveShadow(float)";
       SendArkUISyncEvent;
       OHOS::Ace::NG::PaintProperty::*;
       OHOS::Ace::NG::PaintWrapper::*;
@@ -1204,7 +1211,9 @@
       VTT?for?OHOS::Ace::NG::PlaceholderSpanItem;
       vtable?for?OHOS::Ace::NG::PlaceholderSpanItem;
       VTT?for?OHOS::Ace::NG::ImageSpanItem;
+      VTT?for?OHOS::Ace::UiMaterial;
       vtable?for?OHOS::Ace::NG::ImageSpanItem;
+      vtable?for?OHOS::Ace::UiMaterial;
       OHOS::Ace::SpanBase::*;
       "OHOS::Ace::EventReport::ReportRichEditorInfo(OHOS::Ace::RichEditorInfo const&)";
       OHOS::Ace::TextInputClient::*;
