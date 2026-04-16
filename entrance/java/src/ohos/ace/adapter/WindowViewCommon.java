@@ -786,12 +786,14 @@ public class WindowViewCommon {
             } else {
                 ALog.d(TAG, "Window" + "view not instanceof WindowViewInterface");
                 ViewGroup contentParent = (ViewGroup) view.findViewById(android.R.id.content);
-                View contentView = contentParent.getChildAt(0);
-                if (contentView instanceof WindowViewInterface) {
-                    ALog.d(TAG, "Window" + "view is instanceof WindowViewInterface");
-                    // main window
-                    windowView = (WindowViewInterface) contentView;
-                    windowView.onInsetsAreaChanged(insets);
+                for (int i = 0; i < contentParent.getChildCount(); i++) {
+                    View childView = contentParent.getChildAt(i);
+                    if (childView instanceof WindowViewInterface) {
+                        ALog.d(TAG, "Window" + "view is instanceof WindowViewInterface");
+                        // main window
+                        windowView = (WindowViewInterface) childView;
+                        windowView.onInsetsAreaChanged(insets);
+                    }
                 }
             }
             return resultInsets;
