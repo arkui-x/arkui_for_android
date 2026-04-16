@@ -253,18 +253,13 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
     public void onHiddenChanged(boolean isHidden) {
         super.onHiddenChanged(isHidden);
         ALog.i(LOG_TAG, "onHiddenChanged called, isHidden:" + isHidden);
-        if (!isHidden && isToResume) {
-            isToResume = false;
-
-            Trace.beginSection("StageFragment::onHiddenChanged");
-            fragmentDelegate.dispatchOnForeground(getInstanceName(), this);
-            windowView.foreground();
-            if (platformPlugin != null) {
-                platformPlugin.notifyLifecycleChanged(false);
-            }
-            Trace.endSection();
+        Trace.beginSection("StageFragment::onHiddenChanged");
+        if (isHidden) {
+            background();
+        } else {
+            foreground();
         }
-        setWindowOnTop(!isHidden);
+        Trace.endSection();
     }
 
     @Override
