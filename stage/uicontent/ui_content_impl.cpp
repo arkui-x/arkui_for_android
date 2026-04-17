@@ -51,9 +51,12 @@
 #include "core/event/touch_event.h"
 #include "core/image/image_file_cache.h"
 #include "frameworks/bridge/declarative_frontend/ng/declarative_frontend_ng.h"
+#include "ui_event_monitor.h"
 
 namespace OHOS::Ace::Platform {
 namespace {
+std::shared_ptr<UiEventMonitor> g_uiEventMonitor = nullptr;
+std::mutex g_uiEventMonitorMutex;
 const std::string START_PARAMS_KEY = "__startParams";
 const std::string SUBWINDOW_PREFIX = "ARK_APP_SUBWINDOW_";
 const std::string HYPERLINK_BUNDLE_NAME = "com.ohos.hyperlink";
@@ -877,6 +880,43 @@ void UIContentImpl::NotifySurfaceDestroyed()
     auto aceView = static_cast<Platform::AceViewSG*>(container->GetView());
     CHECK_NULL_VOID(aceView);
     aceView->NotifySurfaceDestroyed();
+}
+
+void UIContentImpl::NotifyUiTestStart()
+{
+    std::lock_guard<std::mutex> lock(g_uiEventMonitorMutex);
+    if (g_uiEventMonitor == nullptr) {
+        g_uiEventMonitor = UiEventMonitor::Create();
+        g_uiEventMonitor->Init();
+    }
+}
+
+void UIContentImpl::NotifyUiTestEnd()
+{
+    std::lock_guard<std::mutex> lock(g_uiEventMonitorMutex);
+    if (g_uiEventMonitor != nullptr) {
+        OHOS::Ace::Framework::JsAccessibilityManager::RemoveUiTestAccessibilityRequest();
+        OHOS::Ace::Framework::JsAccessibilityManager::UnsetUiTestEventCallback();
+        g_uiEventMonitor.reset();
+    }
+}
+
+bool UIContentImpl::WaitEventIdle(uint32_t idleThresholdMs, uint32_t timeoutMs)
+{
+    std::shared_ptr<UiEventMonitor> monitor;
+    {
+        std::lock_guard<std::mutex> lock(g_uiEventMonitorMutex);
+        CHECK_NULL_RETURN(g_uiEventMonitor, false);
+        monitor = g_uiEventMonitor;
+    }
+    return monitor->WaitEventIdle(idleThresholdMs, timeoutMs);
+}
+
+RefPtr<OHOS::Ace::DisplayInfo> UIContentImpl::GetDisplayInfo()
+{
+    auto container = AceEngine::Get().GetContainer(instanceId_);
+    CHECK_NULL_RETURN(container, nullptr);
+    return container->GetDisplayInfo();
 }
 
 std::unique_ptr<UIContent> UIContent::Create(OHOS::AbilityRuntime::Platform::Context* context, NativeEngine* runtime)

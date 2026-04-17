@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,10 +16,14 @@
 #ifndef FOUNDATION_ACE_ADAPTER_ANDROID_STAGE_UI_CONTENT_IMPL_H
 #define FOUNDATION_ACE_ADAPTER_ANDROID_STAGE_UI_CONTENT_IMPL_H
 
+#include <memory>
+
 #include "adapter/android/entrance/java/jni/virtual_rs_window.h"
 
+#include "base/memory/ace_type.h"
 #include "base/utils/macros.h"
 #include "core/accessibility/accessibility_node.h"
+#include "core/common/display_info.h"
 #include "core/event/key_event.h"
 #include "foundation/appframework/arkui/uicontent/component_info.h"
 #include "foundation/appframework/arkui/uicontent/ui_content.h"
@@ -84,6 +88,11 @@ public:
 
     // Receive memory level notification
     void NotifyMemoryLevel(int32_t level) override;
+
+    void NotifyUiTestStart() override;
+    void NotifyUiTestEnd() override;
+    bool WaitEventIdle(uint32_t idleThresholdMs, uint32_t timeoutMs) override;
+    RefPtr<OHOS::Ace::DisplayInfo> GetDisplayInfo() override;
 
 private:
     void InitializeInner(
