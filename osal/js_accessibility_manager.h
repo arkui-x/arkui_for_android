@@ -26,6 +26,7 @@
 #include "accessibility_state_event.h"
 #include "core/accessibility/accessibility_manager.h"
 #include "core/accessibility/accessibility_utils.h"
+#include "core/components_ng/base/frame_node.h"
 #include "foundation/appframework/arkui/uicontent/component_info.h"
 #include "frameworks/bridge/common/accessibility/accessibility_node_manager.h"
 #include "nlohmann/json.hpp"
