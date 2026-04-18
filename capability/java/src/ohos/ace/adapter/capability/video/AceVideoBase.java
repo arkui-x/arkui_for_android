@@ -30,6 +30,17 @@ import java.util.Map;
 public abstract class AceVideoBase {
     private static final String LOG_TAG = "AceVideoBase";
 
+    /**
+     * Supported playback speeds defined by AVPlayer or system standards
+     */
+    private static final float DEFAULT_SPEED = 1.0f;
+
+    private static final float SPEED_COMPARE_EPSILON = 0.00001f;
+
+    private static final float[] SUPPORTED_SPEEDS = {
+        0.125f, 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f, 3.0f
+    };
+
     private static final String PARAM_AND = "#HWJS-&-#";
 
     private static final String PARAM_EQUALS = "#HWJS-=-#";
@@ -67,7 +78,7 @@ public abstract class AceVideoBase {
         this.isAutoPlay = false;
         this.isMute = false;
         this.isLooping = false;
-        speed = 1.0f;
+        speed = DEFAULT_SPEED;
         this.callback = callback;
         callMethodMap = new HashMap<>();
 
@@ -387,7 +398,7 @@ public abstract class AceVideoBase {
             }
 
             if (params.containsKey("speed")) {
-                speed = Float.parseFloat(params.get("speed"));
+                setSpeed(Float.parseFloat(params.get("speed")));
             }
         } catch (NumberFormatException ignored) {
             ALog.e(LOG_TAG, "NumberFormatException");
@@ -447,7 +458,17 @@ public abstract class AceVideoBase {
      * @param speed video speed.
      */
     public void setSpeed(float speed) {
-        this.speed = speed;
+        this.speed = normalizeSpeed(speed);
+    }
+
+    private float normalizeSpeed(float speed) {
+        for (float supportedSpeed : SUPPORTED_SPEEDS) {
+            if (Math.abs(supportedSpeed - speed) <= SPEED_COMPARE_EPSILON) {
+                return supportedSpeed;
+            }
+        }
+        ALog.w(LOG_TAG, "Unsupported speed " + speed + ", fallback to default speed.");
+        return DEFAULT_SPEED;
     }
 
     /**
