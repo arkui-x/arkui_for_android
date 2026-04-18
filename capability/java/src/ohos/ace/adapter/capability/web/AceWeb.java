@@ -1580,6 +1580,11 @@ public class AceWeb extends AceWebBase {
 
     @Override
     public String updateLayout(Map<String, String> params) {
+        if ((!params.containsKey(WEBVIEW_POSITION_LEFT)) || (!params.containsKey(WEBVIEW_POSITION_TOP)) ||
+                (!params.containsKey(WEBVIEW_WIDTH)) || (!params.containsKey(WEBVIEW_HEIGHT))) {
+            ALog.w(LOG_TAG, "setWebLayout fail");
+            return FAIL_TAG;
+        }
         if (webView != null) {
             try {
                 left = Float.parseFloat(params.get(WEBVIEW_POSITION_LEFT));
@@ -1587,9 +1592,20 @@ public class AceWeb extends AceWebBase {
                 width = Float.parseFloat(params.get(WEBVIEW_WIDTH));
                 height = Float.parseFloat(params.get(WEBVIEW_HEIGHT));
                 webView.setLayoutParams(buildLayoutParams(width, height, left, top));
+                ALog.i(LOG_TAG, String.format("updateLayout: left=%.1f, top=%.1f, width=%.1f, height=%.1f",
+                        left, top, width, height));
+
+                // Force measure and layout to fix layout issue in ArkUI-X
+                int widthSpec = View.MeasureSpec.makeMeasureSpec((int) width, View.MeasureSpec.EXACTLY);
+                int heightSpec = View.MeasureSpec.makeMeasureSpec((int) height, View.MeasureSpec.EXACTLY);
+                webView.measure(widthSpec, heightSpec);
+                webView.layout((int) left, (int) top,
+                        (int) left + webView.getMeasuredWidth(),
+                        (int) top + webView.getMeasuredHeight());
+
                 return SUCCESS_TAG;
             } catch (NumberFormatException ignored) {
-                ALog.w(LOG_TAG, "updateWebLayout NumberFormatException");
+                ALog.w(LOG_TAG, "updateLayout NumberFormatException");
                 return FAIL_TAG;
             }
         }
