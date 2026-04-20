@@ -465,11 +465,12 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         String testModuleName = intent.getStringExtra("moduleName");
         String testRunerName = intent.getStringExtra("unittest");
         String timeout = intent.getStringExtra("timeout");
+        String socket = intent.getStringExtra("socket");
         boolean isExist = !(testBundleName == null || testModuleName == null ||
-                testRunerName == null || timeout == null);
+                testRunerName == null || timeout == null || socket == null);
         if (hasTestValue && !isFrist && isExist) {
             ALog.i(LOG_TAG, "Start creating abilityDelegate");
-            activityDelegate.createAbilityDelegator(testBundleName, testModuleName, testRunerName, timeout);
+            activityDelegate.createAbilityDelegator(testBundleName, testModuleName, testRunerName, timeout, socket);
             isFrist = true;
         } else {
             ALog.i(LOG_TAG, "No need to start creating abilityDelegate");

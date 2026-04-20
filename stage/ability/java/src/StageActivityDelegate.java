@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -170,9 +170,11 @@ public class StageActivityDelegate {
      * @param moduleName the module name.
      * @param testRunerName the testRuner name.
      * @param timeout timeout.
+     * @param socket socket.
      */
-    public void createAbilityDelegator(String bundleName, String moduleName, String testRunerName, String timeout) {
-        nativeCreateAbilityDelegator(bundleName, moduleName, testRunerName, timeout);
+    public void createAbilityDelegator(String bundleName, String moduleName, String testRunerName, String timeout,
+        String socket) {
+        nativeCreateAbilityDelegator(bundleName, moduleName, testRunerName, timeout, socket);
     }
 
     /**
@@ -216,7 +218,7 @@ public class StageActivityDelegate {
     private native void nativeSetWindowView(String instanceName, WindowViewInterface windowView);
 
     private native void nativeCreateAbilityDelegator(String bundleName, String moduleName,
-                                                        String testRunerName, String timeout);
+                                                        String testRunerName, String timeout, String socket);
 
     private native void nativeDispatchOnAbilityResult(
         String instanceName, int requestCode, int resultCode, String resultWantParams);

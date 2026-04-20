@@ -242,6 +242,7 @@
       "OHOS::Ace::NG::Pattern::UnRegisterResource(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
 
       "OHOS::AppExecFwk::AbilityDelegatorRegistry::GetAbilityDelegator()";
+      "OHOS::AppExecFwk::AbilityDelegatorRegistry::GetSocketConfig()";
       "OHOS::AppExecFwk::AbilityDelegator::GetCurrentTopAbility()";
       "OHOS::AppExecFwk::AbilityDelegator::GetUIContent(int)";
 
