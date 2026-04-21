@@ -744,7 +744,7 @@ void UIContentImpl::UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRunti
     LOGI("UIContentImpl: UpdateConfiguration called End");
 }
 
-void UIContentImpl::ProcessWindowSizeLayoutBreakPointChange()
+void UIContentImpl::ProcessWindowSizeLayoutBreakPointChange(double density)
 {
     auto container = Platform::AceContainerSG::GetContainer(instanceId_);
     CHECK_NULL_VOID(container);
@@ -753,7 +753,7 @@ void UIContentImpl::ProcessWindowSizeLayoutBreakPointChange()
 
     auto uiTaskRunner = SingleTaskExecutor::Make(taskExecutor, TaskExecutor::TaskType::UI);
 
-    auto task = [instanceId = instanceId_]() {
+    auto task = [instanceId = instanceId_, density]() {
         auto container = Platform::AceContainerSG::GetContainer(instanceId);
         CHECK_NULL_VOID(container);
 
@@ -763,6 +763,7 @@ void UIContentImpl::ProcessWindowSizeLayoutBreakPointChange()
         CHECK_NULL_VOID(pipelineContext);
         auto window = pipelineContext->GetWindow();
         CHECK_NULL_VOID(window);
+        window->SetDensity(density);
 
         window->NotifyBreakpointChangeIfNeeded(instanceId, layoutWidthBreakpoints, layoutHeightBreakpoints);
     };
@@ -778,7 +779,7 @@ void UIContentImpl::ProcessWindowSizeLayoutBreakPointChange()
 void UIContentImpl::UpdateViewportConfig(const ViewportConfig& config, OHOS::Rosen::WindowSizeChangeReason reason)
 {
     LOGI("UIContentImpl: UpdateViewportConfig %{public}s", config.ToString().c_str());
-    ProcessWindowSizeLayoutBreakPointChange();
+    ProcessWindowSizeLayoutBreakPointChange(config.Density());
     ACE_SCOPED_TRACE("UpdateViewportConfig %s", config.ToString().c_str());
     
     auto orientation = config.Height() >= config.Width() ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE;
