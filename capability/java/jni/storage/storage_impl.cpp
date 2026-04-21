@@ -22,7 +22,7 @@ namespace OHOS::Ace::Platform {
 
 StorageImpl::StorageImpl() : Storage()
 {
-    auto pipelineContext = NG::PipelineContext::GetCurrentContext();
+    auto pipelineContext = NG::PipelineContext::GetCurrentContextSafely();
     CHECK_NULL_VOID(pipelineContext);
     RefPtr<TaskExecutor> taskExecutor = pipelineContext->GetTaskExecutor();
     taskExecutor_ = taskExecutor;
