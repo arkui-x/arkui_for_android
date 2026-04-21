@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -61,6 +61,11 @@ bool AcePlatformPluginJni::Register(const std::shared_ptr<JNIEnv>& env)
             .name = "nativeAttachSurface",
             .signature = "(Ljava/lang/Object;)J",
             .fnPtr = reinterpret_cast<void*>(&AcePlatformPluginJni::AttachNativeWindow),
+        },
+        {
+            .name = "nativeCreateDirectBufferFromPointer",
+            .signature = "(JJ)Ljava/nio/ByteBuffer;",
+            .fnPtr = reinterpret_cast<void*>(&AcePlatformPluginJni::CreateDirectBufferFromPointer),
         },
     };
 
@@ -195,6 +200,16 @@ jlong AcePlatformPluginJni::AttachNativeWindow(JNIEnv* env, jobject myObject, jo
         return 0;
     }
     return PointerToJavaLong(nativeWindow);
+}
+
+jobject AcePlatformPluginJni::CreateDirectBufferFromPointer(
+    JNIEnv* env, jobject myObject, jlong nativePointer, jlong bufferSize)
+{
+    if (env == nullptr || nativePointer == 0 || bufferSize <= 0) {
+        LOGE("env is null or nativePointer is 0 or bufferSize is invalid");
+        return nullptr;
+    }
+    return env->NewDirectByteBuffer(reinterpret_cast<void*>(nativePointer), bufferSize);
 }
 
 void AcePlatformPluginJni::ReleaseInstance(int32_t instanceId)
