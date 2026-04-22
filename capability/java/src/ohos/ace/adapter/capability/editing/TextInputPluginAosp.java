@@ -263,12 +263,15 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
                     BaseInputConnection.getComposingSpanEnd(editable));
             }
         } else {
+            int previousComposingStart = BaseInputConnection.getComposingSpanStart(editable);
+            int previousComposingEnd = BaseInputConnection.getComposingSpanEnd(editable);
             // Text has been changed, update Editable first and update selection.
             editable.replace(0, editable.length(), state.getText());
             applyStateToSelection(state);
             // Call this method when the input text changes (for example View.setText()).
             if (imm != null) {
                 imm.restartInput(view);
+                restoreComposingRegionAfterRestart(state, previousComposingStart, previousComposingEnd);
             }
             isRestartInputPending = false;
         }
@@ -364,5 +367,22 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
         }
 
         return textType;
+    }
+
+    private void restoreComposingRegionAfterRestart(TextEditState state, int previousComposingStart,
+        int previousComposingEnd) {
+        if (wrapper == null || previousComposingStart < 0 || previousComposingEnd <= previousComposingStart) {
+            return;
+        }
+
+        int textLength = state.getText().length();
+        int selectionEnd = state.getSelectionEnd();
+        int restoreStart = Math.max(0, Math.min(previousComposingStart, textLength));
+        int restoreEnd = (selectionEnd >= 0) ? Math.min(selectionEnd, textLength) : 0;
+        if (restoreEnd <= restoreStart) {
+            return;
+        }
+
+        wrapper.setComposingRegion(restoreStart, restoreEnd);
     }
 }
