@@ -145,6 +145,7 @@
       OHOS::Rosen::Drawing::Pen::*;
       OHOS::Rosen::Drawing::ShaderEffect::*;
       OHOS::Rosen::Drawing::Brush::*;
+      "OHOS::Rosen::Drawing::ColorSpace::CreateRGB(OHOS::Rosen::Drawing::CMSTransferFuncType const&, OHOS::Rosen::Drawing::CMSMatrixType const&)";
       "OHOS::Rosen::Drawing::UIColor::UIColor(OHOS::Rosen::Drawing::UIColor const&)";
       "OHOS::Rosen::Occlusion::Region::OrSelf(OHOS::Rosen::Occlusion::Region&)";
       "OHOS::Rosen::RSColor::Float32ToFloat16(float) const";
@@ -206,6 +207,9 @@
       vtable?for?OHOS::Ace::NG::PanGesture;
       "OHOS::Ace::Matrix4::Matrix4()";
       "OHOS::Ace::MaterialUtils::CheckMaterialValid(int)";
+      "OHOS::Ace::MaterialUtils::IsEnableMaterialParam(OHOS::Ace::RefPtr<OHOS::Ace::UiMaterial> const&)";
+      "OHOS::Ace::MaterialUtils::IsMaterialEnabled()";
+      "OHOS::Ace::MaterialUtils::GetInitMaterial(OHOS::Ace::UiMaterialStyle)";
 
       vtable?for?OHOS::NetStack::Socks5::Socks5ProxyResponse;
       vtable?for?OHOS::NetStack::Socks5::Socks5MethodRequest;
@@ -1009,6 +1013,9 @@
       VTT?for?OHOS::Ace::NG::DividerPattern;
       vtable?for?OHOS::Ace::NG::DividerPattern;
       "OHOS::Ace::NG::ImagePattern::ImagePattern()";
+      "OHOS::Ace::NG::ImagePattern::SetSyncLoad(bool)";
+      "OHOS::Ace::NG::ImagePattern::GetCanvasImage()";
+      "OHOS::Ace::NG::ImagePattern::GetRawImageSize()";
       "bool OHOS::Ace::NG::ArkTSUtils::ConvertFromJSValueNG<OHOS::Ace::Dimension>(panda::ecmascript::EcmaVM const*, panda::Local<panda::JSValueRef> const&, OHOS::Ace::Dimension&, OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject>&)";
       "bool OHOS::Ace::NG::ArkTSUtils::ConvertFromJSValue<OHOS::Ace::Color>(panda::ecmascript::EcmaVM const*, panda::Local<panda::JSValueRef> const&, OHOS::Ace::Color&, OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject>&)";
       OHOS::Ace::UtfUtils::*;
@@ -1109,6 +1116,7 @@
       VTT?for?OHOS::Ace::NG::TextAccessibilityProperty;
       vtable?for?OHOS::Ace::NG::TextAccessibilityProperty;
       "OHOS::Ace::DragEvent::SetData(OHOS::Ace::RefPtr<OHOS::Ace::UnifiedData> const&)";
+      OHOS::Ace::DragEvent::*;
       "OHOS::Ace::DataDetectorAdapter::IsAskCeliaSupported()";
       non-virtual?thunk?to?OHOS::Ace::NG::TextPattern::*;
       OHOS::Ace::NG::SelectOverlayClient::*;

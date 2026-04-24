@@ -18,6 +18,7 @@
 #include "adapter/android/capability/java/jni/clipboard/clipboard_jni.h"
 #include "adapter/android/capability/java/jni/clipboard/multiType_record_impl.h"
 #include "adapter/android/capability/java/jni/clipboard/paste_data_impl.h"
+#include "base/image/pixel_map.h"
 #include "frameworks/base/utils/utils.h"
 
 namespace OHOS::Ace::Platform {

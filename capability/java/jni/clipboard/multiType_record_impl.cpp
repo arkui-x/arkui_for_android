@@ -14,6 +14,7 @@
  */
 
 #include "adapter/android/capability/java/jni/clipboard/multiType_record_impl.h"
+#include "base/image/pixel_map.h"
 
 namespace OHOS::Ace {
 
