@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,14 +31,14 @@ import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.IAceOnCallResourceMethod;
 import ohos.ace.adapter.IAceOnResourceEvent;
 import ohos.ace.adapter.WindowViewSurface;
+import ohos.ace.adapter.capability.common.AceSurfaceCaptureHelper;
 
 /**
  * This class handles the lifecycle of a surface texture.
  *
  * @since 1
  */
-public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callback,
-    View.OnLayoutChangeListener {
+public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
     private static final String LOG_TAG = "AceSurfaceView";
 
     private static final String SUCCESS = "success";
@@ -83,6 +83,8 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     private int instanceId = 0;
 
+    private final AceSurfaceCaptureHelper surfaceCaptureHelper;
+
     /**
      * constructor of AceSurfaceView
      *
@@ -102,9 +104,21 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         this.callMethodMap = new HashMap<String, IAceOnCallResourceMethod>();
         this.context = context;
         this.instanceId = instanceId;
+        this.surfaceCaptureHelper = new AceSurfaceCaptureHelper("PixelCopyBackground_Surface_" + id,
+            new AceSurfaceCaptureHelper.CaptureConfig(SURFACE_WIDTH_KEY, SURFACE_HEIGHT_KEY, LOG_TAG,
+                new AceSurfaceCaptureHelper.SurfaceProvider() {
+                    @Override
+                    public Surface getSurface() {
+                        return AceSurfaceView.this.surface;
+                    }
+                },
+                new AceSurfaceCaptureHelper.DirectBufferProvider() {
+                    @Override
+                    public java.nio.ByteBuffer createDirectBufferFromPointer(long pointer, long bufferSize) {
+                        return surfaceImpl.createDirectBufferFromPointer(pointer, bufferSize);
+                    }
+                }));
         getHolder().addCallback(this);
-
-        addOnLayoutChangeListener(this);
 
         initCallMethodMap();
     }
@@ -162,6 +176,21 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
         this.callMethodMap.put("surface@" + id + METHOD + PARAM_EQUALS + "attachNativeWindow" + PARAM_BEGIN,
             callAttachNativeWindow);
+
+        IAceOnCallResourceMethod callSurfaceCapture = new IAceOnCallResourceMethod() {
+            /**
+             * Capture the current surface content.
+             *
+             * @param param capture params
+             * @return result of surface capture
+             */
+            public String onCall(Map<String, String> param) {
+                return surfaceCapture(param);
+            }
+        };
+
+        this.callMethodMap.put("surface@" + id + METHOD + PARAM_EQUALS + "surfaceCapture" + PARAM_BEGIN,
+                callSurfaceCapture);
     }
 
     /**
@@ -251,7 +280,7 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     private String attachNativeWindow(Map<String, String> params) {
         ALog.i(LOG_TAG, "attachNativeWindow called.");
         if (surface == null) {
-            ALog.e(LOG_TAG, "NumberFormatException, attachNativeWindow failed");
+            ALog.e(LOG_TAG, "attachNativeWindow failed");
             return FALSE;
         }
         long nativeWindow = surfaceImpl.attachNaitveSurface(surface);
@@ -259,6 +288,11 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         String param = "nativeWindow=" + nativeWindow;
         return param;
     }
+
+    private String surfaceCapture(Map<String, String> params) {
+        return surfaceCaptureHelper.capture(params);
+    }
+
 
     /**
      * Get the surface.
@@ -290,6 +324,7 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             viewAdded = false;
             ALog.i(LOG_TAG, "AceSurfaceView removed");
         }
+        surfaceCaptureHelper.release();
     }
 
     @Override
@@ -315,16 +350,6 @@ public class AceSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         surface = null;
         callback.onEvent(SURFACE_FLAG + id + EVENT + PARAM_EQUALS + "onDestroyed" + PARAM_BEGIN, "");
         AceSurfaceHolder.removeSurface(instanceId, id);
-    }
-
-    @Override
-    public void onLayoutChange(View view, int left, int top, int right, int bottom,
-    int oldLeft, int oldTop, int oldRight, int oldBottom) {
-        if (left != oldLeft || top != oldTop || right != oldRight || bottom != oldBottom) {
-            int width = right - left;
-            int height = bottom - top;
-            String param = "surfaceWidth=" + width + "&surfaceHeight=" + height;
-        }
     }
 
     private FrameLayout.LayoutParams buildLayoutParams(int left, int top, int width, int height) {

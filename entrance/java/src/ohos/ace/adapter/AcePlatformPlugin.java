@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,6 +14,8 @@
  */
 
 package ohos.ace.adapter;
+
+import java.nio.ByteBuffer;
 
 import android.content.Context;
 import android.view.View;
@@ -157,6 +159,15 @@ public class AcePlatformPlugin implements InputConnectionClient {
                 }
                 return nativeSurfacePtr;
             }
+
+            @Override
+            public ByteBuffer createDirectBufferFromPointer(long pointer, long bufferSize) {
+                ByteBuffer cppBuffer = nativeCreateDirectBufferFromPointer(pointer, bufferSize);
+                if (cppBuffer == null) {
+                    ALog.e(LOG_TAG, "createDirectBufferFromPointer failed.");
+                }
+                return cppBuffer;
+            }
         };
         addResourcePlugin(AceTexturePluginAosp.createRegister(instanceId, textureImpl));
     }
@@ -177,6 +188,15 @@ public class AcePlatformPlugin implements InputConnectionClient {
                     ALog.e(LOG_TAG, "AttachNaitveSurface failed.");
                 }
                 return nativeSurfacePtr;
+            }
+
+            @Override
+            public ByteBuffer createDirectBufferFromPointer(long pointer, long bufferSize) {
+                ByteBuffer cppBuffer = nativeCreateDirectBufferFromPointer(pointer, bufferSize);
+                if (cppBuffer == null) {
+                    ALog.e(LOG_TAG, "createDirectBufferFromPointer failed.");
+                }
+                return cppBuffer;
             }
         };
         addResourcePlugin(AceSurfacePluginAosp.createRegister(context, view, surfaceImpl, instanceId));
@@ -212,4 +232,5 @@ public class AcePlatformPlugin implements InputConnectionClient {
     private native void nativeRegisterTexture(int instanceId, long textureId, Object surfaceTexture);
     private native void nativeUnregisterTexture(int instanceId, long textureId);
     private native long nativeAttachSurface(Object surface);
+    private native ByteBuffer nativeCreateDirectBufferFromPointer(long pointer, long bufferSize);
 }

@@ -24,6 +24,7 @@ import android.view.Surface;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.IAceOnCallResourceMethod;
 import ohos.ace.adapter.IAceOnResourceEvent;
+import ohos.ace.adapter.capability.common.AceSurfaceCaptureHelper;
 
 /**
  * This class handles the lifecycle of a surface texture.
@@ -89,6 +90,8 @@ public class AceTexture {
 
     private boolean useImageReaderMode = false;
 
+    private final AceSurfaceCaptureHelper surfaceCaptureHelper;
+
     private IAceSurfaceTexture.OnFrameAvailableListener onFrameListener =
         new IAceSurfaceTexture.OnFrameAvailableListener() {
         @Override
@@ -113,6 +116,23 @@ public class AceTexture {
         this.textureImpl = textureImpl;
         this.callback = callback;
         this.callMethodMap = new HashMap<String, IAceOnCallResourceMethod>();
+        this.surfaceCaptureHelper = new AceSurfaceCaptureHelper("PixelCopyBackground_Texture_" + id,
+            new AceSurfaceCaptureHelper.CaptureConfig(TEXTURE_WIDTH_KEY, TEXTURE_HEIGHT_KEY, LOG_TAG,
+                new AceSurfaceCaptureHelper.SurfaceProvider() {
+                    @Override
+                    public Surface getSurface() {
+                        if (AceTexture.this.surfaceTexture == null) {
+                            return null;
+                        }
+                        return AceTexture.this.surfaceTexture.getSurface();
+                    }
+                },
+                new AceSurfaceCaptureHelper.DirectBufferProvider() {
+                    @Override
+                    public java.nio.ByteBuffer createDirectBufferFromPointer(long pointer, long bufferSize) {
+                        return textureImpl.createDirectBufferFromPointer(pointer, bufferSize);
+                    }
+                }));
         registerCallMethods();
         if (getTextureMode(initParam)) {
             ALog.i(LOG_TAG, "AceTexture: Using ImageReader mode for textureId=" + id);
@@ -202,6 +222,21 @@ public class AceTexture {
         };
         this.callMethodMap.put("texture@" + id + METHOD + PARAM_EQUALS + TEXTURE_GET_TEXTURE_ID_KEY +
                 PARAM_BEGIN, callGetTextureId);
+
+        IAceOnCallResourceMethod callSurfaceCapture = new IAceOnCallResourceMethod() {
+            /**
+             * Capture the current surface content.
+             *
+             * @param param capture params
+             * @return result of surface capture
+             */
+            public String onCall(Map<String, String> param) {
+                return surfaceCapture(param);
+            }
+        };
+
+        this.callMethodMap.put("texture@" + id + METHOD + PARAM_EQUALS + "surfaceCapture" + PARAM_BEGIN,
+                callSurfaceCapture);
     }
 
     /**
@@ -341,6 +376,10 @@ public class AceTexture {
         return "nativeWindow=" + nativeWindow;
     }
 
+    private String surfaceCapture(Map<String, String> params) {
+        return surfaceCaptureHelper.capture(params);
+    }
+
     /**
      * Get the surface.
      *
@@ -368,6 +407,7 @@ public class AceTexture {
      */
     public void release() {
         surfaceTexture.release();
+        surfaceCaptureHelper.release();
     }
 
     /**
