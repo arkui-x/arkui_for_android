@@ -250,6 +250,7 @@
       "OHOS::Ace::NG::TokenThemeStorage::ObtainSystemTheme(OHOS::Ace::ColorMode)";
 
       "OHOS::AppExecFwk::AbilityDelegatorRegistry::GetAbilityDelegator()";
+      "OHOS::AppExecFwk::AbilityDelegatorRegistry::GetSocketConfig()";
       "OHOS::AppExecFwk::AbilityDelegator::GetCurrentTopAbility()";
       "OHOS::AppExecFwk::AbilityDelegator::GetUIContent(int)";
 

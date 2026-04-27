@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -43,7 +43,7 @@ public:
     static void DispatchOnNewWant(JNIEnv* env, jclass myclass, jstring str, jstring params);
     static void SetWindowView(JNIEnv* env, jclass myclass, jstring str, jobject jwindowView);
     static void CreateAbilityDelegator(JNIEnv* env, jclass myclass, jstring jbundleName,
-        jstring jmoduleName, jstring jtestName, jstring timeout);
+        jstring jmoduleName, jstring jtestName, jstring jtimeout, jstring jsocket);
     static void DispatchOnAbilityResult(
         JNIEnv* env, jclass myclass, jstring str, jint requestCode, jint resultCode, jstring resultWantParams);
     static void SetStageActivityStruct(JNIEnv* env, jobject object);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -70,7 +70,9 @@ bool StageActivityDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
         },
         {
             .name = "nativeCreateAbilityDelegator",
-            .signature = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+            .signature =
+                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;"
+                "Ljava/lang/String;Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&CreateAbilityDelegator),
         },
         {
@@ -210,25 +212,53 @@ void StageActivityDelegateJni::SetWindowView(JNIEnv* env, jclass myclass, jstrin
 }
 
 void StageActivityDelegateJni::CreateAbilityDelegator(JNIEnv* env, jclass myclass, jstring jbundleName,
-    jstring jmoduleName, jstring jtestName, jstring jtimeout)
+    jstring jmoduleName, jstring jtestName, jstring jtimeout, jstring jsocket)
 {
+    if (env == nullptr) {
+        LOGE("env is nullptr");
+        return;
+    }
     auto bundleName = env->GetStringUTFChars(jbundleName, nullptr);
-    auto moduleName = env->GetStringUTFChars(jmoduleName, nullptr);
-    auto testName = env->GetStringUTFChars(jtestName, nullptr);
-    auto timeout = env->GetStringUTFChars(jtimeout, nullptr);
     if (bundleName == nullptr) {
         LOGE("bundleName is nullptr");
         return;
     }
+    auto moduleName = env->GetStringUTFChars(jmoduleName, nullptr);
     if (moduleName == nullptr) {
         LOGE("moduleName is nullptr");
+        env->ReleaseStringUTFChars(jbundleName, bundleName);
         return;
     }
+    auto testName = env->GetStringUTFChars(jtestName, nullptr);
     if (testName == nullptr) {
         LOGE("testName is nullptr");
+        env->ReleaseStringUTFChars(jbundleName, bundleName);
+        env->ReleaseStringUTFChars(jmoduleName, moduleName);
         return;
     }
-    AppMain::GetInstance()->PrepareAbilityDelegator(bundleName, moduleName, testName, timeout);
+    auto timeout = env->GetStringUTFChars(jtimeout, nullptr);
+    if (timeout == nullptr) {
+        LOGE("timeout is nullptr");
+        env->ReleaseStringUTFChars(jbundleName, bundleName);
+        env->ReleaseStringUTFChars(jmoduleName, moduleName);
+        env->ReleaseStringUTFChars(jtestName, testName);
+        return;
+    }
+    auto socket = env->GetStringUTFChars(jsocket, nullptr);
+    if (socket == nullptr) {
+        LOGE("socket is nullptr");
+        env->ReleaseStringUTFChars(jbundleName, bundleName);
+        env->ReleaseStringUTFChars(jmoduleName, moduleName);
+        env->ReleaseStringUTFChars(jtestName, testName);
+        env->ReleaseStringUTFChars(jtimeout, timeout);
+        return;
+    }
+    AppMain::GetInstance()->PrepareAbilityDelegator(bundleName, moduleName, testName, timeout, socket);
+    env->ReleaseStringUTFChars(jbundleName, bundleName);
+    env->ReleaseStringUTFChars(jmoduleName, moduleName);
+    env->ReleaseStringUTFChars(jtestName, testName);
+    env->ReleaseStringUTFChars(jtimeout, timeout);
+    env->ReleaseStringUTFChars(jsocket, socket);
 }
 
 void StageActivityDelegateJni::DispatchOnAbilityResult(
