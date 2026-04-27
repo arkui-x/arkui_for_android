@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,6 +34,7 @@ import android.os.Bundle;
 import android.os.Build;
 import android.os.Handler;
 import android.os.LocaleList;
+import android.os.Looper;
 import android.os.Process;
 import android.os.Trace;
 import android.provider.Settings;
@@ -116,6 +117,8 @@ public class StageApplicationDelegate {
 
     private static final String LOAD_MODULE_PATH_REGEX = "^\\./ets/([^/]+/)*[^/]+$";
 
+    private static final String ACCESSIBILITY_HIGH_TEXT_CONTRAST_ENABLED = "high_text_contrast_enabled";
+
     private static final int ERR_INVALID_PARAMETERS = -1;
 
     private static final int ERR_OK = 0;
@@ -150,7 +153,7 @@ public class StageApplicationDelegate {
 
     private boolean shouldLoadUI = true;
 
-    private ContentObserver fontScaleObserver = new ContentObserver(new Handler()) {
+    private ContentObserver fontScaleObserver = new ContentObserver(new Handler(Looper.getMainLooper())) {
         @Override
         public void onChange(boolean selfChange) {
             if (stageApplication == null) {
@@ -162,6 +165,13 @@ public class StageApplicationDelegate {
             Configuration config = stageApplication.getResources().getConfiguration();
             config.fontScale = fontScale;
             onConfigurationChanged(config);
+        }
+    };
+
+    private ContentObserver highTextContrastObserver = new ContentObserver(new Handler(Looper.getMainLooper())) {
+        @Override
+        public void onChange(boolean selfChange) {
+            onHighContrastChanged();
         }
     };
 
@@ -275,6 +285,9 @@ public class StageApplicationDelegate {
         stageApplication.getContentResolver().registerContentObserver(
                 Settings.System.getUriFor(Settings.System.FONT_SCALE), true,
                 fontScaleObserver);
+        stageApplication.getContentResolver().registerContentObserver(
+                Settings.Secure.getUriFor(ACCESSIBILITY_HIGH_TEXT_CONTRAST_ENABLED), true, highTextContrastObserver);
+        onHighContrastChanged();
         Trace.endSection();
     }
 
@@ -300,6 +313,7 @@ public class StageApplicationDelegate {
             @Override
             public void onActivityResumed(Activity activity) {
                 topActivity = activity;
+                onHighContrastChanged();
             }
 
             @Override
@@ -1098,6 +1112,17 @@ public class StageApplicationDelegate {
         return null;
     }
 
+    private void onHighContrastChanged() {
+        if (stageApplication == null) {
+            ALog.e(LOG_TAG, "stageApplication is null");
+            return;
+        }
+        int isEnable = Settings.Secure.getInt(stageApplication.getContentResolver(),
+                ACCESSIBILITY_HIGH_TEXT_CONTRAST_ENABLED, 0);
+        boolean isEnableHighTextContrast = isEnable != 0;
+        nativeOnHighContrastChanged(isEnableHighTextContrast);
+    }
+
     /**
      * Attach language to context.
      *
@@ -1206,6 +1231,8 @@ public class StageApplicationDelegate {
     private native void nativeDispatchApplicationOnForeground();
 
     private native void nativeDispatchApplicationOnBackground();
+
+    private native void nativeOnHighContrastChanged(boolean isEnabled);
 
     /**
      * Native calls the Preload the abc file interface.

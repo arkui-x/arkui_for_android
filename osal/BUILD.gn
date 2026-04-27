@@ -61,6 +61,7 @@ template("ace_osal_android_source_set") {
       "frame_report.cpp",
       "frame_trace_adapter_impl.cpp",
       "hitrace_meter.cpp",
+      "high_contrast_observer.cpp",
       "image_packer_android.cpp",
       "image_perf_android.cpp",
       "image_source_android.cpp",

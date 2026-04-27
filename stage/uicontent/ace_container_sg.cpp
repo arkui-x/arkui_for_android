@@ -55,6 +55,7 @@
 
 #include "core/pipeline/base/element.h"
 #include "core/pipeline_ng/pipeline_context.h"
+#include "foundation/arkui/ace_engine/adapter/android/osal/high_contrast_observer.h"
 #ifdef NG_BUILD
 #include "frameworks/bridge/declarative_frontend/ng/declarative_frontend_ng.h"
 #else
@@ -141,6 +142,7 @@ AceContainerSG::AceContainerSG(int32_t instanceId, FrontendType type,
         taskExecutor_ = taskExecutorImpl;
     }
     platformEventCallback_ = std::move(callback);
+    SubscribeHighContrastChange();
 }
 
 void AceContainerSG::Initialize()
@@ -156,6 +158,7 @@ void AceContainerSG::Destroy()
 {
     LOGI("AceContainerSG::Destroy start");
     ContainerScope scope(instanceId_);
+    UnsubscribeHighContrastChange();
     ReleaseResourceAdapter();
     if (pipelineContext_ && taskExecutor_) {
         // 1. Destroy Pipeline on UI thread.
@@ -1480,6 +1483,26 @@ void AceContainerSG::ReleaseResourceAdapter()
     auto context = runtimeContext_.lock();
     CHECK_NULL_VOID(context);
     ResourceManager::GetInstance().RemoveResourceAdapter(context->GetBundleName(), GetModuleName(), instanceId_);
+}
+
+void AceContainerSG::SubscribeHighContrastChange()
+{
+    HighContrastObserver::GetInstance().SubscribeHighContrastChange(instanceId_, [weak = WeakClaim(this)]() {
+        auto container = weak.Upgrade();
+        if (container == nullptr) {
+            return;
+        }
+        auto pipelineContext = container->GetPipelineContext();
+        auto fontManager = pipelineContext == nullptr ? nullptr : pipelineContext->GetFontManager();
+        if (fontManager != nullptr) {
+            fontManager->UpdateHybridRenderNodes();
+        }
+    });
+}
+
+void AceContainerSG::UnsubscribeHighContrastChange()
+{
+    HighContrastObserver::GetInstance().UnsubscribeHighContrastChange(instanceId_);
 }
 
 void AceContainerSG::RegisterStopDragCallback(int32_t pointerId, StopDragCallback&& stopDragCallback)
