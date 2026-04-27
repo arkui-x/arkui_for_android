@@ -613,7 +613,7 @@ public abstract class TextInputPluginBase {
             String appendText) throws JSONException {
             int start = Math.max(0, json.getInt(COMPOSING_START));
             int end = Math.min(lastValue.length(), json.getInt(COMPOSING_END));
-            if (start == end) {
+            if (start >= end) {
                 return;
             }
             StringBuilder lastValueStr = new StringBuilder(lastValue);
