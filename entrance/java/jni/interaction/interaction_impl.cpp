@@ -121,7 +121,7 @@ int32_t InteractionImpl::UpdatePreviewStyleWithAnimation(
     return -1;
 }
 
-int32_t InteractionImpl::StopDrag(DragDropRet result)
+int32_t InteractionImpl::StopDrag(DragDropRet result, std::function<void()> callback)
 {
 #ifdef ENABLE_DRAG_FRAMEWORK
     Msdp::DeviceStatus::DragDropResult dragDropResult { TranslateDragResult(result.result), result.hasCustomAnimation,
