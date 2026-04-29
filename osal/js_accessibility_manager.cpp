@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -43,6 +43,25 @@ using Json = nlohmann::json;
 using namespace OHOS::Ace::Platform;
 
 namespace OHOS::Ace::Framework {
+JsAccessibilityManager::EventCallback JsAccessibilityManager::uiTestEventCallback_ = nullptr;
+std::atomic<int32_t> JsAccessibilityManager::testForceEnableCount_ { 0 };
+
+static std::mutex g_uiTestEventCallbackMutex;
+static std::mutex g_accessibilityStateMutex;
+static std::atomic<bool> g_lastSystemA11yState{ false };
+
+void JsAccessibilityManager::SetUiTestEventCallback(const EventCallback& cb)
+{
+    std::lock_guard<std::mutex> lock(g_uiTestEventCallbackMutex);
+    uiTestEventCallback_ = cb;
+}
+
+void JsAccessibilityManager::UnsetUiTestEventCallback()
+{
+    std::lock_guard<std::mutex> lock(g_uiTestEventCallbackMutex);
+    uiTestEventCallback_ = nullptr;
+}
+
 namespace {
 const char DUMP_ORDER[] = "-accessibility";
 const char DUMP_INSPECTOR[] = "-inspector";
@@ -1747,7 +1766,7 @@ void JsAccessibilityManager::InitializeCallback()
     windowId_ = pipelineContext->GetWindowId();
 
     bool isEnabled = JsAccessibilityManagerJni::IsAccessibilityEnabled(windowId_);
-    AceApplicationInfo::GetInstance().SetAccessibilityEnabled(isEnabled);
+    RefreshEffectiveAccessibilityState(isEnabled);
 
     if (pipelineContext->IsFormRender() || pipelineContext->IsJsCard() || pipelineContext->IsJsPlugin()) {
         return;
@@ -1819,9 +1838,29 @@ void AddEventInfoJsonImporved(Json& eventInfoJson, AccessibilityElementInfo& ele
     eventInfoJson["childIDs"] = childIDsJson.dump();
 }
 
+void JsAccessibilityManager::NotifyUiTestEventCallback(const AccessibilityEventInfo& eventInfo)
+{
+    if (testForceEnableCount_.load() <= 0) {
+        return;
+    }
+
+    EventCallback cbCopy = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(g_uiTestEventCallbackMutex);
+        if (testForceEnableCount_.load() > 0 && uiTestEventCallback_) {
+            cbCopy = uiTestEventCallback_;
+        }
+    }
+
+    if (cbCopy) {
+        cbCopy(eventInfo);
+    }
+}
+
 bool JsAccessibilityManager::SendAccessibilitySyncEvent(
     const AccessibilityEvent& accessibilityEvent, AccessibilityEventInfo eventInfo)
 {
+    NotifyUiTestEventCallback(eventInfo);
     if (!IsRegister()) {
         return false;
     }
@@ -2845,7 +2884,7 @@ void JsAccessibilityManager::JsAccessibilityStateObserver::OnStateChanged(const 
     } else {
         jsAccessibilityManager->DeregisterInteractionOperation();
     }
-    AceApplicationInfo::GetInstance().SetAccessibilityEnabled(state);
+    RefreshEffectiveAccessibilityState(state);
 }
 
 bool JsAccessibilityManager::RequestAccessibilityFocus(const RefPtr<AccessibilityNode>& node)
@@ -3352,5 +3391,36 @@ int32_t JsAccessibilityManager::GetRootElementId(int32_t windowId)
     }
 
     return -1;
+}
+
+void JsAccessibilityManager::RefreshEffectiveAccessibilityState(bool isSystemEnabled)
+{
+    std::lock_guard<std::mutex> lock(g_accessibilityStateMutex);
+    g_lastSystemA11yState.store(isSystemEnabled);
+    bool effectiveEnabled = isSystemEnabled || (testForceEnableCount_.load() > 0);
+    AceApplicationInfo::GetInstance().SetAccessibilityEnabled(effectiveEnabled);
+}
+
+void JsAccessibilityManager::RefreshEffectiveAccessibilityState()
+{
+    bool isSystemEnabled = g_lastSystemA11yState.load();
+    RefreshEffectiveAccessibilityState(isSystemEnabled);
+}
+
+void JsAccessibilityManager::AddUiTestAccessibilityRequest()
+{
+    testForceEnableCount_++;
+    RefreshEffectiveAccessibilityState();
+}
+
+void JsAccessibilityManager::RemoveUiTestAccessibilityRequest()
+{
+    int32_t current = testForceEnableCount_.load();
+    while (current > 0) {
+        if (testForceEnableCount_.compare_exchange_weak(current, current - 1)) {
+            break;
+        }
+    }
+    RefreshEffectiveAccessibilityState();
 }
 } // namespace OHOS::Ace::Framework

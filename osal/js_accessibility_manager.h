@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -77,6 +77,10 @@ public:
     void RegisterSubWindowInteractionOperation(int windowId) override;
     void SetPipelineContext(const RefPtr<PipelineBase>& context) override;
 
+    static void AddUiTestAccessibilityRequest();
+
+    static void RemoveUiTestAccessibilityRequest();
+
     float GetScaleX() const
     {
         return scaleX_;
@@ -136,6 +140,10 @@ public:
         Accessibility::AccessibilityElementInfo& nodeInfo);
     int32_t GetRootElementId(int32_t windowId);
     void OnTouchExplorationStateChange(bool state);
+
+    using EventCallback = std::function<void(const Accessibility::AccessibilityEventInfo&)>;
+    static void SetUiTestEventCallback(const EventCallback& cb);
+    static void UnsetUiTestEventCallback();
 
     static void SetSplicElementIdTreeId(const int32_t treeId, int64_t& elementId)
     {
@@ -292,12 +300,18 @@ private:
     bool ActionFocus(const std::map<std::string, std::string>& actionArguments, const RefPtr<AccessibilityNode>& node,
         const RefPtr<PipelineContext>& context);
 
+    static void RefreshEffectiveAccessibilityState(bool isSystemEnabled);
+    static void RefreshEffectiveAccessibilityState();
+    static EventCallback uiTestEventCallback_;
+    static std::atomic<int32_t> testForceEnableCount_;
+
     void UpdateSpecialChildren(const RefPtr<AccessibilityNode>& node,
         const std::list<RefPtr<AccessibilityNode>>& children, std::vector<int32_t>& childrenVec, int32_t cardId,
         int32_t rootNodeId);
     void UpdateRegularChildren(const RefPtr<AccessibilityNode>& node,
         const std::list<RefPtr<AccessibilityNode>>& children, std::vector<int32_t>& childrenVec, int32_t cardId,
         int32_t rootNodeId);
+    void NotifyUiTestEventCallback(const Accessibility::AccessibilityEventInfo& eventInfo);
 
     std::string callbackKey_;
     uint32_t windowId_ = 0;
