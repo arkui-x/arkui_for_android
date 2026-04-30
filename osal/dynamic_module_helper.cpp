@@ -125,4 +125,14 @@ DynamicModule* DynamicModuleHelper::GetDynamicModule(const std::string& name)
     }
 }
 
+bool DynamicModuleHelper::IsDynamicModuleLoaded(const std::string& name)
+{
+    std::lock_guard<std::mutex> lock(moduleMapMutex_);
+    auto iter = moduleMap_.find(name);
+    if (iter != moduleMap_.end()) {
+        return true;
+    }
+    return false;
+}
+
 } // namespace OHOS::Ace

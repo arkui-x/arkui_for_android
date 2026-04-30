@@ -88,6 +88,7 @@ bool SystemProperties::gridCacheEnabled_ = false;
 bool SystemProperties::sideBarContainerBlurEnable_ = false;
 std::atomic<bool> SystemProperties::acePerformanceMonitorEnable_(false);
 std::atomic<bool> SystemProperties::focusCanBeActive_(true);
+bool SystemProperties::smartGestureEnabled_ = false;
 bool SystemProperties::aceCommercialLogEnable_ = false;
 bool SystemProperties::imageFileCacheConvertAstc_ = false;
 int32_t SystemProperties::imageFileCacheConvertAstcThreshold_ = 2;

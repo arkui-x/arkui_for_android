@@ -60,7 +60,7 @@ public:
     int32_t UpdatePreviewStyleWithAnimation(const PreviewStyle& previewStyle,
         const PreviewAnimation& animation) override;
 
-    int32_t StopDrag(DragDropRet result) override;
+    int32_t StopDrag(DragDropRet result, std::function<void()> callback = nullptr) override;
 
     int32_t GetUdKey(std::string& udKey) override;
 

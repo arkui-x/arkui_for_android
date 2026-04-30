@@ -88,6 +88,8 @@
       "OHOS::Ace::NG::DragControllerFuncWrapper::GetOriginNodeOffset(OHOS::Ace::NG::PreparedInfoForDrag&, OHOS::Ace::NG::PreparedAsyncCtxForAnimate&)";
       "OHOS::Ace::NG::DragControllerFuncWrapper::HideDragPreviewWindow(int)";
       "OHOS::Ace::NG::DragControllerFuncWrapper::GetScaleInfo(int, float, float)";
+      "OHOS::Ace::RefPtr<OHOS::Ace::NG::AccessibilityProperty> OHOS::Ace::NG::FrameNode::GetAccessibilityProperty<OHOS::Ace::NG::AccessibilityProperty>() const";
+      "OHOS::Ace::RefPtr<OHOS::Ace::NG::TextAccessibilityProperty> OHOS::Ace::NG::FrameNode::GetAccessibilityProperty<OHOS::Ace::NG::TextAccessibilityProperty>() const";
       "OHOS::Ace::ElementRegister::GetInstance()";
       "OHOS::Ace::ElementRegister::GetUINodeById(int)";
       "OHOS::Ace::Subwindow::CreateSubwindow(int)";
@@ -147,6 +149,8 @@
       OHOS::Rosen::Drawing::Brush::*;
       "OHOS::Rosen::Drawing::ColorSpace::CreateRGB(OHOS::Rosen::Drawing::CMSTransferFuncType const&, OHOS::Rosen::Drawing::CMSMatrixType const&)";
       "OHOS::Rosen::Drawing::UIColor::UIColor(OHOS::Rosen::Drawing::UIColor const&)";
+      "OHOS::Rosen::Drawing::UIColor::UIColor(float, float, float, float, float)";
+      "OHOS::Rosen::Drawing::UIColor::UIColor()";
       "OHOS::Rosen::Occlusion::Region::OrSelf(OHOS::Rosen::Occlusion::Region&)";
       "OHOS::Rosen::RSColor::Float32ToFloat16(float) const";
       "OHOS::Rosen::RSNGShapeBase::Create(OHOS::Rosen::RSNGEffectType)";
@@ -157,6 +161,7 @@
       WorkerManager::*;
       "OHOS::Ace::ResTracer::~ResTracer()";
       "OHOS::Ace::UINodeTracer::UINodeTracer(char const*, OHOS::Ace::NG::UINode const*)";
+      "OHOS::Ace::UIContent::GetUIContent(int)";
       "DataProtector::AutDecrypt(unsigned long, unsigned long) const";
       "DataProtector::AutDecrypt(unsigned int, unsigned int) const";
       "DataProtector::PacEncrypt(unsigned long, unsigned long)";
@@ -210,6 +215,10 @@
       "OHOS::Ace::MaterialUtils::IsEnableMaterialParam(OHOS::Ace::RefPtr<OHOS::Ace::UiMaterial> const&)";
       "OHOS::Ace::MaterialUtils::IsMaterialEnabled()";
       "OHOS::Ace::MaterialUtils::GetInitMaterial(OHOS::Ace::UiMaterialStyle)";
+      "OHOS::Ace::MaterialUtils::IsMaterialDisabled()";
+      OHOS::BrokerRegistration::*;
+      "OHOS::PeerHolder::PeerHolder(OHOS::sptr<OHOS::IRemoteObject> const&)";
+      "OHOS::PeerHolder::Remote()";
 
       vtable?for?OHOS::NetStack::Socks5::Socks5ProxyResponse;
       vtable?for?OHOS::NetStack::Socks5::Socks5MethodRequest;
@@ -646,7 +655,9 @@
       vtable?for?OHOS::Ace::NG::AccessibilityProperty;
       OHOS::Ace::NG::EventHub::*;
       VTT?for?OHOS::Ace::NG::EventHub;
+      VTT?for?OHOS::Ace::NG::ExclusiveRecognizer;
       vtable?for?OHOS::Ace::NG::EventHub;
+      vtable?for?OHOS::Ace::NG::ExclusiveRecognizer;
       OHOS::Ace::NG::RenderSurface::*;
       OHOS::Ace::NG::RenderContext::*;
       OHOS::Ace::Recorder::EventRecorder::*;
@@ -808,6 +819,14 @@
       "OHOS::Ace::Matrix4::Matrix4(OHOS::Ace::Matrix4 const&)";
       "OHOS::Ace::ElementRegister::MakeUniqueId()";
       "OHOS::Ace::NG::TextLayoutAlgorithm::GetTextStyle() const";
+      "OHOS::Ace::NG::TextFreeScrollController::StopAllScrollAnimation()";
+      "OHOS::Ace::NG::TextFreeScrollController::StopScrollAnimation(bool)";
+      "OHOS::Ace::NG::TextFreeScrollController::TextFreeScrollController(OHOS::Ace::WeakPtr<OHOS::Ace::NG::ScrollablePattern> const&)";
+      "OHOS::Ace::NG::TextScrollBar2D::OnDraw(OHOS::Ace::NG::DrawingContext&) const";
+      "OHOS::Ace::NG::TextScrollBar2D::AddScrollableEvent()";
+      "OHOS::Ace::NG::TextScrollBar2D::TextScrollBar2D(OHOS::Ace::WeakPtr<OHOS::Ace::NG::ScrollablePattern> const&)";
+      "OHOS::Ace::NG::TextScrollBar2D::UpdateVerticalBar(float, float, OHOS::Ace::Size const&, OHOS::Ace::Offset)";
+      "OHOS::Ace::NG::TextScrollBar2D::UpdateHorizontalBar(float, float, OHOS::Ace::Size const&, OHOS::Ace::Offset)";
       "OHOS::Ace::NG::Pattern::AddResObj(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject> const&, std::__ndk1::function<void (OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject> const&)>&&)";
       "OHOS::Ace::NG::Pattern::RemoveResObj(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::ImageCache::ClearCacheImgObj(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
@@ -1038,6 +1057,7 @@
       OHOS::Ace::LinearColor::TRANSPARENT;
       "OHOS::Ace::NG::Gradient::AddColor(OHOS::Ace::NG::GradientColor const&)";
       "OHOS::Ace::ToRSRect(OHOS::Ace::NG::RectT<float> const&)";
+      "OHOS::Ace::NG::RosenRenderContext::SetHDRColorHeadRoom(float)";
       OHOS::Ace::NG::PathPainter::*;
       OHOS::Ace::AnimatableDimension::*;
       OHOS::Ace::V2::SLIDER_ETS_TAG;
@@ -1081,6 +1101,8 @@
       "OHOS::Ace::NG::NodeAnimatableProperty<float, OHOS::Ace::NG::AnimatablePropertyFloat>::Set(float const&)";
       "OHOS::Ace::NG::NodeAnimatableProperty<float, OHOS::Ace::NG::AnimatablePropertyFloat>::NodeAnimatableProperty(float const&, std::__ndk1::function<void (float const&)>&&)";
       "OHOS::Ace::Shadow::CreateShadow(OHOS::Ace::ShadowStyle)";
+      "OHOS::Ace::Shadow::GetBlurRadius() const";
+      "OHOS::Ace::Shadow::SetBlurRadius(double)";
       "OHOS::Ace::NG::CheckMeasureSelfFlag(unsigned int)";
       "OHOS::Ace::TextStyle::operator==(OHOS::Ace::TextStyle const&) const";
       "OHOS::Ace::NG::VibratorUtils::StartVibraFeedback()";
@@ -1176,6 +1198,9 @@
       OHOS::Ace::NG::MagnifierController::*;
       OHOS::Ace::NG::TextFieldManagerNG::*;
       "OHOS::Ace::NG::ScrollBar::ScheduleDisappearDelayTask()";
+      "OHOS::Ace::NG::ScrollBar::SetDisplayMode(OHOS::Ace::DisplayMode)";
+      "OHOS::Ace::NG::ScrollBar::SetPositionMode(OHOS::Ace::PositionMode)";
+      "OHOS::Ace::NG::ScrollBar::SetScrollable(bool)";
       OHOS::Ace::NG::BaseTextSelectOverlay::*;
       OHOS::Ace::NG::SpanNode::*;
       "OHOS::Ace::NG::ImageSpanItem::SetImageSpanOptions(OHOS::Ace::ImageSpanOptions const&)";

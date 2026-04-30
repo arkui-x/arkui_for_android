@@ -17,6 +17,7 @@
 
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
 #include "adapter/android/entrance/java/jni/display_info.h"
+#include "core/accessibility/accessibility_manager.h"
 #include "core/components_ng/pattern/menu/wrapper/menu_wrapper_pattern.h"
 #include "display_manager.h"
 #include "frameworks/bridge/common/utils/engine_helper.h"

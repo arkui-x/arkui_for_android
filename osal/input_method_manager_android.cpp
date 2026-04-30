@@ -19,6 +19,7 @@
 #include "core/common/ime/input_method_manager.h"
 #include "core/common/ime/text_input_connection.h"
 #include "core/components_ng/pattern/text_field/text_field_manager.h"
+#include "core/pipeline_ng/pipeline_context.h"
 
 namespace OHOS::Ace {
 std::unique_ptr<InputMethodManager> InputMethodManager::instance_ = nullptr;
