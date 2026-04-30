@@ -38,6 +38,7 @@ public:
     static void SetCacheDir(JNIEnv* env, jclass myclass, jstring str);
     static void SetFileDir(JNIEnv* env, jclass myclass, jstring str);
     static void SetAppLibDir(JNIEnv* env, jclass myclass, jstring str);
+    static void SetStubFilePath(JNIEnv* env, jclass myclass, jstring str);
     static void SetResourcesFilePrefixPath(JNIEnv* env, jclass myclass, jstring str);
     static void SetPidAndUid(JNIEnv* env, jclass myclass, jint pid, jint uid);
     static void InitConfiguration(JNIEnv* env, jclass myclass, jstring data);

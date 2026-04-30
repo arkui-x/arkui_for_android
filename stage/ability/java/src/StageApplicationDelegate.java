@@ -133,6 +133,8 @@ public class StageApplicationDelegate {
 
     private static final int COUNT_ZERO = 0;
 
+    private static final int STUB_COPY_BUFFER_SIZE = 8192;
+
     private static boolean isInitialized = false;
 
     private static boolean isCopyNativeLibs = false;
@@ -257,6 +259,13 @@ public class StageApplicationDelegate {
         setNativeAssetManager(stageApplication.getAssets());
 
         nativeSetAppLibDir(context.getApplicationInfo().nativeLibraryDir);
+
+        // Extract stub.an and set its file path for ArkVM runtime loading.
+        String stubFilePath = extractStubAnFromApk(context);
+        if (stubFilePath != null) {
+            nativeSetStubFilePath(stubFilePath);
+        }
+
         createStagePath();
 
         try {
@@ -761,6 +770,79 @@ public class StageApplicationDelegate {
     }
 
     /**
+     * Get the CPU architecture sub-directory name for stub.an selection.
+     * Maps the nativeLibraryDir suffix to the stub asset sub-directory:
+     *   arm64  -> arm64-v8a
+     *   x86_64 -> x86_64
+     *
+     * @param context application context
+     * @return architecture directory name, e.g. "arm64-v8a"
+     */
+    private String getStubArchDir(Context context) {
+        String nativeLibDir = context.getApplicationInfo().nativeLibraryDir;
+        int index = nativeLibDir.lastIndexOf('/');
+        if (index < 0) {
+            ALog.w(LOG_TAG, "getStubArchDir nativeLibraryDir has no '/': " + nativeLibDir);
+            return "";
+        }
+        String arch = nativeLibDir.substring(index + 1);
+        if ("arm64".equals(arch)) {
+            return ARCH_ARM64;   // "arm64-v8a"
+        } else if ("x86_64".equals(arch)) {
+            return ARCH_X86;     // "x86_64"
+        } else {
+            ALog.w(LOG_TAG, "getStubArchDir unsupported ABI");
+            return "";
+        }
+    }
+
+    /**
+     * Extract stub.an from assets to app's filesDir.
+     * stub.an is packaged per-architecture under assets/arkui-x/stub/<arch>/stub.an.
+     * The file is copied to filesDir so that C++ MmapLoad can load it via a real path.
+     *
+     * @param context application context
+     * @return absolute path to the extracted stub.an, or null on failure
+     */
+    private String extractStubAnFromApk(Context context) {
+        String filesDir = context.getFilesDir().getPath();
+
+        String archDir = getStubArchDir(context);
+        if (archDir.isEmpty()) {
+            return null;
+        }
+
+        File destDir = new File(filesDir + "/stub/" + archDir);
+        if (!destDir.exists() && !destDir.mkdirs()) {
+            ALog.e(LOG_TAG, "extractStubAnFromApk failed to create dir: " + destDir.getPath());
+            return null;
+        }
+
+        String destPath = filesDir + "/stub/" + archDir + "/stub.an";
+        File destFile = new File(destPath);
+        if (destFile.exists() && !destFile.delete()) {
+            ALog.e(LOG_TAG, "extractStubAnFromApk failed to delete existing file: " + destPath);
+            return null;
+        }
+
+        String assetPath = ASSETS_SUB_PATH + "/stub/" + archDir + "/stub.an";
+        try (InputStream is = context.getAssets().open(assetPath);
+            FileOutputStream fos = new FileOutputStream(destPath)) {
+            byte[] buffer = new byte[STUB_COPY_BUFFER_SIZE];
+            int len;
+            while ((len = is.read(buffer)) != -1) {
+                fos.write(buffer, 0, len);
+            }
+            fos.flush();
+            return destPath;
+        } catch (IOException e) {
+            ALog.e(LOG_TAG, "extractStubAnFromApk failed, assetPath=" + assetPath + ", error: " + e.getMessage());
+            destFile.delete();
+            return null;
+        }
+    }
+
+    /**
      * Launch application.
      */
     public void launchApplication() {
@@ -1211,6 +1293,8 @@ public class StageApplicationDelegate {
     private native void nativeSetFileDir(String filesDir);
 
     private native void nativeSetAppLibDir(String libDir);
+
+    private native void nativeSetStubFilePath(String path);
 
     private native void nativeSetResourcesFilePrefixPath(String path);
 

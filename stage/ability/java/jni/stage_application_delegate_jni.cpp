@@ -88,6 +88,11 @@ bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
             .fnPtr = reinterpret_cast<void*>(&SetAppLibDir),
         },
         {
+            .name = "nativeSetStubFilePath",
+            .signature = "(Ljava/lang/String;)V",
+            .fnPtr = reinterpret_cast<void*>(&SetStubFilePath),
+        },
+        {
             .name = "nativeSetResourcesFilePrefixPath",
             .signature = "(Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&SetResourcesFilePrefixPath),
@@ -266,6 +271,27 @@ void StageApplicationDelegateJni::SetAppLibDir(JNIEnv* env, jclass myclass, jstr
         StageAssetProvider::GetInstance()->SetAppLibDir(filesDir);
         env->ReleaseStringUTFChars(str, filesDir);
     }
+}
+
+void StageApplicationDelegateJni::SetStubFilePath(JNIEnv* env, jclass myclass, jstring str)
+{
+    if (env == nullptr || str == nullptr) {
+        LOGE("env or str is nullptr");
+        return;
+    }
+
+    auto path = env->GetStringUTFChars(str, nullptr);
+    if (path == nullptr) {
+        LOGE("JNI SetStubFilePath: GetStringUTFChars return nullptr");
+        return;
+    }
+    if (path[0] == '\0') {
+        LOGE("JNI SetStubFilePath: path is empty string");
+        env->ReleaseStringUTFChars(str, path);
+        return;
+    }
+    StageAssetProvider::GetInstance()->SetStubFilePath(path);
+    env->ReleaseStringUTFChars(str, path);
 }
 
 void StageApplicationDelegateJni::SetResourcesFilePrefixPath(JNIEnv* env, jclass myclass, jstring str)
