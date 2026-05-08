@@ -23,6 +23,7 @@
 #include "foundation/appframework/window_manager/interfaces/innerkits/wm/window_option.h"
 #include "refbase.h"
 #include "render_service_client/core/ui/rs_surface_node.h"
+#include "render_service_client/core/ui/rs_ui_director.h"
 
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "adapter/android/entrance/java/jni/window_view_jni.h"
@@ -334,7 +335,7 @@ public:
      * @return std::shared_ptr<RSUIDirector> Shared pointer to the RSUIDirector instance,
      *         or nullptr if RS client multi-instance is disabled.
      */
-    virtual std::shared_ptr<RSUIDirector> GetRSUIDirector() const { return nullptr; }
+    virtual std::shared_ptr<RSUIDirector> GetRSUIDirector() const { return rsUidriect_; }
 
     /**
      * @brief Get the associated RSUIContext instance
@@ -342,7 +343,7 @@ public:
      * @return std::shared_ptr<RSUIContext> Shared pointer to the RSUIContext instance,
      *         or nullptr if RS client multi-instance is disabled.
      */
-    virtual std::shared_ptr<RSUIContext> GetRSUIContext() const { return nullptr; }
+    virtual std::shared_ptr<RSUIContext> GetRSUIContext() const { return rsUidriect_->GetRSUIContext(); }
 
 private:
     void SetWindowView(JNIEnv* env, jobject windowView);
@@ -390,6 +391,7 @@ private:
     int32_t surfaceWidth_ = 0;
     int32_t surfaceHeight_ = 0;
     float density_ = 3.0f;
+    std::shared_ptr<RSUIDirector> rsUidriect_;
     std::shared_ptr<RSSurfaceNode> surfaceNode_;
 
     jobject windowView_ = nullptr;

@@ -25,6 +25,8 @@
 #include "mmi_event_convertor.h"
 #include "napi/native_api.h"
 #include "render_service_client/core/pipeline/rs_render_thread.h"
+#include "render_service_client/core/ui/rs_ui_director.h"
+#include "render_service_client/core/ui/rs_ui_context.h"
 #include "subwindow_manager_jni.h"
 #include "transaction/rs_interfaces.h"
 #include "window_view_adapter.h"
@@ -864,9 +866,10 @@ void Window::RequestNextVsync(std::function<void(int64_t, void*)> callback)
 
 void Window::CreateSurfaceNode(void* nativeWindow)
 {
+    rsUidriect_ = Rosen::RSUIDirector::Create(nullptr);
     struct Rosen::RSSurfaceNodeConfig rsSurfaceNodeConfig = { .SurfaceNodeName = "arkui-x_surface",
         .additionalData = nativeWindow };
-    surfaceNode_ = Rosen::RSSurfaceNode::Create(rsSurfaceNodeConfig);
+    surfaceNode_ = Rosen::RSSurfaceNode::Create(rsSurfaceNodeConfig, true, rsUidriect_->GetRSUIContext());
 
     if (!uiContent_) {
         LOGW("Window Notify uiContent_ Surface Created, uiContent_ is nullptr, delay notify.");
