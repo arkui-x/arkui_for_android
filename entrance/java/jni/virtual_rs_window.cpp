@@ -25,6 +25,8 @@
 #include "mmi_event_convertor.h"
 #include "napi/native_api.h"
 #include "render_service_client/core/pipeline/rs_render_thread.h"
+#include "render_service_client/core/ui/rs_ui_context.h"
+#include "render_service_client/core/ui/rs_ui_director.h"
 #include "subwindow_manager_jni.h"
 #include "transaction/rs_interfaces.h"
 #include "window_view_adapter.h"
@@ -40,10 +42,10 @@ using namespace OHOS::Ace::Platform;
 
 namespace OHOS::Rosen {
 namespace {
-static constexpr Rect EMPTY_RECT = {0, 0, 0, 0};
+static constexpr Rect EMPTY_RECT = { 0, 0, 0, 0 };
 static constexpr int32_t ORIENTATION_LANDSCAPE = 0;
 static constexpr int32_t ORIENTATION_PORTRAIT = 1;
-}  // namespace
+} // namespace
 void DummyWindowRelease(Window* window)
 {
     window->DecStrongRef(window);
@@ -302,14 +304,9 @@ std::shared_ptr<Window> Window::Create(
 
 void Window::AvoidAreaMapInit(std::shared_ptr<Window> window)
 {
-    for (auto type : {
-        AvoidAreaType::TYPE_SYSTEM,
-        AvoidAreaType::TYPE_CUTOUT,
-        AvoidAreaType::TYPE_SYSTEM_GESTURE,
-        AvoidAreaType::TYPE_KEYBOARD,
-        AvoidAreaType::TYPE_NAVIGATION_INDICATOR
-    }) {
-        auto avoidArea  = std::make_shared<Rosen::AvoidArea>();
+    for (auto type : { AvoidAreaType::TYPE_SYSTEM, AvoidAreaType::TYPE_CUTOUT, AvoidAreaType::TYPE_SYSTEM_GESTURE,
+             AvoidAreaType::TYPE_KEYBOARD, AvoidAreaType::TYPE_NAVIGATION_INDICATOR }) {
+        auto avoidArea = std::make_shared<Rosen::AvoidArea>();
         window->GetAvoidAreaByType(type, *avoidArea);
         window->avoidAreaMap_.insert(std::make_pair(type, *avoidArea));
     }
@@ -864,9 +861,14 @@ void Window::RequestNextVsync(std::function<void(int64_t, void*)> callback)
 
 void Window::CreateSurfaceNode(void* nativeWindow)
 {
+    rsUIDirector_ = Rosen::RSUIDirector::Create(nullptr);
     struct Rosen::RSSurfaceNodeConfig rsSurfaceNodeConfig = { .SurfaceNodeName = "arkui-x_surface",
         .additionalData = nativeWindow };
-    surfaceNode_ = Rosen::RSSurfaceNode::Create(rsSurfaceNodeConfig);
+    if (!rsUIDirector_) {
+        LOGE("rsUIDirector_ is nullptr");
+        return;
+    }
+    surfaceNode_ = Rosen::RSSurfaceNode::Create(rsSurfaceNodeConfig, true, rsUIDirector_->GetRSUIContext());
 
     if (!uiContent_) {
         LOGW("Window Notify uiContent_ Surface Created, uiContent_ is nullptr, delay notify.");
@@ -967,9 +969,9 @@ void Window::NotifyAfterBackground(bool needNotifyListeners, bool needNotifyUiCo
 void Window::UpdateAvoidArea(const std::shared_ptr<Rosen::AvoidArea>& avoidArea, AvoidAreaType type)
 {
     LOGD("UpdateAvoidArea WindowId:%{public}d, type:%{public}d, top:{%{public}d,%{public}d,%{public}d,%{public}d}, "
-        "left:{%{public}d,%{public}d,%{public}d,%{public}d}, right:{%{public}d,%{public}d,%{public}d,%{public}d}, "
-        "bottom:{%{public}d,%{public}d,%{public}d,%{public}d}", GetWindowId(),
-        type, avoidArea->topRect_.posX_, avoidArea->topRect_.posY_, avoidArea->topRect_.width_,
+         "left:{%{public}d,%{public}d,%{public}d,%{public}d}, right:{%{public}d,%{public}d,%{public}d,%{public}d}, "
+         "bottom:{%{public}d,%{public}d,%{public}d,%{public}d}",
+        GetWindowId(), type, avoidArea->topRect_.posX_, avoidArea->topRect_.posY_, avoidArea->topRect_.width_,
         avoidArea->topRect_.height_, avoidArea->leftRect_.posX_, avoidArea->leftRect_.posY_,
         avoidArea->leftRect_.width_, avoidArea->leftRect_.height_, avoidArea->rightRect_.posX_,
         avoidArea->rightRect_.posY_, avoidArea->rightRect_.width_, avoidArea->rightRect_.height_,
@@ -1177,7 +1179,7 @@ WMError Window::SetUIContent(const std::string& contentInfo, NativeEngine* engin
         uiContent_->Foreground();
     }
     DelayNotifyUIContentIfNeeded();
-  
+
     return WMError::WM_OK;
 }
 
@@ -1301,8 +1303,7 @@ WMError Window::GetAvoidAreaByType(AvoidAreaType type, AvoidArea& avoidArea)
     return WMError::WM_OK;
 }
 
-WMError Window::UpdateSystemBarProperties(
-    const std::unordered_map<WindowType, SystemBarProperty>& systemBarProperties,
+WMError Window::UpdateSystemBarProperties(const std::unordered_map<WindowType, SystemBarProperty>& systemBarProperties,
     const std::unordered_map<WindowType, SystemBarPropertyFlag>& systemBarPropertyFlags)
 {
     if (IsSubWindow()) {
@@ -1314,15 +1315,18 @@ WMError Window::UpdateSystemBarProperties(
             return WMError::WM_DO_NOTHING;
         }
         auto property = GetSystemBarPropertyByType(systemBarType);
-        property.enable_ = systemBarPropertyFlag.enableFlag ?
-            systemBarProperties.at(systemBarType).enable_ : property.enable_;
-        
-        property.backgroundColor_ = systemBarPropertyFlag.backgroundColorFlag ?
-            systemBarProperties.at(systemBarType).backgroundColor_ : property.backgroundColor_;
-        property.contentColor_ = systemBarPropertyFlag.contentColorFlag ?
-            systemBarProperties.at(systemBarType).contentColor_ : property.contentColor_;
-        property.enableAnimation_ = systemBarPropertyFlag.enableAnimationFlag ?
-            systemBarProperties.at(systemBarType).enableAnimation_ : property.enableAnimation_;
+        property.enable_ =
+            systemBarPropertyFlag.enableFlag ? systemBarProperties.at(systemBarType).enable_ : property.enable_;
+
+        property.backgroundColor_ = systemBarPropertyFlag.backgroundColorFlag
+                                        ? systemBarProperties.at(systemBarType).backgroundColor_
+                                        : property.backgroundColor_;
+        property.contentColor_ = systemBarPropertyFlag.contentColorFlag
+                                     ? systemBarProperties.at(systemBarType).contentColor_
+                                     : property.contentColor_;
+        property.enableAnimation_ = systemBarPropertyFlag.enableAnimationFlag
+                                        ? systemBarProperties.at(systemBarType).enableAnimation_
+                                        : property.enableAnimation_;
         if (systemBarPropertyFlag.enableFlag) {
             property.settingFlag_ |= SystemBarSettingFlag::ENABLE_SETTING;
         }
@@ -1332,11 +1336,9 @@ WMError Window::UpdateSystemBarProperties(
         if (systemBarPropertyFlag.enableFlag || systemBarPropertyFlag.backgroundColorFlag ||
             systemBarPropertyFlag.contentColorFlag || systemBarPropertyFlag.enableAnimationFlag) {
             if (systemBarType == WindowType::WINDOW_TYPE_STATUS_BAR) {
-                SubWindowManagerJni::SetStatusBar(
-                    property.backgroundColor_, property.contentColor_);
+                SubWindowManagerJni::SetStatusBar(property.backgroundColor_, property.contentColor_);
             } else if (systemBarType == WindowType::WINDOW_TYPE_NAVIGATION_BAR) {
-                SubWindowManagerJni::SetNavigationBar(
-                    property.backgroundColor_, property.contentColor_);
+                SubWindowManagerJni::SetNavigationBar(property.backgroundColor_, property.contentColor_);
             } else {
                 LOGE("The WindowType is not set to UpdateSystemBarProperties. The WindowType is %{public}d",
                     systemBarType);
@@ -1463,6 +1465,12 @@ WMError Window::SetOnTop(bool status)
         LOGI("Window::SetOnTop: failed");
         return WMError::WM_ERROR_INVALID_WINDOW;
     }
+}
+
+std::shared_ptr<RSUIContext> Window::GetRSUIContext() const
+{
+    auto rsUIContext = rsUIDirector_ ? rsUIDirector_->GetRSUIContext() : nullptr;
+    return rsUIContext;
 }
 
 } // namespace OHOS::Rosen
