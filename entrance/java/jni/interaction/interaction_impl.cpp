@@ -237,18 +237,6 @@ int32_t InteractionImpl::UnRegisterCoordinationListener()
     return -1;
 }
 
-int32_t InteractionImpl::SetDraggableState(bool state)
-{
-    return -1;
-}
-
-int32_t InteractionImpl::GetAppDragSwitchState(bool& state)
-{
-    return -1;
-}
-
-void InteractionImpl::SetDraggableStateAsync(bool state, int64_t downTime) {}
-
 int32_t InteractionImpl::EnableInternalDropAnimation(const std::string& animationInfo)
 {
     return -1;
