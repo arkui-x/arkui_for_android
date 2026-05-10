@@ -1053,6 +1053,7 @@
       VTT?for?OHOS::Ace::NG::StackPattern;
       vtable?for?OHOS::Ace::NG::StackPattern;
       VTT?for?OHOS::Ace::NG::StackLayoutAlgorithm;
+      vtable?for?OHOS::Ace::NG::StackLayoutAlgorithm;
       "OHOS::Ace::NG::CalcSize::IsValid() const";
       OHOS::Ace::InspectorJsonUtil::*;
       OHOS::Ace::InspectorJsonValue::*;
