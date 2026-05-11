@@ -328,6 +328,7 @@ public class AceWeb extends AceWebBase {
     private volatile long lastDragHapticTimeMs = 0L;
     private volatile long lastLongPressSelectionTimeMs = 0L;
     private String lastSelectionText = "";
+    private boolean isReceiverRegistered_ = false;  // 新增注册标志位
 
     public AceWeb(long id, Context context, View view, IAceOnResourceEvent callback) {
         super(id, callback);
@@ -361,7 +362,12 @@ public class AceWeb extends AceWebBase {
             webView.destroy();
         }
         if (webviewBroadcastReceive_ != null) {
-            context.unregisterReceiver(webviewBroadcastReceive_);
+            try {
+                context.unregisterReceiver(webviewBroadcastReceive_);
+            } catch (IllegalArgumentException e) {
+                ALog.e(LOG_TAG, "unregisterReceiver failed: " + e.getMessage());
+            }
+            isReceiverRegistered_ = false;
         }
     }
 
@@ -2467,6 +2473,16 @@ public class AceWeb extends AceWebBase {
         itFilter.addAction(WEB_DOWNLOAD_UPDATE_EVENT);
         itFilter.addAction(WEB_DOWNLOAD_START_EVENT);
         itFilter.addAction(WEB_DOWNLOAD_FAILED_EVENT);
+        try {
+            if (Build.VERSION.SDK_INT >= ANDROID_VERSION_TIRAMISU) {
+                context.registerReceiver(webviewBroadcastReceive_, itFilter, RECEIVER_EXPORTED);
+            } else {
+                context.registerReceiver(webviewBroadcastReceive_, itFilter);
+            }
+            isReceiverRegistered_ = true;  // 注册成功后设置标志位
+        } catch (Exception e) {
+            ALog.e(LOG_TAG, "registerWebviewReceiver failed: " + e.getMessage());
+        }
         if (Build.VERSION.SDK_INT >= ANDROID_VERSION_TIRAMISU) {
             context.registerReceiver(webviewBroadcastReceive_, itFilter, RECEIVER_EXPORTED);
         } else {
