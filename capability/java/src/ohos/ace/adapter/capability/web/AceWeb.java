@@ -1446,6 +1446,7 @@ public class AceWeb extends AceWebBase {
     }
 
     private void handleActionDown(MotionEvent eventClone) {
+        webView.requestFocus();
         touchStartX = eventClone.getX();
         touchStartY = eventClone.getY();
         isNeedParallelScroll = false;
