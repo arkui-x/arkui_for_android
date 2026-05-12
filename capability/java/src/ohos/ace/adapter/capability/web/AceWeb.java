@@ -1218,6 +1218,7 @@ public class AceWeb extends AceWebBase {
 
     @Override
     public String touchDown(Map<String, String> params) {
+        webView.requestFocus();
         processTouchEvent();
         return SUCCESS_TAG;
     }
