@@ -461,10 +461,24 @@ public class WindowViewCommon {
                 int actionMasked = event.getActionMasked();
                 int buttonState = event.getButtonState();
 
+                int savedLastMouseButtonState = lastMouseButtonState;
                 int actionKey = getActionKey(actionMasked, buttonState);
                 ByteBuffer mousePacket = AceEventProcessorAosp.processMouseEvent(event, actionKey, lastMouseX,
                         lastMouseY);
                 nativeDispatchMouseDataPacket(nativeWindowPtr, mousePacket, mousePacket.position());
+
+                boolean isNormalAction = (actionMasked == MotionEvent.ACTION_DOWN) ||
+                                        (actionMasked == MotionEvent.ACTION_UP) ||
+                                        (actionMasked == MotionEvent.ACTION_MOVE);
+                boolean isButtonPrimaryPressed = (savedLastMouseButtonState & MotionEvent.BUTTON_PRIMARY) != 0;
+                boolean shouldSendTouch = (isNormalAction &&
+                                            ((buttonState == MotionEvent.BUTTON_PRIMARY) || isButtonPrimaryPressed)) ||
+                                            ((actionMasked == MotionEvent.ACTION_CANCEL) && isButtonPrimaryPressed);
+                if (shouldSendTouch) {
+                    ByteBuffer packet = AceEventProcessorAosp.processTouchEvent(event);
+                    nativeDispatchPointerDataPacket(nativeWindowPtr, packet, packet.position());
+                }
+                return true;
             }
             ByteBuffer packet = AceEventProcessorAosp.processTouchEvent(event);
             nativeDispatchPointerDataPacket(nativeWindowPtr, packet, packet.position());
