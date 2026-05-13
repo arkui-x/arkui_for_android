@@ -800,7 +800,6 @@ public class AceWeb extends AceWebBase {
         }
         webView.setFocusable(true);
         webView.setFocusableInTouchMode(true);
-        webView.requestFocus();
         initWebSetting();
         initWebEventListener();
         initWebCallBack();
@@ -1219,6 +1218,7 @@ public class AceWeb extends AceWebBase {
 
     @Override
     public String touchDown(Map<String, String> params) {
+        webView.requestFocus();
         processTouchEvent();
         return SUCCESS_TAG;
     }
