@@ -328,7 +328,7 @@ public class AceWeb extends AceWebBase {
     private volatile long lastDragHapticTimeMs = 0L;
     private volatile long lastLongPressSelectionTimeMs = 0L;
     private String lastSelectionText = "";
-    private boolean isReceiverRegistered_ = false;  // 新增注册标志位
+    private boolean isReceiverRegistered = false;  // 新增注册标志位
 
     public AceWeb(long id, Context context, View view, IAceOnResourceEvent callback) {
         super(id, callback);
@@ -361,13 +361,13 @@ public class AceWeb extends AceWebBase {
             removeWebFromSurface(webView);
             webView.destroy();
         }
-        if (webviewBroadcastReceive_ != null) {
+        if (webviewBroadcastReceive_ != null && isReceiverRegistered) {
             try {
                 context.unregisterReceiver(webviewBroadcastReceive_);
             } catch (IllegalArgumentException e) {
                 ALog.e(LOG_TAG, "unregisterReceiver failed: " + e.getMessage());
             }
-            isReceiverRegistered_ = false;
+            isReceiverRegistered = false;
         }
     }
 
@@ -2462,6 +2462,10 @@ public class AceWeb extends AceWebBase {
         if (webviewBroadcastReceive_ == null) {
             webviewBroadcastReceive_ = new WebviewBroadcastReceive();
         }
+        // 已注册，无需重复注册
+        if (isReceiverRegistered) {
+            return;
+        }
 
         IntentFilter itFilter = new IntentFilter();
         if (itFilter == null) {
@@ -2479,14 +2483,11 @@ public class AceWeb extends AceWebBase {
             } else {
                 context.registerReceiver(webviewBroadcastReceive_, itFilter);
             }
-            isReceiverRegistered_ = true;  // 注册成功后设置标志位
-        } catch (Exception e) {
-            ALog.e(LOG_TAG, "registerWebviewReceiver failed: " + e.getMessage());
-        }
-        if (Build.VERSION.SDK_INT >= ANDROID_VERSION_TIRAMISU) {
-            context.registerReceiver(webviewBroadcastReceive_, itFilter, RECEIVER_EXPORTED);
-        } else {
-            context.registerReceiver(webviewBroadcastReceive_, itFilter);
+            isReceiverRegistered = true;
+        } catch (IllegalArgumentException e) {
+            ALog.e(LOG_TAG, "registerWebviewReceiver IllegalArgumentException: " + e.getMessage());
+        } catch (SecurityException e) {
+            ALog.e(LOG_TAG, "registerWebviewReceiver SecurityException: " + e.getMessage());
         }
     }
 
