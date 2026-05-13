@@ -2076,6 +2076,10 @@ public class AceWeb extends AceWebBase {
         if (webviewBroadcastReceive_ == null) {
             webviewBroadcastReceive_ = new WebviewBroadcastReceive();
         }
+        // 已注册，无需重复注册
+        if (isReceiverRegistered) {
+            return;
+        }
 
         IntentFilter itFilter = new IntentFilter();
         if (itFilter == null) {
