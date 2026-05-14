@@ -46,6 +46,7 @@
 #include "core/components/theme/app_theme.h"
 #include "core/components/theme/theme_constants.h"
 #include "core/components/theme/theme_manager_impl.h"
+#include "core/components_ng/manager/drag_drop/drag_drop_manager.h"
 #include "core/components_ng/pattern/text_field/text_field_manager.h"
 #ifdef ENABLE_ROSEN_BACKEND
 #include "core/components_ng/render/adapter/rosen_window.h"
@@ -54,6 +55,7 @@
 #include "event_runner.h"
 
 #include "core/pipeline/base/element.h"
+#include "core/pipeline/container_window_manager.h"
 #include "core/pipeline_ng/pipeline_context.h"
 #include "foundation/arkui/ace_engine/adapter/android/osal/high_contrast_observer.h"
 #ifdef NG_BUILD

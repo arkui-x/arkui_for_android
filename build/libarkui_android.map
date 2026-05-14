@@ -102,7 +102,7 @@
       OHOS::Ace::NG::ModifierAdapter::*;
       "OHOS::Ace::NG::NodeRenderStatusMonitor::IsRegisterNodeRenderStateChangeCallbackExceedLimit()";
       "OHOS::Ace::NG::Inspector::GetFrameNodeByKey(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, bool, bool)";
-      "OHOS::Ace::NG::NodeRenderStatusMonitor::RegisterNodeRenderStatusListener(OHOS::Ace::NG::FrameNode*, std::__ndk1::function<void (OHOS::Ace::NG::FrameNode*, OHOS::Ace::NG::NodeRenderState, OHOS::Ace::NG::RenderMonitorReason)>&&, OHOS::Ace::NG::MonitorSourceType)";
+      "OHOS::Ace::NG::NodeRenderStatusMonitor::RegisterNodeRenderStatusListener(OHOS::Ace::NG::FrameNode*, std::__ndk1::function<void (OHOS::Ace::NG::FrameNode*, OHOS::Ace::NG::NodeRenderState, OHOS::Ace::NG::RenderMonitorReason)>&&, OHOS::Ace::NG::MonitorSourceType, int)";
       "OHOS::Ace::NG::NodeRenderStatusMonitor::GetNodeCurrentRenderState(OHOS::Ace::NG::FrameNode*)";
       "OHOS::Ace::NG::NodeRenderStatusMonitor::UnRegisterNodeRenderStatusListener(OHOS::Ace::NG::FrameNode*, int)";
       "OHOS::Ace::NG::PanEventActuator::PanEventActuator(OHOS::Ace::WeakPtr<OHOS::Ace::NG::GestureEventHub> const&, OHOS::Ace::PanDirection, int, float)";
@@ -133,6 +133,7 @@
       "OHOS::Ace::SystemProperties::debugEnabled_";
       "OHOS::Ace::SystemProperties::debugFlags_";
       "OHOS::Ace::SystemProperties::ConfigChangePerform()";
+      "OHOS::Ace::VelocityTracker::VelocityTracker(OHOS::Ace::Axis)";
       OHOS::Ace::V2::PATTERN_LOCK_ETS_TAG;
       OHOS::Ace::V2::QRCODE_ETS_TAG;
       OHOS::Ace::V2::RELATIVE_CONTAINER_ETS_TAG;
@@ -217,6 +218,7 @@
       "OHOS::Ace::MaterialUtils::GetInitMaterial(OHOS::Ace::UiMaterialStyle)";
       "OHOS::Ace::MaterialUtils::IsMaterialDisabled()";
       OHOS::BrokerRegistration::*;
+      "OHOS::BrokerDelegatorBase::~BrokerDelegatorBase()";
       "OHOS::PeerHolder::PeerHolder(OHOS::sptr<OHOS::IRemoteObject> const&)";
       "OHOS::PeerHolder::Remote()";
 
@@ -1002,6 +1004,7 @@
       "OHOS::Ace::UiMaterial::SetImmersiveOptions(OHOS::Ace::ImmersiveOptions const&)";
       "OHOS::Ace::TokenColors::CompBackgroundPrimary() const";
       "OHOS::Ace::MaterialUtils::GetImmersiveShadow(float)";
+      "OHOS::Ace::MaterialUtils::GetTypeFromMaterial(OHOS::Ace::UiMaterial const*)";
       SendArkUISyncEvent;
       OHOS::Ace::NG::PaintProperty::*;
       OHOS::Ace::NG::PaintWrapper::*;
