@@ -18,6 +18,7 @@
 #include <map>
 
 #include "core/accessibility/accessibility_manager.h"
+#include "core/common/container.h"
 #include "core/pipeline_ng/pipeline_context.h"
 #include "frameworks/bridge/common/accessibility/accessibility_node_manager.h"
 
