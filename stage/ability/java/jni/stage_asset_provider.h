@@ -121,6 +121,7 @@ public:
     std::string GetFilesDir() const;
     std::string GetDatabaseDir() const;
     std::string GetPreferencesDir() const;
+    std::string GetResourceDir(const std::string& moduleName) const;
     void GetResIndexPath(const std::string& moduleName, std::string& appResIndexPath, std::string& sysResIndexPath);
     void SetResourcesFilePrefixPath(const std::string& resourcesFilePrefixPath);
 
