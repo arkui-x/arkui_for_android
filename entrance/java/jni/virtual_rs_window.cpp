@@ -893,7 +893,7 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
         LOGE("Window Notify Surface Changed, surfaceNode_ is nullptr!");
         return;
     }
-    LOGI("Window Notify Surface Changed wh:[%{public}d, %{public}d]", width, height);
+    LOGI("Window Notify Surface Changed wh:[%{public}d, %{public}d] density: %{public}f", width, height, density);
     surfaceWidth_ = width;
     surfaceHeight_ = height;
     density_ = density;

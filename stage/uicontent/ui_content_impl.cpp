@@ -415,6 +415,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     aceResCfg.SetDeviceType(SystemProperties::GetDeviceType());
     aceResCfg.SetColorMode(container->GetColorMode());
     aceResCfg.SetDeviceAccess(SystemProperties::GetDeviceAccess());
+    LOGI("Initialize colorMode: %{public}d, density: %{public}f", colorMode, density);
     aceResCfg.SetFontRatio(SystemProperties::GetFontScale());
     container->SetResourceConfiguration(aceResCfg);
     container->SetAssetManagerIfNull(assetManagerImpl);
@@ -527,6 +528,7 @@ void UIContentImpl::InitAceInfoFromResConfig()
         SystemProperties::SetDeviceAccess(
             resConfig->GetInputDevice() == Global::Resource::InputDevice::INPUTDEVICE_POINTINGDEVICE);
         double density = resConfig->GetScreenDensity();
+        LOGI("InitAceInfoFromResConfig get density from resConfig: %{public}f", density);
         auto config = context->GetConfiguration();
         if (!Positive(density) && config) {
             auto densityDpi =
