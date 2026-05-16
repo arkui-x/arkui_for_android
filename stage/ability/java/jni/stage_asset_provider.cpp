@@ -59,6 +59,7 @@ const std::string EXTERN_LIBS_DIR = "/libs";
 const std::string SYSTEM_FONT_DIR = "fonts";
 const std::string BASE_DIR = "/base";
 const std::string PROFILE_DIR = "/profile";
+const std::string RESFILE_DIR = "/resfile";
 } // namespace
 std::shared_ptr<StageAssetProvider> StageAssetProvider::instance_ = nullptr;
 std::mutex StageAssetProvider::mutex_;
@@ -559,6 +560,23 @@ std::string StageAssetProvider::GetDatabaseDir() const
 std::string StageAssetProvider::GetPreferencesDir() const
 {
     return preferenceDir_;
+}
+
+std::string StageAssetProvider::GetResourceDir(const std::string& moduleName) const
+{
+    if (moduleName.empty()) {
+        LOGE("GetResourceDir failed, moduleName is empty");
+        return "";
+    }
+    std::string resourceDir =
+        GetAppDataModuleDir() + SEPARATOR + moduleName + SEPARATOR + RESOURCES_DIR_NAME + RESFILE_DIR;
+    DIR* dir = opendir(resourceDir.c_str());
+    if (dir == nullptr) {
+        LOGW("resourceDir does not exist");
+        return "";
+    }
+    closedir(dir);
+    return resourceDir;
 }
 
 void StageAssetProvider::GetResIndexPath(
