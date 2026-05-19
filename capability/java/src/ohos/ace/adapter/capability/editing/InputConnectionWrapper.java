@@ -288,6 +288,10 @@ class InputConnectionWrapper extends BaseInputConnection {
                 break;
             }
         }
+        if (actionCode == TextInputAction.NEW_LINE.getValue() && batchCount > 0) {
+            commitText("\n", 1);
+            return true;
+        }
         delegate.performAction(clientId, action);
         return true;
     }
