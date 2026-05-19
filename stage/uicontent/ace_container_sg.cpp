@@ -264,7 +264,7 @@ void AceContainerSG::InitPiplineContext(
     auto instanceId = aceView_->GetInstanceId();
     pipelineContext_ = AceType::MakeRefPtr<NG::PipelineContext>(
         std::move(window), taskExecutor_, assetManager_, resRegister_, frontend_, instanceId);
-
+    LOGI("AceContainerSG::InitPiplineContext density: %{public}f", density);
     pipelineContext_->SetRootSize(density, width, height);
     pipelineContext_->SetTextFieldManager(AceType::MakeRefPtr<NG::TextFieldManagerNG>());
     pipelineContext_->SetIsRightToLeft(AceApplicationInfo::GetInstance().IsRightToLeft());
