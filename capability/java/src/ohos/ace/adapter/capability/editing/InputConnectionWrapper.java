@@ -332,7 +332,6 @@ class InputConnectionWrapper extends BaseInputConnection {
 
         // Skip state sync to Native when handling NEW_LINE in batch mode.
         if (pendingNewLineSync) {
-            ALog.d(LOG_TAG, "zzc onStateUpdated skip delegate.updateEditingState due to pendingNewLineSync");
             pendingNewLineSync = false;
             return;
         }
