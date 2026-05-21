@@ -50,6 +50,8 @@ class InputConnectionWrapper extends BaseInputConnection {
 
     private int batchCount;
 
+    private boolean pendingNewLineSync = false;
+
     private InputMethodManager imm;
 
     private int extractedTextRequestToken = 0;
@@ -92,6 +94,13 @@ class InputConnectionWrapper extends BaseInputConnection {
             isSoftKeyboardOpened = false;
             delegate.notifyKeyboardClosedByUser(clientId);
         }
+    }
+
+    /**
+     * clear pending new line sync flag.
+     */
+    public void clearPendingNewLineSync() {
+        pendingNewLineSync = false;
     }
 
     @Override
@@ -236,6 +245,9 @@ class InputConnectionWrapper extends BaseInputConnection {
     }
 
     private void processNewLine() {
+        if (batchCount > 0) {
+            pendingNewLineSync = true;
+        }
         if (editable != null) {
             int composingStart = BaseInputConnection.getComposingSpanStart(editable);
             int composingEnd = BaseInputConnection.getComposingSpanEnd(editable);
@@ -319,6 +331,11 @@ class InputConnectionWrapper extends BaseInputConnection {
         extractedText.text = content.subSequence(0, length);
         imm.updateExtractedText(aceView, extractedTextRequestToken, extractedText);
 
+        // Skip state sync to Native when handling NEW_LINE in batch mode.
+        if (pendingNewLineSync) {
+            pendingNewLineSync = false;
+            return;
+        }
         delegate.updateEditingState(clientId, editable.toString(), selectionStart, selectionEnd, composingStart,
             composingEnd);
     }
