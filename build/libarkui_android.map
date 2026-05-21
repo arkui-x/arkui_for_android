@@ -75,6 +75,7 @@
       OHOS::Ace::LogWrapper::*;
       OHOS::Ace::NapiAsyncEvnet::*;
       OHOS::Ace::NG::PreviewUIExtensionPattern::*;
+      "OHOS::Ace::ExtraModulesManager::GetInstance()";
       "OHOS::Ace::NG::AddPaddingToSize(OHOS::Ace::NG::PaddingPropertyT<float> const&, OHOS::Ace::NG::SizeT<float>&)";
       OHOS::Ace::NG::BoxLayoutAlgorithm::*;
       "OHOS::Ace::NG::CreateIdealSize(OHOS::Ace::NG::LayoutConstraintT<float> const&, OHOS::Ace::Axis, OHOS::Ace::NG::MeasureType)";
@@ -135,6 +136,7 @@
       "OHOS::Ace::SystemProperties::ConfigChangePerform()";
       "OHOS::Ace::VelocityTracker::VelocityTracker(OHOS::Ace::Axis)";
       OHOS::Ace::V2::PATTERN_LOCK_ETS_TAG;
+      OHOS::Ace::V2::PARTICLE_ETS_TAG;
       OHOS::Ace::V2::QRCODE_ETS_TAG;
       OHOS::Ace::V2::RELATIVE_CONTAINER_ETS_TAG;
       OHOS::Ace::V2::ROOT_ETS_TAG;
@@ -206,6 +208,7 @@
 
       vtable?for?OHOS::Ace::NG::BoxLayoutAlgorithm;
       vtable?for?OHOS::Ace::NG::LayoutProperty;
+      vtable?for?OHOS::Ace::NG::ParticlePattern;
       vtable?for?OHOS::Ace::NG::TouchEventActuator;
       vtable?for?OHOS::Ace::ResourceWrapper;
 
@@ -213,6 +216,7 @@
       vtable?for?OHOS::Ace::NG::PanGesture;
       "OHOS::Ace::Matrix4::Matrix4()";
       "OHOS::Ace::MaterialUtils::CheckMaterialValid(int)";
+      "OHOS::Ace::MaterialUtils::CallSetMaterial(OHOS::Ace::NG::FrameNode*, OHOS::Ace::UiMaterial const*)";
       "OHOS::Ace::MaterialUtils::IsEnableMaterialParam(OHOS::Ace::RefPtr<OHOS::Ace::UiMaterial> const&)";
       "OHOS::Ace::MaterialUtils::IsMaterialEnabled()";
       "OHOS::Ace::MaterialUtils::GetInitMaterial(OHOS::Ace::UiMaterialStyle)";
@@ -238,6 +242,7 @@
 
       VTT?for?OHOS::Ace::NG::BoxLayoutAlgorithm;
       VTT?for?OHOS::Ace::NG::LayoutProperty;
+      VTT?for?OHOS::Ace::NG::ParticlePattern;
       VTT?for?OHOS::Ace::NG::TouchEventActuator;
       VTT?for?OHOS::Ace::ResourceWrapper;
 
@@ -813,7 +818,7 @@
       OHOS::Ace::V2::IMAGE_ETS_TAG;
       OHOS::Ace::ImageSourceInfo::*;
       OHOS::Ace::NG::ImageLoadingContext::*;
-      OHOS::Ace::ResourceParseUtils::*;
+      OHOS::Ace::ResourceParseUtilsBase::*;
       OHOS::Ace::ColorInverter::*;
       OHOS::Ace::NG::ArkTSUtils::*;
       OHOS::Ace::NG::FlexLayoutAlgorithm::*;
@@ -911,6 +916,7 @@
       "OHOS::Rosen::FontFeatures::SetFeature(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, int)";
       "OHOS::Rosen::FontVariations::SetAxisValue(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, float)";
       "OHOS::Rosen::FontVariations::SetAxisValue(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, float, bool)";
+      "OHOS::Rosen::FontVariations::GetAxisValues() const";
       "OHOS::Rosen::IsUtf8(char const*, int)";
       "OHOS::Rosen::SPText::TextBundleConfigParser::InitBundleInfo()";
       "OHOS::Rosen::SPText::TextBundleConfigParser::IsTargetApiVersion(unsigned int) const";
@@ -925,6 +931,9 @@
       "OHOS::Rosen::TypographyCreate::Create(OHOS::Rosen::TypographyStyle const&, std::__ndk1::shared_ptr<OHOS::Rosen::FontCollection>)";
       "OHOS::Rosen::TypographyStyle::operator==(OHOS::Rosen::TypographyStyle const&) const";
       "OHOS::Rosen::TypographyStyle::SetTextStyle(OHOS::Rosen::TextStyle&)";
+      "OHOS::Rosen::TextStyle::SetFontTypefaces(std::__ndk1::vector<std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::Typeface>, std::__ndk1::allocator<std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::Typeface> > > const&)";
+      "OHOS::Rosen::Drawing::JsTypeface::CreateJsTypeface(napi_env__*, std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::Typeface>)";
+      "OHOS::Rosen::TextStyle::GetFontTypefaces() const";
       "OHOS::Rosen::TextEngine::FontParser::GetFontCount(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Rosen::TextEngine::FontParser::GetFontTypefaceUnicode(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, int)";
       "OHOS::Rosen::TextEngine::FontParser::GetFontTypefaceUnicode(void const*, unsigned long, int)";
@@ -1020,7 +1029,8 @@
       "OHOS::Ace::NG::BorderStyleProperty::operator==(OHOS::Ace::NG::BorderStyleProperty const&) const";
       VTT?for?OHOS::Ace::NG::ButtonPattern;
       vtable?for?OHOS::Ace::NG::ButtonPattern;
-      "bool OHOS::Ace::ResourceParseUtils::ConvertFromResObjNG<OHOS::Ace::Dimension>(OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject> const&, OHOS::Ace::Dimension&)";
+      "OHOS::Ace::ResourceParseUtils::MakeNativeNodeInfo(OHOS::Ace::NG::UINode*)";
+      "bool OHOS::Ace::ResourceParseUtilsBase::ConvertFromResObjNG<OHOS::Ace::Dimension>(OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject> const&, OHOS::Ace::Dimension&)";
       "bool OHOS::Ace::NG::ArkTSUtils::ConvertFromJSValue<OHOS::Ace::CalcDimension>(panda::ecmascript::EcmaVM const*, panda::Local<panda::JSValueRef> const&, OHOS::Ace::CalcDimension&, OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject>&)";
       OHOS::Ace::ElementRegister::*;
       "OHOS::Ace::NG::UpdateOptionSizeByCalcLayoutConstraint(OHOS::Ace::NG::OptionalSize<float> const&, std::__ndk1::unique_ptr<OHOS::Ace::NG::MeasureProperty, std::__ndk1::default_delete<OHOS::Ace::NG::MeasureProperty> > const&, OHOS::Ace::NG::SizeT<float>)";
@@ -1077,9 +1087,13 @@
       "OHOS::Ace::NG::StackLayoutAlgorithm::Layout(OHOS::Ace::NG::LayoutWrapper*)";
       "OHOS::Ace::NG::StackLayoutAlgorithm::MeasureInNextFrame() const";
       "OHOS::Ace::NG::StackLayoutAlgorithm::IsAsyncLoadAvailable(OHOS::Ace::NG::LayoutWrapper*)";
-      "OHOS::Ace::NG::CreateTextStyleUsingTheme(std::__ndk1::unique_ptr<OHOS::Ace::NG::FontStyle, std::__ndk1::default_delete<OHOS::Ace::NG::FontStyle> > const&, std::__ndk1::unique_ptr<OHOS::Ace::NG::TextLineStyle, std::__ndk1::default_delete<OHOS::Ace::NG::TextLineStyle> > const&, OHOS::Ace::RefPtr<OHOS::Ace::TextTheme> const&, bool)";
+      "OHOS::Ace::NG::CreateTextStyleUsingTheme(std::__ndk1::unique_ptr<OHOS::Ace::NG::FontStyle, std::__ndk1::default_delete<OHOS::Ace::NG::FontStyle> > const&, std::__ndk1::unique_ptr<OHOS::Ace::NG::TextLineStyle, std::__ndk1::default_delete<OHOS::Ace::NG::TextLineStyle> > const&, OHOS::Ace::RefPtr<OHOS::Ace::TextTheme> const&, bool, OHOS::Ace::RefPtr<OHOS::Ace::NG::Pattern> const&)";
       OHOS::Ace::FontManager::*;
       "OHOS::Ace::GridContainerInfo::BuildColumnWidth()";
+      "OHOS::Ace::GradientConvert::ToGradient(std::__ndk1::optional<OHOS::Ace::NG::Gradient> const&)";
+      "OHOS::Ace::GradientConvert::ToNGGradient(std::__ndk1::optional<OHOS::Ace::Gradient> const&)";
+      "OHOS::Ace::GradientConvert::ToOptGradient(std::__ndk1::optional<OHOS::Ace::NG::Gradient> const&)";
+      "OHOS::Ace::GradientConvert::ParseGradientDirection(OHOS::Ace::NG::Gradient const&)";
       "OHOS::Ace::NG::FontCollection::Current()";
       "OHOS::Ace::NG::Paragraph::Create(OHOS::Ace::NG::ParagraphStyle const&, OHOS::Ace::RefPtr<OHOS::Ace::NG::FontCollection> const&)";
       OHOS::Ace::NG::CalendarMonthPattern::*;
@@ -1117,6 +1131,13 @@
       "OHOS::Ace::TextStyle::operator==(OHOS::Ace::TextStyle const&) const";
       "OHOS::Ace::NG::VibratorUtils::StartVibraFeedback()";
       "OHOS::Ace::NG::Gradient::CreateGradientWithType(OHOS::Ace::NG::GradientType)";
+      "OHOS::Ace::NodeModel::GetFullImplForErrorMessage()";
+      "OHOS::Ace::OptNGGradient::GetGradient()";
+      "OHOS::Ace::OptGradient::GetGradient()";
+      "OHOS::Ace::OptGradient::ResetGradient()";
+      "OHOS::Ace::OptGradient::SetGradient(std::__ndk1::optional<OHOS::Ace::Gradient> const&)";
+      "OHOS::Ace::OptNGGradient::ResetGradient()";
+      "OHOS::Ace::OptNGGradient::SetGradient(std::__ndk1::optional<OHOS::Ace::NG::Gradient> const&)";
       "OHOS::Ace::KeyEvent::ConvertCodeToString() const";
       VTT?for?OHOS::Ace::NG::ListPattern;
       vtable?for?OHOS::Ace::NG::ListPattern;
@@ -1143,6 +1164,10 @@
       OHOS::Ace::V2::SYMBOL_ETS_TAG;
       OHOS::Ace::NG::TextPattern::*;
       "OHOS::Ace::NG::SelectOverlayClient::StopListeningScrollableParent(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
+      "OHOS::Ace::NG::SetLinearGradientValues(OHOS::Ace::NG::Gradient&, ArkUIInt32orFloat32 const*, int)";
+      "OHOS::Ace::NG::SetLinearGradientColors(OHOS::Ace::NG::Gradient&, ArkUIInt32orFloat32 const*, int, void*, OHOS::Ace::NG::FrameNode*)";
+      "OHOS::Ace::NG::SetRadialGradientValues(OHOS::Ace::NG::Gradient&, ArkUIInt32orFloat32 const*, int, void*)";
+      "OHOS::Ace::NG::SetRadialGradientColors(OHOS::Ace::NG::Gradient&, ArkUIInt32orFloat32 const*, int, void*, OHOS::Ace::NG::FrameNode*)";
       VTT?for?OHOS::Ace::NG::TextLayoutProperty;
       vtable?for?OHOS::Ace::NG::TextLayoutProperty;
       "OHOS::Ace::NG::TextLayoutAlgorithm::TextLayoutAlgorithm(std::__ndk1::list<OHOS::Ace::RefPtr<OHOS::Ace::NG::SpanItem>, std::__ndk1::allocator<OHOS::Ace::RefPtr<OHOS::Ace::NG::SpanItem> > >, OHOS::Ace::RefPtr<OHOS::Ace::NG::ParagraphManager>, bool, OHOS::Ace::TextStyle const&, bool)";
@@ -1227,7 +1252,7 @@
       OHOS::Ace::TextEmojiProcessor::*;
       OHOS::Ace::InputMethodManager::*;
       "OHOS::Ace::ParseFontFeatureSettings(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, or<char> > const&)";
-      "OHOS::Ace::NG::UseSelfStyle(std::__ndk1::unique_ptr<OHOS::Ace::NG::FontStyle, std::__ndk1::default_delete<OHOS::Ace::NG::FontStyle> > const&, std::__ndk1::unique_ptr<OHOS::Ace::NG::TextLineStyle, std::__ndk1::default_delete<OHOS::Ace::NG::TextLineStyle> > const&, OHOS::Ace::TextStyle&, bool, std::__ndk1::unique_ptr<OHOS::Ace::NG::SymbolStyle, std::__ndk1::default_delete<OHOS::Ace::NG::SymbolStyle> > const&)";
+      "OHOS::Ace::NG::UseSelfStyle(std::__ndk1::unique_ptr<OHOS::Ace::NG::FontStyle, std::__ndk1::default_delete<OHOS::Ace::NG::FontStyle> > const&, std::__ndk1::unique_ptr<OHOS::Ace::NG::TextLineStyle, std::__ndk1::default_delete<OHOS::Ace::NG::TextLineStyle> > const&, OHOS::Ace::TextStyle&, bool, std::__ndk1::unique_ptr<OHOS::Ace::NG::SymbolStyle, std::__ndk1::default_delete<OHOS::Ace::NG::SymbolStyle> > const&, OHOS::Ace::RefPtr<OHOS::Ace::NG::Pattern> const&)";
       "OHOS::Ace::NG::BorderRadiusPropertyT<OHOS::Ace::Dimension>::ToJsonValue(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&, std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&, OHOS::Ace::NG::InspectorFilter const&, bool) const";
       "OHOS::Ace::ParseFontFeatureSettings(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::PageNodeInfoWrap::CreatePageNodeInfoWrap()";
