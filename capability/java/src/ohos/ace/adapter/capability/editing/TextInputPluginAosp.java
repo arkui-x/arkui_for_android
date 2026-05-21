@@ -252,6 +252,10 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
         }
         hint = state.getHint();
         stopBackPress = state.getStopBackPress();
+        // Clear pending new line sync flag when receiving state from Native.
+        if (wrapper != null) {
+            wrapper.clearPendingNewLineSync();
+        }
         if (!isRestartInputPending && state.getText().equals(editable.toString())) {
             applyStateToSelection(state);
 
