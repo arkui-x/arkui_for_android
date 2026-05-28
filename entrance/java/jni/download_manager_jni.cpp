@@ -59,11 +59,11 @@ bool DownloadManagerJni::Download(const std::string& url, std::vector<uint8_t>& 
 {
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     if (!env) {
-        LOGE("Download: env is null, url: %{private}s", url.c_str());
+        LOGE("Download: env is null, url: <private>");
         return false;
     }
     if (downloadManagerClass_ == nullptr || downloadMethod_ == nullptr) {
-        LOGE("downloadManagerClass or downloadMethod is null. Stop downloading data, url: %{private}s", url.c_str());
+        LOGE("downloadManagerClass or downloadMethod is null. Stop downloading data, url: <private>");
         return false;
     }
     jstring jUrl = env->NewStringUTF(url.c_str());
@@ -74,19 +74,19 @@ bool DownloadManagerJni::Download(const std::string& url, std::vector<uint8_t>& 
     jobject jRetObj =
         env->CallStaticObjectMethod(static_cast<jclass>(downloadManagerClass_.get()), downloadMethod_, jUrl);
     if (env->ExceptionCheck()) {
-        LOGE("Download: has exception, url: %{private}s", url.c_str());
+        LOGE("Download: has exception, url: <private>");
         env->ExceptionDescribe();
         env->ExceptionClear();
         return false;
     }
     if (!jRetObj) {
-        LOGE("Download: get null object, url: %{private}s", url.c_str());
+        LOGE("Download: get null object, url: <private>");
         return false;
     }
     jbyteArray jData = static_cast<jbyteArray>(jRetObj);
     jsize numBytes = env->GetArrayLength(jData);
     if (numBytes == 0) {
-        LOGW("Download: the returned data length is 0, url: %{private}s", url.c_str());
+        LOGW("Download: the returned data length is 0, url: <private>");
         env->DeleteLocalRef(jUrl);
         env->DeleteLocalRef(jRetObj);
         return false;
