@@ -249,12 +249,6 @@ bool StageAssetProvider::ParseSharedModulePackageName(
         }
     }
 
-    if (moduleJson.contains("module") && moduleJson["module"].contains("type")) {
-        if (moduleJson["module"]["type"].get<std::string>() != "shared") {
-            return false;
-        }
-    }
-
     if (moduleJson.contains("module") && moduleJson["module"].contains("packageName")) {
         packageName = moduleJson["module"]["packageName"].get<std::string>();
     }
@@ -1099,6 +1093,46 @@ std::vector<uint8_t> StageAssetProvider::GetFontConfigJsonBuffer(const std::stri
     std::vector<uint8_t> jsonBuffer = GetBufferByAppDataPath(sourcePath);
     jsonBuffer.push_back('\0');
     return jsonBuffer;
+}
+
+std::vector<std::string> StageAssetProvider::GetAllModuleDirectories()
+{
+    std::vector<std::string> moduleDirs;
+    auto appDataDir = GetAppDataModuleDir();
+    if (appDataDir.empty()) {
+        LOGE("GetAllModuleDirectories: AppData module dir is empty");
+        return moduleDirs;
+    }
+
+    DIR* dir = opendir(appDataDir.c_str());
+    if (dir == nullptr) {
+        LOGW("GetAllModuleDirectories: Failed to open AppData dir: %{public}s", appDataDir.c_str());
+        return moduleDirs;
+    }
+
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != nullptr) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+        if (entry->d_type == DT_DIR) {
+            std::string modulePath = appDataDir + SEPARATOR + entry->d_name;
+            std::string moduleJsonPath = modulePath + SEPARATOR + MODULE_JSON_NAME;
+            std::string pkgContextInfoPath = modulePath + SEPARATOR + PKG_CONTEXT_INFO_JSON;
+            struct stat moduleJsonStat;
+            struct stat pkgContextInfoStat;
+            bool hasModuleJson =
+                (stat(moduleJsonPath.c_str(), &moduleJsonStat) == 0 && S_ISREG(moduleJsonStat.st_mode));
+            bool hasPkgContextInfo =
+                (stat(pkgContextInfoPath.c_str(), &pkgContextInfoStat) == 0 && S_ISREG(pkgContextInfoStat.st_mode));
+            if (hasModuleJson && hasPkgContextInfo) {
+                moduleDirs.emplace_back(entry->d_name);
+                LOGI("GetAllModuleDirectories module name: %{public}s", entry->d_name);
+            }
+        }
+    }
+    closedir(dir);
+    return moduleDirs;
 }
 } // namespace Platform
 } // namespace AbilityRuntime
