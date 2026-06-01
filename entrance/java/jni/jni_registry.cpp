@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -26,6 +26,7 @@
 #include "adapter/android/capability/java/jni/vibrator/vibrator_jni.h"
 #include "adapter/android/entrance/java/jni/ace_platform_plugin_jni.h"
 #include "adapter/android/entrance/java/jni/display_info_jni.h"
+#include "adapter/android/entrance/java/jni/display_manager_agent_jni.h"
 #include "adapter/android/entrance/java/jni/download_manager_jni.h"
 #include "adapter/android/entrance/java/jni/dump_helper_jni.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
@@ -34,7 +35,7 @@
 #include "adapter/android/entrance/java/jni/web_adapter_jni.h"
 #include "adapter/android/entrance/java/jni/window_view_jni.h"
 #include "base/log/log.h"
-#include "adapter/android/entrance/java/jni/display_manager_agent_jni.h"
+#include "image_texture_jni.h"
 
 namespace OHOS::Ace::Platform {
 
@@ -135,6 +136,11 @@ bool JniRegistry::Register()
 
     if (!DisplayManagerAgentJni::Register(jniEnv)) {
         LOGE("JNI Initialize: failed to register DisplayManagerAgentJni");
+        return false;
+    }
+
+    if (!ImageTextureJni::Register(jniEnv)) {
+        LOGE("JNI Initialize: failed to register AndroidSurfaceTexture");
         return false;
     }
 

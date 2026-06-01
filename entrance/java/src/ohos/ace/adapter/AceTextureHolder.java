@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
 import android.graphics.SurfaceTexture;
+import android.view.Surface;
 
 /**
  * The class to hold all surfaceTextures in plugins
@@ -29,6 +30,7 @@ public final class AceTextureHolder {
     private static final String LOG_TAG = "AceTextureHolder";
 
     private static final Map<Long, SurfaceTexture> surfaceTextureMap = new ConcurrentHashMap<Long, SurfaceTexture>();
+    private static final Map<Long, Surface> surfaceMap = new ConcurrentHashMap<Long, Surface>();
 
     /**
      * Get surfaceTexture by id
@@ -39,6 +41,45 @@ public final class AceTextureHolder {
     public static SurfaceTexture getSurfaceTexture(long id) {
         ALog.i(LOG_TAG, "getSurfaceTexture");
         return surfaceTextureMap.get(id);
+    }
+
+    /**
+     * Get surface by id
+     *
+     * @param id id of surface
+     * @return the surface
+     */
+    public static Surface getSurface(long id) {
+        Surface surface = surfaceMap.get(id);
+        if (surface != null && !surface.isValid()) {
+            ALog.w(LOG_TAG, "getSurface returns an invalid(released) surface, remove it.");
+            surfaceMap.remove(id);
+            return null;
+        }
+        return surface;
+    }
+
+    /**
+     * Add surface by id
+     *
+     * @param id      id of surface
+     * @param surface the surface object
+     */
+    public static void addSurface(long id, Surface surface) {
+        if (surface != null && surface.isValid()) {
+            surfaceMap.put(id, surface);
+        } else {
+            ALog.w(LOG_TAG, "addSurface with an invalid(released) surface, ignore it.");
+        }
+    }
+
+    /**
+     * Remove surface by id
+     *
+     * @param id id of surface
+     */
+    public static void removeSurface(long id) {
+        surfaceMap.remove(id);
     }
 
     /**
