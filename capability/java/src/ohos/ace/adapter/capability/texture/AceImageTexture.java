@@ -18,12 +18,17 @@ package ohos.ace.adapter.capability.texture;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.HardwareBuffer;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.view.Surface;
 import ohos.ace.adapter.AceSurfaceHolder;
 import ohos.ace.adapter.AceTextureHolder;
 import ohos.ace.adapter.ALog;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This class handles the lifecycle of a surface texture.
@@ -33,6 +38,17 @@ import ohos.ace.adapter.ALog;
 public class AceImageTexture implements IAceSurfaceTexture {
     private static final String LOG_TAG = "AceImageTexture";
     private static final int MAX_IMAGES = 3;
+
+    // Device whitelist that requires USAGE_GPU_COLOR_OUTPUT for proper Vulkan texture rendering
+    // Some devices (like OPPO foldable with mt6985) need this flag, while others (like Xiaomi with mt6897)
+    // will fail buffer allocation with this flag
+    private static final Set<String> GPU_COLOR_OUTPUT_REQUIRED_MANUFACTURERS = new HashSet<String>() {{
+        add("OPPO".toLowerCase());
+        add("ONEPLUS".toLowerCase());
+        add("REALME".toLowerCase());
+    }};
+
+    private static Boolean sNeedsGpuColorOutput = null;
 
     private int instanceId = -1;
     private long id = 0L;
@@ -120,7 +136,7 @@ public class AceImageTexture implements IAceSurfaceTexture {
             this.textureImpl.unregisterTexture(this.id);
         }
         Surface newSurface = nativeGetImageSurface(this.imageTextureId, textureWidth, textureHeight,
-            ImageFormat.PRIVATE, HardwareBuffer.USAGE_GPU_SAMPLED_IMAGE, MAX_IMAGES);
+            ImageFormat.PRIVATE, getUsageFlags(), MAX_IMAGES);
         if (this.oldSurface != null) {
             this.oldSurface.release();
         }
@@ -258,5 +274,49 @@ public class AceImageTexture implements IAceSurfaceTexture {
         this.textureWidth = 0;
         this.textureHeight = 0;
         this.mainHandler.removeCallbacksAndMessages(null);
+    }
+
+    /**
+     * Checks if the device needs USAGE_GPU_COLOR_OUTPUT for proper Vulkan texture rendering.
+     *
+     * @return true if the device needs GPU_COLOR_OUTPUT flag
+     */
+    private static boolean needsGpuColorOutput() {
+        if (sNeedsGpuColorOutput != null) {
+            return sNeedsGpuColorOutput;
+        }
+
+        String manufacturer = Build.MANUFACTURER;
+        if (!TextUtils.isEmpty(manufacturer)) {
+            String manufacturerLower = manufacturer.toLowerCase();
+            for (String mfr : GPU_COLOR_OUTPUT_REQUIRED_MANUFACTURERS) {
+                if (manufacturerLower.contains(mfr)) {
+                    ALog.i(LOG_TAG, "Manufacturer " + manufacturer + " requires GPU_COLOR_OUTPUT");
+                    sNeedsGpuColorOutput = true;
+                    return true;
+                }
+            }
+        }
+
+        ALog.i(LOG_TAG, "Device does not require GPU_COLOR_OUTPUT (manufacturer=" + manufacturer + ")");
+        sNeedsGpuColorOutput = false;
+        return false;
+    }
+
+    /**
+     * Gets the appropriate usage flags based on device whitelist.
+     *
+     * @return the usage flags
+     */
+    private static long getUsageFlags() {
+        if (needsGpuColorOutput()) {
+            long usage = HardwareBuffer.USAGE_GPU_SAMPLED_IMAGE | HardwareBuffer.USAGE_GPU_COLOR_OUTPUT;
+            ALog.i(LOG_TAG, "Using GPU_SAMPLED_IMAGE | GPU_COLOR_OUTPUT: 0x" + Long.toHexString(usage));
+            return usage;
+        }
+
+        long usage = HardwareBuffer.USAGE_GPU_SAMPLED_IMAGE;
+        ALog.i(LOG_TAG, "Using GPU_SAMPLED_IMAGE only: 0x" + Long.toHexString(usage));
+        return usage;
     }
 }
