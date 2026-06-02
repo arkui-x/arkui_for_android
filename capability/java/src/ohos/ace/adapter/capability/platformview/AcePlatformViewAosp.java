@@ -159,6 +159,9 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
                 }
             }
         });
+        if (viewWrapper == null) {
+            return;
+        }
         ViewParent parent = viewWrapper.getParent();
         if (parent instanceof ViewGroup) {
             ViewGroup viewGroup = (ViewGroup) parent;
