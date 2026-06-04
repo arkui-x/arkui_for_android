@@ -123,5 +123,7 @@ void SetPointerItemPressed(AceActionData::ActionType actionType, MMI::PointerEve
 void ConvertMouseEvent(const std::vector<uint8_t>& data, MouseEvent& events);
 void SetMouseEventAction(AceMouseData::Action action, MouseEvent& event);
 void SetMouseEventActionButton(AceMouseData::ActionButton actionButton, MouseEvent& event);
+int64_t GetPointerDownTimeDiffMs(const std::shared_ptr<MMI::PointerEvent>& pointerEvent, int32_t fingerId0,
+    int32_t fingerId1);
 } // namespace OHOS::Ace::Platform
 #endif // FOUNDATION_ACE_ADAPTER_OHOS_ENTRANCE_MMI_EVENT_CONVERTOR_H
