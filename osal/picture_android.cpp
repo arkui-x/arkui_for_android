@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,24 +13,13 @@
  * limitations under the License.
  */
 
-#include "base/input_manager/input_manager.h"
+#include "picture_android.h"
 
 namespace OHOS::Ace {
 
-bool InputManager::GetSystemHotkeys(std::vector<HotKey>& hotkeys)
-{
-    return true;
-}
-
-std::shared_ptr<MMI::PointerEvent> InputManager::CreatePointerEvent(
-    const std::shared_ptr<const MMI::PointerEvent>& pointerEvent)
+RefPtr<Picture> Picture::Create(void* picture)
 {
     return nullptr;
-}
-
-size_t InputManager::GetApproximatePointerEventSize()
-{
-    return 0;
 }
 
 } // namespace OHOS::Ace

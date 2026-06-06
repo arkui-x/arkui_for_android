@@ -239,6 +239,7 @@
       VTT?for?OHOS::Ace::NG::Pattern;
       VTT?for?OHOS::Ace::NG::LazyGridLayoutPattern;
       vtable?for?OHOS::Ace::NG::LazyGridLayoutPattern;
+      "OHOS::Ace::NG::LazyLayoutUtils::ValidateLazyLayoutParentWithAxis(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, OHOS::Ace::Axis)";
 
       VTT?for?OHOS::Ace::NG::BoxLayoutAlgorithm;
       VTT?for?OHOS::Ace::NG::LayoutProperty;
@@ -1011,7 +1012,9 @@
       "panda::StringRef::ToString(panda::ecmascript::EcmaVM const*)";
       "OHOS::Ace::UiSessionManager::GetInstance()";
       "OHOS::Ace::UiMaterial::SetImmersiveOptions(OHOS::Ace::ImmersiveOptions const&)";
+      "OHOS::Ace::UiMaterial::GetImmersiveOptions() const";
       "OHOS::Ace::TokenColors::CompBackgroundPrimary() const";
+      "OHOS::Ace::TokenColors::GetSystemColorResIdByIndex(int)";
       "OHOS::Ace::MaterialUtils::GetImmersiveShadow(float)";
       "OHOS::Ace::MaterialUtils::GetTypeFromMaterial(OHOS::Ace::UiMaterial const*)";
       SendArkUISyncEvent;

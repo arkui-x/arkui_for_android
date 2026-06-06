@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,24 +13,30 @@
  * limitations under the License.
  */
 
-#include "base/input_manager/input_manager.h"
+#include "base/utils/feature_manager.h"
 
 namespace OHOS::Ace {
-
-bool InputManager::GetSystemHotkeys(std::vector<HotKey>& hotkeys)
+FeatureManager& FeatureManager::GetInstance()
 {
-    return true;
+    static FeatureManager instance;
+    return instance;
 }
 
-std::shared_ptr<MMI::PointerEvent> InputManager::CreatePointerEvent(
-    const std::shared_ptr<const MMI::PointerEvent>& pointerEvent)
+FeatureManager::FeatureManager()
 {
-    return nullptr;
+    Init();
 }
 
-size_t InputManager::GetApproximatePointerEventSize()
+void FeatureManager::Init()
 {
-    return 0;
+    initialized_ = false;
+    bundleName_.clear();
+}
+
+int32_t FeatureManager::GetFeatureParam(const std::string& key, std::string& value)
+{
+    value.clear();
+    return key.empty() ? KEY_NOT_FOUND : INIT_FAILED;
 }
 
 } // namespace OHOS::Ace

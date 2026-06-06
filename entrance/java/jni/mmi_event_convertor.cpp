@@ -26,6 +26,7 @@ namespace OHOS::Ace::Platform {
 namespace {
 constexpr double SIZE_DIVIDE = 2.0;
 constexpr int8_t ACTION_POINT = 1;
+constexpr int64_t US_TO_MS = 1000;
 } // namespace
 
 static std::unordered_map<int, int> actionPointMap;
@@ -384,3 +385,11 @@ void SetMouseEventActionButton(AceMouseData::ActionButton actionButton, MouseEve
     }
 }
 } // namespace OHOS::Ace::Platform
+
+namespace OHOS::Ace {
+int64_t GetPointerDownTimeDiffMs(
+    const std::shared_ptr<MMI::PointerEvent>& pointerEvent, int32_t fingerId0, int32_t fingerId1)
+{
+    return -1;
+}
+} // namespace OHOS::Ace
