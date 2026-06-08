@@ -141,6 +141,10 @@ public class StageApplicationDelegate {
 
     private static boolean isCopyResources = false;
 
+    private boolean isObserversRegistered = false;
+
+    private boolean isDestroyed = false;
+
     private Application stageApplication = null;
 
     private volatile Activity topActivity = null;
@@ -291,11 +295,7 @@ public class StageApplicationDelegate {
 
         initActivity();
         initPlatformCapability(context);
-        stageApplication.getContentResolver().registerContentObserver(
-                Settings.System.getUriFor(Settings.System.FONT_SCALE), true,
-                fontScaleObserver);
-        stageApplication.getContentResolver().registerContentObserver(
-                Settings.Secure.getUriFor(ACCESSIBILITY_HIGH_TEXT_CONTRAST_ENABLED), true, highTextContrastObserver);
+        registerContentObservers();
         onHighContrastChanged();
         Trace.endSection();
     }
@@ -1274,6 +1274,56 @@ public class StageApplicationDelegate {
             return;
         }
         nativeLoadModule(moduleName, entryFile);
+    }
+
+    /**
+     * Register content observers for system settings changes.
+     */
+    private void registerContentObservers() {
+        if (stageApplication == null) {
+            ALog.e(LOG_TAG, "stageApplication is null, cannot register observers");
+            return;
+        }
+        if (isObserversRegistered) {
+            ALog.w(LOG_TAG, "ContentObservers already registered");
+            return;
+        }
+        stageApplication.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.FONT_SCALE), true,
+                fontScaleObserver);
+        stageApplication.getContentResolver().registerContentObserver(
+                Settings.Secure.getUriFor(ACCESSIBILITY_HIGH_TEXT_CONTRAST_ENABLED), true,
+                highTextContrastObserver);
+        isObserversRegistered = true;
+        ALog.i(LOG_TAG, "ContentObservers registered");
+    }
+
+    /**
+     * Unregister content observers and cleanup resources.
+     * This method is idempotent - safe to call multiple times.
+     * Only the first call will perform the actual cleanup.
+     */
+    public void destroy() {
+        // Prevent duplicate calls
+        if (isDestroyed) {
+            return;
+        }
+        isDestroyed = true;
+
+        ALog.i(LOG_TAG, "destroy: unregistering ContentObservers");
+        if (stageApplication != null && isObserversRegistered) {
+            try {
+                stageApplication.getContentResolver().unregisterContentObserver(fontScaleObserver);
+                stageApplication.getContentResolver().unregisterContentObserver(highTextContrastObserver);
+                isObserversRegistered = false;
+                ALog.i(LOG_TAG, "ContentObservers unregistered");
+            } catch (Exception e) {
+                ALog.e(LOG_TAG, "Error unregistering ContentObservers: " + e.getMessage());
+            }
+        }
+        // Clean up other resources
+        platformCapability = null;
+        topActivity = null;
     }
 
     private native void nativeSetAssetManager(Object assetManager);

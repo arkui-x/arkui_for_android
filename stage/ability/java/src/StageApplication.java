@@ -93,4 +93,21 @@ public class StageApplication extends Application {
     public boolean onShouldLoadUI() {
         return true;
     }
+
+    /**
+     * Terminate the application and cleanup resources.
+     * Call this method when explicitly terminating the application.
+     * This will unregister ContentObservers to prevent potential resource leaks.
+     *
+     * Note: Android Application lifecycle is tied to the process lifetime.
+     * Normally, cleanup happens automatically when the process is killed.
+     * This method is for explicit cleanup in special scenarios.
+     */
+    public void terminate() {
+        ALog.i(LOG_TAG, "StageApplication terminate called");
+        if (appDelegate != null) {
+            appDelegate.destroy();
+            appDelegate = null;
+        }
+    }
 }
