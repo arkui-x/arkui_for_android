@@ -55,7 +55,7 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
      * Invalid virtual view id.
      */
     public static final int INVALID_VIRTUAL_VIEW_ID = -1;
-    private static final String TAG = "ArkUIAccessbilityProvider";
+    private static final String TAG = "ArkUIAccessibilityProvider";
     private static FocusedNode currentFocusNode = null;
     private static final int ROOT_NODE_ID = 0;
     private static final int UNDEFINED_ACCESSIBILITY_ID = -1;
@@ -363,9 +363,9 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
     }
 
     /**
-     * Gets the current focus node
+     * Checks whether accessibility is enabled.
      *
-     * @return the current focus node
+     * @return true if accessibility is enabled, false otherwise
      */
     public boolean isAccessibilityEnabled() {
         if (accessibilityManager != null) {
@@ -376,9 +376,9 @@ public class AccessibilityCrossPlatformBridge extends AccessibilityNodeProvider 
     }
 
     /**
-     * Gets the current focus node
+     * Checks whether touch exploration is enabled.
      *
-     * @return the current focus node
+     * @return true if touch exploration is enabled, false otherwise
      */
     public boolean isTouchExplorationEnabled() {
         if (accessibilityManager != null) {

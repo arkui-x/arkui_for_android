@@ -189,7 +189,7 @@ public class WindowViewSurface extends SurfaceView implements SurfaceHolder.Call
     }
 
     /**
-     * Called when the windowfocus changed.
+     * Called when the surface is destroyed.
      *
      * @param holder surface holder
      */
@@ -234,7 +234,7 @@ public class WindowViewSurface extends SurfaceView implements SurfaceHolder.Call
     /**
      * Set whether the surfaceView is hide.
      *
-     * @param isHide whether the surfaceView is hide
+     * @param isHide whether the surfaceView is hidden
      */
     @Override
     public void setHide(boolean isHide) {

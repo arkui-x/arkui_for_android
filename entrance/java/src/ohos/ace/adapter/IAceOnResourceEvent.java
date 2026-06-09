@@ -22,7 +22,7 @@ package ohos.ace.adapter;
  */
 public interface IAceOnResourceEvent {
     /**
-     * Called when a the resource event is send to Native
+     * Called when the resource event is sent to Native
      *
      * @param eventId the id of the event
      * @param param the params of the event

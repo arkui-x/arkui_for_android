@@ -40,7 +40,7 @@ public interface AceEventCallback {
     /**
      * called when status bar background color has changed.
      *
-     * @param color new status bar backgournd color
+     * @param color new status bar background color
      */
     void onStatusBarBgColorChanged(int color);
 }

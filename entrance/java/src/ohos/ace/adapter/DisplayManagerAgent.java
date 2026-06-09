@@ -100,7 +100,7 @@ public class DisplayManagerAgent {
      * register display listener.
      */
     public void registerDisplayListener() {
-        ALog.d(TAG, "onChange called.");
+        ALog.d(TAG, "registerDisplayListener called.");
         if (displayListener == null) {
             displayListener = new DisplayManager.DisplayListener() {
 
@@ -129,7 +129,7 @@ public class DisplayManagerAgent {
      * unregister display listener.
      */
     public void unregisterDisplayListener() {
-        ALog.d(TAG, "offChange called.");
+        ALog.d(TAG, "unregisterDisplayListener called.");
         if (displayListener != null) {
             displayManager.unregisterDisplayListener(displayListener);
             displayListener = null;

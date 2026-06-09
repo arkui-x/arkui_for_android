@@ -145,7 +145,7 @@ public class WindowViewCommon {
     /**
      * Called by native to register Window Handle.
      *
-     * @param windowHandle the handle of navive window
+     * @param windowHandle the handle of native window
      */
     public void registerWindow(long windowHandle) {
         nativeWindowPtr = windowHandle;
@@ -277,7 +277,7 @@ public class WindowViewCommon {
             ALog.w(TAG, "AndroidX is not available.");
             return;
         }
-        ALog.d(TAG, "Window" + "onInsetsAreaChanged" + nativeWindowPtr);
+        ALog.d(TAG, "Window " + "onInsetsAreaChanged " + nativeWindowPtr);
         getLocationOnScreen(new LocationCallback() {
             @Override
             public void onLocationReceived(Rect rect) {
@@ -639,19 +639,19 @@ public class WindowViewCommon {
             }
 
             if (!sAndroidXVersionSupportedGetInsets) {
-                ALog.e(TAG, "window" + " please update your androidx version to 1.8.0 or higher.");
+                ALog.e(TAG, "window " + "please update your androidx version to 1.8.0 or higher.");
                 return;
             }
 
             onAvoidAreaChanged(i, insets.getInsets(avoidTypeToType(i)), screenSize.width, screenSize.height,
                 rect);
-            ALog.d(TAG, "Window" + "screenWidth:" + screenSize.width + "screenHeight:" + screenSize.height);
-            ALog.d(TAG, "Window" + "rect:" + rect.left + "," + rect.top + "," +
+            ALog.d(TAG, "Window " + "screenWidth: " + screenSize.width + " screenHeight: " + screenSize.height);
+            ALog.d(TAG, "Window " + "rect: " + rect.left + ", " + rect.top + ", " +
                 rect.width() + "," + rect.height() + "," + rect.bottom);
-            ALog.d(TAG, "Window" + i + "left" + insets.getInsets(avoidTypeToType(i)).left);
-            ALog.d(TAG, "Window" + i + "top" + insets.getInsets(avoidTypeToType(i)).top);
-            ALog.d(TAG, "Window" + i + "right" + insets.getInsets(avoidTypeToType(i)).right);
-            ALog.d(TAG, "Window" + i + "bottom" + insets.getInsets(avoidTypeToType(i)).bottom);
+            ALog.d(TAG, "Window " + i + " left " + insets.getInsets(avoidTypeToType(i)).left);
+            ALog.d(TAG, "Window " + i + " top " + insets.getInsets(avoidTypeToType(i)).top);
+            ALog.d(TAG, "Window " + i + " right " + insets.getInsets(avoidTypeToType(i)).right);
+            ALog.d(TAG, "Window " + i + " bottom " + insets.getInsets(avoidTypeToType(i)).bottom);
         }
     }
 

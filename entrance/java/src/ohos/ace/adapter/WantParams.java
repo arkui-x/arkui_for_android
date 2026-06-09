@@ -207,15 +207,15 @@ public class WantParams {
      * Parses a JSONObject and populates the WantParams map.
      *
      * @param wantObject the JSONObject to parse
-     * @param wantKay    the key to look for in the JSONObject
+     * @param wantKey    the key to look for in the JSONObject
      * @throws JSONException if the JSONObject is malformed
      */
-    private void parseWantParams(JSONObject wantObject, String wantKay) throws JSONException {
-        if (!wantObject.has(wantKay)) {
+    private void parseWantParams(JSONObject wantObject, String wantKey) throws JSONException {
+        if (!wantObject.has(wantKey)) {
             return;
         }
-        if (wantObject.get(wantKay) instanceof JSONArray) {
-            JSONArray wantArray = (JSONArray) wantObject.get(wantKay);
+        if (wantObject.get(wantKey) instanceof JSONArray) {
+            JSONArray wantArray = (JSONArray) wantObject.get(wantKey);
             if (!parse(wantArray)) {
                 ALog.e(LOG_TAG, "WantParams data format error.");
             }

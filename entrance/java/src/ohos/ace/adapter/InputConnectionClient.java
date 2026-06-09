@@ -30,7 +30,7 @@ public interface InputConnectionClient {
      *
      * @param view the view to create input connection.
      * @param outAttrs the editorInfo about input connection.
-     * @return the created AceView instace.
+     * @return the created AceView instance.
      */
     InputConnection onCreateInputConnection(View view, EditorInfo outAttrs);
 

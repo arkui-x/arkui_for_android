@@ -60,7 +60,7 @@ public final class DumpHelper {
      */
     public static void dump(int instanceId, String prefix, FileDescriptor fd, PrintWriter writer, String[] args) {
         if (fd == null || args == null) {
-            ALog.w(LOG_TAG, "dump failed, fd pr args is null");
+            ALog.w(LOG_TAG, "dump failed, fd or args is null");
             return;
         }
 
@@ -75,7 +75,7 @@ public final class DumpHelper {
                     "    -element                       dump information of Element tree." + System.lineSeparator() +
                     "    -render                        dump information of Render tree." + System.lineSeparator() +
                     "    -layer                         dump information of Layer tree." + System.lineSeparator() +
-                    "    -foucs                         dump information of Focus tree." + System.lineSeparator() +
+                    "    -focus                         dump information of Focus tree." + System.lineSeparator() +
                     "    -frontend                      dump information of Frontend."
                     + System.lineSeparator() +
                     "    -pipeline                      dump information of Pipeline context."
@@ -98,7 +98,7 @@ public final class DumpHelper {
         }
 
         if (!PARAMETERS.contains(args[0])) {
-            help = "'" + args[0] + "' is not a vaild parameter, See '-h'." + System.lineSeparator();
+            help = "'" + args[0] + "' is not a valid parameter, See '-h'." + System.lineSeparator();
         }
 
         if (!help.isEmpty()) {

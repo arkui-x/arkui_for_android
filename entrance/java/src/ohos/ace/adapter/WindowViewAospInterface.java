@@ -44,9 +44,9 @@ public interface WindowViewAospInterface extends WindowViewInterface {
     AccessibilityNodeProvider getAccessibilityNodeProvider();
 
     /**
-     * Methods for performing auxiliary function operations。
+     * Methods for performing auxiliary function operations.
      *
-     * @param action Unobstructed operation type
+     * @param action Accessibility action type
      * @param arguments Parameters for auxiliary function operation
      * @return true if the action was performed, false otherwise
      */
@@ -69,9 +69,9 @@ public interface WindowViewAospInterface extends WindowViewInterface {
     boolean superOnHoverEventAosp(MotionEvent event);
 
     /**
-     * Methods for performing auxiliary function operations。
+     * Methods for performing auxiliary function operations.
      *
-     * @param action Unobstructed operation type
+     * @param action Accessibility action type
      * @param arguments Parameters for auxiliary function operation
      * @return true if the action was performed, false otherwise
      */

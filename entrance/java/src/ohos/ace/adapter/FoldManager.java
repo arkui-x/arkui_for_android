@@ -192,7 +192,7 @@ public class FoldManager {
     /**
      * set foldable from activity
      *
-     * @param foldable is ture or false
+     * @param foldable is true or false
      */
     public static void setFoldable(boolean foldable) {
         foldAble = foldable;

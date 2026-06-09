@@ -192,7 +192,7 @@ public class WindowViewTexture extends TextureView implements TextureView.Surfac
     }
 
     /**
-     * Called when the texture size destroyed.
+     * Called when the surface texture is destroyed.
      *
      * @param surface surface texture
      * @return if success or not
@@ -214,7 +214,7 @@ public class WindowViewTexture extends TextureView implements TextureView.Surfac
     }
 
     /**
-     * Called when the windowfocus changed.
+     * Called when the window focus changed.
      *
      * @param hasWindowFocus has focus or not
      */
@@ -248,7 +248,7 @@ public class WindowViewTexture extends TextureView implements TextureView.Surfac
     /**
      * Set whether the surfaceView is hide.
      *
-     * @param isHide whether the surfaceView is hide
+     * @param isHide whether the surfaceView is hidden
      */
     @Override
     public void setHide(boolean isHide) {

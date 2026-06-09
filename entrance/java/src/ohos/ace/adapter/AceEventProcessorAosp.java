@@ -49,7 +49,7 @@ public class AceEventProcessorAosp {
         int CANCEL = 0;
 
         /**
-         * down action
+         * add action
          */
         int ADD = 1;
 
@@ -69,7 +69,7 @@ public class AceEventProcessorAosp {
         int DOWN = 4;
 
         /**
-         * up action
+         * move action
          */
         int MOVE = 5;
 
@@ -170,7 +170,7 @@ public class AceEventProcessorAosp {
         int NONE = 0;
 
         /**
-         * keyboard
+         * mouse
          */
         int MOUSE = 1;
 
@@ -214,7 +214,7 @@ public class AceEventProcessorAosp {
 
     private interface SourceTool {
         /**
-         * unknow
+         * unknown
          */
         int UNKNOWN = -1;
 
