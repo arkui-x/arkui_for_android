@@ -27,7 +27,7 @@ public interface IAceOnCallResourceMethod {
      * Called when a native report resource event occurred
      *
      * @param param the params of the event
-     * @return the result of of the event
+     * @return the result of the event
      */
     String onCall(Map<String, String> param);
 }

@@ -25,7 +25,7 @@ import android.view.View;
 import androidx.core.view.WindowInsetsCompat;
 
 /**
- * WindowViewAospInterface class that extends WindowViewInterface.
+ * Interface that defines the contract for window view implementations.
  *
  * @since 2025-05-06
  */
@@ -121,7 +121,7 @@ public interface WindowViewInterface {
     void setInstanceId(int instanceId);
 
     /**
-     * Set platformniew plugin.
+     * Set platform view plugin.
      *
      * @param pluginBase the AcePlatformViewPluginBase object
      */
@@ -186,7 +186,7 @@ public interface WindowViewInterface {
     /**
      * Called by native to register Window Handle.
      *
-     * @param windowHandle the handle of navive window
+     * @param windowHandle the handle of native window
      */
     void registerWindow(long windowHandle);
 

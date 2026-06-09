@@ -47,19 +47,19 @@ public class ArkUIXPluginRegistry implements IPluginRegistry {
         try {
             pluginClass = Class.forName(name);
         } catch (ClassNotFoundException e) {
-            ALog.e(LOG_TAG, "pluginClass do not found: " + e.getMessage());
+            ALog.e(LOG_TAG, "pluginClass not found: " + e.getMessage());
             return;
         }
 
         try {
             if (hasPlugin(name)) {
-                ALog.e(LOG_TAG, "plugin:" + name + "already registered");
+                ALog.e(LOG_TAG, "plugin:" + name + " already registered");
             } else {
                 IArkUIXPlugin plugin = null;
                 plugin = (IArkUIXPlugin) pluginClass.newInstance();
                 pluginMap.put(name, plugin);
                 plugin.onRegistry(this.pluginContext);
-                ALog.d(LOG_TAG, "plugin: " + name + "is successfully registered");
+                ALog.d(LOG_TAG, "plugin: " + name + " is successfully registered");
             }
         } catch (IllegalAccessException e) {
             ALog.e(LOG_TAG, "registry plugin fail: " + e.getMessage());
@@ -81,7 +81,7 @@ public class ArkUIXPluginRegistry implements IPluginRegistry {
     }
 
     /**
-     * remove a ArkUI-X plugin frome ArkUI-X PluginRegistry.
+     * remove a ArkUI-X plugin from ArkUI-X PluginRegistry.
      *
      * @param name The full class name includes the package name of the plugin.
      */

@@ -32,7 +32,7 @@ public final class LibraryLoader {
     private static volatile boolean jniLoaded = false;
 
     private LibraryLoader() {
-        /* do noting */
+        /* do nothing */
     }
 
     public static boolean isJniLoaded() {
@@ -56,7 +56,7 @@ public final class LibraryLoader {
 
     static boolean loadJniLibrary() {
         if (jniLoaded) {
-            // JNI shared library is alreay loaded.
+            // JNI shared library is already loaded.
             ALog.i(LOG_TAG, "Has loaded ace lib");
             return true;
         }
@@ -64,7 +64,7 @@ public final class LibraryLoader {
         synchronized (JNI_LOAD_LOCK) {
             // Check again whether JNI shared library is loaded in another thread.
             if (jniLoaded) {
-                // JNI shared library is alreay loaded.
+                // JNI shared library is already loaded.
                 ALog.i(LOG_TAG, "Has loaded ace lib");
                 return true;
             }
