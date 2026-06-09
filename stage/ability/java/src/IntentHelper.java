@@ -22,6 +22,8 @@ import android.net.Uri;
 import android.webkit.MimeTypeMap;
 
 import java.util.Locale;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -33,13 +35,18 @@ import java.util.Map;
 public final class IntentHelper {
     private static final String LOG_TAG = "IntentHelper";
 
-    private static final Map<String, String> ACTION_MAPPING = Map.of(
-            "ohos.want.action.viewData", Intent.ACTION_VIEW
-    );
+    private static final Map<String, String> ACTION_MAPPING;
+    private static final Map<String, String> ENTITY_MAPPING;
 
-    private static final Map<String, String> ENTITY_MAPPING = Map.of(
-            "entity.system.browsable", Intent.CATEGORY_BROWSABLE
-    );
+    static {
+        Map<String, String> actions = new HashMap<>();
+        actions.put("ohos.want.action.viewData", Intent.ACTION_VIEW);
+        ACTION_MAPPING = Collections.unmodifiableMap(actions);
+
+        Map<String, String> entities = new HashMap<>();
+        entities.put("entity.system.browsable", Intent.CATEGORY_BROWSABLE);
+        ENTITY_MAPPING = Collections.unmodifiableMap(entities);
+    }
 
     private IntentHelper() {
         // Private constructor to prevent instantiation
