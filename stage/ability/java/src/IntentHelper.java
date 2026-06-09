@@ -23,7 +23,6 @@ import android.webkit.MimeTypeMap;
 
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Helper class for Intent-related operations.
@@ -34,14 +33,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class IntentHelper {
     private static final String LOG_TAG = "IntentHelper";
 
-    private static final Map<String, String> ACTION_MAPPING = new ConcurrentHashMap<>();
+    private static final Map<String, String> ACTION_MAPPING = Map.of(
+            "ohos.want.action.viewData", Intent.ACTION_VIEW
+    );
 
-    private static final Map<String, String> ENTITY_MAPPING = new ConcurrentHashMap<>();
-
-    static {
-        ACTION_MAPPING.put("ohos.want.action.viewData", Intent.ACTION_VIEW);
-        ENTITY_MAPPING.put("entity.system.browsable", Intent.CATEGORY_BROWSABLE);
-    }
+    private static final Map<String, String> ENTITY_MAPPING = Map.of(
+            "entity.system.browsable", Intent.CATEGORY_BROWSABLE
+    );
 
     private IntentHelper() {
         // Private constructor to prevent instantiation

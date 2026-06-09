@@ -527,6 +527,11 @@ public class StageApplicationDelegate {
 
         ALog.i(LOG_TAG, "Start copying resources");
         List<String> moduleResources = collectModuleResources();
+        if (moduleResources.isEmpty()) {
+            ALog.e(LOG_TAG, "No module resources found, abort copy");
+            isCopyResources = false;
+            return;
+        }
         copyModuleResources(moduleResources);
         saveVersionCode(sharedPreferences, versionCode);
     }
@@ -582,9 +587,13 @@ public class StageApplicationDelegate {
     private void saveVersionCode(SharedPreferences sharedPreferences, int versionCode) {
         if (isCopyResources) {
             ALog.i(LOG_TAG, "Resources copied successfully, saving version code");
-            sharedPreferences.edit()
-                    .putInt(APP_VERSION_CODE, versionCode)
-                    .apply();
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            if (editor == null) {
+                ALog.e(LOG_TAG, "editor is null");
+                return;
+            }
+            editor.putInt(APP_VERSION_CODE, versionCode);
+            editor.commit();
         }
     }
 
