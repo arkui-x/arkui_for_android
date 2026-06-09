@@ -466,80 +466,144 @@ public class StageApplicationDelegate {
      * copy the resources from all modules
      */
     private void copyAllModuleResources() {
+        // Guard clauses - early return for error conditions
         if (stageApplication == null) {
             ALog.e(LOG_TAG, "stageApplication is null");
             return;
         }
+
         int versionCode = getAppVersionCode();
         if (versionCode == DEFAULT_VERSION_CODE) {
-            ALog.e(LOG_TAG, "Getting app version code failed.");
+            ALog.e(LOG_TAG, "Getting app version code failed");
             return;
         }
-        SharedPreferences sharedPreferences =
-                stageApplication.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
+
+        SharedPreferences sharedPreferences = getSharedPreferences();
         if (sharedPreferences == null) {
             ALog.e(LOG_TAG, "sharedPreferences is null");
             return;
         }
 
-        isCopyResources = true;
-
-        int oldVersionCode = sharedPreferences.getInt(APP_VERSION_CODE, DEFAULT_VERSION_CODE);
-        boolean isDebug = isApkInDebug(stageApplication);
-        ALog.i(LOG_TAG, "Old version code is: " + oldVersionCode +
-            ", current version code is: " + versionCode +
-            ", apk is debug: " + isDebug);
-        if (!isDebug && oldVersionCode >= versionCode) {
-            assetsModulePath = getAssetsPath(false);
-            ALog.i(LOG_TAG, "The resource has been copied.");
+        // Check if resources need to be copied
+        if (shouldSkipResourceCopy(sharedPreferences, versionCode)) {
             return;
         }
 
+        // Perform the actual copy
+        doResourceCopy(versionCode, sharedPreferences);
+    }
+
+    /**
+     * Check if resource copy can be skipped.
+     *
+     * @param sharedPreferences the shared preferences
+     * @param currentVersionCode the current app version code
+     * @return true if skip copy, false otherwise
+     */
+    private boolean shouldSkipResourceCopy(SharedPreferences sharedPreferences, int currentVersionCode) {
+        int oldVersionCode = sharedPreferences.getInt(APP_VERSION_CODE, DEFAULT_VERSION_CODE);
+        boolean isDebug = isApkInDebug(stageApplication);
+        ALog.i(LOG_TAG, "Version check - old: " + oldVersionCode + ", current: " + currentVersionCode
+                + ", debug: " + isDebug);
+
+        if (!isDebug && oldVersionCode >= currentVersionCode) {
+            assetsModulePath = getAssetsPath(false);
+            ALog.i(LOG_TAG, "Resources already copied, skipping");
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Perform the actual resource copy operation.
+     *
+     * @param versionCode the current version code
+     * @param sharedPreferences the shared preferences
+     */
+    private void doResourceCopy(int versionCode, SharedPreferences sharedPreferences) {
+        isCopyResources = true;
         isCopyNativeLibs = true;
         assetsModulePath = getAssetsPath(true);
 
-        ALog.i(LOG_TAG, "Start copying resources.");
-        AssetManager assets = stageApplication.getAssets();
-        String moduleResourcesDirectory = "";
-        String moduleResourcesIndex = "";
+        ALog.i(LOG_TAG, "Start copying resources");
+        List<String> moduleResources = collectModuleResources();
+        if (moduleResources.isEmpty()) {
+            ALog.e(LOG_TAG, "No module resources found, abort copy");
+            isCopyResources = false;
+            return;
+        }
+        copyModuleResources(moduleResources);
+        saveVersionCode(sharedPreferences, versionCode);
+    }
+
+    /**
+     * Collect all module resources from assets.
+     *
+     * @return list of resource paths to copy
+     */
+    private List<String> collectModuleResources() {
         List<String> moduleResources = new ArrayList<>();
+        AssetManager assets = stageApplication.getAssets();
         try {
             String[] list = assets.list(ASSETS_SUB_PATH);
             for (String name : list) {
                 if ("systemres".equals(name)) {
                     moduleResources.add(name);
                 } else {
-                    moduleResourcesDirectory = name + "/" + "resources";
-                    moduleResourcesIndex = name + "/" + "resources.index";
-                    moduleResources.add(moduleResourcesDirectory);
-                    moduleResources.add(moduleResourcesIndex);
+                    moduleResources.add(name + "/resources");
+                    moduleResources.add(name + "/resources.index");
                 }
             }
         } catch (IOException e) {
-            ALog.e(LOG_TAG, "read resources err: " + e.getMessage());
+            ALog.e(LOG_TAG, "Failed to list assets: " + e.getMessage());
             isCopyResources = false;
         }
 
         if (moduleResources.isEmpty()) {
-            ALog.e(LOG_TAG, "The moduleResources is empty.");
+            ALog.e(LOG_TAG, "No module resources found");
         }
+        return moduleResources;
+    }
 
-        for (String resourcesName : moduleResources) {
-            copyFilesFromAssets(ASSETS_SUB_PATH + "/" + resourcesName,
-                    stageApplication.getApplicationContext().getFilesDir().getPath() +
-                    "/" + ASSETS_SUB_PATH + "/" + resourcesName);
+    /**
+     * Copy module resources from assets to file system.
+     *
+     * @param moduleResources list of resource paths to copy
+     */
+    private void copyModuleResources(List<String> moduleResources) {
+        String destDir = stageApplication.getApplicationContext().getFilesDir().getPath()
+                + "/" + ASSETS_SUB_PATH;
+        for (String resourceName : moduleResources) {
+            copyFilesFromAssets(ASSETS_SUB_PATH + "/" + resourceName, destDir + "/" + resourceName);
         }
+    }
 
-        SharedPreferences.Editor edit = sharedPreferences.edit();
-        if (edit == null) {
-            ALog.e(LOG_TAG, "edit is null");
-            return;
-        }
+    /**
+     * Save the version code after successful resource copy.
+     *
+     * @param sharedPreferences the shared preferences
+     * @param versionCode the version code to save
+     */
+    private void saveVersionCode(SharedPreferences sharedPreferences, int versionCode) {
         if (isCopyResources) {
-            ALog.i(LOG_TAG, "resource copy success.");
-            edit.putInt(APP_VERSION_CODE, versionCode);
-            edit.commit();
+            ALog.i(LOG_TAG, "Resources copied successfully, saving version code");
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            if (editor == null) {
+                ALog.e(LOG_TAG, "editor is null");
+                return;
+            }
+            editor.putInt(APP_VERSION_CODE, versionCode);
+            editor.commit();
         }
+    }
+
+    /**
+     * Get the shared preferences instance.
+     *
+     * @return the shared preferences, or null if failed
+     */
+    private SharedPreferences getSharedPreferences() {
+        return stageApplication.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
     }
 
     /**

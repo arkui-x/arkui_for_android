@@ -97,10 +97,6 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
 
     private static final String FILE_URI_KEY = "ability.params.stream";
 
-    private static final Map<String, String> ACTION_MAPPING = new ConcurrentHashMap<>();
-
-    private static final Map<String, String> ENTITY_MAPPING = new ConcurrentHashMap<>();
-
     private static boolean isForResult = true;
 
     private static final int RESULTCODE_OK = 0;
@@ -108,11 +104,6 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
     private static final int RESULTCODE_ERROR = 1;
 
     private static final int RESULT_OK = -1;
-
-    static {
-        ACTION_MAPPING.put("ohos.want.action.viewData", Intent.ACTION_VIEW);
-        ENTITY_MAPPING.put("entity.system.browsable", Intent.CATEGORY_BROWSABLE);
-    }
 
     private int requestCode = 0;
 
@@ -420,7 +411,7 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
     public int startActivity(String action, String uri, String[] entities) {
         int ret = ERR_OK;
         try {
-            String intentAction = resolveAction(action);
+            String intentAction = IntentHelper.resolveAction(action);
             if (intentAction == null) {
                 ALog.e(LOG_TAG, "Unknown action: " + action);
                 return ERR_INVALID_PARAMETERS;
@@ -431,13 +422,13 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
                 ALog.e(LOG_TAG, "Fragment getActivity is null");
                 return ERR_INVALID_PARAMETERS;
             }
-            String mimeType = getMimeType(this.getActivity().getBaseContext(), parsedUri);
+            String mimeType = IntentHelper.getMimeType(this.getActivity().getBaseContext(), parsedUri);
             if (mimeType != null) {
                 intent.setDataAndType(parsedUri, mimeType);
             } else {
                 intent.setData(parsedUri);
             }
-            addCategoriesFromEntities(intent, entities);
+            IntentHelper.addCategoriesFromEntities(intent, entities);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             this.startActivity(intent);
         } catch (ActivityNotFoundException | NullPointerException | FileUriExposedException e) {
@@ -658,67 +649,5 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
     public void finish() {
         ALog.i(LOG_TAG, "StageFragment finish called.");
         return;
-    }
-
-    private String resolveAction(String action) {
-        if (action == null || action.isEmpty()) {
-            return null;
-        }
-        return ACTION_MAPPING.get(action);
-    }
-
-    private void addCategoriesFromEntities(Intent intent, String[] entities) {
-        if (intent == null || entities == null) {
-            return;
-        }
-        for (String entity : entities) {
-            if (entity == null) {
-                continue;
-            }
-            String mappedCategory = ENTITY_MAPPING.get(entity);
-            if (mappedCategory != null) {
-                intent.addCategory(mappedCategory);
-            }
-        }
-    }
-
-    private String getMimeType(Context context, Uri uri) {
-        if (context == null || uri == null) {
-            return null;
-        }
-        String mimeType = null;
-        String scheme = uri.getScheme();
-        if (ContentResolver.SCHEME_CONTENT.equals(scheme)) {
-            mimeType = getMimeTypeFromContent(context, uri);
-        } else if (ContentResolver.SCHEME_FILE.equals(scheme)) {
-            mimeType = getMimeTypeFromFilePath(uri.toString());
-        }
-        return mimeType;
-    }
-
-    private String getMimeTypeFromContent(Context context, Uri uri) {
-        String mimeType;
-        if (context == null || uri == null) {
-            return null;
-        }
-        ContentResolver contentResolver = context.getContentResolver();
-        mimeType = contentResolver.getType(uri);
-        if (mimeType == null) {
-            mimeType = getMimeTypeFromFilePath(uri.toString());
-        }
-        return mimeType;
-    }
-
-    private String getMimeTypeFromFilePath(String uri) {
-        String mimeType;
-        if (uri == null || uri.isEmpty()) {
-            return null;
-        }
-        String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri);
-        if (fileExtension == null || fileExtension.isEmpty()) {
-            return null;
-        }
-        mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension.toLowerCase(Locale.ROOT));
-        return mimeType;
     }
 }

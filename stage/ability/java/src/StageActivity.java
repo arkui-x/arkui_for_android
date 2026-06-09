@@ -111,10 +111,6 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     private static final String ARKUI_X_DIR = "arkui-x";
 
-    private static final Map<String, String> ACTION_MAPPING = new ConcurrentHashMap<>();
-
-    private static final Map<String, String> ENTITY_MAPPING = new ConcurrentHashMap<>();
-
     private static boolean isForResult = true;
 
     private static final int RESULTCODE_OK = 0;
@@ -127,14 +123,9 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     private static final int ERR_OK = 0;
 
-    private static boolean isFrist = false;
+    private static boolean isFirst = false;
 
     private static final int ANDROID_API_31 = 31;
-
-    static {
-        ACTION_MAPPING.put("ohos.want.action.viewData", Intent.ACTION_VIEW);
-        ENTITY_MAPPING.put("entity.system.browsable", Intent.CATEGORY_BROWSABLE);
-    }
 
     private int requestCode = 0;
 
@@ -468,10 +459,10 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         String socket = intent.getStringExtra("socket");
         boolean isExist = !(testBundleName == null || testModuleName == null ||
                 testRunerName == null || timeout == null || socket == null);
-        if (hasTestValue && !isFrist && isExist) {
+        if (hasTestValue && !isFirst && isExist) {
             ALog.i(LOG_TAG, "Start creating abilityDelegate");
             activityDelegate.createAbilityDelegator(testBundleName, testModuleName, testRunerName, timeout, socket);
-            isFrist = true;
+            isFirst = true;
         } else {
             ALog.i(LOG_TAG, "No need to start creating abilityDelegate");
         }
@@ -547,20 +538,20 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     public int startActivity(String action, String uri, String[] entities) {
         int ret = ERR_OK;
         try {
-            String intentAction = resolveAction(action);
+            String intentAction = IntentHelper.resolveAction(action);
             if (intentAction == null) {
                 ALog.e(LOG_TAG, "Unknown action: " + action);
                 return ERR_INVALID_PARAMETERS;
             }
             Intent intent = new Intent(intentAction);
             Uri parsedUri = Uri.parse(uri);
-            String mimeType = getMimeType(this, parsedUri);
+            String mimeType = IntentHelper.getMimeType(this, parsedUri);
             if (mimeType != null) {
                 intent.setDataAndType(parsedUri, mimeType);
             } else {
                 intent.setData(parsedUri);
             }
-            addCategoriesFromEntities(intent, entities);
+            IntentHelper.addCategoriesFromEntities(intent, entities);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             this.startActivity(intent);
         } catch (ActivityNotFoundException | NullPointerException | FileUriExposedException e) {
@@ -917,67 +908,5 @@ private void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo) {
      */
     public WindowInfoTrackerCallbackAdapter getFoldWindowInfoCallback() {
         return foldWindowInfoCallback;
-    }
-
-    private String resolveAction(String action) {
-        if (action == null || action.isEmpty()) {
-            return null;
-        }
-        return ACTION_MAPPING.get(action);
-    }
-
-    private void addCategoriesFromEntities(Intent intent, String[] entities) {
-        if (intent == null || entities == null) {
-            return;
-        }
-        for (String entity : entities) {
-            if (entity == null) {
-                continue;
-            }
-            String mappedCategory = ENTITY_MAPPING.get(entity);
-            if (mappedCategory != null) {
-                intent.addCategory(mappedCategory);
-            }
-        }
-    }
-
-    private String getMimeType(Context context, Uri uri) {
-        if (context == null || uri == null) {
-            return null;
-        }
-        String mimeType = null;
-        String scheme = uri.getScheme();
-        if (ContentResolver.SCHEME_CONTENT.equals(scheme)) {
-            mimeType = getMimeTypeFromContent(context, uri);
-        } else if (ContentResolver.SCHEME_FILE.equals(scheme)) {
-            mimeType = getMimeTypeFromFilePath(uri.toString());
-        }
-        return mimeType;
-    }
-
-    private String getMimeTypeFromContent(Context context, Uri uri) {
-        String mimeType;
-        if (context == null || uri == null) {
-            return null;
-        }
-        ContentResolver contentResolver = context.getContentResolver();
-        mimeType = contentResolver.getType(uri);
-        if (mimeType == null) {
-            mimeType = getMimeTypeFromFilePath(uri.toString());
-        }
-        return mimeType;
-    }
-
-    private String getMimeTypeFromFilePath(String uri) {
-        String mimeType;
-        if (uri == null || uri.isEmpty()) {
-            return null;
-        }
-        String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri);
-        if (fileExtension == null || fileExtension.isEmpty()) {
-            return null;
-        }
-        mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension.toLowerCase(Locale.ROOT));
-        return mimeType;
     }
 }
