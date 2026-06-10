@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -148,6 +148,7 @@ public:
     bool IsDynamicUpdateModule(const std::string& moduleName);
     std::vector<uint8_t> GetFontConfigJsonBuffer(const std::string& moduleName);
     std::vector<std::string> GetAllModuleDirectories();
+    bool GetSourceMapBufferByModuleName(const std::string& moduleName, std::string& content);
 
 private:
     std::vector<uint8_t> GetPkgJsonBufferFromAppData(const std::string& moduleName);
@@ -157,6 +158,14 @@ private:
     bool MakeMultipleDir(const std::string& path);
     bool CopyBufferToFile(std::vector<uint8_t>& buffer, const std::string& newFile);
     bool IsDirectoryEmpty(const std::string& path) const;
+    bool IsValidSourceMapModuleName(const std::string& moduleName);
+    bool GetSourceMapBufferFromSandbox(const std::string& moduleName, std::string& content);
+    bool GetSourceMapBufferFromBundle(const std::string& moduleName, std::string& content);
+    bool ReadSourceMapFile(const std::string& sourceMapPath, std::string& content);
+    bool MergeSourceMapFilesFromBundle(const std::vector<std::string>& sourceMapPaths, std::string& content);
+    bool MergeSourceMapFilesFromSandbox(const std::vector<std::string>& sourceMapPaths, std::string& content);
+    bool GetJsonObjectBodyRange(const std::string& jsonContent, size_t& bodyBegin, size_t& bodyEnd);
+    std::string MergeSourceMapJsonParts(const std::vector<std::string>& parts);
     std::string appPath_;
     std::vector<std::string> allFilePath_;
     std::mutex allFilePathMutex_;

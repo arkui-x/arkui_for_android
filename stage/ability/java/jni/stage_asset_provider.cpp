@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -60,6 +60,14 @@ const std::string SYSTEM_FONT_DIR = "fonts";
 const std::string BASE_DIR = "/base";
 const std::string PROFILE_DIR = "/profile";
 const std::string RESFILE_DIR = "/resfile";
+const std::string SOURCE_MAP_RELATIVE_PATH = "ets/sourceMaps.map";
+const std::string BACKSLASH_PATH_SEPARATOR = "\\";
+const std::string PARENT_PATH_SEGMENT = "..";
+const std::string JSON_WHITESPACE_CHARS = " \t\r\n";
+const char JSON_OBJECT_BEGIN = '{';
+const char JSON_OBJECT_END = '}';
+const char JSON_MEMBER_SEPARATOR = ',';
+const size_t JSON_OBJECT_BOUNDARY_LENGTH = 2;
 } // namespace
 std::shared_ptr<StageAssetProvider> StageAssetProvider::instance_ = nullptr;
 std::mutex StageAssetProvider::mutex_;
@@ -1133,6 +1141,209 @@ std::vector<std::string> StageAssetProvider::GetAllModuleDirectories()
     }
     closedir(dir);
     return moduleDirs;
+}
+
+bool StageAssetProvider::GetSourceMapBufferByModuleName(const std::string& moduleName, std::string& content)
+{
+    if (moduleName.empty()) {
+        LOGW("GetSourceMapBufferByModuleName: moduleName is empty");
+        return false;
+    }
+    if (!IsValidSourceMapModuleName(moduleName)) {
+        LOGW("GetSourceMapBufferByModuleName: moduleName is invalid");
+        return false;
+    }
+    if (GetSourceMapBufferFromSandbox(moduleName, content)) {
+        LOGI("GetSourceMapBufferByModuleName: from sandbox moduleName=%{public}s, size=%{public}zu",
+            moduleName.c_str(), content.size());
+        return true;
+    }
+    if (GetSourceMapBufferFromBundle(moduleName, content)) {
+        LOGI("GetSourceMapBufferByModuleName: from bundle moduleName=%{public}s, size=%{public}zu",
+            moduleName.c_str(), content.size());
+        return true;
+    }
+    LOGE("GetSourceMapBufferByModuleName: no sourceMaps.map found, module: %{public}s", moduleName.c_str());
+    return false;
+}
+
+bool StageAssetProvider::IsValidSourceMapModuleName(const std::string& moduleName)
+{
+    return moduleName.find(SEPARATOR) == std::string::npos &&
+        moduleName.find(BACKSLASH_PATH_SEPARATOR) == std::string::npos &&
+        moduleName.find(PARENT_PATH_SEGMENT) == std::string::npos;
+}
+
+bool StageAssetProvider::GetSourceMapBufferFromSandbox(const std::string& moduleName, std::string& content)
+{
+    const std::string sandboxDir = moduleName.empty()
+        ? GetAppDataModuleDir()
+        : GetAppDataModuleDir() + SEPARATOR + moduleName;
+
+    std::vector<std::string> sandboxFiles;
+    GetAppDataModuleAssetList(sandboxDir, sandboxFiles, false);
+    std::vector<std::string> sandboxPaths;
+    for (const auto& filePath : sandboxFiles) {
+        if (filePath.find(SOURCE_MAP_RELATIVE_PATH) != std::string::npos) {
+            sandboxPaths.emplace_back(filePath);
+        }
+    }
+    if (sandboxPaths.empty()) {
+        return false;
+    }
+    return MergeSourceMapFilesFromSandbox(sandboxPaths, content);
+}
+
+bool StageAssetProvider::GetSourceMapBufferFromBundle(const std::string& moduleName, std::string& content)
+{
+    const std::string bundleFilter = moduleName.empty()
+        ? SOURCE_MAP_RELATIVE_PATH
+        : moduleName + "/" + SOURCE_MAP_RELATIVE_PATH;
+
+    std::vector<std::string> bundlePaths;
+    {
+        std::lock_guard<std::mutex> lock(allFilePathMutex_);
+        for (const auto& filePath : allFilePath_) {
+            if (filePath.find(bundleFilter) != std::string::npos) {
+                bundlePaths.emplace_back(filePath);
+            }
+        }
+    }
+    if (bundlePaths.empty()) {
+        return false;
+    }
+    return MergeSourceMapFilesFromBundle(bundlePaths, content);
+}
+
+bool StageAssetProvider::MergeSourceMapFilesFromBundle(
+    const std::vector<std::string>& sourceMapPaths, std::string& content)
+{
+    if (sourceMapPaths.size() == 1) {
+        return ReadSourceMapFile(sourceMapPaths[0], content);
+    }
+    std::vector<std::string> parts;
+    for (const auto& path : sourceMapPaths) {
+        std::string part;
+        if (!ReadSourceMapFile(path, part)) {
+            continue;
+        }
+        parts.emplace_back(std::move(part));
+    }
+    content = MergeSourceMapJsonParts(parts);
+    return !content.empty();
+}
+
+bool StageAssetProvider::ReadSourceMapFile(const std::string& sourceMapPath, std::string& content)
+{
+    auto lastPos = sourceMapPath.find_last_of(SEPARATOR);
+    std::string fileName;
+    std::string filePath;
+    if (lastPos == std::string::npos) {
+        fileName = sourceMapPath;
+        filePath.clear();
+    } else {
+        fileName = sourceMapPath.substr(lastPos + 1);
+        filePath = sourceMapPath.substr(0, lastPos);
+    }
+
+    if (fileName.empty()) {
+        LOGE("ReadSourceMapFile: invalid sourceMapPath=%{public}s", sourceMapPath.c_str());
+        return false;
+    }
+    if (filePath.empty()) {
+        LOGE("ReadSourceMapFile: filePath empty for sourceMapPath=%{public}s", sourceMapPath.c_str());
+        return false;
+    }
+
+    auto assetProvider = CreateAndFindAssetProvider(filePath);
+    if (assetProvider == nullptr) {
+        LOGE("ReadSourceMapFile: assetProvider is nullptr");
+        return false;
+    }
+    auto mapping = assetProvider->GetAsMapping(fileName);
+    if (mapping == nullptr) {
+        LOGE("ReadSourceMapFile: mapping is nullptr");
+        return false;
+    }
+    auto moduleMap = mapping->GetAsset();
+    if (moduleMap == nullptr) {
+        LOGE("ReadSourceMapFile: moduleMap is nullptr");
+        return false;
+    }
+    std::vector<uint8_t> buffer;
+    buffer.assign(&moduleMap[0], &moduleMap[mapping->GetSize()]);
+    content.assign(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+    return true;
+}
+
+bool StageAssetProvider::MergeSourceMapFilesFromSandbox(
+    const std::vector<std::string>& sourceMapPaths, std::string& content)
+{
+    if (sourceMapPaths.size() == 1) {
+        auto buffer = GetBufferByAppDataPath(sourceMapPaths[0]);
+        if (buffer.empty()) {
+            return false;
+        }
+        content.assign(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+        return true;
+    }
+    std::vector<std::string> parts;
+    for (const auto& path : sourceMapPaths) {
+        auto buffer = GetBufferByAppDataPath(path);
+        if (buffer.empty()) {
+            continue;
+        }
+        parts.emplace_back(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+    }
+    content = MergeSourceMapJsonParts(parts);
+    return !content.empty();
+}
+
+std::string StageAssetProvider::MergeSourceMapJsonParts(const std::vector<std::string>& parts)
+{
+    std::string mergedSourceMap;
+    size_t mergedSourceMapSize = JSON_OBJECT_BOUNDARY_LENGTH + parts.size();
+    for (const auto& part : parts) {
+        mergedSourceMapSize += part.size();
+    }
+    mergedSourceMap.reserve(mergedSourceMapSize);
+    mergedSourceMap.push_back(JSON_OBJECT_BEGIN);
+    for (const auto& part : parts) {
+        size_t bodyBegin = 0;
+        size_t bodyEnd = 0;
+        if (!GetJsonObjectBodyRange(part, bodyBegin, bodyEnd)) {
+            continue;
+        }
+        auto memberBegin = part.find_first_not_of(JSON_WHITESPACE_CHARS, bodyBegin);
+        if (memberBegin == std::string::npos || memberBegin >= bodyEnd) {
+            continue;
+        }
+        auto memberEnd = part.find_last_not_of(JSON_WHITESPACE_CHARS, bodyEnd - 1);
+        if (memberEnd == std::string::npos || memberEnd < memberBegin) {
+            continue;
+        }
+        if (mergedSourceMap.back() != JSON_OBJECT_BEGIN) {
+            mergedSourceMap.push_back(JSON_MEMBER_SEPARATOR);
+        }
+        mergedSourceMap.append(part, memberBegin, memberEnd - memberBegin + 1);
+    }
+    mergedSourceMap.push_back(JSON_OBJECT_END);
+    return mergedSourceMap.size() > JSON_OBJECT_BOUNDARY_LENGTH ? mergedSourceMap : "";
+}
+
+bool StageAssetProvider::GetJsonObjectBodyRange(const std::string& jsonContent, size_t& bodyBegin, size_t& bodyEnd)
+{
+    auto objectBegin = jsonContent.find_first_not_of(JSON_WHITESPACE_CHARS);
+    auto objectEnd = jsonContent.find_last_not_of(JSON_WHITESPACE_CHARS);
+    if (objectBegin == std::string::npos || objectEnd == std::string::npos || objectEnd <= objectBegin) {
+        return false;
+    }
+    if (jsonContent[objectBegin] != JSON_OBJECT_BEGIN || jsonContent[objectEnd] != JSON_OBJECT_END) {
+        return false;
+    }
+    bodyBegin = objectBegin + 1;
+    bodyEnd = objectEnd;
+    return true;
 }
 } // namespace Platform
 } // namespace AbilityRuntime
