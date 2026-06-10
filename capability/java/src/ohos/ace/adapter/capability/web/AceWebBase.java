@@ -90,6 +90,12 @@ public abstract class AceWebBase {
         IAceOnCallResourceMethod backgroundColor = (param) -> backgroundColor(param);
         this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "backgroundColor" + PARAM_BEGIN,
             backgroundColor);
+        IAceOnCallResourceMethod initialScale = (param) -> initialScale(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "initialScale" + PARAM_BEGIN,
+            initialScale);
+        IAceOnCallResourceMethod overScrollMode = (param) -> overScrollMode(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "overScrollMode" + PARAM_BEGIN,
+            overScrollMode);
         IAceOnCallResourceMethod mediaPlayGestureAccess = (param) -> mediaPlayGestureAccess(param);
         this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "mediaPlayGestureAccess" + PARAM_BEGIN,
             mediaPlayGestureAccess);
@@ -1059,6 +1065,22 @@ public abstract class AceWebBase {
      * @return result of call.
      */
     public abstract String backgroundColor(Map<String, String> params);
+
+    /**
+     * initialScale.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String initialScale(Map<String, String> params);
+
+    /**
+     * overScrollMode.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String overScrollMode(Map<String, String> params);
 
     /**
      * mediaPlayGestureAccess.
