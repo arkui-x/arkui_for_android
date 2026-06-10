@@ -145,7 +145,8 @@ public:
     void UpdateVersionCode(const std::string& moduleName, bool isNeedUpdate);
     bool IsDynamicUpdateModule(const std::string& moduleName);
     std::vector<uint8_t> GetFontConfigJsonBuffer(const std::string& moduleName);
-    
+    std::vector<std::string> GetAllModuleDirectories();
+
 private:
     std::vector<uint8_t> GetPkgJsonBufferFromAppData(const std::string& moduleName);
     std::vector<uint8_t> GetPkgJsonBufferFromAssets(const std::string& moduleName);
