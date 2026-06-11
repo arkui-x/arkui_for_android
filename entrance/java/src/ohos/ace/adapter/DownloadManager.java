@@ -99,10 +99,10 @@ public class DownloadManager {
             conn.setReadTimeout(DEFAULT_TIME_OUT);
             conn.connect();
         } catch (IOException error) {
-            ALog.e(LOG_TAG, "request data err:" + error.getMessage());
+            ALog.e(LOG_TAG, "request data err: IOException");
             return NULL_BYTE;
         } catch (SecurityException error) {
-            ALog.e(LOG_TAG, "security err:" + error.getMessage());
+            ALog.e(LOG_TAG, "security err: SecurityException");
             return NULL_BYTE;
         }
 
@@ -114,14 +114,14 @@ public class DownloadManager {
             }
             return outputStream.toByteArray();
         } catch (IOException error) {
-            ALog.e(LOG_TAG, "read or write data err:" + error.getMessage());
+            ALog.e(LOG_TAG, "read or write data err: IOException");
             return NULL_BYTE;
         } finally {
             if (inputStream != null) {
                 try {
                     inputStream.close();
                 } catch (IOException error) {
-                    ALog.e(LOG_TAG, "InputStream close err:" + error.getMessage());
+                    ALog.e(LOG_TAG, "InputStream close err: IOException");
                 }
             }
         }
