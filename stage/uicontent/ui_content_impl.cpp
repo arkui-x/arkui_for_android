@@ -727,6 +727,8 @@ void BuildParsedConfig(ParsedConfig& parsedConfig,
                 config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::APPLICATION_FONT);
     parsedConfig.fontScale =
                 config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::SYSTEM_FONT_SIZE_SCALE);
+    parsedConfig.fontWeightScale =
+                config->GetItem(OHOS::AbilityRuntime::Platform::ConfigurationInner::SYSTEM_FONT_WEIGHT_SCALE);
 }
 
 void UIContentImpl::UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRuntime::Platform::Configuration>& config)

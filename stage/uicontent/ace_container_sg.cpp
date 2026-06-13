@@ -869,6 +869,12 @@ void AceContainerSG::SetFontAndScale(Platform::ParsedConfig& parsedConfig, Confi
         fontScale = std::min(fontScale, maxFontScale);
         pipelineContext_->SetFontScale(std::stof(parsedConfig.fontScale));
     }
+    if (!parsedConfig.fontWeightScale.empty()) {
+        configurationChange.fontUpdate = true;
+        float fontWeightScale = StringUtils::StringToFloat(parsedConfig.fontWeightScale);
+        Container::SetFontWeightScale(instanceId_, fontWeightScale);
+        configurationChange.fontWeightScaleUpdate = true;
+    }
 }
 
 

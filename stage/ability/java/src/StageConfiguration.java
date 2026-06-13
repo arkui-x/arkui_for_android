@@ -18,6 +18,7 @@ import android.content.res.Configuration;
 import ohos.ace.adapter.ALog;
 import org.json.JSONObject;
 import org.json.JSONException;
+import java.lang.reflect.Field;
 
 /**
  * This class is responsible for the stage model configuration transformation.
@@ -53,16 +54,45 @@ public class StageConfiguration {
 
     private static final String SYSTEM_FONT_SIZE_SCALE = "system.font.size.scale";
 
+    private static final String SYSTEM_FONT_WEIGHT_SCALE = "system.font.weight.scale";
+
     private static float fontscale = 1.0f;
+
+    private static final int DEFAULT_FONT_WEIGHT_ADJUSTMENT = 400;
+
+    private static final int SDK_API_S = 31;
 
     private static void setFontScale(float configFontScale, JSONObject json) {
         try {
-            if (Float.compare(configFontScale, fontscale) != 0) {
-                fontscale = configFontScale;
-                json.put(SYSTEM_FONT_SIZE_SCALE, String.valueOf(fontscale));
-            }
+            fontscale = configFontScale;
+            json.put(SYSTEM_FONT_SIZE_SCALE, String.valueOf(fontscale));
         } catch (JSONException e) {
-            ALog.w(LOG_TAG, "Same Backup FontScale");
+            ALog.w(LOG_TAG, "setFontScale failed");
+        }
+    }
+
+    private static void readFontWeightScale(Configuration config, JSONObject json) {
+        if (android.os.Build.VERSION.SDK_INT < SDK_API_S) {
+            return;
+        }
+        try {
+            Field field = Configuration.class.getField("fontWeightAdjustment");
+            int fontWeightAdjustment = field.getInt(config);
+            ALog.i(LOG_TAG, "readFontWeightScale fontWeightAdjustment=" + fontWeightAdjustment);
+            setFontWeightScale(fontWeightAdjustment, json);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            ALog.w(LOG_TAG, "Failed to get fontWeightAdjustment via reflection");
+        }
+    }
+
+    private static void setFontWeightScale(int fontWeightAdjustment, JSONObject json) {
+        try {
+            if (fontWeightAdjustment <= 0) {
+                return;
+            }
+            json.put(SYSTEM_FONT_WEIGHT_SCALE, String.valueOf(fontWeightAdjustment));
+        } catch (JSONException e) {
+            ALog.w(LOG_TAG, "setFontWeightScale failed");
         }
     }
 
@@ -116,6 +146,7 @@ public class StageConfiguration {
                 json.put(DEVICE_TYPE, DEVICE_TYPE_PHONE);
             }
             setFontScale(config.fontScale, json);
+            readFontWeightScale(config, json);
         } catch (JSONException ignored) {
             ALog.e(LOG_TAG, "convertConfiguration parse Configuration failed");
             return json;
