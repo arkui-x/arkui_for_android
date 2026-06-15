@@ -404,12 +404,7 @@ public class StageApplicationDelegate {
     public String routerTraverseAssets(String path) {
         List<String> assetsList = new ArrayList<String>();
         traverseAssets(assetsList, path);
-
-        String assets = "";
-        for (String sub : assetsList) {
-            assets += (sub + ";");
-        }
-        return assets;
+        return assetsList.isEmpty() ? "" : String.join(";", assetsList) + ";";
     }
 
     /**
