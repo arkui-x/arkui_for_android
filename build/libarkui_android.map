@@ -80,6 +80,9 @@
       OHOS::Ace::NG::BoxLayoutAlgorithm::*;
       "OHOS::Ace::NG::CreateIdealSize(OHOS::Ace::NG::LayoutConstraintT<float> const&, OHOS::Ace::Axis, OHOS::Ace::NG::MeasureType)";
       "OHOS::Ace::NG::CreateIdealSize(OHOS::Ace::NG::LayoutConstraintT<float> const&, OHOS::Ace::Axis, OHOS::Ace::NG::MeasureType, bool)";
+      "OHOS::Ace::NG::CreateAxisLayoutPolicy(std::__ndk1::optional<OHOS::Ace::NG::LayoutPolicyProperty> const&, OHOS::Ace::Axis)";
+      "OHOS::Ace::NG::ConstrainIdealSizeByLayoutPolicy(OHOS::Ace::NG::LayoutConstraintT<float> const&, std::__ndk1::optional<OHOS::Ace::NG::LayoutPolicyProperty> const&, OHOS::Ace::Axis)";
+      "OHOS::Ace::NG::ShouldMatchChildrenByLayoutPolicy(float, std::__ndk1::optional<OHOS::Ace::NG::LayoutPolicyProperty> const&, OHOS::Ace::Axis)";
       "OHOS::Ace::NG::DragControllerFuncWrapper::SubWindowShow(OHOS::Ace::RefPtr<OHOS::Ace::PipelineBase> const&)";
       "OHOS::Ace::NG::DialogView::IsSupportBlurStyle(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, bool)";
       "OHOS::Ace::NG::DragControllerFuncWrapper::TryDoDragStartAnimation(OHOS::Ace::RefPtr<OHOS::Ace::Subwindow> const&, OHOS::Ace::NG::PreparedInfoForDrag&, OHOS::Ace::NG::PreparedAsyncCtxForAnimate&)";
@@ -1233,6 +1236,7 @@
       OHOS::Ace::NG::ScrollBarProxy::*;
       OHOS::Ace::NG::ScrollableEvent::*;
       "OHOS::Ace::NG::FocusState::GetFrameNode() const";
+      "OHOS::Ace::NG::FocusPattern::FocusPattern(OHOS::Ace::NG::FocusPattern const&)";
       "OHOS::Ace::NG::CalcSize::ToString() const";
       non-virtual?thunk?to?OHOS::Ace::NG::FrameNode::*;
       virtual?thunk?to?OHOS::Ace::NG::FrameNode::*;
