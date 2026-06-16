@@ -366,24 +366,9 @@ void BridgeJni::PlatformSendMethodResult(JNIEnv* env, jobject jobj,
     jstring jBridgeName, jstring jMethodName, jstring jResult)
 {
     CHECK_NULL_VOID(env);
-    std::string bridgeName;
-    std::string methodName;
-    std::string result;
-    auto bridgeNameStr = env->GetStringUTFChars(jBridgeName, nullptr);
-    if (bridgeNameStr != nullptr) {
-        bridgeName = bridgeNameStr;
-        env->ReleaseStringUTFChars(jBridgeName, bridgeNameStr);
-    }
-    auto methodNameStr = env->GetStringUTFChars(jMethodName, nullptr);
-    if (methodNameStr != nullptr) {
-        methodName = methodNameStr;
-        env->ReleaseStringUTFChars(jMethodName, methodNameStr);
-    }
-    auto resultStr = env->GetStringUTFChars(jResult, nullptr);
-    if (resultStr != nullptr) {
-        result = resultStr;
-        env->ReleaseStringUTFChars(jResult, resultStr);
-    }
+    std::string bridgeName = TransformString(env, jBridgeName);
+    std::string methodName = TransformString(env, jMethodName);
+    std::string result = TransformString(env, jResult);
 
     BridgeManager::PlatformSendMethodResult(bridgeName, methodName, result);
 }
@@ -391,24 +376,9 @@ void BridgeJni::PlatformSendMethodResult(JNIEnv* env, jobject jobj,
 void BridgeJni::PlatformCallMethod(JNIEnv* env, jobject jobj, jstring jBridgeName, jstring jMethodName, jstring jParam)
 {
     CHECK_NULL_VOID(env);
-    std::string callBridgeName;
-    std::string callMethodName;
-    std::string callParam;
-    const auto* bridgeNameStr = env->GetStringUTFChars(jBridgeName, nullptr);
-    if (bridgeNameStr != nullptr) {
-        callBridgeName = bridgeNameStr;
-        env->ReleaseStringUTFChars(jBridgeName, bridgeNameStr);
-    }
-    const auto* methodNameStr = env->GetStringUTFChars(jMethodName, nullptr);
-    if (methodNameStr != nullptr) {
-        callMethodName = methodNameStr;
-        env->ReleaseStringUTFChars(jMethodName, methodNameStr);
-    }
-    const auto* paramStr = env->GetStringUTFChars(jParam, nullptr);
-    if (paramStr != nullptr) {
-        callParam = paramStr;
-        env->ReleaseStringUTFChars(jParam, paramStr);
-    }
+    std::string callBridgeName = TransformString(env, jBridgeName);
+    std::string callMethodName = TransformString(env, jMethodName);
+    std::string callParam = TransformString(env, jParam);
     if (!BridgeManager::JSBridgeExists(callBridgeName)) {
         std::string resultValue = "{\"errorCode\":1, \"errorMessage\":\"Bridge name error!\", \"result\":0}";
         JSSendMethodResultJni(callBridgeName, callMethodName, resultValue);
@@ -483,18 +453,8 @@ void BridgeJni::PlatformSendMessageResponse(JNIEnv* env, jobject jobj,
     jstring jBridgeName, jstring jData)
 {
     CHECK_NULL_VOID(env);
-    std::string bridgeName;
-    std::string data;
-    auto bridgeNameStr = env->GetStringUTFChars(jBridgeName, nullptr);
-    if (bridgeNameStr != nullptr) {
-        bridgeName = bridgeNameStr;
-        env->ReleaseStringUTFChars(jBridgeName, bridgeNameStr);
-    }
-    auto dataStr = env->GetStringUTFChars(jData, nullptr);
-    if (dataStr != nullptr) {
-        data = dataStr;
-        env->ReleaseStringUTFChars(jData, dataStr);
-    }
+    std::string bridgeName = TransformString(env, jBridgeName);
+    std::string data = TransformString(env, jData);
 
     BridgeManager::PlatformSendMessageResponse(bridgeName, data);
 }
@@ -502,18 +462,8 @@ void BridgeJni::PlatformSendMessageResponse(JNIEnv* env, jobject jobj,
 void BridgeJni::PlatformSendMessage(JNIEnv* env, jobject jobj, jstring jBridgeName, jstring jData)
 {
     CHECK_NULL_VOID(env);
-    std::string bridgeName;
-    std::string data;
-    auto bridgeNameStr = env->GetStringUTFChars(jBridgeName, nullptr);
-    if (bridgeNameStr != nullptr) {
-        bridgeName = bridgeNameStr;
-        env->ReleaseStringUTFChars(jBridgeName, bridgeNameStr);
-    }
-    auto dataStr = env->GetStringUTFChars(jData, nullptr);
-    if (dataStr != nullptr) {
-        data = dataStr;
-        env->ReleaseStringUTFChars(jData, dataStr);
-    }
+    std::string bridgeName = TransformString(env, jBridgeName);
+    std::string data = TransformString(env, jData);
 
     BridgeManager::PlatformSendMessage(bridgeName, data);
 }
@@ -697,12 +647,7 @@ void BridgeJni::JSSendMessageBinaryJni(
 void BridgeJni::PlatformSendMessageBinary(JNIEnv* env, jobject jobj, jstring jBridgeName, jobject jBuffer)
 {
     CHECK_NULL_VOID(env);
-    std::string bridgeName;
-    auto bridgeNameStr = env->GetStringUTFChars(jBridgeName, nullptr);
-    if (bridgeNameStr != nullptr) {
-        bridgeName = bridgeNameStr;
-        env->ReleaseStringUTFChars(jBridgeName, bridgeNameStr);
-    }
+    std::string bridgeName = TransformString(env, jBridgeName);
     uint8_t* bufferAddress = (unsigned char*)env->GetDirectBufferAddress(jBuffer);
     size_t bufferSize = static_cast<size_t>(env->GetDirectBufferCapacity(jBuffer));
     uint8_t* buffer = BufferMapping::Copy(bufferAddress, bufferSize).Release();
