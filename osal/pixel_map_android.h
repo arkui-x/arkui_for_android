@@ -25,6 +25,7 @@ public:
     ~PixelMapAndroid() = default;
     static PixelFormat PixelFormatConverter(Media::PixelFormat pixelFormat);
     static AlphaType AlphaTypeConverter(Media::AlphaType alphaType);
+    static Media::PixelFormat ConvertToMediaPixelFormat(Ace::PixelFormat pixelFormat);
     int32_t GetWidth() const override;
     int32_t GetHeight() const override;
     bool GetPixelsVec(std::vector<uint8_t>& data) const override;
