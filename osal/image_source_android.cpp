@@ -18,6 +18,7 @@
 #include "image_source.h"
 #include "media_errors.h"
 #include "image_type.h"
+#include "pixel_map_android.h"
 #include "base/image/pixel_map.h"
 #include "base/log/log_wrapper.h"
 
@@ -126,7 +127,15 @@ RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap()
 
 RefPtr<PixelMap> ImageSourceAndroid::CreatePixelMap(const DecodeOptions& options)
 {
-    return nullptr;
+    uint32_t errorCode;
+    Media::DecodeOptions decodeOpts;
+    decodeOpts.desiredPixelFormat = PixelMapAndroid::ConvertToMediaPixelFormat(options.desiredFormat);
+    auto pixelmap = imageSource_->CreatePixelMap(decodeOpts, errorCode);
+    if (errorCode != Media::SUCCESS || !pixelmap) {
+        TAG_LOGW(AceLogTag::ACE_IMAGE, "create pixelmap failed, errorCode = %{public}u", errorCode);
+        return nullptr;
+    }
+    return PixelMap::Create(std::move(pixelmap));
 }
 
 ImageSource::Size ImageSourceAndroid::GetImageSize()

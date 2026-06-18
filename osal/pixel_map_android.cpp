@@ -294,4 +294,40 @@ void PixelMapAndroid::Scale(float xAxis, float yAxis, const AceAntiAliasingOptio
 void PixelMapAndroid::SavePixelMapToFile(const std::string& dst) const {}
 
 void PixelMapAndroid::SetMemoryName(std::string pixelMapName) const {}
+
+Media::PixelFormat PixelMapAndroid::ConvertToMediaPixelFormat(Ace::PixelFormat pixelFormat)
+{
+    switch (pixelFormat) {
+        case PixelFormat::RGB_565:
+            return Media::PixelFormat::RGB_565;
+        case PixelFormat::RGBA_8888:
+            return Media::PixelFormat::RGBA_8888;
+        case PixelFormat::RGBA_1010102:
+            return Media::PixelFormat::RGBA_1010102;
+        case PixelFormat::BGRA_8888:
+            return Media::PixelFormat::BGRA_8888;
+        case PixelFormat::ALPHA_8:
+            return Media::PixelFormat::ALPHA_8;
+        case PixelFormat::RGBA_F16:
+            return Media::PixelFormat::RGBA_F16;
+        case PixelFormat::UNKNOWN:
+            return Media::PixelFormat::UNKNOWN;
+        case PixelFormat::ARGB_8888:
+            return Media::PixelFormat::ARGB_8888;
+        case PixelFormat::RGB_888:
+            return Media::PixelFormat::RGB_888;
+        case PixelFormat::NV21:
+            return Media::PixelFormat::NV21;
+        case PixelFormat::NV12:
+            return Media::PixelFormat::NV12;
+        case PixelFormat::CMYK:
+            return Media::PixelFormat::CMYK;
+        case PixelFormat::YCBCR_P010:
+            return Media::PixelFormat::YCBCR_P010;
+        case PixelFormat::YCRCB_P010:
+            return Media::PixelFormat::YCRCB_P010;
+        default:
+            return Media::PixelFormat::UNKNOWN;
+    }
+}
 } // namespace OHOS::Ace
