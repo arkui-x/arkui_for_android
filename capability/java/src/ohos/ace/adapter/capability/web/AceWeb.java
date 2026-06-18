@@ -160,6 +160,8 @@ public class AceWeb extends AceWebBase {
     private static final String NTC_HORIZONTAL_SCROLLBAR_ACCESS = "horizontalScrollBarAccess";
     private static final String NTC_VERTICAL_SCROLLBAR_ACCESS = "verticalScrollBarAccess";
     private static final String NTC_BACKGROUND_COLOR = "backgroundColor";
+    private static final String NTC_INITIAL_SCALE = "initialScale";
+    private static final String NTC_OVER_SCROLL_MODE = "overScrollMode";
     private static final String NTC_MEDIA_PLAY_GESTURE_ACCESS = "mediaPlayGestureAccess";
     private static final String WEB_MESSAGE_PORT_ONE = "port1";
     private static final String WEB_MESSAGE_PORT_TWO = "port2";
@@ -250,6 +252,8 @@ public class AceWeb extends AceWebBase {
 
     private static final long SELECTION_HAPTIC_DEDUP_INTERVAL_MS = 500L;
 
+    private static final float SCALE_PERCENT_MAX = 1000.0f;
+
     private static String currentPageUrl;
 
     private static String routerUrl;
@@ -261,6 +265,8 @@ public class AceWeb extends AceWebBase {
     private float left;
 
     private float top;
+
+    private float screenDensity = 0.0f;
 
     private final IAceOnResourceEvent callback;
 
@@ -335,6 +341,13 @@ public class AceWeb extends AceWebBase {
         this.callback = callback;
         this.context = context;
         this.rootView = view;
+        if (this.context != null) {
+            android.content.res.Resources resources = this.context.getResources();
+            if (resources != null) {
+                android.util.DisplayMetrics displayMetrics = resources.getDisplayMetrics();
+                this.screenDensity = (displayMetrics != null) ? displayMetrics.density : 0.0f;
+            }
+        }
         webView = new AceWebView(context);
         downloadExecutor_ = Executors.newFixedThreadPool(WEB_DOWNLOAD_TASK_NUM);
         registerWebviewReceiver(context);
@@ -1888,6 +1901,58 @@ public class AceWeb extends AceWebBase {
             return FAIL_TAG;
         }
         webView.setBackgroundColor(backgroundColor);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String initialScale(Map<String, String> params) {
+        if (params == null || !params.containsKey(NTC_INITIAL_SCALE) || webView == null) {
+            return FAIL_TAG;
+        }
+        int pageScalePercent = 0;
+        try {
+            float scale = Float.parseFloat(params.get(NTC_INITIAL_SCALE));
+            if (Float.compare(scale, 0.0f) == 0) {
+                return SUCCESS_TAG;
+            }
+            scale = Math.min(scale, SCALE_PERCENT_MAX);
+            if (Float.compare(this.screenDensity, 0.0f) <= 0) {
+                pageScalePercent = Math.round(scale);
+            } else {
+                pageScalePercent = Math.round(scale * this.screenDensity);
+            }
+        } catch (NumberFormatException ignored) {
+            ALog.e(LOG_TAG, "initialScale NumberFormatException");
+            return FAIL_TAG;
+        }
+        webView.setInitialScale(pageScalePercent);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String overScrollMode(Map<String, String> params) {
+        if (params == null || !params.containsKey(NTC_OVER_SCROLL_MODE) || webView == null) {
+            return FAIL_TAG;
+        }
+        int mode = View.OVER_SCROLL_NEVER;
+        try {
+            int overScrollMode = Integer.parseInt(params.get(NTC_OVER_SCROLL_MODE));
+            switch (overScrollMode) {
+                case 0:
+                    mode = View.OVER_SCROLL_NEVER;
+                    break;
+                case 1:
+                    mode = View.OVER_SCROLL_ALWAYS;
+                    break;
+                default:
+                    mode = View.OVER_SCROLL_NEVER;
+                    break;
+            }
+        } catch (NumberFormatException ignored) {
+            ALog.e(LOG_TAG, "overScrollMode NumberFormatException");
+            return FAIL_TAG;
+        }
+        webView.setOverScrollMode(mode);
         return SUCCESS_TAG;
     }
 
