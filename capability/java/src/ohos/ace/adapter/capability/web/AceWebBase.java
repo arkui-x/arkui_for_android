@@ -121,6 +121,25 @@ public abstract class AceWebBase {
         IAceOnCallResourceMethod textZoomRatio = (param) -> textZoomRatio(param);
         this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "textZoomRatio" + PARAM_BEGIN,
             textZoomRatio);
+        callMethodWebAttrributeOther();
+    }
+
+    private void callMethodWebAttrributeOther() {
+        IAceOnCallResourceMethod defaultFontSize = (param) -> defaultFontSize(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "defaultFontSize" + PARAM_BEGIN,
+            defaultFontSize);
+        IAceOnCallResourceMethod overviewModeAccess = (param) -> overviewModeAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "overviewModeAccess" + PARAM_BEGIN,
+            overviewModeAccess);
+        IAceOnCallResourceMethod layoutMode = (param) -> layoutMode(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "layoutMode" + PARAM_BEGIN,
+            layoutMode);
+        IAceOnCallResourceMethod darkMode = (param) -> darkMode(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "darkMode" + PARAM_BEGIN,
+            darkMode);
+        IAceOnCallResourceMethod forceDarkAccess = (param) -> forceDarkAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "forceDarkAccess" + PARAM_BEGIN,
+            forceDarkAccess);
     }
 
     private void callMethodMapPutXWardMethod() {
@@ -769,6 +788,16 @@ public abstract class AceWebBase {
     }
 
     /**
+     * This is called to fire on content height changed event.
+     *
+     * @param contentHeight the new content height of this page.
+     */
+    public void fireContentHeightChanged(int contentHeight) {
+        String param = String.valueOf(contentHeight);
+        callback.onEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS + "onContentHeightChanged" + PARAM_BEGIN, param);
+    }
+
+    /**
      * This is called for activity resume.
      *
      */
@@ -1367,4 +1396,44 @@ public abstract class AceWebBase {
      * @return result of call.
      */
     public abstract String enableHapticFeedbackMethod(Map<String, String> params);
+
+    /**
+     * overviewModeAccess
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String overviewModeAccess(Map<String, String> params);
+
+    /**
+     * layoutMode
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String layoutMode(Map<String, String> params);
+
+    /**
+     * darkMode
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String darkMode(Map<String, String> params);
+
+    /**
+     * forceDarkAccess
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String forceDarkAccess(Map<String, String> params);
+
+    /**
+     * defaultFontSize.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String defaultFontSize(Map<String, String> params);
 }
