@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -70,6 +70,22 @@ struct SubWindowManagerStruct {
     jmethodID getSurfaceRectMethod;
 };
 
+struct CreateSubWindowParamJniStruct {
+    jclass clazz;
+    jmethodID constructor;
+    jfieldID nameField;
+    jfieldID typeField;
+    jfieldID modeField;
+    jfieldID tagField;
+    jfieldID parentIdField;
+    jfieldID xField;
+    jfieldID yField;
+    jfieldID widthField;
+    jfieldID heightField;
+    jfieldID modalityTypeField;
+    jfieldID isModalField;
+};
+
 class SubWindowManagerJni {
 public:
     static bool Register(const std::shared_ptr<JNIEnv>& env);
@@ -114,9 +130,12 @@ public:
 
 private:
     static SubWindowManagerStruct subWindowManagerStruct_;
+    static CreateSubWindowParamJniStruct createSubWindowParamJniStruct_;
     static void SetupSubWindowManager(JNIEnv* env, jobject obj);
+    static bool SetupCreateSubWindowParamJniStruct(JNIEnv* env);
     static void OnWindowTouchOutside(JNIEnv* env, jobject obj, jlong window);
     static void OnSubWindowHide(JNIEnv* env, jobject obj, jlong window);
+    static void OnSubWindowClose(JNIEnv* env, jobject obj, jlong window);
     ACE_DISALLOW_COPY_AND_MOVE(SubWindowManagerJni);
 };
 

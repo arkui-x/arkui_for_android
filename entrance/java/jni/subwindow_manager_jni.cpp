@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,9 +23,115 @@
 namespace OHOS::Ace::Platform {
 namespace {
 static constexpr uint32_t ERROR_ENV = 0;
+
+class ScopedJniLocalRef {
+public:
+    ScopedJniLocalRef(JNIEnv* env, jobject ref) : env_(env), ref_(ref) {}
+    ~ScopedJniLocalRef()
+    {
+        if (ref_ != nullptr && env_ != nullptr) {
+            env_->DeleteLocalRef(ref_);
+        }
+    }
+
+    ScopedJniLocalRef(const ScopedJniLocalRef&) = delete;
+    ScopedJniLocalRef& operator=(const ScopedJniLocalRef&) = delete;
+
+    jobject Get() const
+    {
+        return ref_;
+    }
+
+private:
+    JNIEnv* env_;
+    jobject ref_;
+};
+
+struct CreateSubWindowParams {
+    std::string windowName;
+    int32_t windowType = 0;
+    int32_t windowMode = 0;
+    int32_t windowTag = 0;
+    int32_t parentId = 0;
+    int32_t x = 0;
+    int32_t y = 0;
+    int32_t width = 0;
+    int32_t height = 0;
+    int32_t modalityType = 0;
+    jboolean isModal = JNI_FALSE;
+};
+
+CreateSubWindowParams BuildCreateSubWindowParams(const std::shared_ptr<OHOS::Rosen::WindowOption>& option)
+{
+    CreateSubWindowParams params;
+    if (option == nullptr) {
+        LOGE("BuildCreateSubWindowParams: option is nullptr");
+        return params;
+    }
+    params.windowName = option->GetWindowName();
+    params.windowType = static_cast<int>(option->GetWindowType());
+    params.windowMode = static_cast<int>(option->GetWindowMode());
+    params.windowTag = static_cast<int>(option->GetWindowTag());
+    params.parentId = static_cast<int>(option->GetParentId());
+    params.width = option->GetWindowRect().width_;
+    params.height = option->GetWindowRect().height_;
+    params.x = option->GetWindowRect().posX_;
+    params.y = option->GetWindowRect().posY_;
+    params.modalityType = static_cast<int>(option->GetWindowModalityType());
+    params.isModal = option->IsWindowModal() ? JNI_TRUE : JNI_FALSE;
+    return params;
+}
+
+bool CallCreateSubWindow(JNIEnv* env, const SubWindowManagerStruct& managerStruct,
+    const CreateSubWindowParamJniStruct& createParamStruct, const CreateSubWindowParams& params)
+{
+    if (env == nullptr) {
+        LOGE("CallCreateSubWindow: env is nullptr");
+        return false;
+    }
+    if (createParamStruct.clazz == nullptr || createParamStruct.constructor == nullptr) {
+        LOGE("CallCreateSubWindow: invalid CreateSubWindowParam class or constructor");
+        return false;
+    }
+    ScopedJniLocalRef scopedWindowName(env, env->NewStringUTF(params.windowName.c_str()));
+    ScopedJniLocalRef scopedParamObj(env, env->NewObject(
+        createParamStruct.clazz, createParamStruct.constructor));
+    if (scopedParamObj.Get() == nullptr) {
+        LOGE("CallCreateSubWindow: failed to create CreateSubWindowParam object");
+        return false;
+    }
+    CHECK_NULL_RETURN(createParamStruct.nameField, false);
+    env->SetObjectField(scopedParamObj.Get(), createParamStruct.nameField, scopedWindowName.Get());
+    CHECK_NULL_RETURN(createParamStruct.typeField, false);
+    env->SetIntField(scopedParamObj.Get(), createParamStruct.typeField, params.windowType);
+    CHECK_NULL_RETURN(createParamStruct.modeField, false);
+    env->SetIntField(scopedParamObj.Get(), createParamStruct.modeField, params.windowMode);
+    CHECK_NULL_RETURN(createParamStruct.tagField, false);
+    env->SetIntField(scopedParamObj.Get(), createParamStruct.tagField, params.windowTag);
+    CHECK_NULL_RETURN(createParamStruct.parentIdField, false);
+    env->SetIntField(scopedParamObj.Get(), createParamStruct.parentIdField, params.parentId);
+    CHECK_NULL_RETURN(createParamStruct.xField, false);
+    env->SetIntField(scopedParamObj.Get(), createParamStruct.xField, params.x);
+    CHECK_NULL_RETURN(createParamStruct.yField, false);
+    env->SetIntField(scopedParamObj.Get(), createParamStruct.yField, params.y);
+    CHECK_NULL_RETURN(createParamStruct.widthField, false);
+    env->SetIntField(scopedParamObj.Get(), createParamStruct.widthField, params.width);
+    CHECK_NULL_RETURN(createParamStruct.heightField, false);
+    env->SetIntField(scopedParamObj.Get(), createParamStruct.heightField, params.height);
+    CHECK_NULL_RETURN(createParamStruct.modalityTypeField, false);
+    env->SetIntField(scopedParamObj.Get(), createParamStruct.modalityTypeField, params.modalityType);
+    CHECK_NULL_RETURN(createParamStruct.isModalField, false);
+    env->SetBooleanField(scopedParamObj.Get(), createParamStruct.isModalField, params.isModal);
+    CHECK_NULL_RETURN(managerStruct.object, false);
+    CHECK_NULL_RETURN(managerStruct.createSubWindowMethod, false);
+    jboolean ret = env->CallBooleanMethod(
+        managerStruct.object, managerStruct.createSubWindowMethod, scopedParamObj.Get());
+    return ret == JNI_TRUE;
+}
 } // namespace
 
 SubWindowManagerStruct SubWindowManagerJni::subWindowManagerStruct_;
+CreateSubWindowParamJniStruct SubWindowManagerJni::createSubWindowParamJniStruct_;
 
 bool SubWindowManagerJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
@@ -44,6 +150,11 @@ bool SubWindowManagerJni::Register(const std::shared_ptr<JNIEnv>& env)
             .name = "nativeOnSubWindowHide",
             .signature = "(J)V",
             .fnPtr = reinterpret_cast<void*>(&OnSubWindowHide),
+        },
+        {
+            .name = "nativeOnSubWindowClose",
+            .signature = "(J)V",
+            .fnPtr = reinterpret_cast<void*>(&OnSubWindowClose),
         }
     };
 
@@ -78,10 +189,15 @@ void SubWindowManagerJni::SetupSubWindowManager(JNIEnv* env, jobject obj)
     LOGI("SubWindowManagerJni::SetupDisplayInfo called");
 
     jclass clazz = env->GetObjectClass(obj);
+    if (!SetupCreateSubWindowParamJniStruct(env)) {
+        LOGE("SubWindowManagerJni::SetupSubWindowManager: SetupCreateSubWindowParamJniStruct failed");
+        return;
+    }
     subWindowManagerStruct_.object = env->NewGlobalRef(obj);
     subWindowManagerStruct_.clazz = (jclass)env->NewGlobalRef(clazz);
     subWindowManagerStruct_.createSubWindowMethod =
-        env->GetMethodID(clazz, "createSubWindow", "(Ljava/lang/String;IIIIIIII)Z");
+        env->GetMethodID(clazz, "createSubWindow",
+            "(Lohos/stage/ability/adapter/SubWindowManager$CreateSubWindowParam;)Z");
     subWindowManagerStruct_.getContentViewMethod =
         env->GetMethodID(clazz, "getContentView", "(Ljava/lang/String;)Landroid/view/View;");
     subWindowManagerStruct_.resizeMethod = env->GetMethodID(clazz, "resize", "(Ljava/lang/String;II)Z");
@@ -131,6 +247,31 @@ void SubWindowManagerJni::SetupSubWindowManager(JNIEnv* env, jobject obj)
         env->GetMethodID(clazz, "getSurfaceRect", "()Landroid/graphics/Rect;");
 }
 
+bool SubWindowManagerJni::SetupCreateSubWindowParamJniStruct(JNIEnv* env)
+{
+    jclass createSubWindowParamClazz =
+        env->FindClass("ohos/stage/ability/adapter/SubWindowManager$CreateSubWindowParam");
+    if (createSubWindowParamClazz == nullptr) {
+        LOGE("SubWindowManagerJni::SetupCreateSubWindowParamJniStruct: createSubWindowParamClazz is null");
+        return false;
+    }
+    createSubWindowParamJniStruct_.clazz = (jclass)env->NewGlobalRef(createSubWindowParamClazz);
+    createSubWindowParamJniStruct_.constructor = env->GetMethodID(createSubWindowParamClazz, "<init>", "()V");
+    createSubWindowParamJniStruct_.nameField = env->GetFieldID(createSubWindowParamClazz, "name", "Ljava/lang/String;");
+    createSubWindowParamJniStruct_.typeField = env->GetFieldID(createSubWindowParamClazz, "type", "I");
+    createSubWindowParamJniStruct_.modeField = env->GetFieldID(createSubWindowParamClazz, "mode", "I");
+    createSubWindowParamJniStruct_.tagField = env->GetFieldID(createSubWindowParamClazz, "tag", "I");
+    createSubWindowParamJniStruct_.parentIdField = env->GetFieldID(createSubWindowParamClazz, "parentId", "I");
+    createSubWindowParamJniStruct_.xField = env->GetFieldID(createSubWindowParamClazz, "x", "I");
+    createSubWindowParamJniStruct_.yField = env->GetFieldID(createSubWindowParamClazz, "y", "I");
+    createSubWindowParamJniStruct_.widthField = env->GetFieldID(createSubWindowParamClazz, "width", "I");
+    createSubWindowParamJniStruct_.heightField = env->GetFieldID(createSubWindowParamClazz, "height", "I");
+    createSubWindowParamJniStruct_.modalityTypeField = env->GetFieldID(createSubWindowParamClazz, "modalityType", "I");
+    createSubWindowParamJniStruct_.isModalField = env->GetFieldID(createSubWindowParamClazz, "isModal", "Z");
+    env->DeleteLocalRef(createSubWindowParamClazz);
+    return true;
+}
+
 void SubWindowManagerJni::OnWindowTouchOutside(JNIEnv* env, jobject obj, jlong window)
 {
     auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
@@ -147,29 +288,29 @@ void SubWindowManagerJni::OnSubWindowHide(JNIEnv* env, jobject obj, jlong window
     }
 }
 
+void SubWindowManagerJni::OnSubWindowClose(JNIEnv* env, jobject obj, jlong window)
+{
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
+    if (windowPtr != nullptr) {
+        windowPtr->Destroy();
+    }
+}
+
 bool SubWindowManagerJni::CreateSubWindow(std::shared_ptr<OHOS::Rosen::WindowOption> option)
 {
+    if (option == nullptr) {
+        LOGE("SubWindowManagerJni::CreateSubWindow: option is NULL");
+        return false;
+    }
+
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
     if (env == nullptr) {
         LOGE("SubWindowManagerJni::CreateSubWindow: env is NULL");
         return false;
     }
 
-    jstring windowName = env->NewStringUTF(option->GetWindowName().c_str());
-    uint32_t parentId = option->GetParentId();
-    int windowType = (int)option->GetWindowType();
-    int windowMode = (int)option->GetWindowMode();
-    int windowTag = (int)option->GetWindowTag();
-    int width = option->GetWindowRect().width_;
-    int height = option->GetWindowRect().height_;
-    int x = option->GetWindowRect().posX_;
-    int y = option->GetWindowRect().posY_;
-
-    jboolean ret = env->CallBooleanMethod(subWindowManagerStruct_.object, subWindowManagerStruct_.createSubWindowMethod,
-        windowName, windowType, windowMode, windowTag, (int)parentId, x, y, width, height);
-
-    env->DeleteLocalRef(windowName);
-    if (ret == JNI_TRUE) {
+    const auto params = BuildCreateSubWindowParams(option);
+    if (CallCreateSubWindow(env, subWindowManagerStruct_, createSubWindowParamJniStruct_, params)) {
         LOGI("SubWindowManagerJni::CreateSubWindow: success");
         return true;
     } else {

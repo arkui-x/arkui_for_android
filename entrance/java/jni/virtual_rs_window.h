@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -200,6 +200,7 @@ public:
     WMError SetSystemBarProperty(WindowType type, const SystemBarProperty& property);
     SystemBarProperty GetSystemBarPropertyByType(WindowType type) const;
     void SetRequestedOrientation(Orientation);
+    Orientation GetRequestedOrientation();
     WMError RegisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener);
     WMError UnregisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener);
     WMError RegisterWindowChangeListener(const sptr<IWindowChangeListener>& listener);
@@ -220,12 +221,12 @@ public:
     WMError UpdateSystemBarProperties(const std::unordered_map<WindowType, SystemBarProperty>& systemBarProperties,
         const std::unordered_map<WindowType, SystemBarPropertyFlag>& systemBarPropertyFlags);
 
-    void SetRect(std::shared_ptr<WindowOption> option)
+    void SetRequestRect(std::shared_ptr<WindowOption> option)
     {
-        rect_.width_ = option->GetWindowRect().width_;
-        rect_.height_ = option->GetWindowRect().height_;
-        rect_.posX_ = option->GetWindowRect().posX_;
-        rect_.posY_ = option->GetWindowRect().posY_;
+        requestRect_.width_ = option->GetWindowRect().width_;
+        requestRect_.height_ = option->GetWindowRect().height_;
+        requestRect_.posX_ = option->GetWindowRect().posX_;
+        requestRect_.posY_ = option->GetWindowRect().posY_;
     }
 
     void SetWindowId(uint32_t windowId)
@@ -359,6 +360,7 @@ private:
     WindowMode windowMode_;
     WindowType windowType_;
     Rect rect_ = { 0, 0, 0, 0 };
+    Rect requestRect_ = { 0, 0, 0, 0 };
     bool isForground_ = false;
     bool isFocused_ = false;
     bool isFullScreen_ = false;
@@ -391,6 +393,7 @@ private:
     int32_t surfaceWidth_ = 0;
     int32_t surfaceHeight_ = 0;
     float density_ = 3.0f;
+    Orientation orientation_ = Orientation::UNSPECIFIED;
     std::shared_ptr<RSUIDirector> rsUIDirector_ = nullptr;
     std::shared_ptr<RSSurfaceNode> surfaceNode_ = nullptr;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -80,6 +80,77 @@ public class SubWindowManager {
     }
 
     /**
+     * The type Create sub window param.
+     */
+    public static class CreateSubWindowParam {
+        /**
+         * The name of subwindow.
+         */
+        String name;
+
+        /**
+         * The type of subwindow.
+         */
+        int type;
+
+        /**
+         * The mode of subwindow.
+         */
+        int mode;
+
+        /**
+         * The tag of subwindow.
+         */
+        int tag;
+
+        /**
+         * The parent id of subwindow.
+         */
+        int parentId;
+
+        /**
+         * The x coordinate of subwindow.
+         */
+        int x;
+
+        /**
+         * The y coordinate of subwindow.
+         */
+        int y;
+
+        /**
+         * The width of subwindow.
+         */
+        int width;
+
+        /**
+         * The height of subwindow.
+         */
+        int height;
+
+        /**
+         * The modality type of subwindow.
+         */
+        int modalityType;
+
+        /**
+         * Whether the subwindow is modal.
+         */
+        boolean isModal;
+
+        public CreateSubWindowParam() {
+        }
+
+        String dump() {
+            return String.format(Locale.ENGLISH,
+                "name=%s type=%d mode=%d tag=%d parentId=%d x=%d y=%d width=%d height=%d " +
+                "modalityType=%d isModal=%b",
+                name, type, mode, tag, parentId, x, y, width, height,
+                modalityType, isModal);
+        }
+    }
+
+    /**
      * Gets instance.
      *
      * @return the instance
@@ -131,35 +202,30 @@ public class SubWindowManager {
     /**
      * Create sub window.
      *
-     * @param name     the name
-     * @param type     the type
-     * @param mode     the mode
-     * @param tag      the tag
-     * @param parentId the parent id
-     * @param x        the x
-     * @param y        the y
-     * @param width    the width
-     * @param height   the height
+     * @param param   the create sub window parameter
      * @return the boolean
      */
-    public boolean createSubWindow(String name, int type, int mode, int tag, int parentId, int x, int y, int width,
-        int height) {
-        ALog.d(TAG,
-            "createSubWindow called: " + String.format(Locale.ENGLISH,
-                "name=%s type=%d mode=%d tag=%d parentId=%d x=%d y=%d width=%d height=%d", name, type, mode, tag,
-                parentId, x, y, width, height));
+    public boolean createSubWindow(CreateSubWindowParam param) {
+        if (param == null) {
+            ALog.e(TAG, "createSubWindow failed param is null");
+            return false;
+        }
         if (mRootActivity == null) {
             ALog.e(TAG, "createSubWindow failed mRootActivity is invalid");
             return false;
         }
-        SubWindow subWindow = mSubWindowMap.get(name);
+        return createSubWindowInternal(param);
+    }
+
+    private boolean createSubWindowInternal(CreateSubWindowParam param) {
+        SubWindow subWindow = mSubWindowMap.get(param.name);
         if (subWindow == null) {
-            subWindow = new SubWindow(mRootActivity, name);
-            subWindow.createSubWindow(type, mode, tag, parentId, x, y, width, height);
-            mSubWindowMap.put(name, subWindow);
+            subWindow = new SubWindow(mRootActivity, param.name);
+            subWindow.createSubWindow(param);
+            mSubWindowMap.put(param.name, subWindow);
             return true;
         } else {
-            ALog.e(TAG, "SubWindow " + name + " already created.");
+            ALog.e(TAG, "SubWindow " + param.name + " already created.");
             return false;
         }
     }
@@ -221,7 +287,10 @@ public class SubWindowManager {
         ALog.d(TAG, "showWindow called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow != null) {
-            subWindow.showWindow();
+            subWindow.showWindow(true);
+            if (!subWindow.isModalWindow()) {
+                restackModalWindows(subWindow);
+            }
             if (subWindow.getSubWindowView().isShowing()) {
                 return true;
             } else {
@@ -231,6 +300,15 @@ public class SubWindowManager {
         }
         ALog.e(TAG, "not found SubWindow: " + name);
         return false;
+    }
+
+    private void restackModalWindows(SubWindow except) {
+        for (SubWindow sw : mSubWindowMap.values()) {
+            if (sw != null && sw != except && sw.isRequestedVisible() && sw.isModalWindow()) {
+                sw.dismissForRestack();
+                sw.showWindow(false);
+            }
+        }
     }
 
     /**
@@ -303,6 +381,7 @@ public class SubWindowManager {
         ALog.d(TAG, "destroyWindow called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow != null) {
+            subWindow.setRequestedVisible(false);
             subWindow.destroyWindow();
             mSubWindowMap.remove(name);
             return true;

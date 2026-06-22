@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,7 @@
 package ohos.ace.adapter;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
@@ -166,8 +167,8 @@ public class WindowViewTexture extends TextureView implements TextureView.Surfac
      */
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        setFocusable(true);
-        if (isFocused) {
+        windowViewCommon.applyWindowFocusableState();
+        if (isFocused && windowViewCommon.isWindowFocusable()) {
             requestFocus();
         }
         if (surface != null) {
@@ -224,6 +225,19 @@ public class WindowViewTexture extends TextureView implements TextureView.Surfac
     }
 
     /**
+     * Called when the view focus changed.
+     *
+     * @param gainFocus has focus or not
+     * @param direction direction of focus change
+     * @param previouslyFocusedRect previous focused rect
+     */
+    @Override
+    protected void onFocusChanged(boolean gainFocus, int direction, Rect previouslyFocusedRect) {
+        super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
+        windowViewCommon.onViewFocusChanged(gainFocus);
+    }
+
+    /**
      * Create the input connection.
      *
      * @param outAttrs editor info
@@ -260,6 +274,16 @@ public class WindowViewTexture extends TextureView implements TextureView.Surfac
     @Override
     public void foreground() {
         windowViewCommon.foreground();
+    }
+
+    /**
+     * Set whether current window view can gain focus.
+     *
+     * @param isFocusable whether current view is focusable
+     */
+    @Override
+    public void setWindowFocusable(boolean isFocusable) {
+        windowViewCommon.setWindowFocusable(isFocusable);
     }
 
     /**

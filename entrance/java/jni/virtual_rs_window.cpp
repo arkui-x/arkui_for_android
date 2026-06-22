@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -358,7 +358,7 @@ std::shared_ptr<Window> Window::CreateSubWindow(
         window->SetWindowType(option->GetWindowType());
         window->SetParentId(option->GetParentId());
         window->SetWindowMode(option->GetWindowMode());
-        window->SetRect(option);
+        window->SetRequestRect(option);
         window->IncStrongRef(window.get());
         AddToSubWindowMap(window);
         AddToWindowMap(window);
@@ -514,6 +514,10 @@ WMError Window::ShowWindow()
 
     bool result = SubWindowManagerJni::ShowWindow(this->GetWindowName());
     if (result) {
+        if (IsSubWindow()) {
+            rect_ = requestRect_;
+            NotifySizeChange(rect_);
+        }
         isForground_ = true;
         NotifyAfterForeground();
         return WMError::WM_OK;
@@ -539,11 +543,13 @@ WMError Window::MoveWindowTo(int32_t x, int32_t y)
         return WMError::WM_ERROR_INVALID_WINDOW;
     }
 
-    rect_.posX_ = x;
-    rect_.posY_ = y;
+    requestRect_.posX_ = x;
+    requestRect_.posY_ = y;
 
     bool result = SubWindowManagerJni::MoveWindowTo(this->GetWindowName(), x, y);
     if (result) {
+        rect_.posX_ = requestRect_.posX_;
+        rect_.posY_ = requestRect_.posY_;
         NotifySizeChange(rect_);
         return WMError::WM_OK;
     } else {
@@ -559,10 +565,12 @@ WMError Window::ResizeWindowTo(int32_t width, int32_t height)
         return WMError::WM_ERROR_INVALID_WINDOW;
     }
 
-    rect_.width_ = width;
-    rect_.height_ = height;
+    requestRect_.width_ = width;
+    requestRect_.height_ = height;
     bool result = SubWindowManagerJni::ResizeWindowTo(this->GetWindowName(), width, height);
     if (result) {
+        rect_.width_ = requestRect_.width_;
+        rect_.height_ = requestRect_.height_;
         NotifySizeChange(rect_);
         return WMError::WM_OK;
     } else {
@@ -696,8 +704,15 @@ void Window::SetRequestedOrientation(Orientation orientation)
 
     bool result = SubWindowManagerJni::RequestOrientation(orientation);
     if (!result) {
-        LOGI("Window::SetRequestedOrientation: failed");
+        LOGE("Window::SetRequestedOrientation: failed");
+    } else {
+        orientation_ = orientation;
     }
+}
+
+Orientation Window::GetRequestedOrientation()
+{
+    return orientation_;
 }
 
 SystemBarProperty Window::GetSystemBarPropertyByType(WindowType type) const
@@ -1032,16 +1047,16 @@ void Window::NotifySurfaceDestroyed()
 
 void Window::WindowFocusChanged(bool hasWindowFocus)
 {
+    isFocused_ = hasWindowFocus;
     if (!uiContent_) {
         LOGW("Window::Focus uiContent_ is nullptr");
         return;
     }
     if (hasWindowFocus) {
+        isForground_ = true;
         LOGI("Window(%{public}s): notify uiContent Focus", GetWindowName().c_str());
         uiContent_->Focus();
         NotifyAfterActive();
-        isForground_ = true;
-        isFocused_ = true;
 
         if (IsSubWindow() || subWindowMap_.count(GetWindowId()) == 0) {
             return;
@@ -1053,11 +1068,10 @@ void Window::WindowFocusChanged(bool hasWindowFocus)
             }
         }
     } else {
+        isForground_ = false;
         LOGI("Window(%{public}s): notify uiContent UnFocus", GetWindowName().c_str());
         uiContent_->UnFocus();
         NotifyAfterInactive();
-        isForground_ = false;
-        isFocused_ = false;
     }
 }
 
@@ -1387,7 +1401,17 @@ WMError Window::Hide()
 WMError Window::SetFocusable(bool isFocusable)
 {
     LOGI("Window::SetFocusable called. isFocusable=%{public}d", isFocusable);
-    bool result = SubWindowManagerJni::SetFocusable(this->GetWindowName(), isFocusable);
+    bool result = false;
+    if (IsSubWindow()) {
+        result = SubWindowManagerJni::SetFocusable(this->GetWindowName(), isFocusable);
+    } else {
+        JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+        if (env == nullptr) {
+            LOGE("Window::SetFocusable: env is nullptr");
+            return WMError::WM_ERROR_INVALID_WINDOW;
+        }
+        result = WindowViewJni::SetWindowFocusable(env, windowView_, isFocusable);
+    }
     if (result) {
         LOGI("Window::SetFocusable: success");
         return WMError::WM_OK;

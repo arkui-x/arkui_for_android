@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,6 +21,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.graphics.Rect;
 import android.view.Surface;
 import android.view.View;
 import android.view.SurfaceHolder;
@@ -164,8 +165,8 @@ public class WindowViewSurface extends SurfaceView implements SurfaceHolder.Call
      */
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        setFocusable(true);
-        if (isFocused) {
+        windowViewCommon.applyWindowFocusableState();
+        if (isFocused && windowViewCommon.isWindowFocusable()) {
             requestFocus();
         }
         holder.setFormat(PixelFormat.TRANSLUCENT);
@@ -210,6 +211,19 @@ public class WindowViewSurface extends SurfaceView implements SurfaceHolder.Call
     }
 
     /**
+     * Called when the view focus changed.
+     *
+     * @param gainFocus has focus or not
+     * @param direction direction of focus change
+     * @param previouslyFocusedRect previous focused rect
+     */
+    @Override
+    protected void onFocusChanged(boolean gainFocus, int direction, Rect previouslyFocusedRect) {
+        super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
+        windowViewCommon.onViewFocusChanged(gainFocus);
+    }
+
+    /**
      * Create the input connection.
      *
      * @param outAttrs editor info
@@ -251,6 +265,16 @@ public class WindowViewSurface extends SurfaceView implements SurfaceHolder.Call
     @Override
     public void foreground() {
         windowViewCommon.foreground();
+    }
+
+    /**
+     * Set whether current window view can gain focus.
+     *
+     * @param isFocusable whether current view is focusable
+     */
+    @Override
+    public void setWindowFocusable(boolean isFocusable) {
+        windowViewCommon.setWindowFocusable(isFocusable);
     }
 
     /**
