@@ -763,8 +763,6 @@
       OH_ArkUI_Matrix4RotationOptions_SetZ;
       OH_ArkUI_Matrix4RotationOptions_SetY;
       OH_ArkUI_Matrix4_GetElements;
-      OH_ArkUI_Matrix4ScaleOptions_GetCenterZ;
-      OH_ArkUI_Matrix4RotationOptions_SetCenterZ;
       OH_ArkUI_Matrix4ScaleOptions_Create;
       OH_ArkUI_Matrix4TranslationOptions_SetY;
       OH_ArkUI_Matrix4ScaleOptions_Dispose;
@@ -796,7 +794,6 @@
       OH_ArkUI_Matrix4ScaleOptions_GetY;
       OH_ArkUI_Matrix4_SetPolyToPoly;
       OH_ArkUI_Matrix4_CreateByElements;
-      OH_ArkUI_Matrix4RotationOptions_GetCenterZ;
       OH_ArkUI_Matrix4ScaleOptions_SetX;
       OH_ArkUI_Matrix4RotationOptions_SetAngle;
       OH_ArkUI_Matrix4ScaleOptions_GetCenterX;
@@ -807,7 +804,6 @@
       OH_ArkUI_Matrix4ScaleOptions_GetZ;
       OH_ArkUI_Matrix4ScaleOptions_SetY;
       OH_ArkUI_Matrix4RotationOptions_GetX;
-      OH_ArkUI_Matrix4ScaleOptions_SetCenterZ;
       OH_ArkUI_Matrix4RotationOptions_GetAngle;
       OH_ArkUI_AnimatorOption_Dispose;
       OH_ArkUI_AnimateOption_Dispose;
