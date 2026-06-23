@@ -93,6 +93,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 import ohos.ace.adapter.capability.web.AceWebScrollObject;
 import ohos.ace.adapter.capability.web.AceWebSchemeHandler;
@@ -168,6 +171,11 @@ public class AceWeb extends AceWebBase {
     private static final String ONE_STRING = "1";
     private static final String WEB_WEBVIEW_DB = "webview.db";
     private static final String WEB_WEBVIEW_CACHE = "webviewCache.db";
+    private static final String NTC_OVERVIEW_MODE_ACCESS = "overviewModeAccess";
+    private static final String NTC_LAYOUT_MODE = "layoutMode";
+    private static final String NTC_DARK_MODE = "darkMode";
+    private static final String NTC_FORCE_DARK_ACCESS = "forceDarkAccess";
+    private static final String NTC_DEFAULT_FONT_SIZE = "defaultFontSize";
 
     private static final String WEB_DOWNLOAD_CONCAT_DIR = "/Temp/";
 
@@ -254,6 +262,12 @@ public class AceWeb extends AceWebBase {
 
     private static final float SCALE_PERCENT_MAX = 1000.0f;
 
+    private static final int API_29 = 29;
+
+    private static final int API_33 = 33;
+
+    private static final int FORCE_DARK_AUTO = 2;
+
     private static String currentPageUrl;
 
     private static String routerUrl;
@@ -295,6 +309,12 @@ public class AceWeb extends AceWebBase {
     private String[] jsSyncMethod;
 
     private String[] jsAsyncMethod;
+
+    private boolean isFitContentMode = false;
+
+    private int darkModeValue = 0;
+
+    private boolean isPageLoaded = false;
 
     private List<WebMessagePort> webMessagePorts = new ArrayList<WebMessagePort>();
     private int videoWidth = 0;
@@ -713,6 +733,10 @@ public class AceWeb extends AceWebBase {
                 }
                 AceWeb.this.onPageLoaded(url);
                 injectTextSelectionScript();
+                isPageLoaded = true;
+                if (isFitContentMode) {
+                    updateContentHeight();
+                }
 
                 if (url != null && (url.startsWith("http") || url.startsWith("https"))) {
                     ThreadPoolExecutor executorService = new ThreadPoolExecutor(
@@ -3141,5 +3165,171 @@ public class AceWeb extends AceWebBase {
             ALog.e(LOG_TAG, "enableHapticFeedback unexpected runtime error");
             return FAIL_TAG;
         }
+    }
+
+    @Override
+    public String overviewModeAccess(Map<String, String> params) {
+        if (params == null || !params.containsKey(NTC_OVERVIEW_MODE_ACCESS) || webView == null) {
+            ALog.e(LOG_TAG, "overviewModeAccess params error");
+            return FAIL_TAG;
+        }
+        boolean access = true;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_OVERVIEW_MODE_ACCESS));
+            access = accessNum == 1 ? true : false;
+        } catch (NumberFormatException ignored) {
+            ALog.e(LOG_TAG, "overviewModeAccess NumberFormatException");
+            return FAIL_TAG;
+        }
+        webView.getSettings().setUseWideViewPort(access);
+        webView.getSettings().setLoadWithOverviewMode(access);
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String layoutMode(Map<String, String> params) {
+        if (params == null || !params.containsKey(NTC_LAYOUT_MODE) || webView == null) {
+            ALog.e(LOG_TAG, "layoutMode params error");
+            return FAIL_TAG;
+        }
+        try {
+            int mode = Integer.parseInt(params.get(NTC_LAYOUT_MODE));
+            if (mode == 1) {
+                isFitContentMode = true;
+                if (isPageLoaded) {
+                    updateContentHeight();
+                }
+            } else {
+                isFitContentMode = false;
+            }
+        } catch (NumberFormatException ignored) {
+            ALog.e(LOG_TAG, "layoutMode NumberFormatException");
+            return FAIL_TAG;
+        }
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String darkMode(Map<String, String> params) {
+        if (params == null || !params.containsKey(NTC_DARK_MODE)) {
+            ALog.e(LOG_TAG, "darkMode params error");
+            return FAIL_TAG;
+        }
+        try {
+            darkModeValue = Integer.parseInt(params.get(NTC_DARK_MODE));
+        } catch (NumberFormatException ignored) {
+            ALog.e(LOG_TAG, "darkMode NumberFormatException");
+            return FAIL_TAG;
+        }
+        return SUCCESS_TAG;
+    }
+
+    @Override
+    public String forceDarkAccess(Map<String, String> params) {
+        if (params == null || !params.containsKey(NTC_FORCE_DARK_ACCESS) || webView == null) {
+            return FAIL_TAG;
+        }
+        boolean access = true;
+        try {
+            int accessNum = Integer.parseInt(params.get(NTC_FORCE_DARK_ACCESS));
+            access = accessNum == 1 ? true : false;
+        } catch (NumberFormatException ignored) {
+            ALog.e(LOG_TAG, "forceDarkAccess NumberFormatException");
+            return FAIL_TAG;
+        }
+        WebSettings settings = webView.getSettings();
+        if (Build.VERSION.SDK_INT >= API_33) {
+            return setForceDarkModeForApi33(settings, access);
+        } else if (Build.VERSION.SDK_INT >= API_29) {
+            return setForceDarkModeForApi29(settings, access);
+        } else {
+            return SUCCESS_TAG;
+        }
+    }
+
+    private String setForceDarkModeForApi33(WebSettings settings, boolean access) {
+        try {
+            Method method = settings.getClass().getMethod("setAlgorithmicDarkeningAllowed", boolean.class);
+            method.invoke(settings, false);
+            if (darkModeValue == 0 || darkModeValue == FORCE_DARK_AUTO) {
+                return SUCCESS_TAG;
+            }
+            method.invoke(settings, access);
+            return SUCCESS_TAG;
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            ALog.e(LOG_TAG, "setForceDarkModeForApi33 failed");
+            return FAIL_TAG;
+        }
+    }
+
+    private String setForceDarkModeForApi29(WebSettings settings, boolean access) {
+        try {
+            Field forceDarkOnField = WebSettings.class.getField("FORCE_DARK_ON");
+            Field forceDarkOffField = WebSettings.class.getField("FORCE_DARK_OFF");
+            Method setForceDarkMethod = WebSettings.class.getMethod("setForceDark", int.class);
+            setForceDarkMethod.invoke(settings, (int) forceDarkOffField.getInt(null));
+            if (darkModeValue == 0 || darkModeValue == FORCE_DARK_AUTO) {
+                return SUCCESS_TAG;
+            }
+            int forceDarkValue = access ? (int) forceDarkOnField.getInt(null) : (int) forceDarkOffField.getInt(null);
+            setForceDarkMethod.invoke(settings, forceDarkValue);
+            return SUCCESS_TAG;
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | NoSuchFieldException e) {
+            ALog.e(LOG_TAG, "setForceDarkModeForApi29 failed");
+            return FAIL_TAG;
+        }
+    }
+
+    @Override
+    public String defaultFontSize(Map<String, String> params) {
+        if (params == null || !params.containsKey(NTC_DEFAULT_FONT_SIZE) || webView == null) {
+            ALog.e(LOG_TAG, "defaultFontSize params error");
+            return FAIL_TAG;
+        }
+        int fontSize = 0;
+        try {
+            fontSize = Integer.parseInt(params.get(NTC_DEFAULT_FONT_SIZE));
+        } catch (NumberFormatException ignored) {
+            ALog.e(LOG_TAG, "defaultFontSize NumberFormatException");
+            return FAIL_TAG;
+        }
+        webView.getSettings().setDefaultFontSize(fontSize);
+        return SUCCESS_TAG;
+    }
+
+    private void updateContentHeight() {
+        if (webView == null) {
+            return;
+        }
+        webView.setVerticalScrollBarEnabled(false);
+        webView.setHorizontalScrollBarEnabled(false);
+        webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        final String script = "(function() {" +
+            "var body = document.body || {};" +
+            "var documentElement = document.documentElement || {};" +
+            "var contentHeight = Math.max(" +
+            "body.scrollHeight || 0," +
+            "body.offsetHeight || 0," +
+            "body.clientHeight || 0," +
+            "documentElement.scrollHeight || 0," +
+            "documentElement.offsetHeight || 0," +
+            "documentElement.clientHeight || 0" +
+            ");" +
+            "if (body.style) { body.style.overflow = 'hidden'; }" +
+            "if (documentElement.style) { documentElement.style.overflow = 'hidden'; }" +
+            "return contentHeight;" +
+            "})();";
+        webView.evaluateJavascript(script, value -> {
+            if (value == null || "null".equals(value)) {
+                return;
+            }
+            try {
+                float contentHeight = Float.parseFloat(value);
+                int scaledContentHeight = Math.round(contentHeight * webView.getScale());
+                AceWeb.this.fireContentHeightChanged(scaledContentHeight);
+            } catch (NumberFormatException ignored) {
+                ALog.e(LOG_TAG, "updateContentHeight parse js height failed");
+            }
+        });
     }
 }
