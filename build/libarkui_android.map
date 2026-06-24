@@ -58,7 +58,10 @@
       "OHOS::Ace::ACE_PI";
       "OHOS::Ace::BaseId::BaseId()";
       "OHOS::Ace::CheckThread(OHOS::Ace::TaskExecutor::TaskType)";
+      "OHOS::Ace::DynamicModuleHelper::GetInstance()";
+      "OHOS::Ace::DynamicModuleHelper::GetDynamicModule(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::TaskExecutor::GetPriorityTypeWithCheck(OHOS::Ace::PriorityType, OHOS::Ace::PriorityType)";
+      "OHOS::Ace::TaskRunnerAdapterFactory::Create(bool, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       OHOS::Ace::TaskExecutor::PostDelayedTask*;
       OHOS::Ace::TaskExecutor::PostSyncTask*;
       OHOS::Ace::Color::*;
@@ -161,6 +164,7 @@
       "OHOS::Rosen::RSColor::Float32ToFloat16(float) const";
       "OHOS::Rosen::RSNGShapeBase::Create(OHOS::Rosen::RSNGEffectType)";
       OHOS::Ace::ResourceManager::*;
+      OHOS::Ace::ResourceWrapper::*;
       OHOS::Ace::SpringMotion::*;
       OHOS::Ace::ShadowTheme::*;
       OHOS::Ace::PerfMonitor::*;
@@ -2090,6 +2094,7 @@
       "OHOS::Ace::TokenColors::GetSystemColorResIdByIndex(int)";
       "OHOS::Ace::MaterialUtils::GetImmersiveShadow(float)";
       "OHOS::Ace::MaterialUtils::GetTypeFromMaterial(OHOS::Ace::UiMaterial const*)";
+      "OHOS::Ace::MaterialUtils::GetConfiguredMaterialState()";
       SendArkUISyncEvent;
       OHOS::Ace::NG::PaintProperty::*;
       OHOS::Ace::NG::PaintWrapper::*;
@@ -2198,6 +2203,8 @@
       "OHOS::Ace::NG::BorderRadiusPropertyT<OHOS::Ace::Dimension>::SetRadius(OHOS::Ace::Dimension const&)";
       "OHOS::Ace::ToRSCapStyle(OHOS::Ace::LineCap const&)";
       "OHOS::Ace::NG::GetMainAxisSize(OHOS::Ace::NG::OptionalSize<float> const&, OHOS::Ace::Axis)";
+      "OHOS::Ace::NG::NodeModifier::GetLazyGridLayoutCustomModifier()";
+      "OHOS::Ace::NG::NodeModifier::GetLoadingProgressModifier()";
       "OHOS::Ace::NG::NodeAnimatableProperty<float, OHOS::Ace::NG::AnimatablePropertyFloat>::Set(float const&)";
       "OHOS::Ace::NG::NodeAnimatableProperty<float, OHOS::Ace::NG::AnimatablePropertyFloat>::NodeAnimatableProperty(float const&, std::__ndk1::function<void (float const&)>&&)";
       "OHOS::Ace::Shadow::CreateShadow(OHOS::Ace::ShadowStyle)";
@@ -2206,6 +2213,9 @@
       "OHOS::Ace::NG::CheckMeasureSelfFlag(unsigned int)";
       "OHOS::Ace::TextStyle::operator==(OHOS::Ace::TextStyle const&) const";
       "OHOS::Ace::NG::VibratorUtils::StartVibraFeedback()";
+      "OHOS::Ace::NG::VectorF::operator==(OHOS::Ace::NG::VectorF const&) const";
+      "OHOS::Ace::NG::Vector5F::operator==(OHOS::Ace::NG::Vector5F const&) const";
+      "OHOS::Ace::NG::VectorF::operator*(float) const";
       "OHOS::Ace::NG::Gradient::CreateGradientWithType(OHOS::Ace::NG::GradientType)";
       "OHOS::Ace::NodeModel::GetFullImplForErrorMessage()";
       "OHOS::Ace::OptNGGradient::GetGradient()";
@@ -2219,6 +2229,7 @@
       vtable?for?OHOS::Ace::NG::ListPattern;
       VTT?for?OHOS::Ace::NG::ListItemPattern;
       vtable?for?OHOS::Ace::NG::ListItemPattern;
+      "OHOS::Ace::NG::ListItemPattern::ListItemPattern(OHOS::Ace::RefPtr<OHOS::Ace::NG::ShallowBuilder> const&, OHOS::Ace::V2::ListItemStyle)";
       "OHOS::Ace::NG::GetCrossAxisSize(OHOS::Ace::NG::OptionalSize<float> const&, OHOS::Ace::Axis)";
       OHOS::Rosen::Drawing::Image::*;
       "OHOS::Ace::MeasureUtil::MeasureTextSize(OHOS::Ace::MeasureContext const&)";
@@ -2265,6 +2276,7 @@
       OHOS::Ace::NG::SymbolEffectOptions::*;
       OHOS::Ace::NG::TextAccessibilityProperty::*;
       OHOS::Ace::NG::TextContentModifier::*;
+      "OHOS::Ace::NG::TextChangeEventInfo::TextChangeEventInfo(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, int, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >)";
       VTT?for?OHOS::Ace::NG::TextContentModifier;
       OHOS::Ace::NG::MultipleParagraphLayoutAlgorithm::*;
       OHOS::Ace::V2::PLACEHOLDER_SPAN_ETS_TAG;
@@ -2421,6 +2433,8 @@
       "OHOS::Ace::NG::AddPaddingToSize(OHOS::Ace::NG::PaddingPropertyT<float> const&, OHOS::Ace::NG::OptionalSize<float>&)";
       "OHOS::Ace::NG::TextModelNG::ResetTextColor(OHOS::Ace::NG::FrameNode*)";
       "OHOS::Ace::TimeEventProxy::GetInstance()";
+      "OHOS::Ace::NG::AbilityContextInfo::IsEqual(OHOS::Ace::NG::AbilityContextInfo const&) const";
+      "OHOS::Ace::NG::RouterPageInfoNG::RouterPageInfoNG(int, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, OHOS::Ace::NG::RouterPageState, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, std::__ndk1::optional<OHOS::Ace::NG::SizeT<float> >)";
     };
     extern "C" {
       "StartTrace";
