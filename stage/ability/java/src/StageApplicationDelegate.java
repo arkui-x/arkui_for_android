@@ -1392,4 +1392,11 @@ public class StageApplicationDelegate {
      * @param entryFile the path of load module.
      */
     protected static native void nativeLoadModule(String moduleName, String entryFile);
+
+    /**
+     * Native calls proactive VM destroy.
+     *
+     * @return true on success, false on failure.
+     */
+    protected static native boolean nativeDestroyVm();
 }

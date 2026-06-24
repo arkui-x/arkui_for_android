@@ -152,6 +152,11 @@ bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
             .signature = "(Z)V",
             .fnPtr = reinterpret_cast<void*>(&OnHighContrastChanged),
         },
+        {
+            .name = "nativeDestroyVm",
+            .signature = "()Z",
+            .fnPtr = reinterpret_cast<void*>(&DestroyVm),
+        }
     };
 
     if (!env) {
@@ -458,6 +463,11 @@ void StageApplicationDelegateJni::OnHighContrastChanged(JNIEnv* env, jclass mycl
 {
     CHECK_NULL_VOID(env);
     Ace::Platform::HighContrastObserver::GetInstance().OnHighContrastChange(isEnabled);
+}
+
+jboolean StageApplicationDelegateJni::DestroyVm(JNIEnv* env, jclass myclass)
+{
+    return AppMain::GetInstance()->DestroyVm() ? JNI_TRUE : JNI_FALSE;
 }
 
 OHOS::Ace::LogLevel StageApplicationDelegateJni::GetCurrentLogLevel()
