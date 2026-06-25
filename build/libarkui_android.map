@@ -894,7 +894,6 @@
       OH_ArkUI_TransitionEffect_Dispose;
       OH_ArkUI_AnimatorOption_GetCurve;
       OH_ArkUI_AnimatorOption_RegisterOnRepeatCallback;
-      OH_ArkUI_DrawableDescriptor_CreateFromPixelMap;
       OH_ArkUI_NodeEvent_GetTouchTestInfo;
       OH_ArkUI_TouchTestInfoItem_GetWindowY;
       OH_ArkUI_TouchTestInfoItem_GetYRelativeToParent;
@@ -909,7 +908,6 @@
       OH_ArkUI_TouchTestInfoItem_GetChildRect;
       OH_ArkUI_SnapshotOptions_SetColorMode;
       OH_ArkUI_SnapshotOptions_SetDynamicRangeMode;
-      OH_ArkUI_GetNodeSnapshot;
       OH_ArkUI_MouseEvent_GetRawDeltaY;
       OH_ArkUI_MouseEvent_GetRawDeltaX;
       OH_ArkUI_NotifyDisableDefaultDropAnimation;
@@ -1051,7 +1049,6 @@
       OH_ArkUI_FocusAxisEvent_SetStopPropagation;
       OH_ArkUI_UIInputEvent_GetDeviceId;
       OH_ArkUI_ParallelInnerGestureEvent_GetConflictRecognizers;
-      OH_ArkUI_SetNodeDragPreview;
       OH_ArkUI_PointerEvent_GetHistoryPressure;
       OH_ArkUI_SwipeGesture_GetAngle;
       OH_ArkUI_PointerEvent_GetPressure;
@@ -1060,13 +1057,11 @@
       OH_ArkUI_GetGestureRecognizerEnabled;
       OH_ArkUI_SetNodeDragPreviewOption;
       OH_ArkUI_PanGesture_GetVelocity;
-      OH_ArkUI_DragAction_SetPointerId;
       OH_ArkUI_SwipeGesture_GetVelocity;
       OH_ArkUI_PointerEvent_GetHistoryTouchAreaWidth;
       OH_ArkUI_GestureInterruptInfo_GetSystemRecognizerType;
       OH_ArkUI_LongPress_GetRepeatCount;
       OH_ArkUI_GestureEvent_GetNode;
-      OH_ArkUI_CreateDragActionWithNode;
       OH_ArkUI_DragPreviewOption_SetBadgeNumber;
       OH_ArkUI_DragEvent_GetPreviewTouchPointY;
       OH_ArkUI_DragAndDropInfo_GetDragStatus;
@@ -1092,7 +1087,6 @@
       OH_ArkUI_MouseEvent_GetMouseButton;
       OH_ArkUI_AllowNodeAllDropDataTypes;
       OH_ArkUI_IsBuiltInGesture;
-      OH_ArkUI_CreateDragActionWithContext;
       OH_ArkUI_DragEvent_GetDataTypeCount;
       OH_ArkUI_DragEvent_SetDragResult;
       OH_ArkUI_DragEvent_DisableDefaultDropAnimation;
@@ -1104,9 +1098,7 @@
       OH_ArkUI_DragEvent_GetDropOperation;
       OH_ArkUI_GetPanGestureDirectionMask;
       OH_ArkUI_PointerEvent_GetHistoryPointerCount;
-      OH_ArkUI_DragAction_SetDragPreviewOption;
       OH_ArkUI_DragEvent_GetTouchPointYToWindow;
-      OH_ArkUI_DragAction_Dispose;
       OH_ArkUI_SetNodeAllowedDropDataTypes;
       OH_ArkUI_SetGestureRecognizerEnabled;
       OH_ArkUI_GestureEvent_GetActionType;
@@ -1114,7 +1106,6 @@
       OH_ArkUI_PinchGesture_GetCenterX;
       OH_ArkUI_ParallelInnerGestureEvent_GetUserData;
       OH_ArkUI_IsGestureRecognizerValid;
-      OH_ArkUI_DragAction_SetTouchPointY;
       OH_ArkUI_PointerEvent_GetHistoryTouchAreaHeight;
       OH_ArkUI_PanGesture_GetVelocityY;
       OH_ArkUI_DragAndDropInfo_GetDragEvent;
@@ -1122,7 +1113,6 @@
       OH_ArkUI_PointerEvent_GetWindowY;
       OH_ArkUI_DragPreviewOption_SetDefaultRadiusEnabled;
       OH_ArkUI_GetGestureRecognizerState;
-      OH_ArkUI_StartDrag;
       OH_ArkUI_NodeEvent_GetPreDragStatus;
       OH_ArkUI_NodeEvent_GetEventType;
       OH_ArkUI_PointerEvent_GetDisplayY;
@@ -1142,8 +1132,6 @@
       OH_ArkUI_PointerEvent_GetHistoryTiltX;
       OH_ArkUI_DragEvent_SetSuggestedDropOperation;
       OH_ArkUI_DragEvent_GetDragResult;
-      OH_ArkUI_DragAction_UnregisterStatusListener;
-      OH_ArkUI_DragAction_SetTouchPointX;
       OH_ArkUI_PointerEvent_GetDisplayX;
       OH_ArkUI_DragEvent_GetDataTypes;
       OH_ArkUI_PointerEvent_GetY;
@@ -1158,7 +1146,6 @@
       OH_ArkUI_SetDragEventStrictReportWithNode;
       OH_ArkUI_NodeEvent_GetDragEvent;
       OH_ArkUI_ParallelInnerGestureEvent_GetCurrentRecognizer;
-      OH_ArkUI_DragAction_RegisterStatusListener;
       OH_ArkUI_NodeEvent_GetStringAsyncEvent;
       OH_ArkUI_GestureInterruptInfo_GetSystemFlag;
       OH_ArkUI_KeyEvent_SetConsumed;
