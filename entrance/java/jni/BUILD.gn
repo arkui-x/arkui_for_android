@@ -88,6 +88,7 @@ template("ace_common_jni_source_set") {
       "$ace_root/adapter/android/entrance/java/jni/subwindow_manager_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/touch_event.cpp",
       "$ace_root/adapter/android/entrance/java/jni/touch_event_convertor.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/utils.cpp",
       "$ace_root/adapter/android/entrance/java/jni/udmf/udmf_impl.cpp",
       "$ace_root/adapter/android/entrance/java/jni/ui_session/ui_session_json_util.cpp",
       "$ace_root/adapter/android/entrance/java/jni/ui_session/ui_session_manager_android.cpp",

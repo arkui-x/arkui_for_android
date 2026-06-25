@@ -19,11 +19,13 @@
 #include <memory>
 
 #include "adapter/android/entrance/java/jni/virtual_rs_window.h"
+#include "adapter/android/stage/uicontent/ace_container_sg.h"
 
 #include "base/memory/ace_type.h"
 #include "base/utils/macros.h"
 #include "core/accessibility/accessibility_node.h"
 #include "core/common/display_info.h"
+#include "core/components_ng/property/safe_area_insets.h"
 #include "core/event/key_event.h"
 #include "foundation/appframework/arkui/uicontent/component_info.h"
 #include "foundation/appframework/arkui/uicontent/ui_content.h"
@@ -70,7 +72,9 @@ public:
 
     void NotifySurfaceCreated() override;
     void NotifySurfaceDestroyed() override;
-    void UpdateViewportConfig(const ViewportConfig& config, OHOS::Rosen::WindowSizeChangeReason reason) override;
+    void UpdateViewportConfig(const ViewportConfig& config, OHOS::Rosen::WindowSizeChangeReason reason,
+        const std::map<OHOS::Rosen::AvoidAreaType, OHOS::Rosen::AvoidArea>& avoidAreas = {}) override;
+    void SetIgnoreViewSafeArea(bool ignoreViewSafeArea) override;
 
     void UpdateConfiguration(const std::shared_ptr<OHOS::AbilityRuntime::Platform::Configuration>& config) override;
 
@@ -104,6 +108,8 @@ private:
 
     void InitOnceAceInfo();
     void InitAceInfoFromResConfig();
+    void InitializeSafeArea(const RefPtr<Platform::AceContainerSG>& container);
+    NG::SafeAreaInsets GetViewSafeAreaByType(OHOS::Rosen::AvoidAreaType type);
 
     std::weak_ptr<OHOS::AbilityRuntime::Platform::Context> context_;
 
@@ -112,6 +118,7 @@ private:
     std::string startUrl_;
     int32_t instanceId_ = -1;
     OHOS::Rosen::IOccupiedAreaChangeListener* occupiedAreaChangeListener_ = nullptr;
+    OHOS::sptr<OHOS::Rosen::IAvoidAreaChangedListener> avoidAreaChangedListener_ = nullptr;
     OHOS::Rosen::ITouchOutsideListener* touchOutsideListener_ = nullptr;
     OHOS::Rosen::IWindowLifeCycle* windowLifeCycleListener_ = nullptr;
 };

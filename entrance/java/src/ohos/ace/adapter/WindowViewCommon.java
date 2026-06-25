@@ -655,13 +655,24 @@ public class WindowViewCommon {
         }
     }
 
+    private static void clearEmptyRect(Rect rect) {
+        if (rect != null && (rect.width() <= 0 || rect.height() <= 0)) {
+            rect.setEmpty();
+        }
+    }
+
     private void onAvoidAreaChanged(int type, Insets insets, int screenWidth, int screenHeight, Rect rect) {
 
         AvoidArea avoidAreaRect = new AvoidArea(
-            getIntersection(rect, new Rect(0, 0, insets.left, screenHeight)),
-            getIntersection(rect, new Rect(0, 0, screenWidth, insets.top)),
-            getIntersection(rect, new Rect(screenWidth - insets.right, 0, screenWidth, screenHeight)),
-            getIntersection(rect, new Rect(0, screenHeight - insets.bottom, screenWidth, screenHeight)));
+            new Rect(0, 0, insets.left, screenHeight),
+            new Rect(0, 0, screenWidth, insets.top),
+            new Rect(screenWidth - insets.right, 0, screenWidth, screenHeight),
+            new Rect(0, screenHeight - insets.bottom, screenWidth, screenHeight));
+
+        clearEmptyRect(avoidAreaRect.leftRect);
+        clearEmptyRect(avoidAreaRect.topRect);
+        clearEmptyRect(avoidAreaRect.rightRect);
+        clearEmptyRect(avoidAreaRect.bottomRect);
 
         adjustToWindowCoordinate(avoidAreaRect, rect);
         if (this.avoidAreaRects.containsKey(type) && avoidAreaRect.isEqualTo(this.avoidAreaRects.get(type))) {

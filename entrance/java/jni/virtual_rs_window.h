@@ -362,6 +362,8 @@ private:
     bool isForground_ = false;
     bool isFocused_ = false;
     bool isFullScreen_ = false;
+    bool isIgnoreSafeArea_ = false;
+    bool isIgnoreSafeAreaNeedNotify_ = false;
 
     uint32_t backgroundColor_ = 0xffffffff;
     float brightness_;
