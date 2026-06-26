@@ -907,8 +907,9 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
         Ace::ViewportConfig config;
         config.SetDensity(density_);
         config.SetSize(surfaceWidth_, surfaceHeight_);
+        config.SetOrientation(surfaceHeight_ >= surfaceWidth_ ? 0 : 1);
         LOGI("Window Notify uiContent_ Surface Changed %{public}s", config.ToString().c_str());
-        uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE);
+        uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE, avoidAreaMap_);
     }
     delayNotifySurfaceChanged_ = true;
 
@@ -968,6 +969,10 @@ void Window::NotifyAfterBackground(bool needNotifyListeners, bool needNotifyUiCo
 
 void Window::UpdateAvoidArea(const std::shared_ptr<Rosen::AvoidArea>& avoidArea, AvoidAreaType type)
 {
+    if (!avoidArea) {
+        LOGE("invalid avoidArea");
+        return;
+    }
     LOGD("UpdateAvoidArea WindowId:%{public}d, type:%{public}d, top:{%{public}d,%{public}d,%{public}d,%{public}d}, "
          "left:{%{public}d,%{public}d,%{public}d,%{public}d}, right:{%{public}d,%{public}d,%{public}d,%{public}d}, "
          "bottom:{%{public}d,%{public}d,%{public}d,%{public}d}",
@@ -979,8 +984,21 @@ void Window::UpdateAvoidArea(const std::shared_ptr<Rosen::AvoidArea>& avoidArea,
         avoidArea->bottomRect_.height_);
 
     std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+
+    auto iter = avoidAreaMap_.find(type);
+    if (iter != avoidAreaMap_.end() && iter->second == *avoidArea) {
+        LOGD("UpdateAvoidArea WindowId:%{public}d, type:%{public}d unchanged.", GetWindowId(), type);
+        return;
+    }
     avoidAreaMap_[type] = *avoidArea;
     NotifyAvoidAreaChange(avoidArea, type);
+
+    if (uiContent_) {
+        Ace::ViewportConfig config;
+        config.SetDensity(density_);
+        config.SetSize(surfaceWidth_, surfaceHeight_);
+        uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE, avoidAreaMap_);
+    }
 }
 
 void Window::NotifyAvoidAreaChange(const std::shared_ptr<AvoidArea>& avoidArea, AvoidAreaType type)
@@ -1146,7 +1164,7 @@ void Window::DelayNotifyUIContentIfNeeded()
         config.SetDensity(density_);
         config.SetSize(surfaceWidth_, surfaceHeight_);
         config.SetOrientation(surfaceHeight_ >= surfaceWidth_ ? 0 : 1);
-        uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE);
+        uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE, avoidAreaMap_);
     }
     if (delayNotifySurfaceDestroyed_) {
         LOGD("Window Delay Notify uiContent_ Surface Destroyed");
@@ -1175,6 +1193,9 @@ WMError Window::SetUIContent(const std::string& contentInfo, NativeEngine* engin
     }
     // make uiContent available after Initialize/Restore
     uiContent_ = std::move(uiContent);
+    if (isIgnoreSafeAreaNeedNotify_) {
+        uiContent_->SetIgnoreViewSafeArea(isIgnoreSafeArea_);
+    }
     if (isForground_) {
         uiContent_->Foreground();
     }
@@ -1249,13 +1270,21 @@ void Window::SetUpThreadInfo()
 
 WMError Window::SetLayoutFullScreen(bool status)
 {
-    if (SubWindowManagerJni::SetWindowLayoutFullScreen(status)) {
-        g_IsFullScreen = status;
-        return WMError::WM_OK;
-    } else {
-        LOGE("Window::SetLayoutFullScreen: failed");
-        return WMError::WM_ERROR_OPER_FULLSCREEN_FAILED;
+    if (!g_IsFullScreen) {
+        SubWindowManagerJni::SetWindowLayoutFullScreen(true);
+        g_IsFullScreen = true;
     }
+    isIgnoreSafeArea_ = status;
+    if (status) {
+        SetWindowMode(OHOS::Rosen::WindowMode::WINDOW_MODE_FULLSCREEN);
+    } else {
+        SetWindowMode(OHOS::Rosen::WindowMode::WINDOW_MODE_UNDEFINED);
+    }
+    if (uiContent_ != nullptr) {
+        uiContent_->SetIgnoreViewSafeArea(status);
+    }
+    isIgnoreSafeAreaNeedNotify_ = true;
+    return WMError::WM_OK;
 }
 
 WMError Window::SetSpecificBarProperty(WindowType type, const SystemBarProperty& property)

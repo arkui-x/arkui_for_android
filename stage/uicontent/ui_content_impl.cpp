@@ -29,6 +29,7 @@
 #include "adapter/android/entrance/java/jni/ace_application_info_impl.h"
 #include "adapter/android/entrance/java/jni/apk_asset_provider.h"
 #include "adapter/android/entrance/java/jni/pack_asset_provider.h"
+#include "adapter/android/entrance/java/jni/utils.h"
 #include "adapter/android/osal/file_asset_provider.h"
 #include "adapter/android/osal/js_accessibility_manager.h"
 #include "adapter/android/osal/navigation_route.h"
@@ -50,7 +51,10 @@
 #include "core/common/container_scope.h"
 #include "core/event/touch_event.h"
 #include "core/image/image_file_cache.h"
+#include "core/components_ng/property/safe_area_insets.h"
+#include "core/components_ng/manager/safe_area/safe_area_manager.h"
 #include "frameworks/bridge/declarative_frontend/ng/declarative_frontend_ng.h"
+#include "frameworks/core/pipeline_ng/pipeline_context.h"
 #include "ui_event_monitor.h"
 
 namespace OHOS::Ace::Platform {
@@ -126,6 +130,50 @@ public:
     }
 
 private:
+    int32_t instanceId_ = -1;
+};
+
+class AvoidAreaChangedListener : public OHOS::Rosen::IAvoidAreaChangedListener {
+public:
+    explicit AvoidAreaChangedListener(int32_t instanceId) : instanceId_(instanceId) {}
+    ~AvoidAreaChangedListener() = default;
+    void OnAvoidAreaChanged(const OHOS::Rosen::AvoidArea avoidArea, OHOS::Rosen::AvoidAreaType type) override
+    {
+        auto container = Platform::AceContainerSG::GetContainer(instanceId_);
+        CHECK_NULL_VOID(container);
+        auto pipeline = container->GetPipelineContext();
+        CHECK_NULL_VOID(pipeline);
+        auto taskExecutor = container->GetTaskExecutor();
+        CHECK_NULL_VOID(taskExecutor);
+        if (type == Rosen::AvoidAreaType::TYPE_SYSTEM) {
+            systemSafeArea_ = ConvertAvoidArea(avoidArea);
+        } else if (type == Rosen::AvoidAreaType::TYPE_NAVIGATION_INDICATOR) {
+            navigationBar_ = ConvertAvoidArea(avoidArea);
+        } else if (type == Rosen::AvoidAreaType::TYPE_CUTOUT) {
+            cutoutSafeArea_ = ConvertAvoidArea(avoidArea);
+        }
+        auto safeArea = systemSafeArea_;
+        auto navSafeArea = navigationBar_;
+        auto cutoutSafeArea = cutoutSafeArea_;
+        ContainerScope scope(instanceId_);
+        taskExecutor->PostTask(
+            [pipeline, safeArea, navSafeArea, cutoutSafeArea, type, avoidArea] {
+                if (type == Rosen::AvoidAreaType::TYPE_SYSTEM) {
+                    pipeline->UpdateSystemSafeArea(safeArea);
+                } else if (type == Rosen::AvoidAreaType::TYPE_NAVIGATION_INDICATOR) {
+                    pipeline->UpdateNavSafeArea(navSafeArea);
+                } else if (type == Rosen::AvoidAreaType::TYPE_CUTOUT) {
+                    pipeline->UpdateCutoutSafeArea(cutoutSafeArea);
+                }
+                pipeline->UpdateOriginAvoidArea(avoidArea, static_cast<uint32_t>(type));
+            },
+            TaskExecutor::TaskType::UI, "ArkUI-XUIContentImplOnAvoidAreaChanged");
+    }
+
+private:
+    NG::SafeAreaInsets systemSafeArea_;
+    NG::SafeAreaInsets navigationBar_;
+    NG::SafeAreaInsets cutoutSafeArea_;
     int32_t instanceId_ = -1;
 };
 
@@ -471,6 +519,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
             pipeline->SetMinPlatformVersion(appInfo->apiCompatibleVersion);
         }
     }
+    InitializeSafeArea(container);
 
     if (runtime_) {
         auto nativeEngine = reinterpret_cast<NativeEngine*>(runtime_);
@@ -781,9 +830,49 @@ void UIContentImpl::ProcessWindowSizeLayoutBreakPointChange(double density)
     }
 }
 
-void UIContentImpl::UpdateViewportConfig(const ViewportConfig& config, OHOS::Rosen::WindowSizeChangeReason reason)
+bool ParseAvoidAreasUpdate(const RefPtr<NG::PipelineContext>& context,
+    const std::map<OHOS::Rosen::AvoidAreaType, OHOS::Rosen::AvoidArea>& avoidAreas, const ViewportConfig& config)
 {
-    LOGI("UIContentImpl: UpdateViewportConfig %{public}s", config.ToString().c_str());
+    CHECK_NULL_RETURN(context, false);
+    auto safeAreaManager = context->GetSafeAreaManager();
+    CHECK_NULL_RETURN(safeAreaManager, false);
+    bool safeAreaUpdated = false;
+    for (auto& avoidArea : avoidAreas) {
+        if (avoidArea.first == OHOS::Rosen::AvoidAreaType::TYPE_SYSTEM) {
+            safeAreaUpdated |= safeAreaManager->UpdateSystemSafeArea(ConvertAvoidArea(avoidArea.second));
+        } else if (avoidArea.first == OHOS::Rosen::AvoidAreaType::TYPE_NAVIGATION_INDICATOR) {
+            safeAreaUpdated |= safeAreaManager->UpdateNavSafeArea(ConvertAvoidArea(avoidArea.second));
+        } else if (avoidArea.first == OHOS::Rosen::AvoidAreaType::TYPE_CUTOUT) {
+            safeAreaUpdated |= safeAreaManager->UpdateCutoutSafeArea(
+                ConvertAvoidArea(avoidArea.second), NG::OptionalSize<uint32_t>(config.Width(), config.Height()));
+        }
+    }
+    if (safeAreaUpdated) {
+        context->SyncSafeArea(SafeAreaSyncType::SYNC_TYPE_AVOID_AREA);
+        return true;
+    }
+    return false;
+}
+
+bool IsNeedAvoidWindowMode(OHOS::Rosen::Window* rsWindow)
+{
+    bool isSubWindow = rsWindow->IsSubWindow();
+    bool result = false;
+    if (!isSubWindow) {
+        result = true;
+    } else {
+        result = (rsWindow->GetMode() == Rosen::WindowMode::WINDOW_MODE_FLOATING ||
+                     rsWindow->GetMode() == Rosen::WindowMode::WINDOW_MODE_SPLIT_PRIMARY ||
+                     rsWindow->GetMode() == Rosen::WindowMode::WINDOW_MODE_SPLIT_SECONDARY) &&
+                 (SystemProperties::GetDeviceType() == DeviceType::PHONE ||
+                     SystemProperties::GetDeviceType() == DeviceType::TABLET);
+    }
+    return result;
+}
+
+void UIContentImpl::UpdateViewportConfig(const ViewportConfig& config, OHOS::Rosen::WindowSizeChangeReason reason,
+    const std::map<OHOS::Rosen::AvoidAreaType, OHOS::Rosen::AvoidArea>& avoidAreas)
+{
     ProcessWindowSizeLayoutBreakPointChange(config.Density());
     ACE_SCOPED_TRACE("UpdateViewportConfig %s", config.ToString().c_str());
     
@@ -801,9 +890,27 @@ void UIContentImpl::UpdateViewportConfig(const ViewportConfig& config, OHOS::Ros
     if (pipelineContext) {
         pipelineContext->SetDisplayWindowRectInfo(
             Rect(Offset(config.Left(), config.Top()), Size(config.Width(), config.Height())));
+        if (window_) {
+            bool isFullScreen = (window_->GetMode() == Rosen::WindowMode::WINDOW_MODE_FULLSCREEN);
+            auto isNeedAvoid = IsNeedAvoidWindowMode(window_);
+            pipelineContext->SetIsLayoutFullScreen(isFullScreen);
+            pipelineContext->SetIsNeedAvoidWindow(isNeedAvoid);
+        }
     }
     auto aceView = static_cast<Platform::AceViewSG*>(container->GetAceViewEx());
     CHECK_NULL_VOID(aceView);
+
+    if (!avoidAreas.empty()) {
+        auto ngContext = AceType::DynamicCast<NG::PipelineContext>(pipelineContext);
+        if (ngContext) {
+            taskExecutor->PostTask(
+                [ngContext, avoidAreas, config]() {
+                    ParseAvoidAreasUpdate(ngContext, avoidAreas, config);
+                },
+                TaskExecutor::TaskType::UI, "ArkUI-XUpdateViewportConfigAvoidArea");
+        }
+    }
+
     Platform::AceViewSG::SetViewportMetrics(aceView, config);
     Platform::AceViewSG::SurfaceChanged(
         aceView, config.Width(), config.Height(), config.Orientation(), static_cast<WindowSizeChangeReason>(reason));
@@ -831,6 +938,60 @@ bool UIContentImpl::GetAllComponents(NodeId nodeID, OHOS::Ace::Platform::Compone
     }
     LOGI("UIContentImpl::GetAllComponents exit.");
     return false;
+}
+
+void UIContentImpl::SetIgnoreViewSafeArea(bool ignoreViewSafeArea)
+{
+    TAG_LOGI(ACE_SAFE_AREA, "[%{public}d]: SetIgnoreViewSafeArea:%{public}u", instanceId_, ignoreViewSafeArea);
+    auto container = Platform::AceContainerSG::GetContainer(instanceId_);
+    CHECK_NULL_VOID(container);
+    ContainerScope scope(instanceId_);
+    auto pipeline = container->GetPipelineContext();
+    constexpr static int32_t PLATFORM_VERSION_TEN = 10;
+    CHECK_NULL_VOID(pipeline && pipeline->GetMinPlatformVersion() >= PLATFORM_VERSION_TEN);
+    auto taskExecutor = container->GetTaskExecutor();
+    CHECK_NULL_VOID(taskExecutor);
+    taskExecutor->PostSyncTask(
+        [container, ignoreSafeArea = ignoreViewSafeArea]() {
+            auto pipelineContext = container->GetPipelineContext();
+            CHECK_NULL_VOID(pipelineContext);
+            pipelineContext->SetIgnoreViewSafeArea(ignoreSafeArea);
+        },
+        TaskExecutor::TaskType::UI, "ArkUI-XSetIgnoreViewSafeArea");
+}
+
+void UIContentImpl::InitializeSafeArea(const RefPtr<Platform::AceContainerSG>& container)
+{
+    CHECK_NULL_VOID(container);
+    constexpr static int32_t PLATFORM_VERSION_TEN = 10;
+    auto pipeline = container->GetPipelineContext();
+    if (pipeline && pipeline->GetMinPlatformVersion() >= PLATFORM_VERSION_TEN) {
+        avoidAreaChangedListener_ = new AvoidAreaChangedListener(instanceId_);
+        window_->RegisterAvoidAreaChangeListener(avoidAreaChangedListener_);
+        auto systemInsets = GetViewSafeAreaByType(Rosen::AvoidAreaType::TYPE_SYSTEM);
+        auto cutoutInsets = GetViewSafeAreaByType(Rosen::AvoidAreaType::TYPE_CUTOUT);
+        auto navInsets = GetViewSafeAreaByType(Rosen::AvoidAreaType::TYPE_NAVIGATION_INDICATOR);
+        pipeline->UpdateSystemSafeAreaWithoutAnimation(systemInsets);
+        pipeline->UpdateCutoutSafeAreaWithoutAnimation(cutoutInsets);
+        pipeline->UpdateNavSafeAreaWithoutAnimation(navInsets);
+        TAG_LOGI(ACE_SAFE_AREA,
+            "InitializeSafeArea systemInsets:%{public}s, cutoutInsets:%{public}s, navInsets:%{public}s",
+            systemInsets.ToString().c_str(), cutoutInsets.ToString().c_str(), navInsets.ToString().c_str());
+    }
+}
+
+NG::SafeAreaInsets UIContentImpl::GetViewSafeAreaByType(OHOS::Rosen::AvoidAreaType type)
+{
+    CHECK_NULL_RETURN(window_, {});
+    Rosen::AvoidArea avoidArea;
+    Rosen::WMError ret = window_->GetAvoidAreaByType(type, avoidArea);
+    if (ret == Rosen::WMError::WM_OK) {
+        auto safeAreaInsets = ConvertAvoidArea(avoidArea);
+        LOGI("SafeArea get success, area type is:%{public}d insets area is:%{public}s", static_cast<int32_t>(type),
+            safeAreaInsets.ToString().c_str());
+        return safeAreaInsets;
+    }
+    return {};
 }
 
 void UIContentImpl::DumpInfo(const std::vector<std::string>& params, std::vector<std::string>& info)
