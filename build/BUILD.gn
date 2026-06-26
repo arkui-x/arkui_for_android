@@ -27,7 +27,6 @@ ohos_shared_library("libarkui_android") {
   deps = [
     "$ace_root/build:libace_static_android",
     "$ace_root/interfaces/inner_api/ace_kit:ace_kit",
-    "$ace_root/interfaces/native:ace_static_ndk",
     "//foundation/appframework:appframework_napis",
     "//plugins/interfaces/native:ace_plugin_util_inner_android",
   ]
