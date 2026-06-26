@@ -106,6 +106,7 @@ android_capability_java_files = [
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebAllSslErrorReceiveObject.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebSslErrorHelperObject.java",
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebSslErrorReceiveObject.java",
+  "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/web/AceWebWindowNewObject.java",
 
   # bridge files
   "$ace_root/adapter/android/capability/java/src/ohos/ace/adapter/capability/bridge/BridgeBaseCodec.java",

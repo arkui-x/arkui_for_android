@@ -140,6 +140,12 @@ public abstract class AceWebBase {
         IAceOnCallResourceMethod forceDarkAccess = (param) -> forceDarkAccess(param);
         this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "forceDarkAccess" + PARAM_BEGIN,
             forceDarkAccess);
+        IAceOnCallResourceMethod multiWindowAccess = (param) -> multiWindowAccess(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "multiWindowAccess" + PARAM_BEGIN,
+            multiWindowAccess);
+        IAceOnCallResourceMethod allowWindowOpenMethod = (param) -> allowWindowOpenMethod(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "allowWindowOpenMethod" + PARAM_BEGIN,
+            allowWindowOpenMethod);
     }
 
     private void callMethodMapPutXWardMethod() {
@@ -798,6 +804,24 @@ public abstract class AceWebBase {
     }
 
     /**
+     * This is called to fire onWindowNew event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public void fireWindowNew(Object obj) {
+        this.nativeOnObjectEvent(makeEventHash("onWindowNew"), "onWindowNew", obj);
+    }
+
+    /**
+     * This is called to fire onWindowExit event.
+     *
+     * @param obj the jni object of this event.
+     */
+    public void fireWindowExit(Object obj) {
+        this.nativeOnObjectEvent(makeEventHash("onWindowExit"), "onWindowExit", obj);
+    }
+
+    /**
      * This is called for activity resume.
      *
      */
@@ -1436,4 +1460,20 @@ public abstract class AceWebBase {
      * @return result of call.
      */
     public abstract String defaultFontSize(Map<String, String> params);
+
+    /**
+     * multiWindowAccess.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String multiWindowAccess(Map<String, String> params);
+
+    /**
+     * allowWindowOpenMethod.
+     *
+     * @param params is param map.
+     * @return result of call.
+     */
+    public abstract String allowWindowOpenMethod(Map<String, String> params);
 }

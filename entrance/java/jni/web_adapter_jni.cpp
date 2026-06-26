@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1277,6 +1277,159 @@ void JniWebSslErrorEventObject::Cancel(void* object, bool abortLoading, int inde
     CallVoidMethodFromJNI(obj, "cancel");
 }
 
+class JniWebWindowNewObject final : public WebWindowNewObject {
+public:
+    JniWebWindowNewObject() = default;
+    ~JniWebWindowNewObject() override
+    {
+        ClearObjects();
+    }
+
+    bool IsAlert(void* object) override
+    {
+        if (!object) {
+            return false;
+        }
+        return GetBoolFromJNI(*(jobject*)object, "isAlert");
+    }
+
+    bool IsUserTrigger(void* object) override
+    {
+        if (!object) {
+            return false;
+        }
+        return GetBoolFromJNI(*(jobject*)object, "isUserTrigger");
+    }
+
+    std::string GetTargetUrl(void* object) override
+    {
+        if (!object) {
+            return "";
+        }
+        return GetStringFromJNI(*(jobject*)object, "getTargetUrl");
+    }
+
+    int AddObject(void* object) override
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        objectMap_[++index_] = new WebObject(object);
+        return index_;
+    }
+
+    void DelObject(int index) override
+    {
+        CancelPopup(index);
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto iter = objectMap_.find(index);
+        if (iter != objectMap_.end()) {
+            auto obj = iter->second;
+            delete obj;
+            objectMap_.erase(index);
+        }
+    }
+
+    void CompleteWithChildWeb(int index, int32_t childWebId) override
+    {
+        auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
+        if (!env) {
+            LOGE("CompleteWithChildWeb: env is null");
+            return;
+        }
+        jobject jobj = GetJobject(index);
+        if (!jobj) {
+            LOGE("CompleteWithChildWeb: jobject is null for index %{public}d", index);
+            return;
+        }
+        const jclass clazz = env->GetObjectClass(jobj);
+        if (clazz == nullptr) {
+            LOGE("CompleteWithChildWeb: clazz is null");
+            env->DeleteLocalRef(jobj);
+            return;
+        }
+        jmethodID method = env->GetMethodID(clazz, "completeWithChildWeb", "(J)V");
+        if (method == nullptr) {
+            LOGE("CompleteWithChildWeb: method not found");
+            env->DeleteLocalRef(clazz);
+            env->DeleteLocalRef(jobj);
+            return;
+        }
+        env->CallVoidMethod(jobj, method, (jlong)childWebId);
+        if (env->ExceptionCheck()) {
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+        }
+        env->DeleteLocalRef(clazz);
+        env->DeleteLocalRef(jobj);
+    }
+
+    void CancelPopup(int index) override
+    {
+        auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
+        if (!env) {
+            LOGE("CancelPopup: env is null");
+            return;
+        }
+        jobject jobj = GetJobject(index);
+        if (!jobj) {
+            LOGE("CancelPopup: jobject is null for index %{public}d", index);
+            return;
+        }
+        const jclass clazz = env->GetObjectClass(jobj);
+        if (clazz == nullptr) {
+            LOGE("CancelPopup: clazz is null");
+            env->DeleteLocalRef(jobj);
+            return;
+        }
+        jmethodID method = env->GetMethodID(clazz, "cancelPopup", "()V");
+        if (method == nullptr) {
+            LOGE("CancelPopup: method not found");
+            env->DeleteLocalRef(clazz);
+            env->DeleteLocalRef(jobj);
+            return;
+        }
+        env->CallVoidMethod(jobj, method);
+        if (env->ExceptionCheck()) {
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+        }
+        env->DeleteLocalRef(clazz);
+        env->DeleteLocalRef(jobj);
+    }
+
+private:
+    void ClearObjects()
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        for (auto& [index, object] : objectMap_) {
+            delete object;
+        }
+        objectMap_.clear();
+    }
+
+    jobject GetJobject(int index)
+    {
+        auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
+        if (!env) {
+            LOGE("GetJobject: env is null");
+            return nullptr;
+        }
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto iter = objectMap_.find(index);
+        if (iter == objectMap_.end()) {
+            return nullptr;
+        }
+        jobject globalRef = iter->second->Get().get();
+        if (!globalRef) {
+            return nullptr;
+        }
+        return env->NewLocalRef(globalRef);
+    }
+
+    int index_ = 0;
+    std::unordered_map<int, WebObject*> objectMap_;
+    std::mutex mutex_;
+};
+
 bool WebAdapterJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
     auto JWebResourceRequestObject = Referenced::MakeRefPtr<JniWebResourceRequestObject>();
@@ -1314,6 +1467,8 @@ bool WebAdapterJni::Register(const std::shared_ptr<JNIEnv>& env)
         JWebOnSslErrorEventReceiveEventObject);
     auto JWebSslErrorEventObject = Referenced::MakeRefPtr<JniWebSslErrorEventObject>();
     OHOS::Ace::WebObjectEventManager::GetInstance().SetSslErrorEventObject(JWebSslErrorEventObject);
+    auto JWebWindowNewObject = Referenced::MakeRefPtr<JniWebWindowNewObject>();
+    OHOS::Ace::WebObjectEventManager::GetInstance().SetWindowNewObject(JWebWindowNewObject);
     static const JNINativeMethod methods[] = {
         {
             .name = "nativeOnObjectEvent",

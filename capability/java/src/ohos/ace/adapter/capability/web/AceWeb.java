@@ -40,6 +40,7 @@ import android.webkit.HttpAuthHandler;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.PermissionRequest;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.SslErrorHandler;
 import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
@@ -59,6 +60,7 @@ import android.os.Handler;
 import android.os.Looper;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.ArrayDeque;
 import android.animation.ValueAnimator;
 import java.io.File;
 import java.io.IOException;
@@ -268,6 +270,10 @@ public class AceWeb extends AceWebBase {
 
     private static final int FORCE_DARK_AUTO = 2;
 
+    private static final int RENDER_EXIT_REASON_CRASHED = 2;
+
+    private static final int RENDER_EXIT_REASON_UNKNOWN = 4;
+
     private static String currentPageUrl;
 
     private static String routerUrl;
@@ -355,6 +361,12 @@ public class AceWeb extends AceWebBase {
     private volatile long lastLongPressSelectionTimeMs = 0L;
     private String lastSelectionText = "";
     private boolean isReceiverRegistered = false;  // 新增注册标志位
+
+    private boolean isAllowWindowOpenMethod = true;
+
+    private boolean isMultiWindowAccessEnabled = false;
+
+    private final ArrayDeque<String> pendingPopupTargetUrls = new ArrayDeque<String>();
 
     public AceWeb(long id, Context context, View view, IAceOnResourceEvent callback) {
         super(id, callback);
@@ -733,6 +745,7 @@ public class AceWeb extends AceWebBase {
                 }
                 AceWeb.this.onPageLoaded(url);
                 injectTextSelectionScript();
+                injectPopupHookScript();
                 isPageLoaded = true;
                 if (isFitContentMode) {
                     updateContentHeight();
@@ -841,6 +854,16 @@ public class AceWeb extends AceWebBase {
                 AceWebAllSslErrorReceiveObject allSslErrorObject = new AceWebAllSslErrorReceiveObject(
                         error, handler, referrer, isMainFrame);
                 AceWeb.this.fireAllSslErrorReceive(allSslErrorObject);
+            }
+
+            @Override
+            public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                if (detail != null && detail.didCrash()) {
+                    AceWeb.this.fireRenderExited(RENDER_EXIT_REASON_CRASHED);
+                } else {
+                    AceWeb.this.fireRenderExited(RENDER_EXIT_REASON_UNKNOWN);
+                }
+                return true;
             }
         });
         webView.setWebChromeClient(new WebChromeClient() {
@@ -977,6 +1000,31 @@ public class AceWeb extends AceWebBase {
                 }
                 return true;
             }
+
+            @Override
+            public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture,
+                    android.os.Message resultMsg) {
+                if (!isMultiWindowAccessEnabled) {
+                    return false;
+                }
+                String targetUrl = pollPendingPopupTargetUrl();
+                if ((targetUrl == null || targetUrl.isEmpty()) && view != null) {
+                    WebView.HitTestResult hitTestResult = view.getHitTestResult();
+                    if (hitTestResult != null && hitTestResult.getExtra() != null) {
+                        targetUrl = hitTestResult.getExtra();
+                    }
+                }
+                WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
+                AceWebWindowNewObject object = new AceWebWindowNewObject(
+                    context, isDialog, isUserGesture, targetUrl, transport, resultMsg);
+                AceWeb.this.fireWindowNew(object);
+                return true;
+            }
+
+            @Override
+            public void onCloseWindow(WebView window) {
+                AceWeb.this.fireWindowExit(null);
+            }
         });
         webView.setDownloadListener(new DownloadListener() {
             @Override
@@ -1024,9 +1072,11 @@ public class AceWeb extends AceWebBase {
         try {
             webView.getSettings().setJavaScriptEnabled(true);
             webView.addJavascriptInterface(new TextSelectionJSInterface(), "AceWebSelectionHandler");
+            webView.addJavascriptInterface(new PopupWindowJSInterface(), "AceWebPopupHandler");
             String url = webView.getUrl();
             if (url != null && !url.isEmpty()) {
                 injectTextSelectionScript();
+                injectPopupHookScript();
             }
         } catch (IllegalArgumentException | SecurityException e) {
             ALog.e(LOG_TAG, "initWeb injection failed");
@@ -1141,7 +1191,8 @@ public class AceWeb extends AceWebBase {
 
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
         webSettings.setAllowFileAccess(false);
-        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
+        webSettings.setJavaScriptCanOpenWindowsAutomatically(isAllowWindowOpenMethod);
+        webSettings.setSupportMultipleWindows(isMultiWindowAccessEnabled);
         webSettings.setLoadsImagesAutomatically(true);
         webSettings.setDefaultTextEncodingName("utf-8");
         webSettings.setDomStorageEnabled(true);
@@ -3331,5 +3382,155 @@ public class AceWeb extends AceWebBase {
                 ALog.e(LOG_TAG, "updateContentHeight parse js height failed");
             }
         });
+    }
+
+    /**
+     * Allows or disallows the WebView to open new windows automatically.
+     *
+     * @param params A map containing the "allowWindowOpenMethod" key with a value of "1" to allow or "0" to disallow.
+     * @return SUCCESS_TAG if the operation was successful, otherwise FAIL_TAG.
+     */
+    public String allowWindowOpenMethod(Map<String, String> params) {
+        if (params == null || !params.containsKey("allowWindowOpenMethod") || webView == null) {
+            return FAIL_TAG;
+        }
+        boolean access = true;
+        try {
+            int accessNum = Integer.parseInt(params.get("allowWindowOpenMethod"));
+            access = accessNum == 1;
+        } catch (NumberFormatException ignored) {
+            ALog.e(LOG_TAG, "allowWindowOpenMethod NumberFormatException");
+            return FAIL_TAG;
+        }
+        isAllowWindowOpenMethod = access;
+        webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(access);
+        return SUCCESS_TAG;
+    }
+
+    /**
+     * Enables or disables multi-window access for the WebView.
+     *
+     * @param params A map containing the "multiWindowAccess" key with a value of "1" to enable or "0" to disable.
+     * @return SUCCESS_TAG if the operation was successful, otherwise FAIL_TAG.
+     */
+    public String multiWindowAccess(Map<String, String> params) {
+        if (params == null || !params.containsKey("multiWindowAccess") || webView == null) {
+            return FAIL_TAG;
+        }
+        boolean access = false;
+        try {
+            int accessNum = Integer.parseInt(params.get("multiWindowAccess"));
+            access = accessNum == 1;
+        } catch (NumberFormatException ignored) {
+            ALog.e(LOG_TAG, "multiWindowAccess NumberFormatException");
+            return FAIL_TAG;
+        }
+        isMultiWindowAccessEnabled = access;
+        webView.getSettings().setSupportMultipleWindows(access);
+        return SUCCESS_TAG;
+    }
+
+    /**
+     * Injects a JavaScript snippet into the WebView to intercept popup window
+     * requests (window.open / target=_blank) and forward them to the Java-side
+     * JS bridge via AceWebPopupHandler.
+     */
+    private void injectPopupHookScript() {
+        if (webView == null) {
+            return;
+        }
+
+        final String popupHookJS = buildPopupHookScript();
+
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                webView.evaluateJavascript(popupHookJS, null);
+            } else {
+                webView.loadUrl("javascript:" + popupHookJS);
+            }
+        } catch (IllegalArgumentException | SecurityException | IllegalStateException e) {
+            ALog.e(LOG_TAG, "inject popupHookJS failed");
+        } catch (RuntimeException e) {
+            ALog.e(LOG_TAG, "inject popupHookJS runtime error");
+        }
+    }
+
+    /**
+     * Builds JavaScript for intercepting popup window requests (window.open / target=_blank).
+     *
+     * @return JavaScript code string for popup hook
+     */
+    private String buildPopupHookScript() {
+        return "(function() {" +
+                "    if (!window.__acePopupHookInstalled) {" +
+                "        window.__acePopupHookInstalled = true;" +
+                "        var nativeOpen = window.open;" +
+                "        var notifyPopupTarget = function(url) {" +
+                "            try {" +
+                "                var resolvedUrl = url ? new URL(url, document.baseURI).toString() : '';" +
+                "                if (window.AceWebPopupHandler && window.AceWebPopupHandler.onPopupRequested) {" +
+                "                    window.AceWebPopupHandler.onPopupRequested(resolvedUrl);" +
+                "                }" +
+                "            } catch (e) {" +
+                "                try {" +
+                "                    if (window.AceWebPopupHandler && window.AceWebPopupHandler.onPopupRequested) {" +
+                "                        window.AceWebPopupHandler.onPopupRequested(url ? String(url) : '');" +
+                "                    }" +
+                "                } catch (ignore) {}" +
+                "            }" +
+                "        };" +
+                "        window.open = function(url, name, specs, replace) {" +
+                "            notifyPopupTarget(url);" +
+                "            if (!nativeOpen) {" +
+                "                return null;" +
+                "            }" +
+                "            return nativeOpen.call(window, url, name, specs, replace);" +
+                "        };" +
+                "        document.addEventListener('click', function(event) {" +
+                "            var node = event.target;" +
+                "            while (node) {" +
+                "                if (node.tagName &&" +
+                "                    node.tagName.toLowerCase() === 'a' &&" +
+                "                    node.target === '_blank') {" +
+                "                    notifyPopupTarget(node.href);" +
+                "                    break;" +
+                "                }" +
+                "                node = node.parentElement;" +
+                "            }" +
+                "        }, true);" +
+                "    }" +
+                "})();";
+    }
+
+    private synchronized void cachePopupTargetUrl(String targetUrl) {
+        if (targetUrl == null || targetUrl.isEmpty() || !isMultiWindowAccessEnabled) {
+            return;
+        }
+        pendingPopupTargetUrls.offer(targetUrl);
+    }
+
+    private synchronized String pollPendingPopupTargetUrl() {
+        String targetUrl = pendingPopupTargetUrls.poll();
+        return targetUrl == null ? "" : targetUrl;
+    }
+
+    private class PopupWindowJSInterface {
+        /**
+         * Receives the popup target URL captured by injected JavaScript.
+         *
+         * @param targetUrl popup target URL requested by window.open or target=_blank.
+         */
+        @android.webkit.JavascriptInterface
+        public void onPopupRequested(final String targetUrl) {
+            if (webView == null) {
+                return;
+            }
+            webView.post(new Runnable() {
+                @Override
+                public void run() {
+                    cachePopupTargetUrl(targetUrl == null ? "" : targetUrl);
+                }
+            });
+        }
     }
 }
