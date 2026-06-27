@@ -48,6 +48,7 @@ public:
     static void SetPackageName(JNIEnv* env, jclass myclass, jstring object);
     static void NativeSetLogger(JNIEnv* env, jobject jobj, jobject jobjLogger);
     static void NativeSetLogLevel(JNIEnv* env, jobject jobj, jint level);
+    static void OnTrimMemory(JNIEnv* env, jclass myclass, jint level);
     static void DispatchApplicationOnForeground(JNIEnv* env, jclass myclass);
     static void DispatchApplicationOnBackground(JNIEnv* env, jclass myclass);
     static void PreloadModule(JNIEnv* env, jclass myclass, jstring jModuleName, jstring jAbilityName);

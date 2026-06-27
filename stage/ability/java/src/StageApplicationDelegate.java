@@ -155,6 +155,8 @@ public class StageApplicationDelegate {
 
     private boolean shouldLoadUI = true;
 
+    private float lastFontScale = 1.0f;
+
     private ContentObserver fontScaleObserver = new ContentObserver(new Handler(Looper.getMainLooper())) {
         @Override
         public void onChange(boolean selfChange) {
@@ -164,6 +166,10 @@ public class StageApplicationDelegate {
             }
             float fontScale = Settings.System.getFloat(stageApplication.getContentResolver(),
                     Settings.System.FONT_SCALE, 1.0f);
+            if (Float.compare(fontScale, lastFontScale) == 0) {
+                return;
+            }
+            lastFontScale = fontScale;
             Configuration config = stageApplication.getResources().getConfiguration();
             config.fontScale = fontScale;
             onConfigurationChanged(config);
@@ -655,6 +661,7 @@ public class StageApplicationDelegate {
         ALog.i(LOG_TAG, "StageApplication initConfiguration called");
         float fontScale = Settings.System.getFloat(stageApplication.getContentResolver(), Settings.System.FONT_SCALE,
             1.0f);
+        lastFontScale = fontScale;
         Configuration cfg = stageApplication.getResources().getConfiguration();
         cfg.fontScale = fontScale;
         double diagonalSize = getDeviceTypeByPhysicalSize();
@@ -951,15 +958,29 @@ public class StageApplicationDelegate {
     }
 
     /**
+     * Called by the system when the system is low on memory.
+     *
+     * @param level trim memory level.
+     */
+    public void onTrimMemory(int level) {
+        ALog.i(LOG_TAG, "onTrimMemory called, level: " + level);
+        nativeOnTrimMemory(level);
+    }
+
+    /**
      * Called by the system when the device configuration changes while your component is running.
      *
      * @param newConfig the configuration.
      */
     public void onConfigurationChanged(Configuration newConfig) {
+        // Track actual fontScale to prevent fontScaleObserver from triggering
+        // a duplicate callback when font scale hasn't actually changed.
         if (stageApplication != null) {
-            newConfig.fontScale = Settings.System.getFloat(stageApplication.getContentResolver(),
+            lastFontScale = Settings.System.getFloat(stageApplication.getContentResolver(),
                     Settings.System.FONT_SCALE, 1.0f);
+            newConfig.fontScale = lastFontScale;
         }
+        ALog.i(LOG_TAG, "onConfigurationChanged called, fontScale=" + lastFontScale);
         setLocaleInfo();
         JSONObject json = StageConfiguration.convertConfiguration(newConfig, -1.0);
         nativeOnConfigurationChanged(json.toString());
@@ -1362,6 +1383,8 @@ public class StageApplicationDelegate {
     private native void nativeInitConfiguration(String data);
 
     private native void nativeOnConfigurationChanged(String data);
+
+    private native void nativeOnTrimMemory(int level);
 
     private native void nativeSetLocale(String language, String country, String script);
 

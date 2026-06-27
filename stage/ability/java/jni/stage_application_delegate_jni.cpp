@@ -32,6 +32,23 @@ namespace AbilityRuntime {
 namespace Platform {
 namespace {
 OHOS::Ace::LogLevel g_currentLogLevel = OHOS::Ace::LogLevel::ERROR;
+// ComponentCallbacks2.onTrimMemory level constants (API 14+)
+constexpr int32_t TRIM_MEMORY_RUNNING_MODERATE = 5;
+constexpr int32_t TRIM_MEMORY_RUNNING_LOW = 10;
+constexpr int32_t TRIM_MEMORY_RUNNING_CRITICAL = 15;
+constexpr int32_t TRIM_MEMORY_UI_HIDDEN = 20;
+constexpr int32_t TRIM_MEMORY_BACKGROUND = 40;
+constexpr int32_t TRIM_MEMORY_MODERATE = 60;
+constexpr int32_t TRIM_MEMORY_COMPLETE = 80;
+
+// OnMemoryLevel values (correspond to OpenHarmony MemoryLevel enum)
+constexpr int32_t MEMORY_LEVEL_MODERATE = 0;
+constexpr int32_t MEMORY_LEVEL_LOW = 1;
+constexpr int32_t MEMORY_LEVEL_CRITICAL = 2;
+constexpr int32_t MEMORY_LEVEL_UI_HIDDEN = 3;
+constexpr int32_t MEMORY_LEVEL_BACKGROUND_MODERATE = 4;
+constexpr int32_t MEMORY_LEVEL_BACKGROUND_LOW = 5;
+constexpr int32_t MEMORY_LEVEL_BACKGROUND_CRITICAL = 6;
 } // namespace
 bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
@@ -106,6 +123,11 @@ bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
             .name = "nativeInitConfiguration",
             .signature = "(Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&InitConfiguration),
+        },
+        {
+            .name = "nativeOnTrimMemory",
+            .signature = "(I)V",
+            .fnPtr = reinterpret_cast<void*>(&OnTrimMemory),
         },
         {
             .name = "nativeOnConfigurationChanged",
@@ -339,6 +361,35 @@ void StageApplicationDelegateJni::OnConfigurationChanged(JNIEnv* env, jclass myc
     }
     AppMain::GetInstance()->OnConfigurationUpdate(jsonConfiguration);
     env->ReleaseStringUTFChars(data, jsonConfiguration);
+}
+
+static int32_t MapAndroidTrimLevel(int androidLevel)
+{
+    switch (androidLevel) {
+        case TRIM_MEMORY_RUNNING_MODERATE:
+            return MEMORY_LEVEL_MODERATE;
+        case TRIM_MEMORY_RUNNING_LOW:
+            return MEMORY_LEVEL_LOW;
+        case TRIM_MEMORY_RUNNING_CRITICAL:
+            return MEMORY_LEVEL_CRITICAL;
+        case TRIM_MEMORY_UI_HIDDEN:
+            return MEMORY_LEVEL_UI_HIDDEN;
+        case TRIM_MEMORY_BACKGROUND:
+            return MEMORY_LEVEL_BACKGROUND_MODERATE;
+        case TRIM_MEMORY_MODERATE:
+            return MEMORY_LEVEL_BACKGROUND_LOW;
+        case TRIM_MEMORY_COMPLETE:
+            return MEMORY_LEVEL_BACKGROUND_CRITICAL;
+        default:
+            return MEMORY_LEVEL_LOW;
+    }
+}
+
+void StageApplicationDelegateJni::OnTrimMemory(JNIEnv* env, jclass myclass, jint level)
+{
+    LOGI("JNI OnTrimMemory is called, level: %d", level);
+    int32_t mappedLevel = MapAndroidTrimLevel(level);
+    AppMain::GetInstance()->OnMemoryLevel(mappedLevel);
 }
 
 void StageApplicationDelegateJni::SetLocale(

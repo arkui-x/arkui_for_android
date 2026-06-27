@@ -57,6 +57,23 @@ public class StageApplication extends Application {
         appDelegate.onConfigurationChanged(newConfig);
     }
 
+    /**
+     * Call when the system is low on memory.
+     * Forwards to ArkUI-X framework to notify Ability/AbilityStage.
+     *
+     * @param level trim memory level.
+     */
+    @Override
+    public void onTrimMemory(int level) {
+        ALog.i(LOG_TAG, "StageApplication onTrimMemory called, level: " + level);
+        super.onTrimMemory(level);
+        if (appDelegate == null) {
+            ALog.e(LOG_TAG, "appDelegate is null");
+            return;
+        }
+        appDelegate.onTrimMemory(level);
+    }
+
     @Override
     public void attachBaseContext(Context context) {
         ALog.i(LOG_TAG, "StageApplication attachBaseContext called");
