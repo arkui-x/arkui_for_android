@@ -60,6 +60,9 @@ const std::unordered_map<std::string, std::string> soMap = {
     {"MenuItem", "menu"},
     {"MenuItemGroup", "menu"},
     {"TextClock", "textclock"},
+    {"ArcList", "arclist"},
+    {"ArcListItem", "arclist"},
+    {"ArcScrollBar", "arcscrollbar"},
 };
 } // namespace
 DynamicModuleHelper& DynamicModuleHelper::GetInstance()
