@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -50,6 +50,8 @@ void DisplayInfoJni::SetupDisplayInfo(JNIEnv* env, jobject obj)
 {
     LOGI("DisplayInfoJni::SetupDisplayInfo called");
 
+    ReleaseDisplayInfo(env, obj);
+
     jclass clazz = env->GetObjectClass(obj);
     displayInfoStruct_.object = env->NewGlobalRef(obj);
     displayInfoStruct_.clazz = (jclass)env->NewGlobalRef(clazz);
@@ -63,6 +65,18 @@ void DisplayInfoJni::SetupDisplayInfo(JNIEnv* env, jobject obj)
     displayInfoStruct_.getScaledDensityMethod = env->GetMethodID(clazz, "getScaledDensity", "()F");
     displayInfoStruct_.getXDpiMethod = env->GetMethodID(clazz, "getXDpi", "()F");
     displayInfoStruct_.getYDpiMethod = env->GetMethodID(clazz, "getYDpi", "()F");
+    displayInfoStruct_.getRotationMethod = env->GetMethodID(clazz, "getRotation", "()I");
+    displayInfoStruct_.getDisplayIdWithIdMethod = env->GetMethodID(clazz, "getDisplayId", "(I)I");
+    displayInfoStruct_.getRotationWithIdMethod = env->GetMethodID(clazz, "getRotation", "(I)I");
+    displayInfoStruct_.getOrentationWithIdMethod = env->GetMethodID(clazz, "getOrentation", "(I)I");
+    displayInfoStruct_.getWidthWithIdMethod = env->GetMethodID(clazz, "getWidth", "(I)I");
+    displayInfoStruct_.getHeightWithIdMethod = env->GetMethodID(clazz, "getHeight", "(I)I");
+    displayInfoStruct_.getRefreshRateWithIdMethod = env->GetMethodID(clazz, "getRefreshRate", "(I)F");
+    displayInfoStruct_.getDensityPixelsWithIdMethod = env->GetMethodID(clazz, "getDensityPixels", "(I)F");
+    displayInfoStruct_.getDensityDpiWithIdMethod = env->GetMethodID(clazz, "getDensityDpi", "(I)I");
+    displayInfoStruct_.getScaledDensityWithIdMethod = env->GetMethodID(clazz, "getScaledDensity", "(I)F");
+    displayInfoStruct_.getXDpiWithIdMethod = env->GetMethodID(clazz, "getXDpi", "(I)F");
+    displayInfoStruct_.getYDpiWithIdMethod = env->GetMethodID(clazz, "getYDpi", "(I)F");
 }
 
 int DisplayInfoJni::getDisplayId()
@@ -178,7 +192,7 @@ float DisplayInfoJni::getXDpi()
     }
     jfloat xDpi = env->CallFloatMethod(displayInfoStruct_.object, displayInfoStruct_.getXDpiMethod);
     if (env->ExceptionCheck()) {
-        LOGE("getXDpi JNI has exception");
+        LOGE("GetXDpi JNI has exception");
         env->ExceptionDescribe();
         env->ExceptionClear();
         return -1;
@@ -195,12 +209,201 @@ float DisplayInfoJni::getYDpi()
     }
     jfloat yDpi = env->CallFloatMethod(displayInfoStruct_.object, displayInfoStruct_.getYDpiMethod);
     if (env->ExceptionCheck()) {
-        LOGE("getYDpi JNI has exception");
+        LOGE("GetYDpi JNI has exception");
         env->ExceptionDescribe();
         env->ExceptionClear();
         return -1;
     }
     return (float)yDpi;
+}
+
+uint32_t DisplayInfoJni::GetRotation()
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("DisplayInfo::GetRotation env is NULL");
+        return 0;
+    }
+
+    jint rotation = env->CallIntMethod(displayInfoStruct_.object, displayInfoStruct_.getRotationMethod);
+
+    return static_cast<uint32_t>(rotation);
+}
+
+int DisplayInfoJni::GetDisplayId(int displayId)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("DisplayInfo::GetDisplayId env is NULL");
+        return -1;
+    }
+
+    jint displayIdValue = env->CallIntMethod(displayInfoStruct_.object, displayInfoStruct_.getDisplayIdWithIdMethod,
+        static_cast<jint>(displayId));
+
+    return static_cast<int>(displayIdValue);
+}
+
+uint32_t DisplayInfoJni::GetRotation(int displayId)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("DisplayInfo::GetRotation env is NULL");
+        return 0;
+    }
+
+    jint rotation = env->CallIntMethod(displayInfoStruct_.object, displayInfoStruct_.getRotationWithIdMethod,
+        static_cast<jint>(displayId));
+
+    return static_cast<uint32_t>(rotation);
+}
+
+int DisplayInfoJni::GetOrentation(int displayId)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("DisplayInfo::GetOrentation env is NULL");
+        return -1;
+    }
+
+    jint orentation = env->CallIntMethod(displayInfoStruct_.object, displayInfoStruct_.getOrentationWithIdMethod,
+        static_cast<jint>(displayId));
+
+    return (int)orentation;
+}
+
+int32_t DisplayInfoJni::GetDisplayWidth(int displayId)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("DisplayInfo::GetDisplayWidth env is NULL");
+        return -1;
+    }
+
+    jint width = env->CallIntMethod(displayInfoStruct_.object, displayInfoStruct_.getWidthWithIdMethod,
+        static_cast<jint>(displayId));
+
+    return (int32_t)width;
+}
+
+int32_t DisplayInfoJni::GetDisplayHeight(int displayId)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("DisplayInfo::GetDisplayHeight env is NULL");
+        return -1;
+    }
+
+    jint height = env->CallIntMethod(displayInfoStruct_.object, displayInfoStruct_.getHeightWithIdMethod,
+        static_cast<jint>(displayId));
+
+    return (int32_t)height;
+}
+
+float DisplayInfoJni::GetRefreshRate(int displayId)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("DisplayInfo::GetRefreshRate env is NULL");
+        return -1;
+    }
+
+    jfloat refreshRate = env->CallFloatMethod(displayInfoStruct_.object, displayInfoStruct_.getRefreshRateWithIdMethod,
+        static_cast<jint>(displayId));
+
+    return (float)refreshRate;
+}
+
+float DisplayInfoJni::GetDensityPixels(int displayId)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("DisplayInfo::GetDensityPixels env is NULL");
+        return -1;
+    }
+
+    jfloat refreshRate = env->CallFloatMethod(displayInfoStruct_.object,
+        displayInfoStruct_.getDensityPixelsWithIdMethod,
+        static_cast<jint>(displayId));
+
+    return (float)refreshRate;
+}
+
+int DisplayInfoJni::GetDensityDpi(int displayId)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("DisplayInfo::GetDensityDpi env is NULL");
+        return -1;
+    }
+
+    jfloat refreshRate = env->CallIntMethod(displayInfoStruct_.object, displayInfoStruct_.getDensityDpiWithIdMethod,
+        static_cast<jint>(displayId));
+
+    return (int)refreshRate;
+}
+
+float DisplayInfoJni::GetScaledDensity(int displayId)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("DisplayInfo::GetScaledDensity env is NULL");
+        return -1;
+    }
+
+    jfloat refreshRate = env->CallFloatMethod(displayInfoStruct_.object,
+        displayInfoStruct_.getScaledDensityWithIdMethod,
+        static_cast<jint>(displayId));
+
+    return (float)refreshRate;
+}
+
+float DisplayInfoJni::GetXDpi(int displayId)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("DisplayInfo::GetXDpi env is NULL");
+        return -1;
+    }
+    jfloat xDpi = env->CallFloatMethod(displayInfoStruct_.object, displayInfoStruct_.getXDpiWithIdMethod,
+        static_cast<jint>(displayId));
+    if (env->ExceptionCheck()) {
+        LOGE("GetXDpi JNI has exception");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return -1;
+    }
+    return (float)xDpi;
+}
+
+float DisplayInfoJni::GetYDpi(int displayId)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("DisplayInfo::GetYDpi env is NULL");
+        return -1;
+    }
+    jfloat yDpi = env->CallFloatMethod(displayInfoStruct_.object, displayInfoStruct_.getYDpiWithIdMethod,
+        static_cast<jint>(displayId));
+    if (env->ExceptionCheck()) {
+        LOGE("GetYDpi JNI has exception");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return -1;
+    }
+    return (float)yDpi;
+}
+
+void DisplayInfoJni::ReleaseDisplayInfo(JNIEnv* env, jobject obj)
+{
+    if (displayInfoStruct_.object != nullptr) {
+        env->DeleteGlobalRef(displayInfoStruct_.object);
+        displayInfoStruct_.object = nullptr;
+    }
+    if (displayInfoStruct_.clazz != nullptr) {
+        env->DeleteGlobalRef(displayInfoStruct_.clazz);
+        displayInfoStruct_.clazz = nullptr;
+    }
 }
 
 } // namespace OHOS::Ace::Platform

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,7 @@
 package ohos.ace.adapter;
 
 import android.content.Context;
+import android.hardware.display.DisplayManager;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.WindowManager;
@@ -28,8 +29,10 @@ import ohos.ace.adapter.ALog;
 public class DisplayInfo {
     private static final String TAG = "DisplayInfo";
     private static volatile DisplayInfo sInstance;
+    private static final int INVALID_DISPLAY_ID = -1;
 
     private WindowManager mWindowManager;
+    private DisplayManager mDisplayManager;
 
     private DisplayInfo() {
         ALog.d(TAG, "DisplayInfo created.");
@@ -59,7 +62,19 @@ public class DisplayInfo {
      */
     public void setContext(Context context) {
         mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        mDisplayManager = (DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
         nativeSetupDisplayInfo();
+    }
+
+    private Display getTargetDisplay(int displayId) {
+        if (mWindowManager == null) {
+            return null;
+        }
+        if (displayId == INVALID_DISPLAY_ID || mDisplayManager == null) {
+            return mWindowManager.getDefaultDisplay();
+        }
+        Display display = mDisplayManager.getDisplay(displayId);
+        return display != null ? display : mWindowManager.getDefaultDisplay();
     }
 
     /**
@@ -74,6 +89,21 @@ public class DisplayInfo {
     }
 
     /**
+     * Gets display id by specified display id.
+     *
+     * @param displayId the display id
+     * @return the display id
+     */
+    public int getDisplayId(int displayId) {
+        ALog.d(TAG, "getDisplayId called.");
+        Display display = getTargetDisplay(displayId);
+        if (display == null) {
+            return INVALID_DISPLAY_ID;
+        }
+        return display.getDisplayId();
+    }
+
+    /**
      * Gets orentation.
      *
      * @return the orentation
@@ -82,6 +112,47 @@ public class DisplayInfo {
         ALog.d(TAG, "getOrentation called.");
         Display defaultDisplay = mWindowManager.getDefaultDisplay();
         return defaultDisplay.getRotation();
+    }
+
+    /**
+     * Gets orentation by specified display id.
+     *
+     * @param displayId the display id
+     * @return the orentation
+     */
+    public int getOrentation(int displayId) {
+        ALog.d(TAG, "getOrentation called.");
+        Display display = getTargetDisplay(displayId);
+        if (display == null) {
+            return 0;
+        }
+        return display.getRotation();
+    }
+
+    /**
+     * Gets rotation.
+     *
+     * @return the rotation
+     */
+    public int getRotation() {
+        ALog.d(TAG, "getRotation called.");
+        Display defaultDisplay = mWindowManager.getDefaultDisplay();
+        return defaultDisplay.getRotation();
+    }
+
+    /**
+     * Gets rotation by specified display id.
+     *
+     * @param displayId the display id
+     * @return the rotation
+     */
+    public int getRotation(int displayId) {
+        ALog.d(TAG, "getRotation called.");
+        Display display = getTargetDisplay(displayId);
+        if (display == null) {
+            return 0;
+        }
+        return display.getRotation();
     }
 
     /**
@@ -94,6 +165,23 @@ public class DisplayInfo {
         DisplayMetrics metrics = new DisplayMetrics();
         Display defaultDisplay = mWindowManager.getDefaultDisplay();
         defaultDisplay.getRealMetrics(metrics);
+        return metrics.widthPixels;
+    }
+
+    /**
+     * Gets width by specified display id.
+     *
+     * @param displayId the display id
+     * @return the width
+     */
+    public int getWidth(int displayId) {
+        ALog.d(TAG, "getWidth called.");
+        Display display = getTargetDisplay(displayId);
+        if (display == null) {
+            return 0;
+        }
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getRealMetrics(metrics);
         return metrics.widthPixels;
     }
 
@@ -111,6 +199,23 @@ public class DisplayInfo {
     }
 
     /**
+     * Gets height by specified display id.
+     *
+     * @param displayId the display id
+     * @return the height
+     */
+    public int getHeight(int displayId) {
+        ALog.d(TAG, "getHeight called.");
+        Display display = getTargetDisplay(displayId);
+        if (display == null) {
+            return 0;
+        }
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getRealMetrics(metrics);
+        return metrics.heightPixels;
+    }
+
+    /**
      * Gets refresh rate.
      *
      * @return the refresh rate
@@ -122,6 +227,21 @@ public class DisplayInfo {
     }
 
     /**
+     * Gets refresh rate by specified display id.
+     *
+     * @param displayId the display id
+     * @return the refresh rate
+     */
+    public float getRefreshRate(int displayId) {
+        ALog.d(TAG, "getRefreshRate called.");
+        Display display = getTargetDisplay(displayId);
+        if (display == null) {
+            return 0.0f;
+        }
+        return display.getRefreshRate();
+    }
+
+    /**
      * Gets density pixels.
      *
      * @return the density pixels.
@@ -130,6 +250,23 @@ public class DisplayInfo {
         ALog.d(TAG, "getDensityPixels called.");
         DisplayMetrics metrics = new DisplayMetrics();
         mWindowManager.getDefaultDisplay().getMetrics(metrics);
+        return metrics.density;
+    }
+
+    /**
+     * Gets density pixels by specified display id.
+     *
+     * @param displayId the display id
+     * @return the density pixels.
+     */
+    public float getDensityPixels(int displayId) {
+        ALog.d(TAG, "getDensityPixels called.");
+        Display display = getTargetDisplay(displayId);
+        if (display == null) {
+            return 0.0f;
+        }
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
         return metrics.density;
     }
 
@@ -146,6 +283,23 @@ public class DisplayInfo {
     }
 
     /**
+     * Gets density dpi by specified display id.
+     *
+     * @param displayId the display id
+     * @return the density dpi.
+     */
+    public int getDensityDpi(int displayId) {
+        ALog.d(TAG, "getDensityDpi called.");
+        Display display = getTargetDisplay(displayId);
+        if (display == null) {
+            return 0;
+        }
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+        return metrics.densityDpi;
+    }
+
+    /**
      * Gets scaled density.
      *
      * @return the scaled density.
@@ -154,6 +308,23 @@ public class DisplayInfo {
         ALog.d(TAG, "getScaledDensity called.");
         DisplayMetrics metrics = new DisplayMetrics();
         mWindowManager.getDefaultDisplay().getMetrics(metrics);
+        return metrics.scaledDensity;
+    }
+
+    /**
+     * Gets scaled density by specified display id.
+     *
+     * @param displayId the display id
+     * @return the scaled density.
+     */
+    public float getScaledDensity(int displayId) {
+        ALog.d(TAG, "getScaledDensity called.");
+        Display display = getTargetDisplay(displayId);
+        if (display == null) {
+            return 0.0f;
+        }
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
         return metrics.scaledDensity;
     }
 
@@ -173,6 +344,23 @@ public class DisplayInfo {
     }
 
     /**
+     * Gets dpi in horizontal direction by specified display id.
+     *
+     * @param displayId the display id
+     * @return the dpi in horizontal direction.
+     */
+    public float getXDpi(int displayId) {
+        ALog.d(TAG, "getXDpi called.");
+        Display display = getTargetDisplay(displayId);
+        if (display == null) {
+            return 0.0f;
+        }
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+        return metrics.xdpi;
+    }
+
+    /**
      * Gets dpi in vertical direction.
      *
      * @return the dpi in vertical direction.
@@ -184,6 +372,23 @@ public class DisplayInfo {
         }
         DisplayMetrics metrics = new DisplayMetrics();
         mWindowManager.getDefaultDisplay().getMetrics(metrics);
+        return metrics.ydpi;
+    }
+
+    /**
+     * Gets dpi in vertical direction by specified display id.
+     *
+     * @param displayId the display id
+     * @return the dpi in vertical direction.
+     */
+    public float getYDpi(int displayId) {
+        ALog.d(TAG, "getYDpi called.");
+        Display display = getTargetDisplay(displayId);
+        if (display == null) {
+            return 0.0f;
+        }
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
         return metrics.ydpi;
     }
 

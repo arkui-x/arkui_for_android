@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,7 @@
 #ifndef FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_DISPLAY_INFO_JNI_H
 #define FOUNDATION_ACE_ADAPTER_ANDROID_ENTRANCE_JAVA_JNI_DISPLAY_INFO_JNI_H
 
+#include <cstdint>
 #include "jni.h"
 #include <memory>
 #include "base/utils/noncopyable.h"
@@ -35,6 +36,18 @@ struct DisplayInfoStruct {
     jmethodID getScaledDensityMethod;
     jmethodID getXDpiMethod;
     jmethodID getYDpiMethod;
+    jmethodID getRotationMethod;
+    jmethodID getDisplayIdWithIdMethod;
+    jmethodID getRotationWithIdMethod;
+    jmethodID getOrentationWithIdMethod;
+    jmethodID getWidthWithIdMethod;
+    jmethodID getHeightWithIdMethod;
+    jmethodID getRefreshRateWithIdMethod;
+    jmethodID getDensityPixelsWithIdMethod;
+    jmethodID getDensityDpiWithIdMethod;
+    jmethodID getScaledDensityWithIdMethod;
+    jmethodID getXDpiWithIdMethod;
+    jmethodID getYDpiWithIdMethod;
 };
 
 class DisplayInfoJni {
@@ -50,10 +63,23 @@ public:
     static float getScaledDensity();
     static float getXDpi();
     static float getYDpi();
+    static uint32_t GetRotation();
+    static int GetDisplayId(int displayId);
+    static uint32_t GetRotation(int displayId);
+    static int32_t GetDisplayWidth(int displayId);
+    static int32_t GetDisplayHeight(int displayId);
+    static int GetOrentation(int displayId);
+    static float GetRefreshRate(int displayId);
+    static float GetDensityPixels(int displayId);
+    static int GetDensityDpi(int displayId);
+    static float GetScaledDensity(int displayId);
+    static float GetXDpi(int displayId);
+    static float GetYDpi(int displayId);
 
 private:
     static DisplayInfoStruct displayInfoStruct_;
     static void SetupDisplayInfo(JNIEnv* env, jobject obj);
+    static void ReleaseDisplayInfo(JNIEnv* env, jobject obj);
     ACE_DISALLOW_COPY_AND_MOVE(DisplayInfoJni);
 };
 

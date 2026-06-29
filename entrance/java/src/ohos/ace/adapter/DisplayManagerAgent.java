@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,6 +18,10 @@ package ohos.ace.adapter;
 import android.app.Activity;
 import android.content.Context;
 import android.hardware.display.DisplayManager;
+import android.view.Display;
+import android.graphics.Rect;
+
+import androidx.window.layout.FoldingFeature;
 
 import ohos.ace.adapter.ALog;
 
@@ -97,6 +101,49 @@ public class DisplayManagerAgent {
     }
 
     /**
+     * get all display ids.
+     *
+     * @return display id array
+     */
+    public int[] getAllDisplayIds() {
+        if (displayManager == null) {
+            return new int[0];
+        }
+        Display[] displays = displayManager.getDisplays();
+        if (displays == null || displays.length == 0) {
+            return new int[0];
+        }
+        int[] displayIds = new int[displays.length];
+        for (int i = 0; i < displays.length; i++) {
+            displayIds[i] = displays[i].getDisplayId();
+        }
+        return displayIds;
+    }
+
+    /**
+     * get live crease region of current fold state.
+     *
+     * @return int array [left, top, width, height], empty when unsupported
+     */
+    public int[] getLiveCreaseRegion() {
+        if (activity == null) {
+            return new int[0];
+        }
+        FoldingFeature foldingFeature = FoldManager.getFoldingFeature(activity);
+        if (foldingFeature == null) {
+            return new int[0];
+        }
+        Rect bounds = foldingFeature.getBounds();
+        if (bounds == null) {
+            return new int[0];
+        }
+        if (bounds.width() < 0 || bounds.height() < 0) {
+            return new int[0];
+        }
+        return new int[] {bounds.left, bounds.top, bounds.width(), bounds.height()};
+    }
+
+    /**
      * register display listener.
      */
     public void registerDisplayListener() {
@@ -122,7 +169,6 @@ public class DisplayManagerAgent {
             };
             displayManager.registerDisplayListener(displayListener, null);
         }
-
     }
 
     /**

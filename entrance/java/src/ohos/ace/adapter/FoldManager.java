@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,7 @@
 package ohos.ace.adapter;
 
 import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.os.Build;
 
 import androidx.core.util.Consumer;
@@ -43,6 +44,8 @@ public class FoldManager {
 
     private static final int ANDROID_API_31 = 31;
 
+    private static final String FEATURE_SENSOR_HINGE_ANGLE = "android.hardware.sensor.hinge_angle";
+
     private static boolean foldAble = false;
 
     private static int foldStatus = FoldInfo.FOLD_STATUS_UNKNOWN;
@@ -66,6 +69,9 @@ public class FoldManager {
         } else {
             foldingFeature = getFoldingFeature(activity);
         }
+        if (foldingFeature != null) {
+            foldAble = true;
+        }
         return foldingFeature != null;
     }
 
@@ -85,7 +91,9 @@ public class FoldManager {
         } else {
             foldingFeature = getFoldingFeature(activity);
         }
-        return getStatusFromFeature(activity, foldingFeature);
+        int currentStatus = getStatusFromFeature(activity, foldingFeature);
+        foldStatus = currentStatus;
+        return currentStatus;
     }
 
     /** 
@@ -97,6 +105,19 @@ public class FoldManager {
      */
     public static int getStatusFromFeature(Activity activity, FoldingFeature foldingFeature) {
         if (foldingFeature == null) {
+            if (hasHingeAngleSensor(activity)) {
+                foldAble = true;
+                ALog.i(TAG, "foldingFeature is null, hinge sensor detected, use folded status fallback.");
+                return FoldInfo.FOLD_STATUS_FOLDED;
+            }
+            if (foldAble) {
+                ALog.i(TAG, "foldingFeature is null, use folded status fallback.");
+                return FoldInfo.FOLD_STATUS_FOLDED;
+            }
+            if (foldStatus != FoldInfo.FOLD_STATUS_UNKNOWN) {
+                ALog.i(TAG, "foldingFeature is null, use cached foldStatus.");
+                return foldStatus;
+            }
             ALog.e(TAG, "foldingFeature is null.");
             return FoldInfo.FOLD_STATUS_UNKNOWN;
         }
@@ -232,5 +253,16 @@ public class FoldManager {
             .ifPresent(feature -> {
                 foldingFeature.set((FoldingFeature) feature);
             });
+    }
+
+    private static boolean hasHingeAngleSensor(Activity activity) {
+        if (activity == null) {
+            return false;
+        }
+        PackageManager packageManager = activity.getPackageManager();
+        if (packageManager == null) {
+            return false;
+        }
+        return packageManager.hasSystemFeature(FEATURE_SENSOR_HINGE_ANGLE);
     }
 }

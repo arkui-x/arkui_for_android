@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,6 +18,7 @@
 
 #include "jni.h"
 #include <memory>
+#include <vector>
 #include "base/utils/noncopyable.h"
 
 namespace OHOS::Ace::Platform {
@@ -27,6 +28,8 @@ struct DisplayManagerAgentJniStruct {
     jclass clazz;
     jmethodID isFoldableMethod;
     jmethodID getFoldStatusMethod;
+    jmethodID getAllDisplayIdsMethod;
+    jmethodID getLiveCreaseRegionMethod;
     jmethodID registerDisplayListenerMethod;
     jmethodID unregisterDisplayListenerMethod;
 };
@@ -36,6 +39,8 @@ public:
     static bool Register(const std::shared_ptr<JNIEnv>& env);
     static bool IsFoldable();
     static uint32_t GetFoldStatus();
+    static std::vector<uint64_t> GetAllDisplayIds();
+    static std::vector<int32_t> GetLiveCreaseRegion();
     static void RegisterDisplayListener();
     static void UnregisterDisplayListener();
     static void OnDisplayAdded(JNIEnv* env, jobject obj, jint displayId);

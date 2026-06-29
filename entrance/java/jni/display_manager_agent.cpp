@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -55,6 +55,16 @@ bool DisplayManagerAgent::IsFoldable() const
 uint32_t DisplayManagerAgent::GetFoldStatus() const
 {
     return DisplayManagerAgentJni::GetFoldStatus();
+}
+
+std::vector<uint64_t> DisplayManagerAgent::GetAllDisplayIds() const
+{
+    return DisplayManagerAgentJni::GetAllDisplayIds();
+}
+
+std::vector<int32_t> DisplayManagerAgent::GetLiveCreaseRegion() const
+{
+    return DisplayManagerAgentJni::GetLiveCreaseRegion();
 }
 
 void DisplayManagerAgent::RegisterDisplayListener()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,6 +35,7 @@ constexpr int ROTATION_270 = 3;
 class ACE_EXPORT DisplayInfo : public virtual RefBase {
 public:
     DisplayInfo();
+    explicit DisplayInfo(DisplayId displayId);
     ~DisplayInfo();
     DISALLOW_COPY_AND_MOVE(DisplayInfo);
 
@@ -49,6 +50,7 @@ public:
     int GetDensityDpi() const;
     float GetXDpi() const;
     float GetYDpi() const;
+    Rotation GetRotation() const;
 
     void SetRefreshRate(float refreshRate);
     void SetDisplayId(DisplayId displayId);
@@ -61,6 +63,7 @@ public:
     void SetDensityDpi(int dpi);
     void SetXDpi(float xDpi);
     void SetYDpi(float yDpi);
+    void SetRotation(Rotation rotation);
 
 private:
     DisplayId id_ { DISPLAY_ID_INVALID };
@@ -74,6 +77,7 @@ private:
     int densityDpi_ { 0 };
     float xDpi_ { 0.0 };
     float yDpi_ { 0.0 };
+    Rotation rotation_ { Rotation::ROTATION_0 };
 };
 } // namespace OHOS::Rosen
 #endif // FOUNDATION_DMSERVER_DISPLAY_INFO_H

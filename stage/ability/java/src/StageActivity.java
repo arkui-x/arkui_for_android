@@ -161,6 +161,8 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     private Consumer<WindowLayoutInfo> foldConsumer = null;
 
+    private FoldingFeature latestFoldingFeature = null;
+
     @Override
     public void onKeyboardHeightChanged(int height) {
         if (windowView != null) {
@@ -831,6 +833,7 @@ private void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo) {
         .map(FoldingFeature.class::cast)
         .findFirst()
         .ifPresent(feature -> {
+            latestFoldingFeature = feature;
             FoldManager.setFoldable(true);
             int foldStatus = FoldManager.getStatusFromFeature(this, feature);
             FoldManager.setFoldStatus(foldStatus);
@@ -879,14 +882,7 @@ private void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo) {
      * @return FoldingFeature.
      */
     public FoldingFeature getFoldingFeatureFromListener() {
-        AtomicReference<FoldingFeature> foldingFeature = new AtomicReference<>();
-        if (foldWindowInfoCallback != null) {
-            Consumer<WindowLayoutInfo> consumerWindowLayout = FoldManager
-                                                            .getConsumerWindowLayout(this, foldingFeature);
-            foldWindowInfoCallback.addWindowLayoutInfoListener(this, this::runOnUiThread, consumerWindowLayout);
-            foldWindowInfoCallback.removeWindowLayoutInfoListener(consumerWindowLayout);
-        }
-        return foldingFeature.get();
+        return latestFoldingFeature;
     }
 
     /**
@@ -898,6 +894,7 @@ private void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo) {
             foldWindowInfoCallback.removeWindowLayoutInfoListener(foldConsumer);
             foldConsumer = null;
             foldWindowInfoCallback = null;
+            latestFoldingFeature = null;
         }
     }
 
