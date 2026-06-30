@@ -43,6 +43,10 @@ ohos_shared_library("libarkui_android") {
   }
   public_configs = [ "//foundation/arkui/napi:ace_napi_config" ]
 
+  if (ace_engine_enable_reduce_eh_frame) {
+    ldflags = [ "-Wl,--no-eh-frame-hdr" ]
+  }
+
   version_script = "libarkui_android.map"
   part_name = "arkui-x"
   subsystem_name = "arkui"
