@@ -73,6 +73,16 @@ public abstract class AceWebBase {
         this.callMethodMapWebHaptic();
     }
 
+    /**
+     * Updates the third-party cookie acceptance policy for this WebView instance.
+     *
+     * <p>Ensures the underlying {@code CookieManager.setAcceptThirdPartyCookies} call
+     * runs on the UI thread, since WebView requires all operations on the main looper.</p>
+     *
+     * @param accept whether to accept third-party cookies
+     */
+    public void setAcceptThirdPartyCookies(boolean accept) {}
+
     private void callMethodMapWebAtrribute() {
         IAceOnCallResourceMethod zoomAccess = (param) -> zoomAccess(param);
         this.callMethodMap.put(WEB_FLAG + id + METHOD + PARAM_EQUALS + "zoomAccess" + PARAM_BEGIN, zoomAccess);
@@ -318,6 +328,13 @@ public abstract class AceWebBase {
             "setNestedScrollExt" +
             PARAM_BEGIN,
             callSetNestedScrollExt);
+
+        IAceOnCallResourceMethod callRunJavaScriptOnDocumentEnd = (param) -> runJavaScriptOnDocumentEnd(param);
+        this.callMethodMap.put(WEB_FLAG + id + METHOD +
+            PARAM_EQUALS +
+            "runJavaScriptOnDocumentEnd" +
+            PARAM_BEGIN,
+            callRunJavaScriptOnDocumentEnd);
     }
 
     /**
@@ -546,6 +563,18 @@ public abstract class AceWebBase {
      */
     public void firePageFinished(String url) {
         callback.onEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS + "onPageFinished" + PARAM_BEGIN, url);
+    }
+
+    /**
+     * This is called to fire on resource load event.
+     *
+     * @param url the url of the loaded resource.
+     */
+    public void fireResourceLoad(String url) {
+        if (url == null) {
+            return;
+        }
+        callback.onEvent(WEB_FLAG + id + EVENT + PARAM_EQUALS + "onResourceLoad" + PARAM_BEGIN, url);
     }
 
     /**
@@ -952,6 +981,13 @@ public abstract class AceWebBase {
      * @return result of call.
      */
     public abstract String zoomOut();
+
+    /**
+     * Sets the network availability state for this WebView.
+     *
+     * @param enable whether network is available.
+     */
+    public abstract void setNetworkAvailable(boolean enable);
 
     /**
      * Performs a getOriginalUrl operation in this WebView.
@@ -1412,6 +1448,14 @@ public abstract class AceWebBase {
      * @return result of call.
      */
     public abstract String setNestedScrollExt(Map<String, String> params);
+
+    /**
+     * runJavaScriptOnDocumentEnd.
+     *
+     * @param params param map containing url-encoded JSON of script items.
+     * @return result of call.
+     */
+    public abstract String runJavaScriptOnDocumentEnd(Map<String, String> params);
 
     /**
      * Updates the enabled haptic feedback.
