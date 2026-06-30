@@ -228,6 +228,7 @@
       "OHOS::Ace::MaterialUtils::IsMaterialEnabled()";
       "OHOS::Ace::MaterialUtils::GetInitMaterial(OHOS::Ace::UiMaterialStyle)";
       "OHOS::Ace::MaterialUtils::IsMaterialDisabled()";
+      "OHOS::Ace::MaterialUtils::GetConfiguredMaterialType()";
       OHOS::BrokerRegistration::*;
       "OHOS::BrokerDelegatorBase::~BrokerDelegatorBase()";
       "OHOS::PeerHolder::PeerHolder(OHOS::sptr<OHOS::IRemoteObject> const&)";
