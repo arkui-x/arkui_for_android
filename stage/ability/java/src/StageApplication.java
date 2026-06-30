@@ -103,6 +103,15 @@ public class StageApplication extends Application {
     }
 
     /**
+     * Destroy VM proactively.
+     *
+     * @return true if VM destroy task posted successfully, false otherwise.
+     */
+    public static boolean destroyVm() {
+        return StageApplicationDelegate.nativeDestroyVm();
+    }
+
+    /**
      * Should load UI.
      *
      * @return Return true if need load UI, else return false.
