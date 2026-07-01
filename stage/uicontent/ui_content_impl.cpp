@@ -379,11 +379,12 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     }
 
     // create container
-    if (info) {
-        instanceId_ = window->IsSubWindow() ? window->GetWindowId() : info->instanceId;
-        LOGI("acecontainer init instanceId_:%{public}d", instanceId_);
-        Ace::Platform::UIContent::AddUIContent(instanceId_, this);
+    if (runtime_) {
+        instanceId_ = Container::GenerateId<STAGE_CONTAINER>();
+    } else {
+        instanceId_ = Container::GenerateId<FA_SUBWINDOW_CONTAINER>();
     }
+    LOGI("acecontainer init instanceId_:%{public}d", instanceId_);
 
     AceTraceBegin("CreateAndInitConatienr");
     auto container = AceType::MakeRefPtr<Platform::AceContainerSG>(instanceId_, FrontendType::DECLARATIVE_JS, context_,
@@ -426,6 +427,7 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     ContainerScope::Add(instanceId_);
     container->SetWindowName(window_->GetWindowName());
     container->SetWindowId(window_->GetWindowId());
+    SubwindowManager::GetInstance()->AddContainerId(window_->GetWindowId(), instanceId_);
     container->SetInstanceName(info->name);
     container->SetHostClassName(info->name);
     if (runtime_) {
@@ -639,6 +641,9 @@ void UIContentImpl::Destroy()
     OHOS::AbilityRuntime::Platform::ModuleLoadCallbackManager::GetInstance().UnregisterCallback(instanceId_);
     auto container = AceEngine::Get().GetContainer(instanceId_);
     CHECK_NULL_VOID(container);
+    if (window_) {
+        SubwindowManager::GetInstance()->RemoveContainerId(window_->GetWindowId());
+    }
     Platform::AceContainerSG::DestroyContainer(instanceId_);
     ContainerScope::RemoveAndCheck(instanceId_);
 }
@@ -1097,7 +1102,7 @@ void UIContentImpl::InitializeSubWindow()
     CHECK_NULL_VOID(window_);
     LOGI("The window name is %{public}s", window_->GetWindowName().c_str());
 
-    instanceId_ = window_->GetWindowId();
+    instanceId_ = Container::GenerateId<COMPONENT_SUBWINDOW_CONTAINER>();
     std::weak_ptr<OHOS::AppExecFwk::AbilityInfo> abilityInfo;
     std::weak_ptr<OHOS::AbilityRuntime::Platform::Context> runtimeContext;
 
@@ -1108,6 +1113,9 @@ void UIContentImpl::InitializeSubWindow()
         }),
         false, true);
 
+    container->SetWindowName(window_->GetWindowName());
+    container->SetWindowId(window_->GetWindowId());
+    SubwindowManager::GetInstance()->AddContainerId(window_->GetWindowId(), instanceId_);
     AceEngine::Get().AddContainer(instanceId_, container);
     touchOutsideListener_ = new TouchOutsideListener(instanceId_);
     window_->RegisterTouchOutsideListener(touchOutsideListener_);

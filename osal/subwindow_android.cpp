@@ -56,7 +56,12 @@ void SubwindowAndroid::InitContainer()
     std::string url = "";
     window_->SetUIContent(
         url, reinterpret_cast<NativeEngine*>(parentContainer->GetSharedRuntime()), nullptr, false, nullptr, false);
-    childContainerId_ = window_->GetWindowId();
+    childContainerId_ = SubwindowManager::GetInstance()->GetContainerId(window_->GetWindowId());
+    if (childContainerId_ < 0) {
+        LOGE("Failed to get child container id for windowId %{public}u", window_->GetWindowId());
+        SetIsRosenWindowCreate(false);
+        return;
+    }
 
     SubwindowManager::GetInstance()->AddParentContainerId(childContainerId_, parentContainerId_);
 
