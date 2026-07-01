@@ -41,6 +41,7 @@ import java.util.Map;
  */
 public class AceWebWindowNewObject {
     private static final String LOG_TAG = "AceWebWindowNewObject";
+    private static final long POPUP_TIMEOUT_MS = 1000L;
 
     private final boolean isAlert;
     private final boolean isUserTrigger;
@@ -49,6 +50,7 @@ public class AceWebWindowNewObject {
     private Message resultMsg;
     private volatile boolean isCompleted = false;
     private final Handler mainHandler;
+    private final Runnable timeoutRunnable;
 
     /**
      * Constructor for AceWebWindowNewObject.
@@ -72,6 +74,11 @@ public class AceWebWindowNewObject {
         this.transport = transport;
         this.resultMsg = resultMsg;
         this.mainHandler = new Handler(Looper.getMainLooper());
+        this.timeoutRunnable = () -> {
+            ALog.w(LOG_TAG, "Popup timeout, auto cancel (setWebController not called in time)");
+            cancelPopup();
+        };
+        this.mainHandler.postDelayed(timeoutRunnable, POPUP_TIMEOUT_MS);
     }
 
     /**
@@ -140,6 +147,7 @@ public class AceWebWindowNewObject {
         }
 
         isCompleted = true;
+        mainHandler.removeCallbacks(timeoutRunnable);
         Runnable bindAction = () -> {
             if (transport != null && resultMsg != null) {
                 transport.setWebView(childWebView);
@@ -166,6 +174,7 @@ public class AceWebWindowNewObject {
             return;
         }
         isCompleted = true;
+        mainHandler.removeCallbacks(timeoutRunnable);
         Runnable cancelAction = () -> {
             if (resultMsg != null) {
                 if (transport != null) {
