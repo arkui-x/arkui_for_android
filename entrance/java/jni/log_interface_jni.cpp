@@ -43,6 +43,7 @@ static const char START_F_PARAM[] = "(Ljava/lang/String;Ljava/lang/String;)V";
 } // namespace
 std::shared_mutex g_logInterfaceJniLock;
 LogInterface LogInterfaceJni::logInterface_;
+OHOS::Ace::LogLevel LogInterfaceJni::currentLogLevel = OHOS::Ace::LogLevel::ERROR;
 
 void LogInterfaceJni::SetLogger(JNIEnv* env, jobject jobjLogger)
 {
@@ -78,6 +79,11 @@ void LogInterfaceJni::SetLogger(JNIEnv* env, jobject jobjLogger)
         env->ExceptionDescribe();
         env->ExceptionClear();
     }
+}
+
+void LogInterfaceJni::SetLevel(jint level)
+{
+    LogInterfaceJni::currentLogLevel = static_cast<OHOS::Ace::LogLevel>(level);
 }
 
 void LogInterfaceJni::PassLogMessage(const int32_t level, const std::string& domain, const std::string& newFmt)
