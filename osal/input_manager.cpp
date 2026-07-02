@@ -14,6 +14,7 @@
  */
 
 #include "base/input_manager/input_manager.h"
+#include "pointer_event.h"
 
 namespace OHOS::Ace {
 
@@ -25,7 +26,10 @@ bool InputManager::GetSystemHotkeys(std::vector<HotKey>& hotkeys)
 std::shared_ptr<MMI::PointerEvent> InputManager::CreatePointerEvent(
     const std::shared_ptr<const MMI::PointerEvent>& pointerEvent)
 {
-    return nullptr;
+    if (!pointerEvent) {
+        return nullptr;
+    }
+    return std::make_shared<MMI::PointerEvent>(*pointerEvent);
 }
 
 size_t InputManager::GetApproximatePointerEventSize()

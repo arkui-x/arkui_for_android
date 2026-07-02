@@ -72,6 +72,8 @@ struct alignas(DATA_ALIGNAS) AceActionData {
     int64_t sourceType_ {};
     int64_t toolType_ {};
     int8_t actionPoint = 0;
+    double globalX_ {};
+    double globalY_ {};
 };
 
 struct alignas(DATA_ALIGNAS) AceMouseData {
