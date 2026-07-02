@@ -69,6 +69,8 @@ TouchPoint ConvertTouchPoint(const MMI::PointerEvent::PointerItem& pointerItem)
     touchPoint.y = pointerItem.GetWindowY();
     touchPoint.screenX = pointerItem.GetDisplayX();
     touchPoint.screenY = pointerItem.GetDisplayY();
+    touchPoint.globalDisplayX = pointerItem.GetGlobalX();
+    touchPoint.globalDisplayY = pointerItem.GetGlobalY();
     touchPoint.isPressed = pointerItem.IsPressed();
     touchPoint.force = static_cast<float>(pointerItem.GetPressure());
     touchPoint.tiltX = pointerItem.GetTiltX();
@@ -111,6 +113,8 @@ TouchEvent ConvertTouchEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEv
         .SetY(touchPoint.y)
         .SetScreenX(touchPoint.screenX)
         .SetScreenY(touchPoint.screenY)
+        .SetGlobalDisplayX(touchPoint.globalDisplayX)
+        .SetGlobalDisplayY(touchPoint.globalDisplayY)
         .SetType(TouchType::UNKNOWN)
         .SetPullType(TouchType::UNKNOWN)
         .SetTime(time)
@@ -234,6 +238,8 @@ void CreatePointerEventsFromBytes(
         pointerItem.SetPressure(current->pressure_);
         pointerItem.SetToolType(static_cast<int32_t>(current->toolType_));
         pointerItem.SetOriginPointerId(static_cast<int32_t>(current->pointerId_));
+        pointerItem.SetGlobalX(current->globalX_);
+        pointerItem.SetGlobalY(current->globalY_);
         SetPointerItemPressed(current->actionType, pointerItem);
         actionPointMap[current->pointerId_] = current->actionPoint;
         current++;

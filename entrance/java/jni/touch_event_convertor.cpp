@@ -14,11 +14,12 @@
  */
 
 #include "frameworks/core/interfaces/native/node/touch_event_convertor.h"
+#include "adapter/android/entrance/java/jni/mmi_event_convertor.h"
 
 namespace OHOS::Ace::NG {
 TouchEvent ConvertToTouchEvent(const std::shared_ptr<MMI::PointerEvent>& srcPointerEvent)
 {
-    return {};
+    return Platform::ConvertTouchEvent(srcPointerEvent);
 }
 
 void ConvertToMouseEvent(MouseEvent& mouseEvent, const std::shared_ptr<MMI::PointerEvent>& srcPointerEvent) {}

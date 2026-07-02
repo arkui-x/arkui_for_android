@@ -117,7 +117,8 @@ template("ace_osal_android_source_set") {
       "//foundation/graphic/graphic_surface/interfaces/inner_api/surface",
       "//base/hiviewdfx/hitrace/interfaces/native/innerkits/include/hitrace_meter",
       "$app_framework_hiviewdfx_path/vsnprintf/include",
-      "$app_framework_hiviewdfx_path/hilog/include"
+      "$app_framework_hiviewdfx_path/hilog/include",
+      "//foundation/multimodalinput/input/interfaces/native/innerkits/event/include",
     ]
 
     deps = [

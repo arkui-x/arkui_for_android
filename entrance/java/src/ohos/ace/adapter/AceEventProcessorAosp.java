@@ -28,7 +28,7 @@ import java.nio.ByteOrder;
  * @since 1
  */
 public class AceEventProcessorAosp {
-    private static final int PONITER_FIELD_COUNT = 13;
+    private static final int PONITER_FIELD_COUNT = 15;
     private static final int MOUSE_FIELD_COUNT = 15;
     private static final double TOUCH_ATCION_MULTI = 2.0D;
     private static final long TOUCH_EVENT_TIMEUNIT = 1000L;
@@ -350,6 +350,10 @@ public class AceEventProcessorAosp {
             actionPoint = 0;
         }
         packet.putLong(actionPoint);
+        float rawOffsetX = event.getRawX() - event.getX(0);
+        float rawOffsetY = event.getRawY() - event.getY(0);
+        packet.putDouble(event.getX(actionIndex) + rawOffsetX);
+        packet.putDouble(event.getY(actionIndex) + rawOffsetY);
     }
     private static void addEventToBuffer(MotionEvent event, int actionIndex, int actionType, ByteBuffer packet) {
         if (actionType == ActionType.UNKNOWN) {
@@ -374,6 +378,10 @@ public class AceEventProcessorAosp {
             actionPoint = 0;
         }
         packet.putLong(actionPoint);
+        float rawOffsetX = event.getRawX() - event.getX(0);
+        float rawOffsetY = event.getRawY() - event.getY(0);
+        packet.putDouble(event.getX(actionIndex) + rawOffsetX);
+        packet.putDouble(event.getY(actionIndex) + rawOffsetY);
     }
 
     /**
