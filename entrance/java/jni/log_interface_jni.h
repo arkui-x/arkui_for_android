@@ -42,10 +42,12 @@ public:
 
     // JAVA call C++
     static void SetLogger(JNIEnv* env, jobject jobjLogger);
+    static void SetLevel(jint level);
 
     // C++ call JAVA
     static void PassLogMessage(const int32_t level, const std::string& domain, const std::string& newFmt);
     static LogInterface logInterface_;
+    static OHOS::Ace::LogLevel currentLogLevel;
 };
 
 void StartLogProcessingThread();

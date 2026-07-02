@@ -30,7 +30,6 @@
 
 #include "log_interface_jni.h"
 #include "securec.h"
-#include "stage_application_delegate_jni.h"
 
 #ifdef ACE_INSTANCE_LOG
 #include "core/common/container.h"
@@ -148,7 +147,7 @@ void LogWrapper::PrintLog(LogDomain domain, LogLevel level, AceLogTag tag, const
     {
         std::shared_lock<std::shared_mutex> lock(OHOS::Ace::Platform::g_logInterfaceJniLock);
         uselogInterface_ = OHOS::Ace::Platform::LogInterfaceJni::logInterface_.logger &&
-                           level >= OHOS::AbilityRuntime::Platform::StageApplicationDelegateJni::GetCurrentLogLevel();
+                           level >= OHOS::Ace::Platform::LogInterfaceJni::currentLogLevel;
     }
     
     if (uselogInterface_) {

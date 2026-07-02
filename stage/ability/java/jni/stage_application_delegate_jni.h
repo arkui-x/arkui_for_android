@@ -51,7 +51,6 @@ public:
     static void DispatchApplicationOnBackground(JNIEnv* env, jclass myclass);
     static void PreloadModule(JNIEnv* env, jclass myclass, jstring jModuleName, jstring jAbilityName);
     static void LoadModule(JNIEnv* env, jclass myclass, jstring jModuleName, jstring jEntryFile);
-    static OHOS::Ace::LogLevel GetCurrentLogLevel();
 };
 } // namespace Platform
 } // namespace AbilityRuntime

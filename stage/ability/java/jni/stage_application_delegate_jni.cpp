@@ -29,9 +29,6 @@
 namespace OHOS {
 namespace AbilityRuntime {
 namespace Platform {
-namespace {
-OHOS::Ace::LogLevel g_currentLogLevel = OHOS::Ace::LogLevel::ERROR;
-} // namespace
 bool StageApplicationDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
     LOGI("StageApplicationDelegateJni register start.");
@@ -363,9 +360,7 @@ void StageApplicationDelegateJni::NativeSetLogLevel(JNIEnv* env, jobject jobj, j
         LOGE("JNI JniStageApplicationDelegate: null java env");
         return;
     }
-    std::unique_lock<std::shared_mutex> lock(OHOS::Ace::Platform::g_logInterfaceJniLock);
-    OHOS::Ace::LogWrapper::SetLogLevel(static_cast<OHOS::Ace::LogLevel>(level));
-    g_currentLogLevel = static_cast<OHOS::Ace::LogLevel>(level);
+    Ace::Platform::LogInterfaceJni::SetLevel(level);
 }
 
 void StageApplicationDelegateJni::DispatchApplicationOnForeground(JNIEnv* env, jclass myclass)
@@ -420,12 +415,6 @@ void StageApplicationDelegateJni::LoadModule(
     AppMain::GetInstance()->LoadModule(moduleName, entryFile);
     env->ReleaseStringUTFChars(jModuleName, moduleName);
     env->ReleaseStringUTFChars(jEntryFile, entryFile);
-}
-
-OHOS::Ace::LogLevel StageApplicationDelegateJni::GetCurrentLogLevel()
-{
-    std::shared_lock<std::shared_mutex> lock(OHOS::Ace::Platform::g_logInterfaceJniLock);
-    return g_currentLogLevel;
 }
 } // namespace Platform
 } // namespace AbilityRuntime
