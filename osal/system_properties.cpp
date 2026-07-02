@@ -63,6 +63,7 @@ bool SystemProperties::imageReleaseManageObjectEnabled_ = false;
 bool SystemProperties::isHookModeEnabled_ = false;
 bool SystemProperties::syncDebugTraceEnable_ = false;
 bool SystemProperties::measureDebugTraceEnable_ = false;
+bool SystemProperties::skipSecondaryMeasuredEnable_ = false;
 bool SystemProperties::safeAreaDebugTraceEnable_ = false;
 bool SystemProperties::pixelRoundEnable_ = true;
 bool SystemProperties::textTraceEnable_ = false;
