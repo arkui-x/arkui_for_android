@@ -134,6 +134,7 @@ foreach(module, arkui_x_components) {
 # for arkui component modules
 component_modules = [
   "dynamiclayout",
+  "image_animator",
   "marquee",
   "stepper",
   "slider",
@@ -150,6 +151,8 @@ component_modules = [
   "patternlock",
   "qrcode",
   "time_picker",
+  "text_picker",
+  "date_picker",
   "indexer",
   "calendar_picker",
   "symbol",
