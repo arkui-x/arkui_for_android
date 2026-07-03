@@ -55,7 +55,6 @@ public:
     static void LoadModule(JNIEnv* env, jclass myclass, jstring jModuleName, jstring jEntryFile);
     static void OnHighContrastChanged(JNIEnv* env, jclass myclass, jboolean isEnabled);
     static jboolean DestroyVm(JNIEnv* env, jclass myclass);
-    static OHOS::Ace::LogLevel GetCurrentLogLevel();
 };
 } // namespace Platform
 } // namespace AbilityRuntime

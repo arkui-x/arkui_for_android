@@ -31,7 +31,6 @@ namespace OHOS {
 namespace AbilityRuntime {
 namespace Platform {
 namespace {
-OHOS::Ace::LogLevel g_currentLogLevel = OHOS::Ace::LogLevel::ERROR;
 // ComponentCallbacks2.onTrimMemory level constants (API 14+)
 constexpr int32_t TRIM_MEMORY_RUNNING_MODERATE = 5;
 constexpr int32_t TRIM_MEMORY_RUNNING_LOW = 10;
@@ -451,9 +450,7 @@ void StageApplicationDelegateJni::NativeSetLogLevel(JNIEnv* env, jobject jobj, j
         LOGE("JNI JniStageApplicationDelegate: null java env");
         return;
     }
-    std::unique_lock<std::shared_mutex> lock(OHOS::Ace::Platform::g_logInterfaceJniLock);
-    OHOS::Ace::LogWrapper::SetLogLevel(static_cast<OHOS::Ace::LogLevel>(level));
-    g_currentLogLevel = static_cast<OHOS::Ace::LogLevel>(level);
+    Ace::Platform::LogInterfaceJni::SetLevel(level);
 }
 
 void StageApplicationDelegateJni::DispatchApplicationOnForeground(JNIEnv* env, jclass myclass)
@@ -519,12 +516,6 @@ void StageApplicationDelegateJni::OnHighContrastChanged(JNIEnv* env, jclass mycl
 jboolean StageApplicationDelegateJni::DestroyVm(JNIEnv* env, jclass myclass)
 {
     return AppMain::GetInstance()->DestroyVm() ? JNI_TRUE : JNI_FALSE;
-}
-
-OHOS::Ace::LogLevel StageApplicationDelegateJni::GetCurrentLogLevel()
-{
-    std::shared_lock<std::shared_mutex> lock(OHOS::Ace::Platform::g_logInterfaceJniLock);
-    return g_currentLogLevel;
 }
 } // namespace Platform
 } // namespace AbilityRuntime
