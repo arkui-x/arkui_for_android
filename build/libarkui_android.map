@@ -229,6 +229,7 @@
       "OHOS::Ace::MaterialUtils::GetInitMaterial(OHOS::Ace::UiMaterialStyle)";
       "OHOS::Ace::MaterialUtils::IsMaterialDisabled()";
       "OHOS::Ace::MaterialUtils::GetConfiguredMaterialType()";
+      "OHOS::Ace::MaterialUtils::PreProcessMaterial(OHOS::Ace::UiMaterial const*)";
       OHOS::BrokerRegistration::*;
       "OHOS::BrokerDelegatorBase::~BrokerDelegatorBase()";
       "OHOS::PeerHolder::PeerHolder(OHOS::sptr<OHOS::IRemoteObject> const&)";
@@ -2315,6 +2316,7 @@
       "OHOS::Ace::NG::GetMainAxisSize(OHOS::Ace::NG::OptionalSize<float> const&, OHOS::Ace::Axis)";
       "OHOS::Ace::NG::NodeModifier::GetLazyGridLayoutCustomModifier()";
       "OHOS::Ace::NG::NodeModifier::GetLoadingProgressModifier()";
+      "OHOS::Ace::NG::NodeModifier::GetSelectCustomModifier()";
       "OHOS::Ace::NG::NodeAnimatableProperty<float, OHOS::Ace::NG::AnimatablePropertyFloat>::Set(float const&)";
       "OHOS::Ace::NG::NodeAnimatableProperty<float, OHOS::Ace::NG::AnimatablePropertyFloat>::NodeAnimatableProperty(float const&, std::__ndk1::function<void (float const&)>&&)";
       "OHOS::Ace::Shadow::CreateShadow(OHOS::Ace::ShadowStyle)";
@@ -2448,6 +2450,8 @@
       "OHOS::Ace::NG::Paragraph::CreateRichEditorParagraph(OHOS::Ace::NG::ParagraphStyle const&, OHOS::Ace::RefPtr<OHOS::Ace::NG::FontCollection> const&, bool)";
       "OHOS::Ace::NG::MinusPaddingToSize(OHOS::Ace::NG::PaddingPropertyT<float> const&, OHOS::Ace::NG::OptionalSize<float>&)";
       "OHOS::Ace::NG::ParagraphUtil::GetParagraphStyle(OHOS::Ace::TextStyle const&)";
+      "OHOS::Ace::NG::ParticlePattern::updateEmitterPosition(std::__ndk1::vector<OHOS::Ace::EmitterProperty, std::__ndk1::allocator<OHOS::Ace::EmitterProperty> >&)";
+      "OHOS::Ace::NG::ParticlePattern::UpdateVelocityFields(std::__ndk1::vector<OHOS::Ace::ParticleVelocityField, std::__ndk1::allocator<OHOS::Ace::ParticleVelocityField> > const&)";
       OHOS::Ace::V2::RICH_EDITOR_CONTENT_ETS_TAG;
       OHOS::Ace::NG::SpanItem::*;
       VTT?for?OHOS::Ace::NG::SpanNode;
