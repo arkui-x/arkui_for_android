@@ -37,9 +37,9 @@ public abstract class AceVideoBase {
 
     private static final float SPEED_COMPARE_EPSILON = 0.00001f;
 
-    private static final float[] SUPPORTED_SPEEDS = {
-        0.125f, 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f, 3.0f
-    };
+    private static final float MIN_SPEED = 0.125f;
+
+    private static final float MAX_SPEED = 8.0f;
 
     private static final String PARAM_AND = "#HWJS-&-#";
 
@@ -462,10 +462,8 @@ public abstract class AceVideoBase {
     }
 
     private float normalizeSpeed(float speed) {
-        for (float supportedSpeed : SUPPORTED_SPEEDS) {
-            if (Math.abs(supportedSpeed - speed) <= SPEED_COMPARE_EPSILON) {
-                return supportedSpeed;
-            }
+        if (speed > MIN_SPEED - SPEED_COMPARE_EPSILON && speed < MAX_SPEED + SPEED_COMPARE_EPSILON) {
+            return speed;
         }
         ALog.w(LOG_TAG, "Unsupported speed " + speed + ", fallback to default speed.");
         return DEFAULT_SPEED;
