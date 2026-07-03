@@ -60,6 +60,7 @@ const std::unordered_map<std::string, std::string> soMap = {
     {"MenuItem", "menu"},
     {"MenuItemGroup", "menu"},
     {"TextClock", "textclock"},
+    {"Toggle", "toggle"},
     {"ArcList", "arclist"},
     {"ArcListItem", "arclist"},
     {"ArcScrollBar", "arcscrollbar"},

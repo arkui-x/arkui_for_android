@@ -157,6 +157,7 @@ component_modules = [
   "search",
   "menu",
   "text_clock",
+  "toggle",
 ]
 
 component_modules_libs = []
