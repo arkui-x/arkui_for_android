@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package ohos.stage.ability.adapter;
 
 import android.app.Activity;
@@ -27,6 +28,7 @@ import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.WindowViewAospInterface;
 import ohos.ace.adapter.WindowViewBuilder;
 import ohos.ace.adapter.AcePlatformPlugin;
+import ohos.ace.adapter.WindowViewInterface;
 import java.util.Arrays;
 
 /**
@@ -36,7 +38,30 @@ import java.util.Arrays;
  */
 public class SubWindow {
     private static final String TAG = "SubWindow";
+    private static final int WINDOW_MODALITY = 0;
+
     private long nativeSubWindowPtr = 0L;
+
+    private String name;
+    private int windowId = InstanceIdGenerator.getAndIncrement();
+    private int parentId;
+    private int windowMode;
+    private int windowType;
+    private WindowParam windowParam;
+    private PopupSubWindow subWindowView;
+    private View contentView;
+    private Activity rootActivity;
+    private View rootView;
+    private boolean isFocusable = true;
+    private boolean isModal = false;
+    private boolean onTop = false;
+    private boolean requestedVisible = false;
+    private boolean skipNativeHideCallbackForRestack = false;
+    private Rect[] hotAreas;
+    private boolean isFullScreen = false;
+    private View mainView;
+    private int mainWindowX;
+    private int mainWindowY;
 
     /**
      * The type Window param.
@@ -68,6 +93,11 @@ public class SubWindow {
         public int y;
 
         /**
+         * Modality type of subwindow.
+         */
+        private int modalityType;
+
+        /**
          * Instantiates a new Window param.
          */
         public WindowParam() {
@@ -76,6 +106,7 @@ public class SubWindow {
             height = 100;
             x = 0;
             y = 0;
+            modalityType = WINDOW_MODALITY;
         }
     }
 
@@ -96,7 +127,10 @@ public class SubWindow {
                 return;
             }
             super.dismiss();
-            if (nativeSubWindowPtr != 0L) {
+            if (!skipNativeHideCallbackForRestack) {
+                requestedVisible = false;
+            }
+            if (!skipNativeHideCallbackForRestack && nativeSubWindowPtr != 0L) {
                 nativeOnSubWindowHide(nativeSubWindowPtr);
             }
         }
@@ -130,17 +164,10 @@ public class SubWindow {
     /**
      * Create sub window.
      *
-     * @param type     the type
-     * @param mode     the mode
-     * @param tag      the tag
-     * @param parentId the parent id
-     * @param x        the x
-     * @param y        the y
-     * @param width    the width
-     * @param height   the height
+     * @param param   the create sub window parameter
      */
-    public void createSubWindow(int type, int mode, int tag, int parentId, int x, int y, int width, int height) {
-        updateWindowParam(type, mode, tag, parentId, x, y, width, height);
+    public void createSubWindow(SubWindowManager.CreateSubWindowParam param) {
+        updateWindowParam(param);
         createSubWindow(windowParam);
     }
 
@@ -150,9 +177,8 @@ public class SubWindow {
      * @param param the param
      */
     public void createSubWindow(WindowParam param) {
-        ALog.d(TAG, "createSubwindow called. name=" + name);
         subWindowView = new PopupSubWindow();
-        subWindowView.setOutsideTouchable(true);
+        subWindowView.setOutsideTouchable(!isModal);
         subWindowView.setFocusable(isFocusable);
         subWindowView.setTouchable(true);
 
@@ -164,46 +190,81 @@ public class SubWindow {
             platformPlugin.initSurfacePlugin(rootActivity, windowId);
         }
         setContentView(windowView.getView());
+        syncContentViewFocusable(isFocusable);
 
-        subWindowView.setTouchInterceptor(new View.OnTouchListener() {
+        subWindowView.setTouchInterceptor(createTouchInterceptor());
+        setupGlobalLayoutListener();
+    }
+
+    private View.OnTouchListener createTouchInterceptor() {
+        return new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 int x = (int) event.getX();
                 int y = (int) event.getY();
                 ALog.d(TAG, "subWindowView onTouch. event.getAction()=" + event.getAction() + ", x=" + x + ", y=" + y);
-                if ((event.getAction() == MotionEvent.ACTION_OUTSIDE) || ((event.getAction() == MotionEvent.ACTION_DOWN)
-                        && (x < 0 || x > subWindowView.getWidth() || y < 0 || y > subWindowView.getHeight()))) {
-                    ALog.d(TAG, "touch outside");
-                    if (nativeSubWindowPtr != 0L) {
-                        nativeOnWindowTouchOutside(nativeSubWindowPtr);
-                    }
-                    releaseFocus();
-                } else {
-                    if (hotAreas != null) {
-                        boolean inHotAreas = false;
-                        for (Rect rect : hotAreas) {
-                            if (rect.contains(x, y)) {
-                                inHotAreas = true;
-                                break;
-                            }
-                        }
-                        if (!inHotAreas) {
-                            if ((event.getAction() == MotionEvent.ACTION_DOWN) && (nativeSubWindowPtr != 0L)) {
-                                nativeOnWindowTouchOutside(nativeSubWindowPtr);
-                            }
-                            return dispatchTouchEventToMainWindow(event);
-                        }
-                    }
 
-                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        getFocus();
-                    }
+                if (isTouchOutsideWindow(event, x, y)) {
+                    return handleTouchOutside();
                 }
 
+                Boolean handledByHotArea = handleHotAreaIfNeeded(event, x, y);
+                if (handledByHotArea != null) {
+                    return handledByHotArea;
+                }
+
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    getFocus();
+                }
                 return false;
             }
-        });
+        };
+    }
 
+    private boolean isTouchOutsideWindow(MotionEvent event, int x, int y) {
+        boolean isOutsideBounds = (event.getAction() == MotionEvent.ACTION_DOWN)
+                && (x < 0 || x > subWindowView.getWidth() || y < 0 || y > subWindowView.getHeight());
+        return event.getAction() == MotionEvent.ACTION_OUTSIDE || isOutsideBounds;
+    }
+
+    private boolean handleTouchOutside() {
+        ALog.d(TAG, "touch outside");
+        if (nativeSubWindowPtr != 0L) {
+            nativeOnWindowTouchOutside(nativeSubWindowPtr);
+        }
+        if (!isModal) {
+            releaseFocus();
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isPointInHotAreas(int x, int y) {
+        for (Rect rect : hotAreas) {
+            if (rect.contains(x, y)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Boolean handleHotAreaIfNeeded(MotionEvent event, int x, int y) {
+        if (hotAreas == null) {
+            return null;
+        }
+        if (isPointInHotAreas(x, y)) {
+            return null;
+        }
+        if (event.getAction() == MotionEvent.ACTION_DOWN && nativeSubWindowPtr != 0L) {
+            nativeOnWindowTouchOutside(nativeSubWindowPtr);
+        }
+        if (isModal) {
+            return true;
+        }
+        return dispatchTouchEventToMainWindow(event);
+    }
+
+    private void setupGlobalLayoutListener() {
         ViewTreeObserver.OnGlobalLayoutListener listener = new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -239,29 +300,24 @@ public class SubWindow {
     /**
      * Update window param.
      *
-     * @param type     the type
-     * @param mode     the mode
-     * @param tag      the tag
-     * @param parentId the parent id
-     * @param x        the x
-     * @param y        the y
-     * @param width    the width
-     * @param height   the height
+     * @param param   the create sub window parameter
      */
-    public void updateWindowParam(int type, int mode, int tag, int parentId, int x, int y, int width, int height) {
-        this.windowType = type;
-        this.windowMode = mode;
-        this.windowTag = tag;
-        this.parentId = parentId;
-        this.windowParam.x = x;
-        this.windowParam.y = y;
+    private void updateWindowParam(SubWindowManager.CreateSubWindowParam param) {
+        this.windowType = param.type;
+        this.windowMode = param.mode;
+        this.windowTag = param.tag;
+        this.parentId = param.parentId;
+        this.isModal = param.isModal;
+        this.windowParam.modalityType = param.modalityType;
+        this.windowParam.x = param.x;
+        this.windowParam.y = param.y;
 
-        if (width > 0) {
-            this.windowParam.width = width;
+        if (param.width > 0) {
+            this.windowParam.width = param.width;
         }
 
-        if (height > 0) {
-            this.windowParam.height = height;
+        if (param.height > 0) {
+            this.windowParam.height = param.height;
         }
 
         mainView = rootView.findViewById(android.R.id.content);
@@ -275,6 +331,19 @@ public class SubWindow {
      * Show window.
      */
     public void showWindow() {
+        showWindow(true);
+    }
+
+    /**
+     * Show window.
+     *
+     * @param requestFocus whether to request focus after showing
+     */
+    public void showWindow(boolean requestFocus) {
+        if (subWindowView.isShowing()) {
+            return;
+        }
+        requestedVisible = true;
         subWindowView.setWidth(windowParam.width);
         subWindowView.setHeight(windowParam.height);
         subWindowView.setElevation(0);
@@ -285,7 +354,9 @@ public class SubWindow {
         ALog.d(TAG, "showWindow called. x=" + windowParam.x + ", y=" + windowParam.y + ", screenX=" + screenX +
             ", screenY=" + screenY + ", width=" + windowParam.width + ", height=" + windowParam.height);
         subWindowView.showAtLocation(rootView, Gravity.TOP | Gravity.START, screenX, screenY);
-        getFocus();
+        if (requestFocus) {
+            getFocus();
+        }
     }
 
     /**
@@ -358,13 +429,29 @@ public class SubWindow {
     }
 
     /**
+     * Dismiss window for restack without notifying native hide callback.
+     */
+    public void dismissForRestack() {
+        if (subWindowView == null || !subWindowView.isShowing()) {
+            return;
+        }
+        skipNativeHideCallbackForRestack = true;
+        subWindowView.dismiss();
+        skipNativeHideCallbackForRestack = false;
+    }
+
+    /**
      * Set window focusable.
      *
      * @param isFocusable the is focusable
      */
     public void setFocusable(boolean isFocusable) {
+        syncContentViewFocusable(isFocusable);
         subWindowView.setFocusable(isFocusable);
         this.isFocusable = isFocusable;
+        if (subWindowView.isShowing()) {
+            subWindowView.update();
+        }
     }
 
     /**
@@ -402,6 +489,7 @@ public class SubWindow {
     public void getFocus() {
         ALog.d(TAG, "getFocus(), isFocusable=" + this.isFocusable);
         if (this.isFocusable) {
+            syncContentViewFocusable(true);
             subWindowView.setFocusable(true);
             subWindowView.update();
         }
@@ -413,8 +501,15 @@ public class SubWindow {
     public void releaseFocus() {
         ALog.d(TAG, "releaseFocus(), isFocusable=" + this.isFocusable);
         if (this.isFocusable) {
+            syncContentViewFocusable(false);
             subWindowView.setFocusable(false);
             subWindowView.update();
+        }
+    }
+
+    private void syncContentViewFocusable(boolean isFocusable) {
+        if (contentView instanceof WindowViewInterface) {
+            ((WindowViewInterface) contentView).setWindowFocusable(isFocusable);
         }
     }
 
@@ -462,24 +557,44 @@ public class SubWindow {
         } else {
             subWindowView.setWindowLayoutType(WindowManager.LayoutParams.TYPE_APPLICATION_PANEL);
         }
+        onTop = status;
     }
 
-    private String name;
-    private int windowId = InstanceIdGenerator.getAndIncrement();
-    private int parentId;
-    private int windowMode;
-    private int windowType;
-    private WindowParam windowParam;
-    private PopupSubWindow subWindowView;
-    private View contentView;
-    private Activity rootActivity;
-    private View rootView;
-    private boolean isFocusable = true;
-    private Rect[] hotAreas;
-    private boolean isFullScreen = false;
-    private View mainView;
-    private int mainWindowX;
-    private int mainWindowY;
+    /**
+     * Get subwindow on top.
+     *
+     * @return true if the subwindow is on top
+     */
+    public boolean getOnTop() {
+        return onTop;
+    }
+
+    /**
+     * Check whether this window is modal.
+     *
+     * @return true if modal
+     */
+    public boolean isModalWindow() {
+        return isModal;
+    }
+
+    /**
+     * Set requested visibility for manager restack.
+     *
+     * @param requestedVisible whether the manager wants this subwindow showing
+     */
+    public void setRequestedVisible(boolean requestedVisible) {
+        this.requestedVisible = requestedVisible;
+    }
+
+    /**
+     * Get requested visibility.
+     *
+     * @return true if manager expects this window to be showing
+     */
+    public boolean isRequestedVisible() {
+        return requestedVisible;
+    }
 
     /**
      * Gets window tag.
@@ -699,4 +814,5 @@ public class SubWindow {
 
     private native void nativeOnWindowTouchOutside(long windowPtr);
     private native void nativeOnSubWindowHide(long windowPtr);
+    private native void nativeOnSubWindowClose(long windowPtr);
 }

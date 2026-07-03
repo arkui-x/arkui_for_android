@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -156,13 +156,37 @@ public class TextInputPluginAosp extends TextInputPluginBase implements TextInpu
                  * Show keyboard.
                  */
                 public void run() {
-                    view.requestFocus();
-                    if (imm != null) {
-                        imm.restartInput(view);
-                        imm.showSoftInput(view, 0);
-                    }
+                    doShowTextInput();
                 }
             });
+    }
+
+    /**
+     * Perform text input showing on UI thread.
+     */
+    private void doShowTextInput() {
+        if (view == null) {
+            return;
+        }
+        if (!view.isFocusable()) {
+            handleUnfocusableView();
+            return;
+        }
+        view.requestFocus();
+        if (imm != null) {
+            imm.restartInput(view);
+            imm.showSoftInput(view, 0);
+        }
+    }
+
+    /**
+     * Handle input for unfocusable view.
+     */
+    private void handleUnfocusableView() {
+        if (imm != null) {
+            imm.restartInput(view);
+            imm.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
+        }
     }
 
     /**

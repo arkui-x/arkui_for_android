@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,6 +19,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.view.inputmethod.InputMethodManager;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -29,7 +30,6 @@ import androidx.core.view.ViewCompat;
 import android.view.View;
 import android.graphics.Rect;
 import android.view.ViewGroup;
-import android.content.Context;
 
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
@@ -117,6 +117,8 @@ public class WindowViewCommon {
     private boolean numpadEnterPressed = false;
     private boolean isWindowOrientationChanging = false;
     private boolean keyboardVisible = false;
+    private boolean windowFocusable = true;
+    private boolean windowFocused = false;
     private AcePlatformViewPluginBase acePlatformViewPluginBase;
     private AceWebPluginBase aceWebPluginBase;
     private InputConnectionClient inputClient = null;
@@ -185,6 +187,10 @@ public class WindowViewCommon {
      * @return the input connection
      */
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        if (!windowFocusable) {
+            ALog.e(TAG, "onCreateInputConnection blocked: window is not focusable");
+            return null;
+        }
         if (inputClient != null) {
             if (windowViewInterface instanceof WindowViewSurface) {
                 return inputClient.onCreateInputConnection((WindowViewSurface) windowViewInterface, outAttrs);
@@ -296,8 +302,29 @@ public class WindowViewCommon {
             ALog.w(TAG, "onWindowFocusChanged: nativeWindow is null");
             return;
         }
+        if (!windowFocusable && hasWindowFocus) {
+            if (windowFocused) {
+                notifyFocusChanged(false);
+            }
+            return;
+        }
         ALog.i(TAG, "onWindowFocusChanged call");
-        nativeOnWindowFocusChanged(nativeWindowPtr, hasWindowFocus);
+        notifyFocusChanged(hasWindowFocus);
+    }
+
+    /**
+     * Called when the view focus changed.
+     *
+     * @param hasFocus has focus or not
+     */
+    public void onViewFocusChanged(boolean hasFocus) {
+        if (nativeWindowPtr == 0L) {
+            return;
+        }
+        if (!windowFocusable && hasFocus) {
+            return;
+        }
+        notifyFocusChanged(hasFocus);
     }
 
     /**
@@ -311,6 +338,53 @@ public class WindowViewCommon {
             ALog.i(TAG, "foreground call");
             nativeForeground(nativeWindowPtr);
         }
+    }
+
+    /**
+     * Set whether current window view can gain focus.
+     *
+     * @param isFocusable whether current view is focusable
+     */
+    public void setWindowFocusable(boolean isFocusable) {
+
+        View view = (windowViewInterface != null) ? windowViewInterface.getView() : null;
+        if (view == null) {
+            ALog.e(TAG, "setWindowFocusable failed, view is null");
+            return;
+        }
+        windowFocusable = isFocusable;
+        applyWindowFocusableState();
+        if (!isFocusable) {
+            invalidateInputConnection(view);
+            if (view.hasFocus()) {
+                view.clearFocus();
+            }
+            if (windowFocused) {
+                notifyFocusChanged(false);
+            }
+        }
+    }
+
+    /**
+     * Apply cached focusable state to current view.
+     */
+    public void applyWindowFocusableState() {
+        View view = (windowViewInterface != null) ? windowViewInterface.getView() : null;
+        if (view == null) {
+            ALog.e(TAG, "applyWindowFocusableState failed, view is null");
+            return;
+        }
+        view.setFocusable(windowFocusable);
+        view.setFocusableInTouchMode(windowFocusable);
+    }
+
+    /**
+     * Get current cached window focusable state.
+     *
+     * @return whether current window view is focusable
+     */
+    public boolean isWindowFocusable() {
+        return windowFocusable;
     }
 
     /**
@@ -500,6 +574,9 @@ public class WindowViewCommon {
         if (event == null) {
             return false;
         }
+        if (!windowFocusable) {
+            return true;
+        }
         if (this.nativeWindowPtr == 0L) {
             return windowViewInterface.superOnKeyDown(keyCode, event);
         }
@@ -539,6 +616,9 @@ public class WindowViewCommon {
         if (event == null) {
             return false;
         }
+        if (!windowFocusable) {
+            return true;
+        }
         if (this.nativeWindowPtr == 0L) {
             return windowViewInterface.superOnKeyUp(keyCode, event);
         }
@@ -574,6 +654,9 @@ public class WindowViewCommon {
      * @return true if pre ime action run success , false otherwise.
      */
     public boolean onKeyPreIme(int keyCode, KeyEvent event, Context context) {
+        if (!windowFocusable) {
+            return true;
+        }
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP && keyboardVisible
                 && !inputClient.isStopBackPress()) {
             if (!(context instanceof Activity)) {
@@ -951,6 +1034,34 @@ public class WindowViewCommon {
             }
         }
         return ((actionKey << 4) + action);
+    }
+
+    private void invalidateInputConnection(View view) {
+        if (view == null) {
+            return;
+        }
+        Context context = view.getContext();
+        if (context == null) {
+            return;
+        }
+        Object service = context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (!(service instanceof InputMethodManager)) {
+            return;
+        }
+        InputMethodManager imm = (InputMethodManager) service;
+        imm.restartInput(view);
+        if (view.getWindowToken() != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
+
+    private void notifyFocusChanged(boolean hasWindowFocus) {
+        if (nativeWindowPtr == 0L) {
+            ALog.w(TAG, "notifyFocusChanged skipped: nativeWindow is null");
+            return;
+        }
+        windowFocused = hasWindowFocus;
+        nativeOnWindowFocusChanged(nativeWindowPtr, hasWindowFocus);
     }
 
     private native void nativeSurfaceCreated(long windowPtr, Surface surface);

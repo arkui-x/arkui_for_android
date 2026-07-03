@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,6 +25,7 @@ namespace OHOS::Ace::Platform {
 namespace {
 static jmethodID gRegisterWindowMethodID;
 static jmethodID gUnRegisterWindowMethodID;
+static jmethodID gSetWindowFocusableMethodID;
 
 static const JNINativeMethod ANDROID_METHODS[] = {
     {
@@ -170,6 +171,21 @@ void WindowViewJni::UnRegisterWindow(JNIEnv* env, jobject windowView)
     }
 }
 
+bool WindowViewJni::SetWindowFocusable(JNIEnv* env, jobject windowView, bool isFocusable)
+{
+    CHECK_NULL_RETURN(env, false);
+    CHECK_NULL_RETURN(windowView, false);
+    CHECK_NULL_RETURN(gSetWindowFocusableMethodID, false);
+    env->CallVoidMethod(windowView, gSetWindowFocusableMethodID, static_cast<jboolean>(isFocusable));
+    if (env->ExceptionCheck()) {
+        LOGE("SetWindowFocusable: Exception occurred when calling setWindowFocusable");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return false;
+    }
+    return true;
+}
+
 void WindowViewJni::OnWindowFocusChanged(JNIEnv* env, jobject myObject, jlong window, jboolean hasWindowFocus)
 {
     auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
@@ -306,6 +322,7 @@ bool WindowViewJni::RegisterNatives(JNIEnv* env)
 
     gRegisterWindowMethodID = env->GetMethodID(cls, "registerWindow", "(J)V");
     gUnRegisterWindowMethodID = env->GetMethodID(cls, "unRegisterWindow", "()V");
+    gSetWindowFocusableMethodID = env->GetMethodID(cls, "setWindowFocusable", "(Z)V");
 
     env->DeleteLocalRef(myClass);
     env->DeleteLocalRef(cls);

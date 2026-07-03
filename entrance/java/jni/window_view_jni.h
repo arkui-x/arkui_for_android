@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,6 +36,7 @@ public:
     static void SurfaceDestroyed(JNIEnv* env, jobject myObject, jlong window);
     static void RegisterWindow(JNIEnv* env, void* window, jobject windowView);
     static void UnRegisterWindow(JNIEnv* env, jobject windowView);
+    static bool SetWindowFocusable(JNIEnv* env, jobject windowView, bool isFocusable);
 
     static void OnWindowFocusChanged(JNIEnv* env, jobject myObject, jlong window, jboolean hasWindowFocus);
     static void Foreground(JNIEnv* env, jobject myObject, jlong window);
