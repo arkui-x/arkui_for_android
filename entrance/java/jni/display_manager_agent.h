@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,6 +20,7 @@
 #include <parcel.h>
 #include <mutex>
 #include <memory>
+#include <vector>
 #include "nocopyable.h"
 #include "base/utils/macros.h"
 
@@ -33,6 +34,8 @@ public:
     static std::shared_ptr<DisplayManagerAgent> GetInstance();
     bool IsFoldable() const;
     uint32_t GetFoldStatus() const;
+    std::vector<uint64_t> GetAllDisplayIds() const;
+    std::vector<int32_t> GetLiveCreaseRegion() const;
     void RegisterDisplayListener();
     void UnregisterDisplayListener();
     std::string RegisterFoldStatusListener();

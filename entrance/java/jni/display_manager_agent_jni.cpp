@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -77,6 +77,8 @@ void DisplayManagerAgentJni::SetupDisplayManagerAgent(JNIEnv* env, jobject obj)
     displayManagerAgentJniStruct_.clazz = (jclass)env->NewGlobalRef(clazz);
     displayManagerAgentJniStruct_.isFoldableMethod = env->GetMethodID(clazz, "isFoldable", "()Z");
     displayManagerAgentJniStruct_.getFoldStatusMethod = env->GetMethodID(clazz, "getFoldStatus", "()I");
+    displayManagerAgentJniStruct_.getAllDisplayIdsMethod = env->GetMethodID(clazz, "getAllDisplayIds", "()[I");
+    displayManagerAgentJniStruct_.getLiveCreaseRegionMethod = env->GetMethodID(clazz, "getLiveCreaseRegion", "()[I");
     displayManagerAgentJniStruct_.registerDisplayListenerMethod = env->GetMethodID(clazz, "registerDisplayListener",
         "()V");
     displayManagerAgentJniStruct_.unregisterDisplayListenerMethod = env->GetMethodID(clazz,
@@ -117,6 +119,80 @@ uint32_t DisplayManagerAgentJni::GetFoldStatus()
         return -1;
     }
     return (uint32_t)foldStatus;
+}
+
+std::vector<uint64_t> DisplayManagerAgentJni::GetAllDisplayIds()
+{
+    std::vector<uint64_t> result;
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("DisplayManagerAgentJni::GetAllDisplayIds env is NULL");
+        return result;
+    }
+
+    auto displayIdArray = reinterpret_cast<jintArray>(env->CallObjectMethod(displayManagerAgentJniStruct_.object,
+        displayManagerAgentJniStruct_.getAllDisplayIdsMethod));
+    if (env->ExceptionCheck()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return result;
+    }
+    if (displayIdArray == nullptr) {
+        return result;
+    }
+
+    jsize size = env->GetArrayLength(displayIdArray);
+    if (size <= 0) {
+        return result;
+    }
+
+    jint* ids = env->GetIntArrayElements(displayIdArray, nullptr);
+    if (ids == nullptr) {
+        return result;
+    }
+    for (jsize i = 0; i < size; i++) {
+        result.emplace_back(static_cast<uint64_t>(ids[i]));
+    }
+    env->ReleaseIntArrayElements(displayIdArray, ids, JNI_ABORT);
+    env->DeleteLocalRef(displayIdArray);
+    return result;
+}
+
+std::vector<int32_t> DisplayManagerAgentJni::GetLiveCreaseRegion()
+{
+    std::vector<int32_t> result;
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("DisplayManagerAgentJni::GetLiveCreaseRegion env is NULL");
+        return result;
+    }
+
+    auto creaseArray = reinterpret_cast<jintArray>(env->CallObjectMethod(displayManagerAgentJniStruct_.object,
+        displayManagerAgentJniStruct_.getLiveCreaseRegionMethod));
+    if (env->ExceptionCheck()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return result;
+    }
+    if (creaseArray == nullptr) {
+        return result;
+    }
+
+    jsize size = env->GetArrayLength(creaseArray);
+    if (size <= 0) {
+        return result;
+    }
+
+    jint* values = env->GetIntArrayElements(creaseArray, nullptr);
+    if (values == nullptr) {
+        return result;
+    }
+    for (jsize i = 0; i < size; i++) {
+        result.emplace_back(static_cast<int32_t>(values[i]));
+    }
+    env->ReleaseIntArrayElements(creaseArray, values, JNI_ABORT);
+    env->DeleteLocalRef(creaseArray);
+    return result;
 }
 
 void DisplayManagerAgentJni::RegisterDisplayListener()

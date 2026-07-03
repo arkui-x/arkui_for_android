@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -26,10 +26,45 @@ using namespace OHOS::Ace::Platform;
 
 namespace OHOS::Rosen {
 
+namespace {
+DisplayOrientation ConvertToDisplayOrientation(int orentation)
+{
+    switch (orentation) {
+        case ROTATION_0:
+            return DisplayOrientation::PORTRAIT;
+        case ROTATION_90:
+            return DisplayOrientation::LANDSCAPE;
+        case ROTATION_180:
+            return DisplayOrientation::PORTRAIT_INVERTED;
+        case ROTATION_270:
+            return DisplayOrientation::LANDSCAPE_INVERTED;
+        default:
+            return DisplayOrientation::PORTRAIT;
+    }
+}
+
+Rotation ConvertToRotation(uint32_t rotation)
+{
+    switch (rotation) {
+        case ROTATION_0:
+            return Rotation::ROTATION_0;
+        case ROTATION_90:
+            return Rotation::ROTATION_270;
+        case ROTATION_180:
+            return Rotation::ROTATION_180;
+        case ROTATION_270:
+            return Rotation::ROTATION_90;
+        default:
+            return Rotation::ROTATION_0;
+    }
+}
+} // namespace
+
 DisplayInfo::DisplayInfo()
 {
     int displayId = DisplayInfoJni::getDisplayId();
     int orentation = DisplayInfoJni::getOrentation();
+    uint32_t rotation = DisplayInfoJni::GetRotation();
     int32_t width = DisplayInfoJni::getDisplayWidth();
     int32_t height = DisplayInfoJni::getDisplayHeight();
     float refreshRate = DisplayInfoJni::getRefreshRate();
@@ -51,29 +86,39 @@ DisplayInfo::DisplayInfo()
     SetDensityDpi(dpi);
     SetXDpi(xDpi);
     SetYDpi(yDpi);
+    SetDisplayOrientation(ConvertToDisplayOrientation(orentation));
+    SetRotation(ConvertToRotation(rotation));
+}
 
-    DisplayOrientation arkOrientation = DisplayOrientation::PORTRAIT;
-    switch (orentation) {
-        case ROTATION_0: {
-            arkOrientation = DisplayOrientation::PORTRAIT;
-            break;
-        }
-        case ROTATION_90: {
-            arkOrientation = DisplayOrientation::LANDSCAPE;
-            break;
-        }
-        case ROTATION_180: {
-            arkOrientation = DisplayOrientation::PORTRAIT_INVERTED;
-            break;
-        }
-        case ROTATION_270: {
-            arkOrientation = DisplayOrientation::LANDSCAPE_INVERTED;
-            break;
-        }
-        default:
-            break;
-    }
-    SetDisplayOrientation(arkOrientation);
+DisplayInfo::DisplayInfo(DisplayId displayId)
+{
+    int queryDisplayId = displayId == DISPLAY_ID_INVALID ? -1 : static_cast<int>(displayId);
+    int displayIdInt = DisplayInfoJni::GetDisplayId(queryDisplayId);
+    int orentation = DisplayInfoJni::GetOrentation(queryDisplayId);
+    uint32_t rotation = DisplayInfoJni::GetRotation(queryDisplayId);
+    int32_t width = DisplayInfoJni::GetDisplayWidth(queryDisplayId);
+    int32_t height = DisplayInfoJni::GetDisplayHeight(queryDisplayId);
+    float refreshRate = DisplayInfoJni::GetRefreshRate(queryDisplayId);
+    float densityPixels = DisplayInfoJni::GetDensityPixels(queryDisplayId);
+    float scaledDensity = DisplayInfoJni::GetScaledDensity(queryDisplayId);
+    int dpi = DisplayInfoJni::GetDensityDpi(queryDisplayId);
+    float xDpi = DisplayInfoJni::GetXDpi(queryDisplayId);
+    float yDpi = DisplayInfoJni::GetYDpi(queryDisplayId);
+
+    LOGD("DisplayInfo:: displayId=%d orentation=%d with=%d height=%d refreshRate=%.3f xDpi=%.3f yDpi=%.3f",
+        displayIdInt, orentation, width, height, refreshRate, xDpi, yDpi);
+
+    SetDisplayId(displayIdInt);
+    SetWidth(width);
+    SetHeight(height);
+    SetRefreshRate(refreshRate);
+    SetDensityPixels(densityPixels);
+    SetScaledDensity(scaledDensity);
+    SetDensityDpi(dpi);
+    SetXDpi(xDpi);
+    SetYDpi(yDpi);
+    SetDisplayOrientation(ConvertToDisplayOrientation(orentation));
+    SetRotation(ConvertToRotation(rotation));
 }
 
 DisplayInfo::~DisplayInfo()
@@ -130,6 +175,11 @@ float DisplayInfo::GetYDpi() const
     return yDpi_;
 }
 
+Rotation DisplayInfo::GetRotation() const
+{
+    return rotation_;
+}
+
 void DisplayInfo::SetDisplayId(DisplayId displayId)
 {
     id_ = displayId;
@@ -181,4 +231,8 @@ void DisplayInfo::SetYDpi(float yDpi)
     yDpi_ = yDpi;
 }
 
+void DisplayInfo::SetRotation(Rotation rotation)
+{
+    rotation_ = rotation;
+}
 } // namespace OHOS::Rosen
