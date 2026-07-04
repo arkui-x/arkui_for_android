@@ -64,6 +64,12 @@ const std::unordered_map<std::string, std::string> soMap = {
     {"ArcList", "arclist"},
     {"ArcListItem", "arclist"},
     {"ArcScrollBar", "arcscrollbar"},
+    {"Progress", "progress"},
+    {"TextTimer", "texttimer"},
+    {"Badge", "badge"},
+    {"LoadingProgress", "loadingprogress"},
+    {"ImageSpan", "span"},
+    {"SymbolSpan", "span"},
 };
 } // namespace
 DynamicModuleHelper& DynamicModuleHelper::GetInstance()
