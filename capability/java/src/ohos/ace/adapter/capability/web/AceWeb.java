@@ -279,11 +279,7 @@ public class AceWeb extends AceWebBase {
 
     private boolean isJavaScriptEnabled = false;
 
-    private String jsObjectName;
-
-    private String[] jsSyncMethod;
-
-    private String[] jsAsyncMethod;
+    private List<JsProxyConfig> jsProxyConfigList = new ArrayList<JsProxyConfig>();
 
     private List<WebMessagePort> webMessagePorts = new ArrayList<WebMessagePort>();
     private int videoWidth = 0;
@@ -318,6 +314,18 @@ public class AceWeb extends AceWebBase {
     private boolean isReceiverRegistered = false;  // 新增注册标志位
 
     private AceWebNestedScrollOptionsExtObject nestedScrollOptionsExtObject = new AceWebNestedScrollOptionsExtObject();
+
+    private static class JsProxyConfig {
+        String objectName;
+        String[] methodList;
+        String[] asyncMethodList;
+
+        JsProxyConfig(String objectName, String[] methodList, String[] asyncMethodList) {
+            this.objectName = objectName;
+            this.methodList = methodList;
+            this.asyncMethodList = asyncMethodList;
+        }
+    }
 
     public AceWeb(long id, Context context, View view, IAceOnResourceEvent callback) {
         super(id, callback);
@@ -683,9 +691,11 @@ public class AceWeb extends AceWebBase {
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                if (!isJavaScriptEnabled && jsObjectName != null && (jsSyncMethod != null || jsAsyncMethod != null)) {
-                    registerJavaScriptProxy(jsObjectName, jsSyncMethod, jsAsyncMethod, "");
+                if (!isJavaScriptEnabled && !jsProxyConfigList.isEmpty()) {
                     isJavaScriptEnabled = true;
+                    for (JsProxyConfig config : jsProxyConfigList) {
+                        registerJavaScriptProxy(config.objectName, config.methodList, config.asyncMethodList, "");
+                    }
                 }
                 AceWeb.this.onPageLoaded(url);
                 if (url != null && (url.startsWith("http") || url.startsWith("https"))) {
@@ -2739,9 +2749,7 @@ public class AceWeb extends AceWebBase {
         String objectName, String[] methodList, String[] asyncMethodList, String permission) {
         ALog.i(LOG_TAG, "registerJavaScriptProxy objectName: " + objectName);
         if (!isJavaScriptEnabled) {
-            jsObjectName = objectName;
-            jsSyncMethod = methodList;
-            jsAsyncMethod = asyncMethodList;
+            jsProxyConfigList.add(new JsProxyConfig(objectName, methodList, asyncMethodList));
         }
         if (webView == null) {
             ALog.e(LOG_TAG, "registerJavaScriptProxy webView is null");
@@ -2780,9 +2788,7 @@ public class AceWeb extends AceWebBase {
             String jsResult = String.format("delete window.%s;", objectName);
             webView.evaluateJavascript(jsResult, null);
         }
-        jsObjectName = null;
-        jsSyncMethod = null;
-        jsAsyncMethod = null;
+        jsProxyConfigList.removeIf(config -> config.objectName.equals(objectName));
     }
 
     /**
