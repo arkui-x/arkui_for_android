@@ -123,7 +123,6 @@ template("ace_osal_android_source_set") {
 
     deps = [
       "$ace_root/adapter/android/entrance/java/jni:ace_common_jni_$platform",
-      "$ace_root/frameworks/core/components/theme:build_theme_code",
       "$app_framework_resource_path:global_resmgr",
       "$app_framework_resource_path/interfaces/js/innerkits/core:resmgr_napi_core",
       "$app_framework_resource_path/interfaces/js/kits:resourcemanager",

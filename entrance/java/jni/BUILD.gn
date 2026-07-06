@@ -33,7 +33,7 @@ template("ace_android_jni_source_set") {
     include_dirs =
         [ "//foundation/graphic/graphic_surface/interfaces/inner_api/surface" ]
 
-    deps = [ "$ace_root/frameworks/core/components/theme:build_theme_code" ]
+    deps = []
 
     if (defined(config.enable_rosen_backend) && config.enable_rosen_backend) {
       deps += [ "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client_static" ]
