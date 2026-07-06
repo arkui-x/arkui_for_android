@@ -171,6 +171,9 @@ component_modules = [
   "span",
   "select",
   "navigator",
+  "lazy_grid_layout",
+  "refresh",
+  "grid",
 ]
 
 component_modules_libs = []
