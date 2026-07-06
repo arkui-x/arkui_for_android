@@ -163,6 +163,8 @@ component_modules = [
   "badge",
   "loading_progress",
   "span",
+  "select",
+  "navigator",
 ]
 
 component_modules_libs = []
