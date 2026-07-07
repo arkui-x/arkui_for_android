@@ -22,6 +22,7 @@
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/json/json_util.h"
 #include "base/log/log.h"
+#include "base/subwindow/subwindow_manager.h"
 #include "core/common/ime/text_input_proxy.h"
 
 namespace OHOS::Ace::Platform {
@@ -62,6 +63,23 @@ struct {
     jmethodID hideTextInput;
     jmethodID finishComposing;
 } g_pluginClass;
+
+static JniEnvironment::JavaGlobalRef* FindJavaObject(int32_t instanceId)
+{
+    auto it = g_jobjects.find(instanceId);
+    if (it != g_jobjects.end()) {
+        return &it->second;
+    }
+    // Fallback: translate instanceId -> windowId via SubwindowManager reverse mapping
+    auto windowId = SubwindowManager::GetInstance()->GetWindowIdByContainerId(instanceId);
+    if (windowId >= 0) {
+        it = g_jobjects.find(windowId);
+        if (it != g_jobjects.end()) {
+            return &it->second;
+        }
+    }
+    return nullptr;
+}
 
 } // namespace
 
@@ -239,12 +257,13 @@ bool TextInputJni::ShowTextInput(bool isFocusViewChanged, int32_t instanceId)
         return false;
     }
 
-    auto jobject = g_jobjects.find(instanceId);
-    if (jobject == g_jobjects.end() || !g_pluginClass.showTextInput) {
+    auto* jobject = FindJavaObject(instanceId);
+    if (!jobject || !g_pluginClass.showTextInput) {
+        LOGE("TextInput JNI: ShowTextInput failed, no Java object for instanceId:%{public}d", instanceId);
         return false;
     }
 
-    env->CallVoidMethod(jobject->second.get(), g_pluginClass.showTextInput, isFocusViewChanged);
+    env->CallVoidMethod(jobject->get(), g_pluginClass.showTextInput, isFocusViewChanged);
     return true;
 }
 
@@ -256,13 +275,14 @@ bool TextInputJni::SetClient(const int32_t clientId, const TextInputConfiguratio
         return false;
     }
 
-    auto jobject = g_jobjects.find(instanceId);
-    if (jobject == g_jobjects.end() || !g_pluginClass.setClient) {
+    auto* jobject = FindJavaObject(instanceId);
+    if (!jobject || !g_pluginClass.setClient) {
+        LOGE("TextInput JNI: SetClient failed, no Java object for instanceId:%{public}d", instanceId);
         return false;
     }
 
     jstring jConfig = env->NewStringUTF(config.ToJsonString().c_str());
-    env->CallVoidMethod(jobject->second.get(), g_pluginClass.setClient, clientId, jConfig);
+    env->CallVoidMethod(jobject->get(), g_pluginClass.setClient, clientId, jConfig);
     if (jConfig) {
         env->DeleteLocalRef(jConfig);
     }
@@ -283,12 +303,13 @@ bool TextInputJni::HideTextInput(int32_t instanceId)
         return false;
     }
 
-    auto jobject = g_jobjects.find(instanceId);
-    if (jobject == g_jobjects.end() || !g_pluginClass.hideTextInput) {
+    auto* jobject = FindJavaObject(instanceId);
+    if (!jobject || !g_pluginClass.hideTextInput) {
+        LOGE("TextInput JNI: HideTextInput failed, no Java object for instanceId:%{public}d", instanceId);
         return false;
     }
 
-    env->CallVoidMethod(jobject->second.get(), g_pluginClass.hideTextInput);
+    env->CallVoidMethod(jobject->get(), g_pluginClass.hideTextInput);
     if (env->ExceptionCheck()) {
         LOGE("TextInput JNI: call HideTextInput has exception");
         env->ExceptionDescribe();
@@ -306,14 +327,15 @@ bool TextInputJni::SetEditingState(const TextEditingValue& state, int32_t instan
         return false;
     }
 
-    auto jobject = g_jobjects.find(instanceId);
-    if (jobject == g_jobjects.end() || !g_pluginClass.setEditingState) {
+    auto* jobject = FindJavaObject(instanceId);
+    if (!jobject || !g_pluginClass.setEditingState) {
+        LOGE("TextInput JNI: SetEditingState failed, no Java object for instanceId:%{public}d", instanceId);
         return false;
     }
 
     needFireChangeEvent_ = needFireChangeEvent;
     jstring jState = env->NewStringUTF(state.ToJsonString().c_str());
-    env->CallVoidMethod(jobject->second.get(), g_pluginClass.setEditingState, jState);
+    env->CallVoidMethod(jobject->get(), g_pluginClass.setEditingState, jState);
     if (jState) {
         env->DeleteLocalRef(jState);
     }
@@ -334,12 +356,13 @@ bool TextInputJni::ClearClient(int32_t instanceId)
         return false;
     }
 
-    auto jobject = g_jobjects.find(instanceId);
-    if (jobject == g_jobjects.end() || !g_pluginClass.clearClient) {
+    auto* jobject = FindJavaObject(instanceId);
+    if (!jobject || !g_pluginClass.clearClient) {
+        LOGE("TextInput JNI: ClearClient failed, no Java object for instanceId:%{public}d", instanceId);
         return false;
     }
 
-    env->CallVoidMethod(jobject->second.get(), g_pluginClass.clearClient);
+    env->CallVoidMethod(jobject->get(), g_pluginClass.clearClient);
     if (env->ExceptionCheck()) {
         LOGE("TextInput JNI: call ClearClient has exception");
         env->ExceptionDescribe();
@@ -352,6 +375,10 @@ bool TextInputJni::ClearClient(int32_t instanceId)
 void TextInputJni::ReleaseInstance(int32_t instanceId)
 {
     g_jobjects.erase(instanceId);
+    auto windowId = SubwindowManager::GetInstance()->GetWindowIdByContainerId(instanceId);
+    if (windowId >= 0) {
+        g_jobjects.erase(windowId);
+    }
 }
 
 bool TextInputJni::FinishComposing(int32_t instanceId)
@@ -362,12 +389,13 @@ bool TextInputJni::FinishComposing(int32_t instanceId)
         return false;
     }
 
-    auto jobject = g_jobjects.find(instanceId);
-    if (jobject == g_jobjects.end() || !g_pluginClass.finishComposing) {
+    auto* jobject = FindJavaObject(instanceId);
+    if (!jobject || !g_pluginClass.finishComposing) {
+        LOGE("TextInput JNI: FinishComposing failed, no Java object for instanceId:%{public}d", instanceId);
         return false;
     }
 
-    env->CallVoidMethod(jobject->second.get(), g_pluginClass.finishComposing);
+    env->CallVoidMethod(jobject->get(), g_pluginClass.finishComposing);
     if (env->ExceptionCheck()) {
         LOGE("TextInput JNI: call FinishComposing has exception");
         env->ExceptionDescribe();
