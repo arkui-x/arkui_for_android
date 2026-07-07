@@ -20,6 +20,7 @@
 #include "adapter/android/entrance/java/jni/native_window_surface.h"
 #include "base/log/event_report.h"
 #include "base/log/log.h"
+#include "base/subwindow/subwindow_manager.h"
 #include "base/utils/macros.h"
 #include "base/utils/utils.h"
 
@@ -29,6 +30,12 @@ using NativeTextureMap = std::unordered_map<int64_t, JniWeakGlobalRef>;
 std::unordered_map<int, RefPtr<AceResourceRegister>> g_resRegisters;
 std::unordered_map<int, NativeWindowMap> g_nativeWindowMaps;
 std::unordered_map<int, NativeTextureMap> g_surfaceTextureMaps;
+
+static int32_t ResolveInstanceId(int32_t instanceId)
+{
+    auto windowId = SubwindowManager::GetInstance()->GetWindowIdByContainerId(instanceId);
+    return (windowId >= 0) ? windowId : instanceId;
+}
 bool AcePlatformPluginJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
     static const JNINativeMethod methods[] = {
@@ -101,14 +108,31 @@ jlong AcePlatformPluginJni::InitResRegister(JNIEnv* env, jobject myObject, jobje
 
 RefPtr<AceResourceRegister> AcePlatformPluginJni::GetResRegister(int32_t instanceId)
 {
-    return g_resRegisters[instanceId];
+    auto it = g_resRegisters.find(instanceId);
+    if (it != g_resRegisters.end()) {
+        return it->second;
+    }
+    auto resolvedId = ResolveInstanceId(instanceId);
+    if (resolvedId != instanceId) {
+        it = g_resRegisters.find(resolvedId);
+        if (it != g_resRegisters.end()) {
+            return it->second;
+        }
+    }
+    return nullptr;
 }
 
 void* AcePlatformPluginJni::GetNativeWindow(int32_t instanceId, int64_t textureId)
 {
-    auto iter = g_nativeWindowMaps.find(static_cast<int32_t>(instanceId));
+    auto iter = g_nativeWindowMaps.find(instanceId);
+    if (iter == g_nativeWindowMaps.end()) {
+        auto resolvedId = ResolveInstanceId(instanceId);
+        if (resolvedId != instanceId) {
+            iter = g_nativeWindowMaps.find(resolvedId);
+        }
+    }
     if (iter != g_nativeWindowMaps.end()) {
-        auto map =  iter->second;
+        auto map = iter->second;
         auto nativeWindowIter = map.find(static_cast<int64_t>(textureId));
         if (nativeWindowIter != map.end()) {
             return nativeWindowIter->second;
@@ -217,5 +241,11 @@ void AcePlatformPluginJni::ReleaseInstance(int32_t instanceId)
     g_nativeWindowMaps.erase(instanceId);
     g_resRegisters.erase(instanceId);
     g_surfaceTextureMaps.erase(instanceId);
+    auto resolvedId = ResolveInstanceId(instanceId);
+    if (resolvedId != instanceId) {
+        g_nativeWindowMaps.erase(resolvedId);
+        g_resRegisters.erase(resolvedId);
+        g_surfaceTextureMaps.erase(resolvedId);
+    }
 }
 } // namespace OHOS::Ace::Platform
