@@ -1285,6 +1285,11 @@
       "OHOS::Rosen::Drawing::Matrix::Get(int) const";
       "OHOS::Rosen::Drawing::Matrix::Set(OHOS::Rosen::Drawing::Matrix::Index, float)";
       "OHOS::Ace::UIDisplaySync::UIDisplaySync(OHOS::Ace::UIObjectType)";
+      "OHOS::Ace::NG::NodeModifier::GetMenuItemInnerModifier()";
+      "OHOS::Ace::NG::NodeModifier::GetMenuInnerModifier()";
+      "OHOS::Ace::NG::NodeModifier::GetMenuViewInnerModifier()";
+      "OHOS::Ace::NG::ScrollPattern::TriggerScrollBarDisplay()";
+      "OHOS::Ace::NG::ScrollPattern::TriggerModifyDone()";
 
 
       OHOS::Ace::NG::UINode::MaybeOnDelete*;

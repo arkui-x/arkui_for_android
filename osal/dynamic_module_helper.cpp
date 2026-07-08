@@ -75,6 +75,8 @@ const std::unordered_map<std::string, std::string> soMap = {
     {"LoadingProgress", "loadingprogress"},
     {"ImageSpan", "span"},
     {"SymbolSpan", "span"},
+    {"Select", "select"},
+    {"Navigator", "navigator"},
 };
 } // namespace
 DynamicModuleHelper& DynamicModuleHelper::GetInstance()
