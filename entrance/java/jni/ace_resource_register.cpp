@@ -20,6 +20,7 @@
 #include <sstream>
 
 #include "base/log/log.h"
+#include "base/subwindow/subwindow_manager.h"
 #include "base/utils/utils.h"
 #include "core/common/container_scope.h"
 #include "core/pipeline/pipeline_base.h"
@@ -100,7 +101,10 @@ void AceResourceRegister::OnCallEvent(JNIEnv* env, jclass clazz, jlong resRegist
         eventParam = paramStr;
         env->ReleaseStringUTFChars(param, paramStr);
     }
-    ContainerScope scope(resRegister->instanceId_);
+    int32_t containerId = SubwindowManager::GetInstance()->GetContainerId(
+        static_cast<uint32_t>(resRegister->instanceId_));
+    int32_t scopeInstanceId = (containerId >= 0) ? containerId : resRegister->instanceId_;
+    ContainerScope scope(scopeInstanceId);
     resRegister->OnEvent(eventId, eventParam);
 }
 
