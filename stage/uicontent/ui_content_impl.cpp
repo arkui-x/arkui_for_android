@@ -428,6 +428,8 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     container->SetWindowName(window_->GetWindowName());
     container->SetWindowId(window_->GetWindowId());
     SubwindowManager::GetInstance()->AddContainerId(window_->GetWindowId(), instanceId_);
+    uiContentInstanceId_ = window_->IsSubWindow() ? window_->GetWindowId() : info->instanceId;
+    Ace::Platform::UIContent::AddUIContent(uiContentInstanceId_, this);
     container->SetInstanceName(info->name);
     container->SetHostClassName(info->name);
     if (runtime_) {
