@@ -102,8 +102,8 @@ public class SubWindow {
          */
         public WindowParam() {
             backgroundColor = 0;
-            width = 100;
-            height = 100;
+            width = 0;
+            height = 0;
             x = 0;
             y = 0;
             modalityType = WINDOW_MODALITY;
@@ -311,14 +311,9 @@ public class SubWindow {
         this.windowParam.modalityType = param.modalityType;
         this.windowParam.x = param.x;
         this.windowParam.y = param.y;
+        this.windowParam.width = param.width;
+        this.windowParam.height = param.height;
 
-        if (param.width > 0) {
-            this.windowParam.width = param.width;
-        }
-
-        if (param.height > 0) {
-            this.windowParam.height = param.height;
-        }
 
         mainView = rootView.findViewById(android.R.id.content);
         int[] location = new int[2];
@@ -344,6 +339,12 @@ public class SubWindow {
             return;
         }
         requestedVisible = true;
+        if (windowParam.width == 0 || windowParam.height == 0) {
+            if (mainView != null) {
+                windowParam.width = mainView.getWidth();
+                windowParam.height = mainView.getHeight();
+            }
+        }
         subWindowView.setWidth(windowParam.width);
         subWindowView.setHeight(windowParam.height);
         subWindowView.setElevation(0);
