@@ -287,6 +287,7 @@ component_modules = [
   "refresh",
   "grid",
   "text_field",
+  "bubble",
 ]
 
 component_modules_libs = []
