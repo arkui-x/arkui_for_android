@@ -228,7 +228,7 @@
       "OHOS::Ace::MaterialUtils::CallSetMaterial(OHOS::Ace::NG::FrameNode*, OHOS::Ace::UiMaterial const*)";
       "OHOS::Ace::MaterialUtils::IsEnableMaterialParam(OHOS::Ace::RefPtr<OHOS::Ace::UiMaterial> const&)";
       "OHOS::Ace::MaterialUtils::IsMaterialEnabled()";
-      "OHOS::Ace::MaterialUtils::GetInitMaterial(OHOS::Ace::UiMaterialStyle)";
+      "OHOS::Ace::MaterialUtils::GetInitMaterial(OHOS::Ace::UiMaterialStyle, std::__ndk1::optional<bool> const&, std::__ndk1::optional<OHOS::Ace::LightEffectOptions> const&)";
       "OHOS::Ace::MaterialUtils::IsMaterialDisabled()";
       "OHOS::Ace::MaterialUtils::GetConfiguredMaterialType()";
       "OHOS::Ace::MaterialUtils::PreProcessMaterial(OHOS::Ace::UiMaterial const*)";
@@ -608,6 +608,7 @@
       "OHOS::Rosen::RsVulkanInterface::Init(OHOS::Rosen::VulkanInterfaceType, bool, bool)";
       "OHOS::Rosen::RsVulkanContext::GetSingleton(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Rosen::RsVulkanContext::CreateDrawingContext()";
+      "OHOS::Rosen::RsVulkanContext::ReleaseDrawingContextForThread(int)";
       "OHOS::AbilityRuntime::Platform::ApplicationContext::GetInstance()";
       "OHOS::AbilityRuntime::Platform::ApplicationContext::SetLanguage(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::AbilityRuntime::GetNativePointerFromCallbackInfo(napi_env__*, napi_callback_info__*, char const*)";
@@ -1091,7 +1092,7 @@
       "OHOS::Ace::NG::ImagePattern::GetCanvasImage()";
       "OHOS::Ace::NG::ImagePattern::GetRawImageSize()";
       "OHOS::Ace::NG::ImageModelNG::SetAlt(OHOS::Ace::NG::FrameNode*, OHOS::Ace::ImageSourceInfo const&)";
-      "OHOS::Ace::NG::ImageModelNG::CreateFrameNode(int, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, OHOS::Ace::RefPtr<OHOS::Ace::PixelMap>&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, bool)";
+      "OHOS::Ace::NG::ImageModelNG::CreateFrameNode(int, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, OHOS::Ace::RefPtr<OHOS::Ace::PixelMap>&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, bool, bool)";
       "OHOS::Ace::NG::ImageModelNG::SetBackBorder(OHOS::Ace::NG::FrameNode*)";
       "OHOS::Ace::NG::ImageModelNG::ResetBackBorder(OHOS::Ace::NG::FrameNode*)";
       "OHOS::Ace::DrawingColorFilter::CreateDrawingColorFilter(void*)";
@@ -1136,6 +1137,7 @@
       OHOS::Ace::V2::SLIDER_ETS_TAG;
       OHOS::Ace::V2::ROW_ETS_TAG;
       OHOS::Ace::V2::TEXT_ETS_TAG;
+      OHOS::Ace::V2::ARC_INDEXER_ETS_TAG;
       OHOS::Ace::NG::SafeAreaManager::*;
       "OHOS::Ace::NG::VibratorUtils::StartViratorDirectly(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       OHOS::Ace::V2::STACK_ETS_TAG;
@@ -1181,6 +1183,8 @@
       "OHOS::Ace::NG::NodeModifier::GetLazyGridLayoutCustomModifier()";
       "OHOS::Ace::NG::NodeModifier::GetLoadingProgressModifier()";
       "OHOS::Ace::NG::NodeModifier::GetSelectCustomModifier()";
+      "OHOS::Ace::NG::NodeModifier::GetButtonCustomModifier()";
+      "OHOS::Ace::NG::NodeModifier::GetDialogInnerModifier()";
       "OHOS::Ace::NG::NodeAnimatableProperty<float, OHOS::Ace::NG::AnimatablePropertyFloat>::Set(float const&)";
       "OHOS::Ace::NG::NodeAnimatableProperty<float, OHOS::Ace::NG::AnimatablePropertyFloat>::NodeAnimatableProperty(float const&, std::__ndk1::function<void (float const&)>&&)";
       "OHOS::Ace::Shadow::CreateShadow(OHOS::Ace::ShadowStyle)";
@@ -1477,6 +1481,7 @@
       OHOS::Ace::NG::SearchTextFieldPattern::*;
       "OHOS::Ace::NG::ClickEventActuator::GetClickEvent()";
       "OHOS::Ace::NG::TextInputBridge::ParseLayoutPolicy(panda::ecmascript::EcmaVM*, panda::Local<panda::JSValueRef>, bool)";
+      "OHOS::Ace::NG::TextInputBridge::ParseLayoutPolicy(panda::ecmascript::EcmaVM*, _ArkUINode*&, panda::Local<panda::JSValueRef>, bool)";
       "panda::Local<panda::JSValueRef> OHOS::Ace::NG::ArkTSUtils::ToJsValueWithVM<std::__ndk1::basic_string<char16_t, std::__ndk1::char_traits<char16_t>, std::__ndk1::allocator<char16_t> > >(panda::ecmascript::EcmaVM const*, std::__ndk1::basic_string<char16_t, std::__ndk1::char_traits<char16_t>, std::__ndk1::allocator<char16_t> >)";
       "OHOS::Ace::CastToTextInputAction(int)";
       "OHOS::Ace::CastToTextInputType(int)";
