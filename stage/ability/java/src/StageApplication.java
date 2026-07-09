@@ -108,6 +108,10 @@ public class StageApplication extends Application {
      * @return true if VM destroy task posted successfully, false otherwise.
      */
     public static boolean destroyVm() {
+        if (!StageApplicationDelegate.isInitialized()) {
+            ALog.e(LOG_TAG, "StageApplication not initialized, skip destroyVm.");
+            return false;
+        }
         return StageApplicationDelegate.nativeDestroyVm();
     }
 
