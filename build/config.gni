@@ -107,3 +107,7 @@ if (defined(enable_drag_framework) && enable_drag_framework) {
 if (runtime_mode == "debug") {
   defines += [ "ACE_DEBUG_LOG" ]
 }
+
+if (defined(runtime_mode) && runtime_mode == "release") {
+  defines += [ "STRIP_RELEASE_LOG" ]
+}
