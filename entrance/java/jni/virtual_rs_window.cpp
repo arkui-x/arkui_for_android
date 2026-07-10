@@ -728,6 +728,7 @@ SystemBarProperty Window::GetSystemBarPropertyByType(WindowType type) const
 void Window::ClearListenersById(uint32_t winId)
 {
     std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    ClearUselessListeners(occupiedAreaChangeListeners_, winId);
     ClearUselessListeners(lifecycleListeners_, winId);
     ClearUselessListeners(avoidAreaChangeListeners_, winId);
 }
@@ -938,6 +939,13 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
 
 void Window::NotifyKeyboardHeightChanged(int32_t height)
 {
+    if (!isFocused_) {
+        return;
+    }
+    if (height == lastNotifiedKeyboardHeight_) {
+        return;
+    }
+    lastNotifiedKeyboardHeight_ = height;
     g_KeyboardHeight = height;
     auto occupiedAreaChangeListeners = GetListeners<IOccupiedAreaChangeListener>();
     for (auto& listener : occupiedAreaChangeListeners) {

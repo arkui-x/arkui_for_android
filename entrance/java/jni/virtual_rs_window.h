@@ -79,28 +79,6 @@ enum class WindowSizeChangeReason : uint32_t {
     END,
 };
 
-/**
- * @brief Enumerates occupied area type.
- */
-enum class OccupiedAreaType : uint32_t {
-    TYPE_INPUT, // area of input window
-};
-
-/**
- * @class IOccupiedAreaChangeListener
- *
- * @brief IOccupiedAreaChangeListener is used to observe OccupiedArea change.
- */
-class IOccupiedAreaChangeListener : public RefBase {
-public:
-    /**
-     * @brief Notify caller when OccupiedArea size change.
-     *
-     * @param info Occupied area info when occupied changed.
-     */
-    virtual void OnSizeChange(const Rect& rect, OccupiedAreaType type) {}
-};
-
 class Window : public RefBase {
 public:
     static bool Register(const std::shared_ptr<JNIEnv>& env);
@@ -363,6 +341,7 @@ private:
     Rect requestRect_ = { 0, 0, 0, 0 };
     bool isForground_ = false;
     bool isFocused_ = false;
+    int32_t lastNotifiedKeyboardHeight_ = -1;
     bool isFullScreen_ = false;
     bool isIgnoreSafeArea_ = false;
     bool isIgnoreSafeAreaNeedNotify_ = false;

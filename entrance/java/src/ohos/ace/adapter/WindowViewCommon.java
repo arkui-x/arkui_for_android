@@ -30,6 +30,8 @@ import androidx.core.view.ViewCompat;
 import android.view.View;
 import android.graphics.Rect;
 import android.view.ViewGroup;
+import android.content.Context;
+import android.view.inputmethod.InputMethodManager;
 
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
@@ -79,6 +81,8 @@ public class WindowViewCommon {
     private static final int AVOID_TYPE_NAVIGATION_INDICATOR = 4; // area for navigation indicator
     private static boolean sAndroidXAvailable;
     private static boolean sAndroidXVersionSupportedGetInsets;
+    private static int sSubwindowKeyboardAvoidHeight = 0;
+    private static OnSubwindowKeyboardAvoidHeightChangedListener sKeyboardAvoidHeightListener = null;
 
     static {
         try {
@@ -127,12 +131,43 @@ public class WindowViewCommon {
     private HashMap<Integer, AvoidArea> avoidAreaRects = new HashMap<>();
 
     /**
+     * Interface for listening to subwindow keyboard avoid height changes.
+     */
+    public interface OnSubwindowKeyboardAvoidHeightChangedListener {
+        /**
+         * Callback for subwindow keyboard avoid height changes.
+         *
+         * @param height the height of keyboard avoid area, or 0 if no subwindow is present.
+         */
+        void onSubwindowKeyboardAvoidHeightChanged(int height);
+    }
+
+    /**
      * Constructor of WindowViewCommon
      *
      * @param windowViewInterface WindowViewInterface object
      */
     public WindowViewCommon(WindowViewInterface windowViewInterface) {
         this.windowViewInterface = windowViewInterface;
+    }
+
+    /**
+     * Set the listener for subwindow keyboard avoid height changes.
+     *
+     * @param listener the listener, or null to unset.
+     */
+    public static void setOnSubwindowKeyboardAvoidHeightChangedListener(
+            OnSubwindowKeyboardAvoidHeightChangedListener listener) {
+        sKeyboardAvoidHeightListener = listener;
+    }
+
+    /**
+     * Get the subwindow keyboard avoid height.
+     *
+     * @return the height of keyboard avoid area, or 0 if no subwindow is present.
+     */
+    public static int getSubwindowKeyboardAvoidHeight() {
+        return sSubwindowKeyboardAvoidHeight;
     }
 
     /**
@@ -919,6 +954,10 @@ public class WindowViewCommon {
     }
 
     private static class WindowInsetsListener implements androidx.core.view.OnApplyWindowInsetsListener {
+        private static View subwindow = null;
+        private static int keyboardHeight = 0;
+        private static int lastImeBottom = 0;
+
         @Override
         public WindowInsetsCompat onApplyWindowInsets(View view, WindowInsetsCompat insets) {
             ALog.d(TAG, "Window" + "onApplyWindowInsets");
@@ -926,11 +965,19 @@ public class WindowViewCommon {
 
             WindowViewInterface windowView;
             if (view instanceof WindowViewInterface) {
-                ALog.d(TAG, "Window" + "view instanceof WindowViewInterface");
-                // subwindow not support yet
+                subwindow = view;
+                keyboardHeight = lastImeBottom;
+                int prevHeight = WindowViewCommon.sSubwindowKeyboardAvoidHeight;
+                WindowViewCommon.sSubwindowKeyboardAvoidHeight = keyboardHeight;
+                if (prevHeight != keyboardHeight && WindowViewCommon.sKeyboardAvoidHeightListener != null) {
+                    WindowViewCommon.sKeyboardAvoidHeightListener.onSubwindowKeyboardAvoidHeightChanged(keyboardHeight);
+                }
                 return resultInsets;
             } else {
                 ALog.d(TAG, "Window" + "view not instanceof WindowViewInterface");
+                Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
+                lastImeBottom = imeInsets.bottom;
+                WindowViewCommon.sSubwindowKeyboardAvoidHeight = lastImeBottom;
                 ViewGroup contentParent = (ViewGroup) view.findViewById(android.R.id.content);
                 for (int i = 0; i < contentParent.getChildCount(); i++) {
                     View childView = contentParent.getChildAt(i);

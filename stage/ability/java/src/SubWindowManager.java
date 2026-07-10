@@ -28,6 +28,7 @@ import android.widget.PopupWindow;
 import android.os.Build;
 import android.graphics.Rect;
 
+import ohos.ace.adapter.WindowViewCommon;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.WindowViewInterface;
 
@@ -183,6 +184,15 @@ public class SubWindowManager {
             int option = decorView.getSystemUiVisibility();
             uiOptions_ = uiOptions_ | option;
             uiOptionsStatic = uiOptionsStatic | option;
+            WindowViewCommon.setOnSubwindowKeyboardAvoidHeightChangedListener(
+                new WindowViewCommon.OnSubwindowKeyboardAvoidHeightChangedListener() {
+                    @Override
+                    public void onSubwindowKeyboardAvoidHeightChanged(int height) {
+                        updateAllVisibleSubwindows();
+                    }
+                });
+        } else {
+            WindowViewCommon.setOnSubwindowKeyboardAvoidHeightChangedListener(null);
         }
     }
 
@@ -195,8 +205,40 @@ public class SubWindowManager {
         ALog.d(TAG, "releaseActivity called, instanceName: " + instanceName + ", mInstanceName: " + mInstanceName);
         if (instanceName == mInstanceName) {
             mRootActivity = null;
+            WindowViewCommon.setOnSubwindowKeyboardAvoidHeightChangedListener(null);
         }
         return;
+    }
+
+    /**
+     * Update all visible subwindows.
+     */
+    public void updateAllVisibleSubwindows() {
+        if (mRootActivity == null) {
+            return;
+        }
+        View decorView = mRootActivity.getWindow().getDecorView();
+        if (decorView == null) {
+            ALog.d(TAG, "[SubwindowKbd] updateAllVisibleSubwindows: decorView is null, skip");
+            return;
+        }
+        decorView.post(new UpdateVisibleSubwindowsRunnable());
+    }
+
+    private class UpdateVisibleSubwindowsRunnable implements Runnable {
+
+        UpdateVisibleSubwindowsRunnable() {
+        }
+
+        @Override
+        public void run() {
+            for (SubWindow subWindow : mSubWindowMap.values()) {
+                if (subWindow == null || !subWindow.getSubWindowView().isShowing()) {
+                    continue;
+                }
+                subWindow.updateWindow();
+            }
+        }
     }
 
     /**
