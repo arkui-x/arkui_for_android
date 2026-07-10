@@ -164,6 +164,8 @@ component_modules = [
   "menu",
   "text_clock",
   "toggle",
+  "button",
+  "dialog",
   "progress",
   "texttimer",
   "badge",
