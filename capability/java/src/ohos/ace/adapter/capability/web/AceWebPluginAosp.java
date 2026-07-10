@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,9 +16,12 @@
 package ohos.ace.adapter.capability.web;
 
 import android.content.res.AssetManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.content.Context;
 import android.util.DisplayMetrics;
+import android.webkit.WebSettings;
 import android.widget.FrameLayout;
 
 import ohos.ace.adapter.ALog;
@@ -26,6 +29,8 @@ import ohos.ace.adapter.ALog;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -54,6 +59,8 @@ public class AceWebPluginAosp extends AceWebPluginBase {
 
     private static final String INCOGNITO_MODE = "incognitoMode";
 
+    private static final String RUN_JAVASCRIPT_ON_DOCUMENT_END = "runJavaScriptOnDocumentEnd";
+
     private static final String HTTP = "http://";
 
     private static final String HTTPS = "https://";
@@ -63,6 +70,12 @@ public class AceWebPluginAosp extends AceWebPluginBase {
     private static final String ARKUIX_PATH_MARKER = "files/arkui-x/";
 
     private static final long INVALID_CREATE_ID = -1;
+
+    private static final long DEFAULT_USER_AGENT_TIMEOUT_MS = 1000L;
+
+    private static final Object DEFAULT_USER_AGENT_LOCK = new Object();
+
+    private static volatile String cachedDefaultUserAgent = null;
 
     private final AtomicLong nextMapid = new AtomicLong(0L);
 
@@ -78,6 +91,43 @@ public class AceWebPluginAosp extends AceWebPluginBase {
         this.context = context;
         this.rootView = view;
         dataBase = WebDataBaseManager.getInstance(context);
+        ensureDefaultUserAgent(context);
+    }
+
+    private static void ensureDefaultUserAgent(Context context) {
+        if (cachedDefaultUserAgent != null || context == null) {
+            return;
+        }
+        synchronized (DEFAULT_USER_AGENT_LOCK) {
+            if (cachedDefaultUserAgent == null) {
+                cachedDefaultUserAgent = loadDefaultUserAgentOnMainThread(context);
+            }
+        }
+    }
+
+    private static String loadDefaultUserAgentOnMainThread(Context context) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            return WebSettings.getDefaultUserAgent(context);
+        }
+        final String[] userAgent = new String[1];
+        CountDownLatch latch = new CountDownLatch(1);
+        new Handler(Looper.getMainLooper()).post(() -> {
+            try {
+                userAgent[0] = WebSettings.getDefaultUserAgent(context);
+            } finally {
+                latch.countDown();
+            }
+        });
+        try {
+            if (!latch.await(DEFAULT_USER_AGENT_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+                ALog.e(LOG_TAG, "get default user agent timeout");
+                return null;
+            }
+        } catch (InterruptedException e) {
+            ALog.e(LOG_TAG, "get default user agent interrupted");
+            return null;
+        }
+        return userAgent[0] == null ? "" : userAgent[0];
     }
 
     /**
@@ -101,6 +151,17 @@ public class AceWebPluginAosp extends AceWebPluginBase {
         return new AceWebPluginAosp(context, view);
     }
 
+    /**
+     * Returns the default user agent string on Android.
+     *
+     * <p>The value is initialized once on the UI thread and reused on all subsequent calls.</p>
+     *
+     * @return the default user agent string, or empty string if unavailable
+     */
+    public String getDefaultUserAgent() {
+        return cachedDefaultUserAgent != null ? cachedDefaultUserAgent : "";
+    }
+
     @Override
     public long create(Map<String, String> param) {
         if (param.isEmpty() || !param.containsKey(RESOURCE_TYPE)) {
@@ -109,7 +170,6 @@ public class AceWebPluginAosp extends AceWebPluginBase {
         }
         try {
             long id = Long.parseLong(param.get(RESOURCE_TYPE));
-            String webSrc = param.get(WEBVIEW_SRC);
             String pageUrl = param.get(WEBVIEW_PAGE_URL);
 
             // Create AceWeb
@@ -120,6 +180,10 @@ public class AceWebPluginAosp extends AceWebPluginBase {
             aceWeb.initWeb();
             aceWeb.setIncognitoMode(String.valueOf(webincognitoMode));
             aceWeb.setPageUrl(pageUrl);
+            if (param.containsKey(RUN_JAVASCRIPT_ON_DOCUMENT_END)) {
+                aceWeb.runJavaScriptOnDocumentEnd(param);
+            }
+            String webSrc = param.get(WEBVIEW_SRC);
             aceWeb.loadUrl(toAndroidAssetUrl(webSrc));
             int physicalWidth = toPhysicalPixels(Double.parseDouble(param.get(WEBVIEW_WIDTH)));
             int physicalHeight = toPhysicalPixels(Double.parseDouble(param.get(WEBVIEW_HEIGHT)));

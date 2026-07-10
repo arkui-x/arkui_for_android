@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -41,6 +41,10 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      * Initialize the webview.
      */
     private static boolean hasInit = false;
+
+    private static volatile boolean acceptCookieEnabled = true;
+
+    private static volatile boolean acceptThirdPartyCookieEnabled = true;
 
     private final AtomicLong nextWebId = new AtomicLong(0L);
 
@@ -235,6 +239,22 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
 
     public static Map<Long, AceWebBase> getObjectMap() {
         return objectMap;
+    }
+
+    public static void setAcceptCookieEnabled(boolean accept) {
+        acceptCookieEnabled = accept;
+    }
+
+    public static boolean isAcceptCookieAllowed() {
+        return acceptCookieEnabled;
+    }
+
+    public static void setAcceptThirdPartyCookieEnabled(boolean accept) {
+        acceptThirdPartyCookieEnabled = accept;
+    }
+
+    public static boolean isAcceptThirdPartyCookieAllowed() {
+        return acceptThirdPartyCookieEnabled;
     }
 
     /**
@@ -448,6 +468,19 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
         if (objectMap.containsKey(id)) {
             AceWebBase webBase = objectMap.get(id);
             webBase.clearCache(includeDiskFiles);
+        }
+    }
+
+    /**
+     * Sets network availability for the webview.
+     *
+     * @param id id of object
+     * @param enable whether network is available
+     */
+    public void setNetworkAvailable(long id, boolean enable) {
+        AceWebBase webBase = objectMap.get(id);
+        if (webBase != null) {
+            webBase.setNetworkAvailable(enable);
         }
     }
 

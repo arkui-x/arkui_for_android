@@ -59,15 +59,21 @@ import android.media.MediaMetadataRetriever;
 import android.os.Handler;
 import android.os.Looper;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
 import java.util.ArrayList;
 import java.util.ArrayDeque;
 import android.animation.ValueAnimator;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -75,6 +81,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import ohos.ace.adapter.ALog;
 import ohos.ace.adapter.IAceOnResourceEvent;
 import ohos.ace.adapter.capability.web.AceWeb.WebviewBroadcastReceive;
@@ -98,6 +106,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.util.LinkedHashMap;
+import java.util.Collections;
+import java.util.regex.Pattern;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import ohos.ace.adapter.capability.web.AceWebScrollObject;
 import ohos.ace.adapter.capability.web.AceWebSchemeHandler;
@@ -274,6 +289,24 @@ public class AceWeb extends AceWebBase {
 
     private static final int RENDER_EXIT_REASON_UNKNOWN = 4;
 
+    private static final String ASSETS_SUB_PATH = "arkui-x";
+
+    private static final String PUBLIC_SUFFIX_LIST_FILE_NAME = "effective_tld_names.dat";
+
+    private static final String[] PUBLIC_SUFFIX_LIST_FILE_DIRS = {
+        ASSETS_SUB_PATH + "/systemres/domains"
+    };
+
+    private static final Set<String> PUBLIC_SUFFIX_RULES = Collections.synchronizedSet(new HashSet<String>());
+
+    private static final Set<String> PUBLIC_SUFFIX_WILDCARD_RULES = Collections.synchronizedSet(new HashSet<String>());
+
+    private static final Set<String> PUBLIC_SUFFIX_EXCEPTION_RULES = Collections.synchronizedSet(new HashSet<String>());
+
+    private static volatile boolean isPublicSuffixListLoaded = false;
+
+    private static final Object PUBLIC_SUFFIX_LIST_LOCK = new Object();
+
     private static String currentPageUrl;
 
     private static String routerUrl;
@@ -342,6 +375,9 @@ public class AceWeb extends AceWebBase {
 
     private String referrer;
 
+    private final Map<String, DocumentEndScriptItem> documentEndScriptMap =
+        java.util.Collections.synchronizedMap(new LinkedHashMap<>());
+
     private float touchStartX;
     private float touchStartY;
     private boolean isNeedParallelScroll = false;
@@ -395,6 +431,38 @@ public class AceWeb extends AceWebBase {
             webView.getSettings().setJavaScriptEnabled(true);
             webView.addJavascriptInterface(
                 new AceWebJavascriptProxyCallback(this.context, webView), "AceWebHandler");
+        }
+    }
+
+    private static class UrlRegexRule {
+        final String secondLevelDomain;
+        final String rule;
+        final Pattern compiledPattern;
+
+        UrlRegexRule(String sld, String rule) {
+            this.secondLevelDomain = sld == null ? "" : sld;
+            this.rule = rule == null ? "" : rule;
+            Pattern p = null;
+            if (!this.rule.isEmpty()) {
+                try {
+                    p = Pattern.compile(this.rule);
+                } catch (PatternSyntaxException e) {
+                    ALog.e(LOG_TAG, "UrlRegexRule compile pattern failed: " + e.getMessage());
+                }
+            }
+            this.compiledPattern = p;
+        }
+    }
+
+    private static class DocumentEndScriptItem {
+        final String script;
+        final List<String> scriptRules;
+        final List<UrlRegexRule> urlRegexRules;
+
+        DocumentEndScriptItem(String script, List<String> scriptRules, List<UrlRegexRule> urlRegexRules) {
+            this.script = script;
+            this.scriptRules = scriptRules;
+            this.urlRegexRules = urlRegexRules;
         }
     }
 
@@ -741,6 +809,11 @@ public class AceWeb extends AceWebBase {
             }
 
             @Override
+            public void onLoadResource(WebView view, String url) {
+                AceWeb.this.onResourceLoaded(url);
+            }
+
+            @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 AceWeb.this.onLoadingPage(url);
             }
@@ -755,6 +828,7 @@ public class AceWeb extends AceWebBase {
                 }
                 AceWeb.this.onPageLoaded(url);
                 injectTextSelectionScript();
+                injectDocumentEndScripts(url);
                 injectPopupHookScript();
                 isPageLoaded = true;
                 if (isFitContentMode) {
@@ -1076,8 +1150,9 @@ public class AceWeb extends AceWebBase {
         initWebEventListener();
         initWebCallBack();
 
-        CookieManager.getInstance().setAcceptCookie(true);
-        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
+        CookieManager.getInstance().setAcceptCookie(AceWebPluginBase.isAcceptCookieAllowed());
+        CookieManager.getInstance().setAcceptThirdPartyCookies(webView,
+            AceWebPluginBase.isAcceptThirdPartyCookieAllowed());
 
         try {
             webView.getSettings().setJavaScriptEnabled(true);
@@ -1092,6 +1167,20 @@ public class AceWeb extends AceWebBase {
             ALog.e(LOG_TAG, "initWeb injection failed");
         } catch (RuntimeException e) {
             ALog.e(LOG_TAG, "initWeb injection runtime error");
+        }
+    }
+
+    @Override
+    public void setAcceptThirdPartyCookies(boolean accept) {
+        if (webView == null) {
+            return;
+        }
+        Runnable action = () ->
+            CookieManager.getInstance().setAcceptThirdPartyCookies(webView, accept);
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            action.run();
+        } else {
+            new Handler(Looper.getMainLooper()).post(action);
         }
     }
 
@@ -1122,6 +1211,15 @@ public class AceWeb extends AceWebBase {
      */
     public void onPageLoaded(String url) {
         firePageFinished(url);
+    }
+
+    /**
+     * This is called when a resource is loaded.
+     *
+     * @param url the url of the loaded resource.
+     */
+    public void onResourceLoaded(String url) {
+        fireResourceLoad(url);
     }
 
     private WebResourceResponse handleSchemeRequest(WebView view, WebResourceRequest request) {
@@ -1733,6 +1831,376 @@ public class AceWeb extends AceWebBase {
             }
         }
         return FAIL_TAG;
+    }
+
+    @Override
+    public String runJavaScriptOnDocumentEnd(Map<String, String> params) {
+        if (params == null) {
+            return FAIL_TAG;
+        }
+        String encoded = params.get("runJavaScriptOnDocumentEnd");
+        if (encoded == null || encoded.isEmpty()) {
+            return FAIL_TAG;
+        }
+        try {
+            String json = URLDecoder.decode(encoded, "UTF-8");
+            JSONArray array = new JSONArray(json);
+            for (int i = 0; i < array.length(); i++) {
+                processDocumentEndScriptItem(array.getJSONObject(i));
+            }
+        } catch (org.json.JSONException | java.io.UnsupportedEncodingException | IllegalArgumentException e) {
+            ALog.e(LOG_TAG, "parse runJavaScriptOnDocumentEnd params failed: " + e.getMessage());
+            return FAIL_TAG;
+        }
+        return SUCCESS_TAG;
+    }
+
+    private void processDocumentEndScriptItem(JSONObject item) throws org.json.JSONException {
+        String script = item.optString("script", "");
+        if (script.isEmpty()) {
+            return;
+        }
+        List<String> scriptRules = new ArrayList<>();
+        JSONArray rulesArr = item.optJSONArray("scriptRules");
+        if (rulesArr != null) {
+            for (int j = 0; j < rulesArr.length(); j++) {
+                String rule = rulesArr.getString(j);
+                if (rule != null) {
+                    scriptRules.add(rule);
+                }
+            }
+        }
+        if (!scriptRules.isEmpty() && !validateScriptRulesFormat(scriptRules)) {
+            return;
+        }
+        List<UrlRegexRule> urlRegexRules = new ArrayList<>();
+        JSONArray regexArr = item.optJSONArray("urlRegexRules");
+        if (regexArr != null) {
+            for (int j = 0; j < regexArr.length(); j++) {
+                JSONObject r = regexArr.getJSONObject(j);
+                urlRegexRules.add(new UrlRegexRule(
+                    r.optString("secondLevelDomain", ""),
+                    r.optString("rule", "")));
+            }
+        }
+        synchronized (documentEndScriptMap) {
+            if (!documentEndScriptMap.containsKey(script)) {
+                documentEndScriptMap.put(script,
+                    new DocumentEndScriptItem(script, scriptRules, urlRegexRules));
+            }
+        }
+    }
+
+    private void injectDocumentEndScripts(String url) {
+        if (documentEndScriptMap.isEmpty() || webView == null || url == null) {
+            return;
+        }
+        String matchUrl = normalizeAssetUrl(url);
+        List<DocumentEndScriptItem> matchedItems = new ArrayList<>();
+        synchronized (documentEndScriptMap) {
+            for (DocumentEndScriptItem item : documentEndScriptMap.values()) {
+                if (shouldInject(matchUrl, item)) {
+                    matchedItems.add(item);
+                }
+            }
+        }
+        injectDocumentEndScriptsSequentially(matchedItems, 0);
+    }
+
+    /**
+     * Normalize Android asset URL to OH resource scheme for cross-platform rule matching.
+     * Only affects script rule matching, the actual loaded URL stays unchanged.
+     * Actual path pattern: file:///android_asset/arkui-x/{module}/resources/rawfile/{file}
+     * Normalized to:       resource://rawfile/{file}
+     */
+    private String normalizeAssetUrl(String url) {
+        if (url == null) {
+            return url;
+        }
+        final String assetPrefix = "file:///android_asset/";
+        if (!url.startsWith(assetPrefix)) {
+            return url;
+        }
+        String path = url.substring(assetPrefix.length());
+        // Match arkui-x/{module}/resources/rawfile/{filename}
+        final String rawfileMarker = "/resources/rawfile/";
+        int pos = path.indexOf(rawfileMarker);
+        if (pos < 0) {
+            return url;
+        }
+        return "resource://rawfile/" + path.substring(pos + rawfileMarker.length());
+    }
+
+    private void injectDocumentEndScriptsSequentially(List<DocumentEndScriptItem> items, int index) {
+        if (items == null || index >= items.size() || webView == null) {
+            return;
+        }
+        DocumentEndScriptItem item = items.get(index);
+        webView.evaluateJavascript(item.script, new ValueCallback<String>() {
+            @Override
+            public void onReceiveValue(String value) {
+                injectDocumentEndScriptsSequentially(items, index + 1);
+            }
+        });
+    }
+
+    private boolean shouldInject(String url, DocumentEndScriptItem item) {
+        if (!item.scriptRules.isEmpty()) {
+            for (String rule : item.scriptRules) {
+                if (matchScriptRule(url, rule)) {
+                    return true;
+                }
+            }
+            return false;
+        } else if (!item.urlRegexRules.isEmpty()) {
+            for (UrlRegexRule r : item.urlRegexRules) {
+                if (matchUrlRegexRule(url, r)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return false;
+    }
+
+    private boolean matchScriptRule(String url, String rule) {
+        if (url == null || url.isEmpty() || rule == null || rule.isEmpty()) {
+            return false;
+        }
+        if ("*".equals(rule)) {
+            return true;
+        }
+        // Custom scheme rules end with "://" (e.g. "resource://"), use prefix match
+        if (rule.endsWith("://")) {
+            return url.startsWith(rule);
+        }
+        // Normalize: browsers auto-append "/" to the page URL (e.g. "https://www.baidu.com"
+        // becomes "https://www.baidu.com/"). Strip the trailing "/" from the URL so that
+        // rules written without a trailing "/" (e.g. "https://www.baidu.com") still match.
+        // (Custom scheme rules ending with "://" already returned above, so stripping a
+        // single trailing "/" here is safe for http/https rules.)
+        String normalizedUrl = url;
+        if (normalizedUrl.endsWith("/")) {
+            normalizedUrl = normalizedUrl.substring(0, normalizedUrl.length() - 1);
+        }
+        // http/https exact match
+        if (normalizedUrl.equals(rule)) {
+            return true;
+        }
+        if (!rule.contains("*")) {
+            return false;
+        }
+        StringBuilder regex = new StringBuilder("^");
+        for (int i = 0; i < rule.length(); i++) {
+            char c = rule.charAt(i);
+            if (c == '*') {
+                regex.append(".*");
+            } else {
+                if (isRegexMetaChar(c)) {
+                    regex.append('\\');
+                }
+                regex.append(c);
+            }
+        }
+        regex.append("$");
+        return Pattern.matches(regex.toString(), normalizedUrl);
+    }
+
+    private boolean validateScriptRulesFormat(List<String> rules) {
+        for (String rule : rules) {
+            if (!validateScriptRuleFormat(rule)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean validateScriptRuleFormat(String rule) {
+        if (rule == null || rule.isEmpty()) {
+            return false;
+        }
+        if ("*".equals(rule)) {
+            return true;
+        }
+        int p = rule.indexOf("://");
+        if (p < 0) {
+            return false;
+        }
+        String scheme = rule.substring(0, p).toLowerCase(Locale.ENGLISH);
+        boolean isHttp = "http".equals(scheme) || "https".equals(scheme);
+        int star = rule.indexOf('*');
+        if (star >= 0) {
+            return isHttp && rule.indexOf('*', star + 1) < 0
+                && star == p + 3 && rule.length() > star + 2
+                && rule.charAt(star + 1) == '.';
+        }
+        return isHttp ? rule.length() > p + 3 : rule.endsWith("://");
+    }
+
+    private boolean matchUrlRegexRule(String url, UrlRegexRule r) {
+        if (url == null || url.isEmpty() || r.compiledPattern == null) {
+            return false;
+        }
+        String sld = extractSecondLevelDomain(url);
+        if (!sld.equalsIgnoreCase(r.secondLevelDomain)) {
+            return false;
+        }
+        try {
+            return r.compiledPattern.matcher(url).find();
+        } catch (PatternSyntaxException e) {
+            ALog.e(LOG_TAG, "matchUrlRegexRule failed: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private void ensurePublicSuffixListLoaded() {
+        if (isPublicSuffixListLoaded) {
+            return;
+        }
+        synchronized (PUBLIC_SUFFIX_LIST_LOCK) {
+            if (isPublicSuffixListLoaded) {
+                return;
+            }
+            loadPublicSuffixList();
+            isPublicSuffixListLoaded = true;
+        }
+    }
+
+    private void loadPublicSuffixList() {
+        if (context == null) {
+            ALog.e(LOG_TAG, "load public suffix list failed, context is null");
+            return;
+        }
+        int ruleCount = 0;
+        try (InputStream inputStream = openPublicSuffixList();
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                addPublicSuffixRule(line);
+                ruleCount++;
+            }
+        } catch (IOException e) {
+            ALog.e(LOG_TAG, "load public suffix list failed: " + e.getMessage());
+        }
+    }
+
+    private InputStream openPublicSuffixList() throws IOException {
+        IOException lastException = null;
+        for (String fileDir : PUBLIC_SUFFIX_LIST_FILE_DIRS) {
+            String filePath = fileDir + "/" + PUBLIC_SUFFIX_LIST_FILE_NAME;
+            try {
+                return context.getAssets().open(filePath);
+            } catch (IOException e) {
+                lastException = e;
+            }
+        }
+        throw lastException == null ? new IOException("public suffix list asset file not found") : lastException;
+    }
+
+    private void addPublicSuffixRule(String line) {
+        if (line == null) {
+            return;
+        }
+        String rule = line.trim().toLowerCase(Locale.ENGLISH);
+        if (rule.isEmpty() || rule.startsWith("//")) {
+            return;
+        }
+        if (rule.startsWith("!")) {
+            PUBLIC_SUFFIX_EXCEPTION_RULES.add(rule.substring(1));
+            return;
+        }
+        if (rule.startsWith("*.")) {
+            PUBLIC_SUFFIX_WILDCARD_RULES.add(rule.substring(2));
+            return;
+        }
+        PUBLIC_SUFFIX_RULES.add(rule);
+    }
+
+    private String getRegistrableDomain(String host) {
+        String[] parts = host.split("\\.");
+        int labelCount = parts.length;
+        if (labelCount <= 1) {
+            return "";
+        }
+        int publicSuffixLabelCount = getPublicSuffixLabelCount(parts);
+        if (publicSuffixLabelCount >= labelCount) {
+            return "";
+        }
+        int registrableLabelCount = publicSuffixLabelCount + 1;
+        return joinLabels(parts, labelCount - registrableLabelCount, labelCount);
+    }
+
+    private int getPublicSuffixLabelCount(String[] parts) {
+        ensurePublicSuffixListLoaded();
+        int labelCount = parts.length;
+        if (PUBLIC_SUFFIX_RULES.isEmpty() && PUBLIC_SUFFIX_WILDCARD_RULES.isEmpty()
+            && PUBLIC_SUFFIX_EXCEPTION_RULES.isEmpty()) {
+            ALog.w(LOG_TAG, "public suffix list is empty, use default suffix label count");
+            return 1;
+        }
+        int longestMatchLabelCount = 1;
+        for (int i = 0; i < labelCount; i++) {
+            String candidate = joinLabels(parts, i, labelCount);
+            if (PUBLIC_SUFFIX_EXCEPTION_RULES.contains(candidate)) {
+                return labelCount - i - 1;
+            }
+            if (PUBLIC_SUFFIX_RULES.contains(candidate)) {
+                longestMatchLabelCount = Math.max(longestMatchLabelCount, labelCount - i);
+            }
+            if (i > 0 && PUBLIC_SUFFIX_WILDCARD_RULES.contains(candidate)) {
+                longestMatchLabelCount = Math.max(longestMatchLabelCount, labelCount - i + 1);
+            }
+        }
+        return longestMatchLabelCount;
+    }
+
+    private String joinLabels(String[] parts, int start, int end) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = start; i < end; i++) {
+            if (builder.length() > 0) {
+                builder.append('.');
+            }
+            builder.append(parts[i]);
+        }
+        return builder.toString();
+    }
+
+    private String extractSecondLevelDomain(String url) {
+        String lowerUrl = url.toLowerCase(Locale.ENGLISH);
+        if (lowerUrl.startsWith("file:")
+            || lowerUrl.startsWith("resource://rawfile/")
+            || (!lowerUrl.startsWith("http:") && !lowerUrl.startsWith("https:")
+                && lowerUrl.contains("/resources/rawfile/"))) {
+            return "";
+        }
+        try {
+            URI uri = new URI(url);
+            String host = uri.getHost();
+            if (host == null) {
+                return "";
+            }
+            host = host.toLowerCase(Locale.ENGLISH);
+            if (host.endsWith(".")) {
+                host = host.substring(0, host.length() - 1);
+            }
+            if (host.startsWith("[") && host.endsWith("]")) {
+                host = host.substring(1, host.length() - 1);
+            }
+            if (host.isEmpty()) {
+                return host;
+            }
+            if (host.matches("^\\d{1,3}(\\.\\d{1,3}){3}$") || host.contains(":")) {
+                return host;
+            }
+            return getRegistrableDomain(host);
+        } catch (java.net.URISyntaxException e) {
+            ALog.e(LOG_TAG, "extractSecondLevelDomain failed: " + e.getMessage());
+            return "";
+        }
+    }
+
+    private boolean isRegexMetaChar(char c) {
+        return ".*+?^${}()|[]\\".indexOf(c) >= 0;
     }
 
     @Override
@@ -2819,6 +3287,13 @@ public class AceWeb extends AceWebBase {
             return SUCCESS_TAG;
         }
         return FAIL_TAG;
+    }
+
+    @Override
+    public void setNetworkAvailable(boolean enable) {
+        if (webView != null) {
+            webView.setNetworkAvailable(enable);
+        }
     }
 
     @Override
