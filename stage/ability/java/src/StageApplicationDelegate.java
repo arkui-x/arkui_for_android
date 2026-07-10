@@ -1417,6 +1417,15 @@ public class StageApplicationDelegate {
     protected static native void nativeLoadModule(String moduleName, String entryFile);
 
     /**
+     * Check whether the stage application delegate has been initialized.
+     *
+     * @return true if initialized, false otherwise.
+     */
+    protected static boolean isInitialized() {
+        return isInitialized;
+    }
+
+    /**
      * Native calls proactive VM destroy.
      *
      * @return true on success, false on failure.
