@@ -39,6 +39,8 @@ const std::unordered_map<std::string, std::string> soMap = {
     {"Gauge", "gauge"},
     {"Rating", "rating"},
     {"FlowItem", "waterflow" },
+    { "TextInput", "textfield" },
+    { "TextArea", "textfield" },
     {"WaterFlow", "waterflow" },
     {"Counter", "counter"},
     {"Sidebar", "sidebar"},

@@ -176,6 +176,7 @@ component_modules = [
   "lazy_grid_layout",
   "refresh",
   "grid",
+  "text_field",
 ]
 
 component_modules_libs = []
