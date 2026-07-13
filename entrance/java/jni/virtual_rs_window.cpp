@@ -1207,6 +1207,7 @@ WMError Window::SetUIContent(const std::string& contentInfo, NativeEngine* engin
     }
     // make uiContent available after Initialize/Restore
     uiContent_ = std::move(uiContent);
+    SubWindowManagerJni::SetWindowLayoutFullScreen(true);
     if (isIgnoreSafeAreaNeedNotify_) {
         uiContent_->SetIgnoreViewSafeArea(isIgnoreSafeArea_);
     }
