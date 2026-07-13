@@ -135,7 +135,6 @@
       OHOS::Ace::MemoryMonitor::*;
       "OHOS::Ace::SystemProperties::colorMode_";
       "OHOS::Ace::SystemProperties::GetDebugEnabled()";
-      "OHOS::Ace::SystemProperties::GetResourceDecoupling()";
       "OHOS::Ace::SystemProperties::taskPriorityAdjustmentEnable_";
       "OHOS::Ace::SystemProperties::debugEnabled_";
       "OHOS::Ace::SystemProperties::debugFlags_";
@@ -166,7 +165,6 @@
       "OHOS::Rosen::RSColor::Float32ToFloat16(float) const";
       "OHOS::Rosen::RSNGShapeBase::Create(OHOS::Rosen::RSNGEffectType)";
       OHOS::Ace::ResourceManager::*;
-      OHOS::Ace::ResourceWrapper::*;
       OHOS::Ace::SpringMotion::*;
       OHOS::Ace::ShadowTheme::*;
       OHOS::Ace::PerfMonitor::*;
@@ -219,7 +217,6 @@
       vtable?for?OHOS::Ace::NG::LayoutProperty;
       vtable?for?OHOS::Ace::NG::ParticlePattern;
       vtable?for?OHOS::Ace::NG::TouchEventActuator;
-      vtable?for?OHOS::Ace::ResourceWrapper;
 
       VTT?for?OHOS::Ace::NG::PanGesture;
       vtable?for?OHOS::Ace::NG::PanGesture;
@@ -256,7 +253,6 @@
       VTT?for?OHOS::Ace::NG::LayoutProperty;
       VTT?for?OHOS::Ace::NG::ParticlePattern;
       VTT?for?OHOS::Ace::NG::TouchEventActuator;
-      VTT?for?OHOS::Ace::ResourceWrapper;
 
       JNI_OnLoad;
 

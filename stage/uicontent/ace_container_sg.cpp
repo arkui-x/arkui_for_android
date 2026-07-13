@@ -44,7 +44,6 @@
 #include "core/common/watch_dog.h"
 #include "core/common/window.h"
 #include "core/components/theme/app_theme.h"
-#include "core/components/theme/theme_constants.h"
 #include "core/components/theme/theme_manager_impl.h"
 #include "core/components_ng/manager/drag_drop/drag_drop_manager.h"
 #include "core/components_ng/pattern/text_field/text_field_manager.h"
@@ -772,9 +771,7 @@ void AceContainerSG::UpdateConfiguration(Platform::ParsedConfig& parsedConfig)
     SetFontAndScale(parsedConfig, configurationChange);
     SetResourceConfiguration(resConfig);
     themeManager->UpdateConfig(resConfig);
-    if (SystemProperties::GetResourceDecoupling()) {
-        ResourceManager::GetInstance().UpdateResourceConfig(GetBundleName(), GetModuleName(), instanceId_, resConfig);
-    }
+    ResourceManager::GetInstance().UpdateResourceConfig(GetBundleName(), GetModuleName(), instanceId_, resConfig);
     themeManager->LoadResourceThemes();
     themeManager->ParseSystemTheme();
     themeManager->SetColorScheme(colorScheme_);
@@ -878,19 +875,19 @@ void AceContainerSG::SetFontAndScale(Platform::ParsedConfig& parsedConfig, Confi
 }
 
 
-void InitResourceAndThemeManager(const RefPtr<PipelineBase>& pipelineContext, const RefPtr<AssetManager>& assetManager,
+void InitResourceAndThemeManager(const RefPtr<PipelineBase>& pipelineContext,
     const ColorScheme& colorScheme, const ResourceInfo& resourceInfo, AceView* aceView,
     const std::shared_ptr<OHOS::AbilityRuntime::Platform::Context>& context,
     const std::shared_ptr<OHOS::AppExecFwk::AbilityInfo>& abilityInfo)
 {
     auto resourceAdapter = ResourceAdapter::CreateV2();
+    CHECK_NULL_VOID(resourceAdapter);
     resourceAdapter->Init(resourceInfo);
 
-    ThemeConstants::InitDeviceType();
     auto themeManager = AceType::MakeRefPtr<ThemeManagerImpl>(resourceAdapter);
+    CHECK_NULL_VOID(pipelineContext);
     pipelineContext->SetThemeManager(themeManager);
     themeManager->SetColorScheme(colorScheme);
-    themeManager->LoadCustomTheme(assetManager);
     themeManager->LoadResourceThemes();
     aceView->SetBackgroundColor(themeManager->GetBackgroundColor());
 
@@ -922,27 +919,12 @@ void InitResourceAndThemeManager(const RefPtr<PipelineBase>& pipelineContext, co
 void AceContainerSG::InitThemeManager()
 {
     LOGI("Init theme manager");
-    auto initThemeManagerTask = [pipelineContext = pipelineContext_, assetManager = assetManager_,
-                                    colorScheme = colorScheme_, resourceInfo = resourceInfo_, aceView = aceView_,
-                                    context = runtimeContext_.lock(), abilityInfo = abilityInfo_.lock()]() {
+    auto initThemeManagerTask = [pipelineContext = pipelineContext_, colorScheme = colorScheme_,
+                                    resourceInfo = resourceInfo_, aceView = aceView_, context = runtimeContext_.lock(),
+                                    abilityInfo = abilityInfo_.lock()]() {
         ACE_SCOPED_TRACE("OHOS::LoadThemes()");
         LOGI("UIContent load theme");
-        if (SystemProperties::GetResourceDecoupling()) {
-            InitResourceAndThemeManager(
-                pipelineContext, assetManager, colorScheme, resourceInfo, aceView, context, abilityInfo);
-        } else {
-            ThemeConstants::InitDeviceType();
-            auto themeManager = AceType::MakeRefPtr<ThemeManagerImpl>();
-            LOGI("UIContent SetThemeManager enter.");
-            pipelineContext->SetThemeManager(themeManager);
-            LOGI("UIContent SetThemeManager end.");
-            themeManager->InitResource(resourceInfo);
-            LOGI("UIContent InitResource end.");
-            themeManager->SetColorScheme(colorScheme);
-            themeManager->LoadResourceThemes();
-            LOGI("UIContent LoadResourceThemes end.");
-            aceView->SetBackgroundColor(themeManager->GetBackgroundColor());
-        }
+        InitResourceAndThemeManager(pipelineContext, colorScheme, resourceInfo, aceView, context, abilityInfo);
         if (colorScheme == ColorScheme::SCHEME_DARK) {
             pipelineContext->SetAppBgColor(Color::BLACK);
         } else {
