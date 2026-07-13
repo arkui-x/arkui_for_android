@@ -66,7 +66,6 @@ public class SubWindow {
     private int mainWindowY;
     private WindowViewAospInterface windowView;
     private int originWindowY;
-    private boolean skipNextKeyboardAvoidHeightNotify = false;
 
     /**
      * The type Window param.
@@ -375,31 +374,17 @@ public class SubWindow {
         ALog.d(TAG, "updateWindow called. x=" + windowParam.x + ", y=" + windowParam.y + ", screenX=" + screenX +
             ", screenY=" + screenY + ", width=" + windowParam.width + ", height=" + windowParam.height);
         subWindowView.update(screenX, screenY, windowParam.width, windowParam.height, true);
-        if (hasFocus) {
-            postNotifyKeyboardAvoidHeight();
-        }
     }
 
-    private void postNotifyKeyboardAvoidHeight() {
-        if (skipNextKeyboardAvoidHeightNotify) {
-            skipNextKeyboardAvoidHeightNotify = false;
-            ALog.d(TAG,
-                    "[SubwindowKbd] postNotifyKeyboardAvoidHeight: skip notify caused by avoid move, name=" + name);
+    /**
+     * Notify keyboard height changed.
+     */
+    public void notifyKeyboardHeightChanged() {
+        if (!hasFocus) {
+            ALog.d(TAG, "[SubwindowKbd] notifyKeyboardHeightChanged: window is not focused, restore and skip");
+            restoreWindowPosition();
             return;
         }
-        if (contentView == null) {
-            ALog.d(TAG, "[SubwindowKbd] postNotifyKeyboardAvoidHeight: contentView is null, name=" + name);
-            return;
-        }
-        contentView.post(new Runnable() {
-            @Override
-            public void run() {
-                notifyKeyboardAvoidHeight();
-            }
-        });
-    }
-
-    private void notifyKeyboardAvoidHeight() {
         int keyboardHeight = WindowViewCommon.getSubwindowKeyboardAvoidHeight();
         int avoidHeight = calculateKeyboardAvoidHeight(keyboardHeight);
         if (windowView != null) {
@@ -408,15 +393,17 @@ public class SubWindow {
         }
     }
 
+    private void restoreWindowPosition() {
+        if (originWindowY > 0) {
+            windowParam.y = originWindowY;
+            originWindowY = 0;
+        }
+    }
+
     private int calculateKeyboardAvoidHeight(int keyboardHeight) {
         if (keyboardHeight == 0) {
-            if (originWindowY > 0) {
-                if (!isFullScreen) {
-                    skipNextKeyboardAvoidHeightNotify = true;
-                    moveWindowTo(windowParam.x, originWindowY);
-                }
-                originWindowY = 0;
-            }
+            ALog.d(TAG, "[SubwindowKbd] calculateKeyboardAvoidHeight: restore the window position");
+            restoreWindowPosition();
             return 0;
         }
         int screenHeight = getRootViewHeight();
@@ -425,26 +412,25 @@ public class SubWindow {
             return 0;
         }
         int keyboardTop = screenHeight - keyboardHeight;
-        int windowTop = windowParam.y + mainWindowY;
-        int windowBottom = windowTop + windowParam.height;
-        if (keyboardTop > windowBottom) {
-            ALog.d(TAG, "[SubwindowKbd] calculateKeyboardAvoidHeight: keyboard and window do not overlap");
-            return 0;
-        }
-
-        int overlapHeight = Math.max(0, windowBottom - keyboardTop);
-        int maxMoveHeight = Math.min(overlapHeight, windowParam.y);
-        if (isFullScreen) {
-            return maxMoveHeight;
-        }
-        int finalTargetY = Math.max(0, windowParam.y - maxMoveHeight);
-        int reportHeight = Math.max(0, overlapHeight - maxMoveHeight);
+        // Upper limit of window movement
+        int maxWindowPosY = originWindowY == 0 ? windowParam.y : originWindowY;
+        int minWindowPosY = keyboardTop - windowParam.height - mainWindowY;
+        // Final Y clamped between [0, maxWindowPosY, minWindowPosY]:
+        //  - 0: cannot go above the screen top
+        //  - maxWindowPosY: cannot move downward past original position
+        //  - minWindowPosY: target to stay above the keyboard
+        int finalTargetY = Math.max(0, Math.min(maxWindowPosY, minWindowPosY));
+        // movedWindowBottom = movedWindowY + currentWindowHeight + statusBarHeight
+        int movedWindowBottom = finalTargetY + windowParam.height + mainWindowY;
+        // The part of the window still covered by the keyboard after max upward movement
+        int reportHeight = Math.max(0, movedWindowBottom - keyboardTop);
+        // Clamp to keyboard height: the occupied area cannot exceed the keyboard itself
+        reportHeight = Math.min(reportHeight, keyboardHeight);
         if (finalTargetY != windowParam.y) {
             if (originWindowY == 0) {
                 originWindowY = windowParam.y;
             }
-            skipNextKeyboardAvoidHeightNotify = true;
-            moveWindowTo(windowParam.x, finalTargetY);
+            windowParam.y = finalTargetY;
         }
         return reportHeight;
     }

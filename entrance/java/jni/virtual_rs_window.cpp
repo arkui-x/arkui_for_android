@@ -940,9 +940,11 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
 void Window::NotifyKeyboardHeightChanged(int32_t height)
 {
     if (!isFocused_) {
+        LOGI("Window is not focused, skip notify keyboard height change");
         return;
     }
     if (height == lastNotifiedKeyboardHeight_) {
+        LOGI("Window keyboard height unchanged: %{public}d", height);
         return;
     }
     lastNotifiedKeyboardHeight_ = height;

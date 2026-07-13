@@ -236,6 +236,7 @@ public class SubWindowManager {
                 if (subWindow == null || !subWindow.getSubWindowView().isShowing()) {
                     continue;
                 }
+                subWindow.notifyKeyboardHeightChanged();
                 subWindow.updateWindow();
             }
         }
