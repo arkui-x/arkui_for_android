@@ -29,6 +29,7 @@ import ohos.ace.adapter.WindowViewAospInterface;
 import ohos.ace.adapter.WindowViewBuilder;
 import ohos.ace.adapter.AcePlatformPlugin;
 import ohos.ace.adapter.WindowViewInterface;
+import ohos.ace.adapter.WindowViewCommon;
 import java.util.Arrays;
 
 /**
@@ -53,6 +54,7 @@ public class SubWindow {
     private Activity rootActivity;
     private View rootView;
     private boolean isFocusable = true;
+    private boolean hasFocus = false;
     private boolean isModal = false;
     private boolean onTop = false;
     private boolean requestedVisible = false;
@@ -62,6 +64,9 @@ public class SubWindow {
     private View mainView;
     private int mainWindowX;
     private int mainWindowY;
+    private WindowViewAospInterface windowView;
+    private int originWindowY;
+    private boolean skipNextKeyboardAvoidHeightNotify = false;
 
     /**
      * The type Window param.
@@ -182,7 +187,7 @@ public class SubWindow {
         subWindowView.setFocusable(isFocusable);
         subWindowView.setTouchable(true);
 
-        WindowViewAospInterface windowView = WindowViewBuilder.makeWindowViewAosp(rootActivity, windowId, true);
+        windowView = WindowViewBuilder.makeWindowViewAosp(rootActivity, windowId, true);
         AcePlatformPlugin platformPlugin = new AcePlatformPlugin(rootActivity, windowId, windowView.getView());
         if (platformPlugin != null) {
             windowView.setInputConnectionClient(platformPlugin);
@@ -370,6 +375,92 @@ public class SubWindow {
         ALog.d(TAG, "updateWindow called. x=" + windowParam.x + ", y=" + windowParam.y + ", screenX=" + screenX +
             ", screenY=" + screenY + ", width=" + windowParam.width + ", height=" + windowParam.height);
         subWindowView.update(screenX, screenY, windowParam.width, windowParam.height, true);
+        if (hasFocus) {
+            postNotifyKeyboardAvoidHeight();
+        }
+    }
+
+    private void postNotifyKeyboardAvoidHeight() {
+        if (skipNextKeyboardAvoidHeightNotify) {
+            skipNextKeyboardAvoidHeightNotify = false;
+            ALog.d(TAG,
+                    "[SubwindowKbd] postNotifyKeyboardAvoidHeight: skip notify caused by avoid move, name=" + name);
+            return;
+        }
+        if (contentView == null) {
+            ALog.d(TAG, "[SubwindowKbd] postNotifyKeyboardAvoidHeight: contentView is null, name=" + name);
+            return;
+        }
+        contentView.post(new Runnable() {
+            @Override
+            public void run() {
+                notifyKeyboardAvoidHeight();
+            }
+        });
+    }
+
+    private void notifyKeyboardAvoidHeight() {
+        int keyboardHeight = WindowViewCommon.getSubwindowKeyboardAvoidHeight();
+        int avoidHeight = calculateKeyboardAvoidHeight(keyboardHeight);
+        if (windowView != null) {
+            ALog.d(TAG, "[SubwindowKbd] notifyKeyboardAvoidHeight: avoidHeight=" + avoidHeight);
+            windowView.keyboardHeightChanged(avoidHeight);
+        }
+    }
+
+    private int calculateKeyboardAvoidHeight(int keyboardHeight) {
+        if (keyboardHeight == 0) {
+            if (originWindowY > 0) {
+                if (!isFullScreen) {
+                    skipNextKeyboardAvoidHeightNotify = true;
+                    moveWindowTo(windowParam.x, originWindowY);
+                }
+                originWindowY = 0;
+            }
+            return 0;
+        }
+        int screenHeight = getRootViewHeight();
+        if (screenHeight <= 0) {
+            ALog.d(TAG, "[SubwindowKbd] calculateKeyboardAvoidHeight: screenHeight <= 0");
+            return 0;
+        }
+        int keyboardTop = screenHeight - keyboardHeight;
+        int windowTop = windowParam.y + mainWindowY;
+        int windowBottom = windowTop + windowParam.height;
+        if (keyboardTop > windowBottom) {
+            ALog.d(TAG, "[SubwindowKbd] calculateKeyboardAvoidHeight: keyboard and window do not overlap");
+            return 0;
+        }
+
+        int overlapHeight = Math.max(0, windowBottom - keyboardTop);
+        int maxMoveHeight = Math.min(overlapHeight, windowParam.y);
+        if (isFullScreen) {
+            return maxMoveHeight;
+        }
+        int finalTargetY = Math.max(0, windowParam.y - maxMoveHeight);
+        int reportHeight = Math.max(0, overlapHeight - maxMoveHeight);
+        if (finalTargetY != windowParam.y) {
+            if (originWindowY == 0) {
+                originWindowY = windowParam.y;
+            }
+            skipNextKeyboardAvoidHeightNotify = true;
+            moveWindowTo(windowParam.x, finalTargetY);
+        }
+        return reportHeight;
+    }
+
+    private int getRootViewHeight() {
+        View view = rootView;
+        if (rootActivity != null && rootActivity.getWindow() != null) {
+            view = rootActivity.getWindow().getDecorView();
+        }
+        if (view != null && view.getRootView() != null && view.getRootView().getHeight() > 0) {
+            return view.getRootView().getHeight();
+        }
+        if (view != null && view.getResources() != null) {
+            return view.getResources().getDisplayMetrics().heightPixels;
+        }
+        return 0;
     }
 
     /**
@@ -490,6 +581,7 @@ public class SubWindow {
     public void getFocus() {
         ALog.d(TAG, "getFocus(), isFocusable=" + this.isFocusable);
         if (this.isFocusable) {
+            hasFocus = true;
             syncContentViewFocusable(true);
             subWindowView.setFocusable(true);
             subWindowView.update();
@@ -502,6 +594,7 @@ public class SubWindow {
     public void releaseFocus() {
         ALog.d(TAG, "releaseFocus(), isFocusable=" + this.isFocusable);
         if (this.isFocusable) {
+            hasFocus = false;
             syncContentViewFocusable(false);
             subWindowView.setFocusable(false);
             subWindowView.update();
