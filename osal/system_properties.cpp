@@ -255,11 +255,6 @@ bool SystemProperties::GetDebugPixelMapSaveEnabled()
     return false;
 }
 
-bool SystemProperties::GetResourceDecoupling()
-{
-    return true;
-}
-
 bool SystemProperties::IsPCMode()
 {
     return false;
