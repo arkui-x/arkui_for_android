@@ -61,6 +61,7 @@ template("ace_common_jni_source_set") {
       "$ace_root/adapter/android/entrance/java/jni/ace_env_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/ace_resource_register.cpp",
       "$ace_root/adapter/android/entrance/java/jni/ace_translate_manager.cpp",
+      "$ace_root/adapter/android/entrance/java/jni/backtrace_handler.cpp",
       "$ace_root/adapter/android/entrance/java/jni/display_info.cpp",
       "$ace_root/adapter/android/entrance/java/jni/display_info_jni.cpp",
       "$ace_root/adapter/android/entrance/java/jni/display_manager_agent.cpp",
@@ -130,7 +131,10 @@ template("ace_common_jni_source_set") {
 
     if (is_arkui_x) {
       defines += [ "CROSS_PLATFORM" ]
-      libs = [ "mediandk" ]
+      libs = [
+        "mediandk",
+        "log",
+      ]
     }
 
     defines += ["ARKUI_X_VERSION=\"$arkuix_sdk_version\""]

@@ -15,6 +15,7 @@
 
 #include "jni.h"
 
+#include "adapter/android/entrance/java/jni/backtrace_handler.h"
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/log/log.h"
 #include "base/log/ace_trace.h"
@@ -54,6 +55,12 @@ jint JNI_OnLoad(JavaVM* vm, void*)
         LOGE("JNI Onload: failed to register JniAppModeConfig");
         return RET_FAIL;
     }
+
+    // Install async-signal-safe FP-chain crash handlers so native crashes in
+    // libarkui_android.so still produce a backtrace even when unwind tables are
+    // stripped for size. Must run after the JVM/JS runtime is up so the saved
+    // (previous) handlers it chains to are already in place.
+    OHOS::Ace::Platform::InitBacktraceHandler();
 
     LOGI("JNI Onload: sharedlibrary has been loaded successsfully!");
     return OHOS::Ace::Platform::JniEnvironment::GetInstance().Version();
