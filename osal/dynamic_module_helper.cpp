@@ -85,6 +85,7 @@ const std::unordered_map<std::string, std::string> soMap = {
     { "Refresh", "refresh" },
     { "Grid", "grid" },
     { "GridItem", "grid" },
+    { "Bubble", "bubble" },
 };
 } // namespace
 DynamicModuleHelper& DynamicModuleHelper::GetInstance()
