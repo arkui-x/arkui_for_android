@@ -153,6 +153,7 @@
       "OHOS::Ace::Dimension::NormalizeToPx(double, double, double, double, double&) const";
       "OHOS::Ace::Dimension::operator!=(OHOS::Ace::Dimension const&) const";
       "OHOS::Ace::Dimension::GetNativeValue(OHOS::Ace::DimensionUnit) const";
+      "OHOS::Ace::Dimension::operator+=(OHOS::Ace::Dimension const&)";
       "OHOS::Ace::EngineHelper::GetCurrentDelegate()";
       "OHOS::Ace::EngineHelper::GetCurrentDelegateSafely()";
       "OHOS::Ace::EngineHelper::GetDelegateByContainer(OHOS::Ace::RefPtr<OHOS::Ace::Container>)";
@@ -361,6 +362,7 @@
       "OHOS::Ace::NG::FrameNode::MarkDirtyNode(unsigned int)";
       "OHOS::Ace::NG::FrameNode::FlushUpdateAndMarkDirty()";
       "OHOS::Ace::NG::FrameNode::GetFrameNodeChildByIndexWithoutBuild(unsigned int)";
+      "OHOS::Ace::NG::FrameNode::GetPaintRectToWindowWithTransform()";
       "OHOS::Ace::NG::FrameNode::GetPositionToScreenWithTransform()";
       "OHOS::Ace::NG::FrameNode::MarkNeedSyncRenderTree(bool)";
       "OHOS::Ace::NG::FrameNode::RebuildRenderContextTree()";
@@ -751,6 +753,8 @@
       "OHOS::Ace::NG::UINode::UpdateConfigurationUpdate(OHOS::Ace::ConfigurationChange const&)";
       "OHOS::Ace::NG::OverlayManager::CloseDialog(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
       "OHOS::Ace::NG::OverlayManager::CheckSkipMenuShow(int)";
+      "OHOS::Ace::NG::OverlayManager::ErasePopup(int)";
+      "OHOS::Ace::NG::OverlayManager::ErasePopupInfo(int)";
       "OHOS::Ace::NG::OverlayManager::ShowCalendarDialog(OHOS::Ace::DialogProperties const&, OHOS::Ace::NG::CalendarSettingData const&, std::__ndk1::map<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)>, std::__ndk1::less<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > >, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const, std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)> > > >, std::__ndk1::map<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, std::__ndk1::function<void (OHOS::Ace::GestureEvent const&)>, std::__ndk1::less<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > >, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const, std::__ndk1::function<void (OHOS::Ace::GestureEvent const&)> > > >, std::__ndk1::map<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, std::__ndk1::function<void ()>, std::__ndk1::less<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > >, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const, std::__ndk1::function<void ()> > > >, std::__ndk1::vector<OHOS::Ace::ButtonInfo, std::__ndk1::allocator<OHOS::Ace::ButtonInfo> > const&)";
       "OHOS::Ace::NG::OverlayManager::GetPixelMapContentNode(bool) const";
       "OHOS::Ace::NG::OverlayManager::GetSafeAreaInsets(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, bool)";
@@ -771,11 +775,17 @@
       "OHOS::Ace::NG::OverlayManager::ResetContextMenuDragHideFinished()";
       "OHOS::Ace::NG::OverlayManager::SetContextMenuDragHideFinished(bool)";
       "OHOS::Ace::NG::OverlayManager::FindWindowScene(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode>)";
+      "OHOS::Ace::NG::OverlayManager::GetPopupInfoWithExistContent(OHOS::Ace::RefPtr<OHOS::Ace::NG::UINode> const&)";
       "OHOS::Ace::NG::OverlayManager::RemoveChildWithService(OHOS::Ace::RefPtr<OHOS::Ace::NG::UINode> const&, OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
+      "OHOS::Ace::NG::OverlayManager::GetPopupInfo(int) const";
       "OHOS::Ace::NG::OverlayManager::ResetLowerNodeFocusable(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
+      "OHOS::Ace::NG::OverlayManager::HideTips(int, OHOS::Ace::NG::PopupInfo const&, int)";
       "OHOS::Ace::NG::OverlayManager::IsFilterOnDisappear(int) const";
+      "OHOS::Ace::NG::OverlayManager::HidePopup(int, OHOS::Ace::NG::PopupInfo const&, bool)";
       "OHOS::Ace::NG::OverlayManager::RemoveFilterWithNode(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
+      "OHOS::Ace::NG::OverlayManager::HideAllPopups()";
       "OHOS::Ace::NG::OverlayManager::ShowFilterDisappearAnimation(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
+      "OHOS::Ace::NG::OverlayManager::GetPopupMap() const";
       "OHOS::Ace::NG::OverlayManager::MountToParentWithService(OHOS::Ace::RefPtr<OHOS::Ace::NG::UINode> const&, OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, std::__ndk1::optional<double>)";
       "OHOS::Ace::NG::OverlayManager::SetHasFilter(bool)";
       "OHOS::Ace::NG::OverlayManager::SetFilterColumnNode(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
@@ -803,6 +813,7 @@
       "OHOS::Ace::NG::OverlayManager::GetHasFilterWithCheck()";
       "OHOS::Ace::NG::OverlayManager::GetIsOnAnimation()";
       "OHOS::Ace::NG::OverlayManager::MountFilterToWindowScene(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, OHOS::Ace::RefPtr<OHOS::Ace::NG::UINode> const&)";
+      "OHOS::Ace::NG::OverlayManager::SetDismissPopupId(int)";
       "OHOS::Ace::NG::OverlayManager::ShowFilterAnimation(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
       "OHOS::Ace::NG::OverlayManager::GetRootNode() const";
       "OHOS::Ace::NG::OverlayManager::CloseKeyboard(int)";
@@ -1529,6 +1540,7 @@
       "OHOS::Rosen::Drawing::Filter::SetImageFilter(std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::ImageFilter>)";
       "OHOS::Rosen::Drawing::Filter::SetMaskFilter(std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::MaskFilter>)";
       "OHOS::Rosen::Drawing::MaskFilter::CreateBlurMaskFilter(OHOS::Rosen::Drawing::BlurType, float, bool, bool)";
+      "OHOS::Rosen::Drawing::Path::AddPath(OHOS::Rosen::Drawing::Path const&, OHOS::Rosen::Drawing::PathAddMode)";
       "OHOS::Rosen::Drawing::Path::AddRoundRect(OHOS::Rosen::Drawing::RectF const&, float, float, OHOS::Rosen::Drawing::PathDirection)";
       "OHOS::Rosen::Drawing::Path::Path()";
       "OHOS::Rosen::Drawing::Path::ArcTo(float, float, float, OHOS::Rosen::Drawing::PathDirection, float, float)";
@@ -1664,13 +1676,17 @@
       "OHOS::Ace::SubwindowManager::ShowToast(OHOS::Ace::NG::ToastInfo const&, std::__ndk1::function<void (int)>&&)";
       "OHOS::Ace::SubwindowManager::CloseToast(int, OHOS::Ace::NG::ToastShowMode const&, std::__ndk1::function<void (int)>&&)";
       "OHOS::Ace::SubwindowManager::GetIsExpandDisplay()";
+      "OHOS::Ace::SubwindowManager::HideSubWindowNG()";
       "OHOS::Ace::SubwindowManager::ShowDialogNG(OHOS::Ace::DialogProperties const&, std::__ndk1::function<void ()>&&)";
       "OHOS::Ace::SubwindowManager::ShowDialogNGWithNode(OHOS::Ace::DialogProperties const&, OHOS::Ace::RefPtr<OHOS::Ace::NG::UINode> const&)";
       "OHOS::Ace::SubwindowManager::CloseDialogNG(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
       "OHOS::Ace::SubwindowManager::OpenCustomDialog(OHOS::Ace::PromptDialogAttr const&, std::__ndk1::function<void (int)>&&)";
       "OHOS::Ace::SubwindowManager::CloseCustomDialogNG(int)";
+      "OHOS::Ace::SubwindowManager::HidePopupNG(int, int)";
       "OHOS::Ace::SubwindowManager::OpenCustomDialogNG(OHOS::Ace::DialogProperties const&, std::__ndk1::function<void (int, int)>&&)";
+      "OHOS::Ace::SubwindowManager::GetParentWindowRect()";
       "OHOS::Ace::SubwindowManager::OpenCustomDialogNG(OHOS::Ace::DialogProperties const&, std::__ndk1::function<void (int)>&&)";
+      "OHOS::Ace::SubwindowManager::HideTipsNG(int, int, int)";
       "OHOS::Ace::SubwindowManager::UpdateCustomDialogNGWithNode(OHOS::Ace::WeakPtr<OHOS::Ace::NG::UINode> const&, OHOS::Ace::PromptDialogAttr const&, std::__ndk1::function<void (int)>&&)";
       "OHOS::Ace::SubwindowManager::HideDialogSubWindow(int)";
       "OHOS::Ace::SubwindowManager::RemoveSubwindowByNodeId(int)";
@@ -1718,6 +1734,7 @@
       "OHOS::Ace::NG::PipelineContext::GetCurrentRootWidth()";
       "OHOS::Ace::NG::PipelineContext::GetCurrentRootHeight()";
       "OHOS::Ace::NG::PipelineContext::GetCurrentContextSafely()";
+      "OHOS::Ace::NG::PipelineContext::HasOnAreaChangeNode(int)";
       "OHOS::Ace::NG::PipelineContext::RegisterSurfacePositionChangedCallback(std::__ndk1::function<void (int, int)>&&)";
       "OHOS::Ace::NG::PipelineContext::RemoveFontNodeNG(OHOS::Ace::WeakPtr<OHOS::Ace::NG::UINode> const&)";
       "OHOS::Ace::NG::PipelineContext::SetMouseStyleHoldNode(int)";
@@ -2814,6 +2831,7 @@
       "OHOS::Ace::SystemProperties::GetDragStartPanDistanceThreshold()";
       "OHOS::Ace::SystemProperties::IsNeedSymbol()";
       "OHOS::Ace::SystemProperties::IsSuperFoldDisplayDevice()";
+      "OHOS::Ace::SystemProperties::deviceHeight_";
       "OHOS::Ace::SystemProperties::deviceWidth_";
       "OHOS::Ace::SystemProperties::textTraceEnable_";
       "OHOS::Ace::SystemProperties::IsAutoFillSupport()";
@@ -3243,7 +3261,9 @@
       "OHOS::Ace::NG::PickerColumnPattern::HandleAccessibilityTextChange()";
       "OHOS::Ace::NG::PickerColumnPattern::PickerColumnPattern(bool)";
       "OHOS::Ace::NG::PickerAudioHapticFactory::GetInstance(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "OHOS::Rosen::Drawing::Path::GetBounds() const";
       "virtual thunk to OHOS::Ace::NG::PickerColumnPattern::OnDirtyLayoutWrapperSwap(OHOS::Ace::RefPtr<OHOS::Ace::NG::LayoutWrapper> const&, OHOS::Ace::NG::DirtySwapConfig const&)";
+      "OHOS::Rosen::Drawing::Path::Offset(float, float)";
       "virtual thunk to OHOS::Ace::NG::PickerColumnPattern::OnWindowShow()";
       "virtual thunk to OHOS::Ace::NG::PickerColumnPattern::OnWindowHide()";
       "virtual thunk to OHOS::Ace::NG::PickerColumnPattern::OnAttachToMainTree()";
@@ -3608,6 +3628,7 @@
       "OHOS::Ace::NG::TextChangeEventInfo::TextChangeEventInfo(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, int, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >)";
       "VTT for OHOS::Ace::NG::TextContentModifier";
       "OHOS::Ace::NG::MultipleParagraphLayoutAlgorithm::ConstructTextStyles(OHOS::Ace::NG::LayoutConstraintT<float> const&, OHOS::Ace::NG::LayoutWrapper*, OHOS::Ace::TextStyle&)";
+      "OHOS::Ace::NG::MultipleParagraphLayoutAlgorithm::GetSingleParagraph() const";
       "OHOS::Ace::NG::MultipleParagraphLayoutAlgorithm::MeasureChildren(OHOS::Ace::NG::LayoutConstraintT<float> const&, OHOS::Ace::NG::LayoutWrapper*, OHOS::Ace::TextStyle const&)";
       "OHOS::Ace::NG::MultipleParagraphLayoutAlgorithm::GetMaxMeasureSize(OHOS::Ace::NG::LayoutConstraintT<float> const&)";
       "OHOS::Ace::NG::MultipleParagraphLayoutAlgorithm::RelayoutShaderStyle(OHOS::Ace::RefPtr<OHOS::Ace::NG::TextLayoutProperty> const&)";
@@ -4096,6 +4117,7 @@
       "OHOS::Ace::NG::BorderWidthPropertyT<OHOS::Ace::Dimension>::operator==(OHOS::Ace::NG::BorderWidthPropertyT<OHOS::Ace::Dimension> const&) const";
       "OHOS::Ace::NG::DragAnimationHelper::ShowGatherAnimationWithMenu(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
       "OHOS::Ace::NG::DragAnimationHelper::UpdateGatherNodeToTop()";
+      "OHOS::Ace::NG::FocusView::FocusViewDidShow(OHOS::Ace::RefPtr<OHOS::Ace::NG::FocusHub> const&)";
       "OHOS::Ace::NG::FocusView::LostViewFocus()";
       "OHOS::Ace::NG::BorderStyleProperty::SetBorderStyle(OHOS::Ace::BorderStyle const&)";
       "OHOS::Ace::MeasureUtil::MeasureTextSize(OHOS::Ace::TextStyle const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
