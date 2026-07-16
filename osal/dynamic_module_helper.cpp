@@ -63,6 +63,7 @@ const std::unordered_map<std::string, std::string> soMap = {
     {"DataPanel", "datapanel"},
     {"Richeditor", "richeditor"},
     {"Search", "search"},
+    {"Sheet", "sheet"},
     {"Menu", "menu"},
     {"MenuItem", "menu"},
     {"MenuItemGroup", "menu"},
@@ -81,10 +82,15 @@ const std::unordered_map<std::string, std::string> soMap = {
     {"SymbolSpan", "span"},
     {"Select", "select"},
     {"Navigator", "navigator"},
+    {"Swiper", "tabswiper"},
+    {"IndicatorComponent", "tabswiper"},
+    {"Tabs", "tabswiper"},
+    {"TabContent", "tabswiper"},
     { "LazyVGridLayout", "lazygridlayout" },
     { "Refresh", "refresh" },
     { "Grid", "grid" },
     { "GridItem", "grid" },
+    { "Panel", "panel" },
     { "Bubble", "bubble" },
 };
 } // namespace
