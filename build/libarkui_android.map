@@ -191,6 +191,7 @@
       "OHOS::Ace::JsonUtil::ParseJsonString(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, char const**)";
       "OHOS::Ace::JsonUtil::Create(bool)";
       "OHOS::Ace::JsonUtil::CreateArray(bool)";
+      "OHOS::Ace::JsonUtil::CreateSharedPtrJson(bool)";
       "OHOS::Ace::JsonValue::GetChild() const";
       "OHOS::Ace::JsonValue::PutExtAttr(char const*, char const*, OHOS::Ace::NG::InspectorFilter const&)";
       "OHOS::Ace::JsonValue::GetKey() const";
@@ -322,6 +323,7 @@
       "OHOS::Ace::NG::FrameNode::GetOrCreateFocusHub()";
       "OHOS::Ace::NG::FrameNode::GetOrCreateInputEventHub()";
       "OHOS::Ace::NG::FrameNode::GetTransformRectRelativeToWindow(bool) const";
+      "OHOS::Ace::NG::FrameNode::GetVisibleRect(OHOS::Ace::NG::RectT<float>&, OHOS::Ace::NG::RectT<float>&) const";
       "OHOS::Ace::NG::FrameNode::CreateEventHubInner()";
       "OHOS::Ace::NG::FrameNode::GetFocusHub() const";
       "OHOS::Ace::NG::FrameNode::GetPaintRectWithTransform() const";
@@ -354,6 +356,7 @@
       "OHOS::Ace::NG::FrameNode::UpdateGeometryTransition()";
       "OHOS::Ace::NG::FrameNode::AdjustLayoutWrapperTree(OHOS::Ace::RefPtr<OHOS::Ace::NG::LayoutWrapperNode> const&, bool, bool)";
       "OHOS::Ace::NG::FrameNode::IsContextTransparent()";
+      "OHOS::Ace::NG::FrameNode::IsNeedLazyLayout() const";
       "OHOS::Ace::NG::FrameNode::TouchTest(OHOS::Ace::NG::PointT<float> const&, OHOS::Ace::NG::PointT<float> const&, OHOS::Ace::NG::PointT<float> const&, OHOS::Ace::TouchRestrict&, std::__ndk1::list<OHOS::Ace::RefPtr<OHOS::Ace::TouchEventTarget>, std::__ndk1::allocator<OHOS::Ace::RefPtr<OHOS::Ace::TouchEventTarget> > >&, int, std::__ndk1::list<OHOS::Ace::WeakPtr<OHOS::Ace::NG::NGGestureRecognizer>, std::__ndk1::allocator<OHOS::Ace::WeakPtr<OHOS::Ace::NG::NGGestureRecognizer> > >&, bool)";
       "OHOS::Ace::NG::FrameNode::GetHitTestMode() const";
       "OHOS::Ace::NG::FrameNode::MouseTest(OHOS::Ace::NG::PointT<float> const&, OHOS::Ace::NG::PointT<float> const&, std::__ndk1::list<OHOS::Ace::RefPtr<OHOS::Ace::MouseEventTarget>, std::__ndk1::allocator<OHOS::Ace::RefPtr<OHOS::Ace::MouseEventTarget> > >&, std::__ndk1::list<OHOS::Ace::RefPtr<OHOS::Ace::MouseEventTarget>, std::__ndk1::allocator<OHOS::Ace::RefPtr<OHOS::Ace::MouseEventTarget> > >&, OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode>&)";
@@ -501,6 +504,7 @@
       "OHOS::Ace::NG::LayoutProperty::GetContentLayoutConstraint() const";
       "OHOS::Ace::NG::LayoutProperty::UpdateUserDefinedIdealSize(OHOS::Ace::NG::CalcSize const&)";
       "OHOS::Ace::NG::LayoutProperty::GetCalcLayoutConstraint() const";
+      "OHOS::Ace::NG::LayoutProperty::GetEnvFontScale() const";
       "OHOS::Ace::NG::LayoutProperty::GetNonAutoLayoutDirection() const";
       "OHOS::Ace::NG::LayoutProperty::UpdateLayoutDirection(OHOS::Ace::TextDirection)";
       "OHOS::Ace::NG::LayoutProperty::GetIsUserSetBackgroundColor() const";
@@ -916,6 +920,7 @@
       "OHOS::Ace::ThemeConstants::GetResourceAdapter()";
       "OHOS::Ace::ToRSColor(OHOS::Ace::LinearColor const&)";
       "OHOS::Ace::TouchEventTarget::GetAttachedNode() const";
+      "OHOS::Ace::TransparencyUtils::GetTransparencyLevel(int)";
       "OHOS::Ace::NG::NGGestureRecognizer::IsInResponseLinkRecognizers()";
       "OHOS::Ace::SystemProperties::GetDebugEnabled()";
       "OHOS::Ace::SystemProperties::GetGridCacheEnabled()";
@@ -983,6 +988,7 @@
       "OHOS::Ace::PerfMonitor::GetPerfMonitor()";
       "OHOS::Ace::PerfMonitor::Start(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, OHOS::Ace::PerfActionType, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::PerfMonitor::End(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, bool)";
+      "OHOS::Ace::PerfMonitor::EndCommercial(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, bool)";
       "OHOS::Ace::PerfMonitor::RecordInputEvent(OHOS::Ace::PerfActionType, OHOS::Ace::PerfSourceType, long long)";
       "OHOS::Ace::PerfMonitor::RecordInputEvent(OHOS::Ace::PerfActionType, OHOS::Ace::PerfSourceType, long)";
       "OHOS::Ace::PerfMonitor::StartCommercial(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, OHOS::Ace::PerfActionType, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
@@ -1008,6 +1014,8 @@
       "OHOS::Rosen::GEMESABlurShaderFilter::GEMESABlurShaderFilter(OHOS::Rosen::Drawing::GEMESABlurShaderFilterParams const&)";
       "OHOS::Rosen::GEShaderFilter::ProcessImage(OHOS::Rosen::Drawing::Canvas&, std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::Image>, OHOS::Rosen::Drawing::RectF const&, OHOS::Rosen::Drawing::RectF const&)";
       "OHOS::Rosen::GEVariableRadiusBlurShaderFilter::GEVariableRadiusBlurShaderFilter(OHOS::Rosen::Drawing::GEVariableRadiusBlurShaderFilterParams const&)";
+      "OHOS::Rosen::GEExternalDynamicLoader::GetInstance()";
+      "OHOS::Rosen::GEExternalDynamicLoader::CreateGEXObjectByType(unsigned int, unsigned int, void*)";
       "OHOS::Rosen::Drawing::GERadialGradientShaderMask::GERadialGradientShaderMask(OHOS::Rosen::Drawing::GERadialGradientShaderMaskParams)";
       "vtable for OHOS::Rosen::Drawing::GERadialGradientShaderMask";
       "vtable for OHOS::Rosen::GEVariableRadiusBlurShaderFilter";
@@ -2494,6 +2502,8 @@
       "OHOS::Ace::ScreenSystemManager::GetSize(double) const";
       "OHOS::Ace::NG::TextLayoutAlgorithm::GetLineCount() const";
       "OHOS::Ace::NG::DialogManager::IsPcOrFreeMultiWindow(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&) const";
+      "OHOS::Ace::NG::DialogManager::IsUseImmersiveDistortionEffect()";
+      "OHOS::Ace::NG::DialogManager::IsUseImmersiveEdgeLightEffect()";
       "OHOS::Ace::NG::SafeAreaInsets::Inset::ToString() const";
       "OHOS::Ace::FeatureParam::IsDialogCorrectionEnabled()";
       "OHOS::Ace::NG::AvoidInfoManager::AddAvoidInfoListener(OHOS::Ace::WeakPtr<OHOS::Ace::NG::IAvoidInfoListener>)";
@@ -2816,6 +2826,7 @@
       "OHOS::Ace::Recorder::NodeDataCache::PutMultiple(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, int)";
       "OHOS::Ace::Recorder::NodeDataCache::PutMultiple(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, std::__ndk1::vector<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, std::__ndk1::allocator<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > > > const&)";
       "OHOS::Ace::Recorder::NodeDataCache::PutString(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "OHOS::Ace::Recorder::NodeDataCache::PutInt(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, int)";
       "OHOS::Ace::NG::CommonBridge::ParseOuterBorderWidth(panda::JsiRuntimeCallInfo*, panda::ecmascript::EcmaVM*, std::__ndk1::vector<float, std::__ndk1::allocator<float> >&, bool)";
       "OHOS::Ace::NG::CommonBridge::SetBorder(panda::JsiRuntimeCallInfo*)";
       "OHOS::Ace::NG::CommonBridge::SetMargin(panda::JsiRuntimeCallInfo*)";
@@ -3086,6 +3097,7 @@
       "OHOS::Ace::NG::NodeModifier::GetSelectCustomModifier()";
       "OHOS::Ace::NG::NodeModifier::GetButtonCustomModifier()";
       "OHOS::Ace::NG::NodeModifier::GetDialogInnerModifier()";
+      "OHOS::Ace::NG::NodeModifier::GetDividerModifier()";
       "OHOS::Ace::NG::NodeAnimatableProperty<float, OHOS::Ace::NG::AnimatablePropertyFloat>::Set(float const&)";
       "OHOS::Ace::NG::NodeAnimatableProperty<float, OHOS::Ace::NG::AnimatablePropertyFloat>::NodeAnimatableProperty(float const&, std::__ndk1::function<void (float const&)>&&)";
       "OHOS::Ace::NG::TextInputBridge::ParseLayoutPolicy(panda::ecmascript::EcmaVM*, _ArkUINode*&, panda::Local<panda::JSValueRef>, bool)";
@@ -3392,6 +3404,7 @@
       "OHOS::Ace::NG::TextPattern::SetResultObjectText(OHOS::Ace::ResultObject&, OHOS::Ace::RefPtr<OHOS::Ace::NG::SpanItem> const&)";
       "OHOS::Ace::NG::TextPattern::IsMeasureBoundary() const";
       "OHOS::Ace::NG::TextPattern::UpdateSelectOverlayOrCreate(OHOS::Ace::NG::SelectOverlayInfo&, bool)";
+      "OHOS::Ace::NG::TextPattern::UpdateStyledStringByColorMode(bool)";
       "OHOS::Ace::NG::TextPattern::OnHandleMove(OHOS::Ace::NG::RectT<float> const&, bool)";
       "OHOS::Ace::NG::TextPattern::GetParagraphs() const";
       "OHOS::Ace::NG::TextPattern::OnHandleAreaChanged()";

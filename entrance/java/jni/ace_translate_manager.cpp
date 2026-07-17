@@ -21,4 +21,8 @@
 namespace OHOS::Ace {
 void UiTranslateManagerImpl::AddPixelMap(int32_t nodeId, RefPtr<PixelMap> pixelMap) {}
 void UiTranslateManagerImpl::GetAllPixelMap(RefPtr<NG::FrameNode> pageNode) {}
+void UiTranslateManagerImpl::AddTranslateListener(const WeakPtr<NG::FrameNode> node) {}
+void UiTranslateManagerImpl::RemoveTranslateListener(int32_t nodeId) {}
+void UiTranslateManagerImpl::ForEachArkUITranslateFrameNode(
+    const std::function<void(const WeakPtr<NG::FrameNode>&)>& callback) const {}
 } // namespace OHOS::Ace
