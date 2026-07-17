@@ -283,6 +283,7 @@ component_modules = [
   "loading_progress",
   "span",
   "select",
+  "shape",
   "navigator",
   "tabswiper",
   "lazy_grid_layout",

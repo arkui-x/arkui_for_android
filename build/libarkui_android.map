@@ -943,7 +943,9 @@
       "OHOS::Rosen::Drawing::Pen::SetAntiAlias(bool)";
       "OHOS::Rosen::Drawing::Pen::SetColor(OHOS::Rosen::Drawing::Color const&)";
       "OHOS::Rosen::Drawing::Pen::SetCapStyle(OHOS::Rosen::Drawing::Pen::CapStyle)";
+      "OHOS::Rosen::Drawing::Pen::SetColor(OHOS::Rosen::Drawing::Color4f const&, std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::ColorSpace>)";
       "OHOS::Rosen::Drawing::Pen::SetColor(unsigned int)";
+      "OHOS::Rosen::Drawing::Pen::SetMiterLimit(float)";
       "OHOS::Rosen::Drawing::Pen::SetPathEffect(std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::PathEffect>)";
       "OHOS::Rosen::Drawing::Pen::SetShaderEffect(std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::ShaderEffect>)";
       "OHOS::Rosen::Drawing::Pen::SetBlendMode(OHOS::Rosen::Drawing::BlendMode)";
@@ -953,6 +955,7 @@
       "OHOS::Rosen::Drawing::Pen::SetFilter(OHOS::Rosen::Drawing::Filter const&)";
       "OHOS::Rosen::Drawing::Pen::GetShaderEffect() const";
       "OHOS::Rosen::Drawing::Pen::SetUIColor(OHOS::Rosen::Drawing::UIColor const&, std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::ColorSpace>)";
+      "OHOS::Rosen::Drawing::ShaderEffect::CreateExtendShader(std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::ExtendObject>)";
       "OHOS::Rosen::Drawing::ShaderEffect::CreateSweepGradient(OHOS::Rosen::Drawing::PointF const&, std::__ndk1::vector<unsigned int, std::__ndk1::allocator<unsigned int> > const&, std::__ndk1::vector<float, std::__ndk1::allocator<float> > const&, OHOS::Rosen::Drawing::TileMode, float, float, OHOS::Rosen::Drawing::Matrix const*)";
       "OHOS::Rosen::Drawing::ShaderEffect::CreateLinearGradient(OHOS::Rosen::Drawing::PointF const&, OHOS::Rosen::Drawing::PointF const&, std::__ndk1::vector<unsigned int, std::__ndk1::allocator<unsigned int> > const&, std::__ndk1::vector<float, std::__ndk1::allocator<float> > const&, OHOS::Rosen::Drawing::TileMode, OHOS::Rosen::Drawing::Matrix const*)";
       "OHOS::Rosen::Drawing::ShaderEffect::CreateLinearGradient(OHOS::Rosen::Drawing::PointF const&, OHOS::Rosen::Drawing::PointF const&, std::__ndk1::vector<OHOS::Rosen::Drawing::UIColor, std::__ndk1::allocator<OHOS::Rosen::Drawing::UIColor> > const&, std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::ColorSpace>, std::__ndk1::vector<float, std::__ndk1::allocator<float> > const&, OHOS::Rosen::Drawing::TileMode, OHOS::Rosen::Drawing::Matrix const*)";
@@ -963,6 +966,7 @@
       "OHOS::Rosen::Drawing::Brush::SetAntiAlias(bool)";
       "OHOS::Rosen::Drawing::Brush::SetShaderEffect(std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::ShaderEffect>)";
       "OHOS::Rosen::Drawing::Brush::SetAlpha(unsigned int)";
+      "OHOS::Rosen::Drawing::Brush::SetColor(OHOS::Rosen::Drawing::Color4f const&, std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::ColorSpace>)";
       "OHOS::Rosen::Drawing::Brush::SetFilter(OHOS::Rosen::Drawing::Filter const&)";
       "OHOS::Rosen::Drawing::Brush::SetColor(unsigned int)";
       "OHOS::Rosen::Drawing::Brush::SetAlphaF(float)";
@@ -1577,6 +1581,7 @@
       "OHOS::Rosen::Drawing::Filter::SetMaskFilter(std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::MaskFilter>)";
       "OHOS::Rosen::Drawing::MaskFilter::CreateBlurMaskFilter(OHOS::Rosen::Drawing::BlurType, float, bool, bool)";
       "OHOS::Rosen::Drawing::Path::AddPath(OHOS::Rosen::Drawing::Path const&, OHOS::Rosen::Drawing::PathAddMode)";
+      "OHOS::Rosen::Drawing::Path::AddPoly(std::__ndk1::vector<OHOS::Rosen::Drawing::PointF, std::__ndk1::allocator<OHOS::Rosen::Drawing::PointF> > const&, int, bool)";
       "OHOS::Rosen::Drawing::Path::AddRoundRect(OHOS::Rosen::Drawing::RectF const&, float, float, OHOS::Rosen::Drawing::PathDirection)";
       "OHOS::Rosen::Drawing::Path::Path()";
       "OHOS::Rosen::Drawing::Path::ArcTo(float, float, float, OHOS::Rosen::Drawing::PathDirection, float, float)";
@@ -1588,6 +1593,7 @@
       "OHOS::Rosen::Drawing::Path::ArcTo(float, float, float, float, float, float)";
       "OHOS::Rosen::Drawing::Path::AddArc(OHOS::Rosen::Drawing::RectF const&, float, float)";
       "OHOS::Rosen::Drawing::Path::AddRoundRect(OHOS::Rosen::Drawing::RoundRect const&, OHOS::Rosen::Drawing::PathDirection)";
+      "OHOS::Rosen::Drawing::Path::BuildFromSVGString(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Rosen::Drawing::Path::Reset()";
       "OHOS::Rosen::Drawing::Path::AddCircle(float, float, float, OHOS::Rosen::Drawing::PathDirection)";
       "OHOS::Rosen::Drawing::Path::Op(OHOS::Rosen::Drawing::Path const&, OHOS::Rosen::Drawing::Path&, OHOS::Rosen::Drawing::PathOp)";
@@ -2309,6 +2315,7 @@
       "OHOS::Ace::NG::ArkTSUtils::ParseJsColorAlpha(panda::ecmascript::EcmaVM const*, panda::Local<panda::JSValueRef> const&, OHOS::Ace::Color&, std::__ndk1::vector<OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject>, std::__ndk1::allocator<OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject> > >&, OHOS::Ace::NG::NodeInfo const&)";
       "OHOS::Ace::NG::ArkTSUtils::ParseJsLengthMetricsToDimension(panda::ecmascript::EcmaVM const*, panda::Local<panda::JSValueRef> const&, OHOS::Ace::Dimension&, OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject>&)";
       "OHOS::Ace::NG::ArkTSUtils::ParseJsMedia(panda::ecmascript::EcmaVM const*, panda::Local<panda::JSValueRef> const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >&, bool)";
+      "OHOS::Ace::NG::ArkTSUtils::ParseJsStringFromResource(panda::ecmascript::EcmaVM const*, panda::Local<panda::JSValueRef> const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >&, OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject>&)";
       "OHOS::Ace::NG::ArkTSUtils::ParseJsSymbolId(panda::ecmascript::EcmaVM const*, panda::Local<panda::JSValueRef> const&, unsigned int&, OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject>&)";
       "OHOS::Ace::NG::ArkTSUtils::ParseJsIntegerWithResource(panda::ecmascript::EcmaVM const*, panda::Local<panda::JSValueRef> const&, int&, OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject>&)";
       "OHOS::Ace::NG::ArkTSUtils::ParseJsSymbolFontFamilyName(panda::ecmascript::EcmaVM const*, panda::Local<panda::JSValueRef> const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >&)";
@@ -2345,8 +2352,11 @@
       "OHOS::Ace::Matrix4::Matrix4()";
       "OHOS::Ace::Matrix4::Matrix4(OHOS::Ace::Matrix4 const&)";
       "OHOS::Ace::ElementRegister::MakeUniqueId()";
+      "OHOS::Ace::NG::PaintWrapper::HasForegroundColor() const";
       "OHOS::Ace::NG::TextLayoutAlgorithm::GetTextStyle() const";
+      "OHOS::Ace::NG::PaintWrapper::GetForegroundColor() const";
       "OHOS::Ace::NG::TextFreeScrollController::StopAllScrollAnimation()";
+      "OHOS::Ace::NG::PaintWrapper::HasForegroundColorStrategy() const";
       "OHOS::Ace::NG::TextFreeScrollController::StopScrollAnimation(bool)";
       "OHOS::Ace::NG::TextFreeScrollController::TextFreeScrollController(OHOS::Ace::WeakPtr<OHOS::Ace::NG::ScrollablePattern> const&)";
       "OHOS::Ace::NG::TextScrollBar2D::OnDraw(OHOS::Ace::NG::DrawingContext&) const";
@@ -4327,6 +4337,7 @@
       OHOS::Ace::NG::HeaderFooterUtils*;
       "OHOS::Ace::RefPtr<OHOS::Ace::NG::RefreshAccessibilityProperty> OHOS::Ace::NG::FrameNode::GetAccessibilityProperty<OHOS::Ace::NG::RefreshAccessibilityProperty>() const";
       "OHOS::Ace::NG::ApplyMainAxisExtentByLayoutPolicy(OHOS::Ace::NG::OptionalSize<float>&, OHOS::Ace::NG::LayoutConstraintT<float> const&, std::__ndk1::optional<OHOS::Ace::NG::LayoutPolicyProperty> const&, OHOS::Ace::Axis, float)";
+      "OHOS::Ace::NG::MeasureLayoutPolicySize(OHOS::Ace::NG::LayoutConstraintT<float> const&, OHOS::Ace::NG::LayoutWrapper*, OHOS::Ace::NG::SizeT<float>&)";
       "OHOS::Ace::NG::SetCrossAxisSize(float, OHOS::Ace::Axis, OHOS::Ace::NG::OptionalSize<float>&)";
       void?OHOS??Ace??NG??Converter??AssignCast?OHOS??Ace??V2??StickyStyle??Ark?StickyStyle??std????h??optional?OHOS??Ace??V2??StickyStyle????Ark?StickyStyle?const??;
 
@@ -4353,6 +4364,7 @@
       "OHOS::Rosen::RSAnimationTraceUtils::GetInstance()";
       "OHOS::Rosen::RSAnimationTraceUtils::AddChangeAnimationValueTrace(unsigned long, std::__ndk1::shared_ptr<OHOS::Rosen::RSRenderPropertyBase> const&) const";
       "OHOS::Rosen::RSAnimationTraceUtils::AddChangeAnimationValueTrace(unsigned long long, std::__ndk1::shared_ptr<OHOS::Rosen::RSRenderPropertyBase> const&) const";
+      "vtable for OHOS::Rosen::RSPixelMapShader";
       "vtable for OHOS::Rosen::RSRenderProperty<float>";
       "vtable for OHOS::Rosen::RSRenderAnimatableProperty<float>";
       "OHOS::Rosen::RSRenderPropertyBase::~RSRenderPropertyBase()";
@@ -4531,14 +4543,23 @@
  	  "OHOS::Ace::NG::SelectableItemPattern::SetEditModeEnabled(bool)";
  	  "OHOS::Ace::NG::SelectableItemPattern::SyncCheckBoxFromItem()";
       "OHOS::Ace::ShadowConfig::DefaultShadowS";
+      "OHOS::Rosen::Drawing::Vertices::Builder::Detach()";
       "panda::Local<panda::JSValueRef> OHOS::Ace::NG::ArkTSUtils::ToJsValueWithVM<bool>(panda::ecmascript::EcmaVM const*, bool)";
+      "OHOS::Rosen::Drawing::ColorSpace::CreateSRGB()";
  	  "panda::Local<panda::JSValueRef> OHOS::Ace::NG::ArkTSUtils::ToJsValueWithVM<double>(panda::ecmascript::EcmaVM const*, double)";
+      "OHOS::Rosen::Drawing::Vertices::Builder::Indices()";
  	  "panda::Local<panda::JSValueRef> OHOS::Ace::NG::ArkTSUtils::ToJsValueWithVM<float>(panda::ecmascript::EcmaVM const*, float)";
+      "OHOS::Rosen::Drawing::Vertices::Builder::TexCoords()";
  	  "panda::Local<panda::JSValueRef> OHOS::Ace::NG::ArkTSUtils::ToJsValueWithVM<int>(panda::ecmascript::EcmaVM const*, int)";
+      "OHOS::Rosen::Drawing::Color::SetAlphaF(float)";
       "void OHOS::Ace::NG::Converter::AssignCast<OHOS::Ace::EdgeEffect, Ark_EdgeEffect>(std::__ndk1::optional<OHOS::Ace::EdgeEffect>&, Ark_EdgeEffect const&)";
+      "OHOS::Rosen::Drawing::Paint::SetShaderEffect(std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::ShaderEffect>)";
  	  "void OHOS::Ace::NG::Converter::AssignCast<OHOS::Ace::FlexDirection, Ark_GridDirection>(std::__ndk1::optional<OHOS::Ace::FlexDirection>&, Ark_GridDirection const&)";
+      "OHOS::Rosen::Drawing::Vertices::Builder::Builder(OHOS::Rosen::Drawing::VertexMode, int, int, unsigned int)";
  	  "void OHOS::Ace::NG::Converter::AssignCast<OHOS::Ace::FocusWrapMode, Ark_FocusWrapMode>(std::__ndk1::optional<OHOS::Ace::FocusWrapMode>&, Ark_FocusWrapMode const&)";
+      "OHOS::Rosen::Drawing::Vertices::Builder::Positions()";
  	  "void OHOS::Ace::NG::Converter::AssignCast<OHOS::Ace::NestedScrollMode, Ark_NestedScrollMode>(std::__ndk1::optional<OHOS::Ace::NestedScrollMode>&, Ark_NestedScrollMode const&)";
+      "OHOS::Rosen::RSPixelMapShader::RSPixelMapShader(std::__ndk1::shared_ptr<OHOS::Media::PixelMap>, OHOS::Rosen::Drawing::TileMode, OHOS::Rosen::Drawing::TileMode, OHOS::Rosen::Drawing::SamplingOptions const&, OHOS::Rosen::Drawing::Matrix const&)";
  	  "void OHOS::Ace::NG::Converter::AssignTo<OHOS::Ace::NG::PreviewBadge, int>(std::__ndk1::optional<OHOS::Ace::NG::PreviewBadge>&, int const&)";
  	  "void OHOS::Ace::NG::Converter::AssignTo<OHOS::Ace::NG::PreviewBadge, signed char>(std::__ndk1::optional<OHOS::Ace::NG::PreviewBadge>&, signed char const&)";
       virtual?thunk?to?OHOS::Ace::NG::SelectableContainerPattern::OnDetachFromMainTree*;
