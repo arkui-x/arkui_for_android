@@ -127,7 +127,7 @@ public class AceWebJavascriptProxyCallback {
         }
         String ret = null;
         if (result instanceof String) {
-            ret = String.format("{\"value\": \"%s\"}", (String) result);
+            ret = "{\"value\": " + JSONObject.quote((String) result) + "}";
         } else if (result instanceof Integer || result instanceof Double || result instanceof Boolean) {
             ret = String.format("{\"value\": %s}", result.toString());
         } else if (result instanceof List) {
