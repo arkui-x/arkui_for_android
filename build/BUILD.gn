@@ -54,6 +54,16 @@ ohos_shared_library("libarkui_android") {
     ldflags += [ "-Wl,-u,$sym" ]
   }
 
+  # 强制保留并导出 canvas 组件插件需要的符号。
+  # -Wl,-u 防止 --gc-sections 丢弃；
+  # -Wl,--export-dynamic-symbol 强制加入 .dynsym，绕过 version script 的 local: *。
+  foreach(sym, canvas_force_keep_symbols) {
+    ldflags += [
+      "-Wl,-u,$sym",
+      "-Wl,--export-dynamic-symbol=$sym",
+    ]
+  }
+
   if (ace_engine_enable_reduce_eh_frame) {
     ldflags += [ "-Wl,--no-eh-frame-hdr" ]
   }
@@ -248,6 +258,8 @@ foreach(module, arkui_x_components) {
 component_modules = [
   "dynamiclayout",
   "image_animator",
+  "canvas",
+  "video",
   "marquee",
   "stepper",
   "slider",
@@ -306,12 +318,31 @@ foreach(module, component_modules) {
   if (module == "span") {
     module_path = "text/span"
   }
-  ohos_shared_library(module_name) {
-    deps = [ "$ace_root/frameworks/core/components_ng/pattern/${module_path}:ace_core_components_${module}_pattern_ng_android" ]
-    deps += [ libace_target ]
+  if (module == "canvas") {
+    ohos_shared_library(module_name) {
+      deps = [ "$ace_root/frameworks/core/components_ng/pattern/${module_path}:ace_core_components_${module}_pattern_ng_android" ]
+      deps += [ libace_target ]
+      deps += [
+        "//foundation/graphic/graphic_2d/rosen/modules/2d_graphics:2d_graphics_source_android",
+        "//foundation/graphic/graphic_2d/frameworks/text/adapter/skia:skia_libtxt_android",
+        "//foundation/graphic/graphic_2d/frameworks/text/service:rosen_text_skia",
+        "//third_party/skia:skia_canvaskit_static",
+      ]
+      libs = [
+        "c++_static",
+        "c++abi",
+      ]
+      part_name = ace_engine_part
+      subsystem_name = ace_engine_subsystem
+    }
+  } else {
+    ohos_shared_library(module_name) {
+      deps = [ "$ace_root/frameworks/core/components_ng/pattern/${module_path}:ace_core_components_${module}_pattern_ng_android" ]
+      deps += [ libace_target ]
 
-    part_name = ace_engine_part
-    subsystem_name = ace_engine_subsystem
+      part_name = ace_engine_part
+      subsystem_name = ace_engine_subsystem
+    }
   }
   component_modules_libs += [ ":$module_name" ]
 }
