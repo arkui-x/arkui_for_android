@@ -675,6 +675,7 @@
       "OHOS::Ace::NG::ViewStackProcessor::ApplyParentThemeScopeId(OHOS::Ace::RefPtr<OHOS::Ace::NG::UINode> const&)";
       "OHOS::Ace::NG::ViewStackProcessor::IsCurrentVisualStateProcess()";
       "OHOS::Ace::NG::ViewStackProcessor::PopContainer()";
+      "OHOS::Ace::NG::ViewStackProcessor::Pop()";
       "OHOS::Ace::NG::UINode::GetChildAtIndex(int) const";
       "OHOS::Ace::NG::UINode::GetContext() const";
       "OHOS::Ace::NG::UINode::GetThemeByType(unsigned long, bool) const";
