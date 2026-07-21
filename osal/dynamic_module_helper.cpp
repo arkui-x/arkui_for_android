@@ -97,6 +97,15 @@ const std::unordered_map<std::string, std::string> soMap = {
     { "Grid", "grid" },
     { "GridItem", "grid" },
     { "Panel", "panel" },
+    { "CommonShape", "shape" },
+    { "Path", "shape" },
+    { "Shape", "shape" },
+    { "Circle", "shape" },
+    { "Ellipse", "shape" },
+    { "Rect", "shape" },
+    { "Line", "shape" },
+    { "Polyline", "shape" },
+    { "Polygon", "shape" },
     { "Bubble", "bubble" },
 };
 } // namespace
