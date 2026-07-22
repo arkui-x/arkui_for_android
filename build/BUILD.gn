@@ -307,6 +307,7 @@ component_modules = [
   "panel",
   "text_field",
   "bubble",
+  "xcomponent",
 ]
 
 component_modules_libs = []
