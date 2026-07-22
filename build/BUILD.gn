@@ -288,6 +288,7 @@ component_modules = [
   "search",
   "sheet",
   "menu",
+  "toolbaritem",
   "text_clock",
   "toggle",
   "button",
