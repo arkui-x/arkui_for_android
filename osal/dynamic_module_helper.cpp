@@ -75,6 +75,7 @@ const std::unordered_map<std::string, std::string> soMap = {
     {"Menu", "menu"},
     {"MenuItem", "menu"},
     {"MenuItemGroup", "menu"},
+    {"ToolBarItem", "toolbaritem"},
     {"TextClock", "textclock"},
     {"Toggle", "toggle"},
     {"Button", "button"},
