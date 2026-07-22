@@ -172,6 +172,8 @@ public abstract class BridgePlugin {
         if (this.bridgeName_ != null && this.bridgeManagerInstance != null) {
             return true;
         } else {
+            ALog.e(LOG_TAG, "checkBridgeInner failed: bridgeName=" + this.bridgeName_ +
+                    ", bridgeManagerInstance=" + this.bridgeManagerInstance);
             return false;
         }
     }
@@ -283,6 +285,7 @@ public abstract class BridgePlugin {
             errorCode = this.bridgeManagerInstance.platformCallMethod(bridgeName_, methodData);
         }
         if (this.iMethodResult_ != null && errorCode.getId() != 0) {
+            ALog.e("BridgePlugin", "callMethodInner failed, errorcode is " + errorCode.getId());
             this.iMethodResult_.onError(methodData.getMethodName(), errorCode.getId(), errorCode.getErrorMessage());
         }
     }
@@ -294,7 +297,7 @@ public abstract class BridgePlugin {
      */
     public void callMethod(MethodData methodData) {
         ALog.d(LOG_TAG,
-            "callMethod enter, bridgeName is " + bridgeName_ + ", methodName is " + methodData.getMethodName());
+                "callMethod enter, bridgeName is " + bridgeName_ + ", methodName is " + methodData.getMethodName());
         if (!this.isAvailable_) {
             ALog.e(LOG_TAG, "The bridge is not available.");
             return;
@@ -347,15 +350,18 @@ public abstract class BridgePlugin {
         try {
             boolean ok = latch.await(DEFAULT_MAIN_THREAD_TIMEOUT_MS, java.util.concurrent.TimeUnit.MILLISECONDS);
             if (!ok) {
-                ALog.e(LOG_TAG, "callMethodSync timeout.");
+                ALog.e(LOG_TAG, "callMethodToMainThread timeout: bridgeName=" + this.bridgeName_ +
+                        ", methodName=" + methodData.getMethodName() +
+                        ", timeoutMs=" + DEFAULT_MAIN_THREAD_TIMEOUT_MS);
                 throw new IllegalStateException("callMethodSync timeout after " + DEFAULT_MAIN_THREAD_TIMEOUT_MS
-                    + " ms, method=" + methodData.getMethodName() + ", errorCode ="
-                    + BridgeErrorCode.BRIDGE_CALL_METHOD_SYNC_TIMEOUT.getId());
+                        + " ms, method=" + methodData.getMethodName() + ", errorCode ="
+                        + BridgeErrorCode.BRIDGE_CALL_METHOD_SYNC_TIMEOUT.getId());
             }
         } catch (InterruptedException e) {
-            ALog.e(LOG_TAG, "callMethodSync interrupted while waiting main thread.");
+            ALog.e(LOG_TAG, "callMethodToMainThread interrupted: bridgeName=" + this.bridgeName_ +
+                    ", methodName=" + methodData.getMethodName());
             throw new RuntimeException("callMethodSync interrupted, method=" + methodData.getMethodName()
-                + ", errorCode =" + BridgeErrorCode.BRIDGE_ERROR_NO.getId(), e);
+                    + ", errorCode =" + BridgeErrorCode.BRIDGE_ERROR_NO.getId(), e);
         }
         return resultHolder[0];
     }
@@ -418,6 +424,9 @@ public abstract class BridgePlugin {
             Object[] parametersObject = methodData.getMethodParameter();
             return bridgeInvokeMethod(object, callMethod, parametersObject);
         } else {
+            ALog.e(LOG_TAG, "jsCallMethod failed: bridgeName=" + bridgeName_ +
+                    ", methodName=" + (methodData != null ? methodData.getMethodName() : "null") +
+                    ", object=" + object + ", methodData=" + methodData);
             return BridgeErrorCode.BRIDGE_METHOD_UNIMPL;
         }
     }
@@ -434,13 +443,24 @@ public abstract class BridgePlugin {
                 }
                 return resValues;
             } catch (IllegalAccessException e) {
-                ALog.e(LOG_TAG, "jsCallMethod failed, IllegalAccessException.");
+                ALog.e(LOG_TAG, "bridgeInvokeMethod failed: IllegalAccessException, bridgeName=" +
+                        this.bridgeName_ + ", methodName=" +
+                        (callMethod != null ? callMethod.getName() : "null"));
             } catch (IllegalArgumentException e) {
-                ALog.e(LOG_TAG, "jsCallMethod failed, IllegalArgumentException.");
+                ALog.e(LOG_TAG, "bridgeInvokeMethod failed: IllegalArgumentException, bridgeName=" +
+                        this.bridgeName_ + ", methodName=" +
+                        (callMethod != null ? callMethod.getName() : "null"));
                 bridgeErrorCode = BridgeErrorCode.BRIDGE_METHOD_PARAM_ERROR;
             } catch (InvocationTargetException e) {
-                ALog.e(LOG_TAG, "jsCallMethod failed, InvocationTargetException.");
+                ALog.e(LOG_TAG, "bridgeInvokeMethod failed: InvocationTargetException, bridgeName=" +
+                        this.bridgeName_ + ", methodName=" +
+                        (callMethod != null ? callMethod.getName() : "null"));
             }
+        } else {
+            ALog.e(LOG_TAG, "bridgeInvokeMethod failed: bridgeName=" + this.bridgeName_ +
+                    ", methodName=" + (callMethod != null ? callMethod.getName() : "null") +
+                    ", object=" + object + ", callMethod=" + callMethod +
+                    ", parametersObject=" + parametersObject);
         }
         return bridgeErrorCode;
     }
@@ -478,6 +498,9 @@ public abstract class BridgePlugin {
         if (this.iMessageListener_ != null) {
             Object dataResponse = this.iMessageListener_.onMessage(data);
             this.bridgeManagerInstance.platformSendMessageResponse(this.bridgeName_, dataResponse);
+        } else {
+            ALog.e(LOG_TAG, "jsSendMessage failed: iMessageListener_ is null, bridgeName=" +
+                    this.bridgeName_);
         }
     }
 
@@ -491,6 +514,8 @@ public abstract class BridgePlugin {
      */
     protected void jsSendMethodResult(Object result, String methodName, int errorCode, String errorMessage) {
         if (this.iMethodResult_ == null) {
+            ALog.e(LOG_TAG, "jsSendMethodResult failed: iMethodResult_ is null, bridgeName=" +
+                    this.bridgeName_ + ", methodName=" + methodName);
             return;
         }
         if (errorCode == 0) {
@@ -508,6 +533,9 @@ public abstract class BridgePlugin {
     protected void jsSendMessageResponse(Object data) {
         if (this.iMessageListener_ != null) {
             this.iMessageListener_.onMessageResponse(data);
+        } else {
+            ALog.e(LOG_TAG, "jsSendMessageResponse failed: iMessageListener_ is null, bridgeName=" +
+                    this.bridgeName_);
         }
     }
 
@@ -520,6 +548,9 @@ public abstract class BridgePlugin {
     protected void jsCancelMethod(String methodName) {
         if (this.iMethodResult_ != null) {
             this.iMethodResult_.onMethodCancel(methodName);
+        } else {
+            ALog.e(LOG_TAG, "jsCancelMethod failed: iMethodResult_ is null, bridgeName=" +
+                    this.bridgeName_ + ", methodName=" + methodName);
         }
     }
 
