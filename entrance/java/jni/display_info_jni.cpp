@@ -81,7 +81,8 @@ void DisplayInfoJni::SetupDisplayInfo(JNIEnv* env, jobject obj)
 
 int DisplayInfoJni::getDisplayId()
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::getDisplayId env is NULL");
         return -1;
@@ -94,7 +95,8 @@ int DisplayInfoJni::getDisplayId()
 
 int32_t DisplayInfoJni::getDisplayWidth()
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::getDisplayWidth env is NULL");
         return -1;
@@ -107,7 +109,8 @@ int32_t DisplayInfoJni::getDisplayWidth()
 
 int32_t DisplayInfoJni::getDisplayHeight()
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::getDisplayHeight env is NULL");
         return -1;
@@ -120,7 +123,8 @@ int32_t DisplayInfoJni::getDisplayHeight()
 
 int DisplayInfoJni::getOrentation()
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::getOrentation env is NULL");
         return -1;
@@ -133,7 +137,8 @@ int DisplayInfoJni::getOrentation()
 
 float DisplayInfoJni::getRefreshRate()
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::getRefreshRate env is NULL");
         return -1;
@@ -146,7 +151,8 @@ float DisplayInfoJni::getRefreshRate()
 
 float DisplayInfoJni::getDensityPixels()
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::getDensityPixels env is NULL");
         return -1;
@@ -159,7 +165,8 @@ float DisplayInfoJni::getDensityPixels()
 
 int DisplayInfoJni::getDensityDpi()
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::getDensityDpi env is NULL");
         return -1;
@@ -172,7 +179,8 @@ int DisplayInfoJni::getDensityDpi()
 
 float DisplayInfoJni::getScaledDensity()
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::getScaledDensity env is NULL");
         return -1;
@@ -185,7 +193,8 @@ float DisplayInfoJni::getScaledDensity()
 
 float DisplayInfoJni::getXDpi()
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::getXDpi env is NULL");
         return -1;
@@ -202,7 +211,8 @@ float DisplayInfoJni::getXDpi()
 
 float DisplayInfoJni::getYDpi()
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::getYDpi env is NULL");
         return -1;
@@ -219,7 +229,8 @@ float DisplayInfoJni::getYDpi()
 
 uint32_t DisplayInfoJni::GetRotation()
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::GetRotation env is NULL");
         return 0;
@@ -232,7 +243,8 @@ uint32_t DisplayInfoJni::GetRotation()
 
 int DisplayInfoJni::GetDisplayId(int displayId)
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::GetDisplayId env is NULL");
         return -1;
@@ -246,7 +258,8 @@ int DisplayInfoJni::GetDisplayId(int displayId)
 
 uint32_t DisplayInfoJni::GetRotation(int displayId)
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::GetRotation env is NULL");
         return 0;
@@ -260,7 +273,8 @@ uint32_t DisplayInfoJni::GetRotation(int displayId)
 
 int DisplayInfoJni::GetOrentation(int displayId)
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::GetOrentation env is NULL");
         return -1;
@@ -274,7 +288,8 @@ int DisplayInfoJni::GetOrentation(int displayId)
 
 int32_t DisplayInfoJni::GetDisplayWidth(int displayId)
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::GetDisplayWidth env is NULL");
         return -1;
@@ -288,7 +303,8 @@ int32_t DisplayInfoJni::GetDisplayWidth(int displayId)
 
 int32_t DisplayInfoJni::GetDisplayHeight(int displayId)
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::GetDisplayHeight env is NULL");
         return -1;
@@ -302,7 +318,8 @@ int32_t DisplayInfoJni::GetDisplayHeight(int displayId)
 
 float DisplayInfoJni::GetRefreshRate(int displayId)
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::GetRefreshRate env is NULL");
         return -1;
@@ -316,7 +333,8 @@ float DisplayInfoJni::GetRefreshRate(int displayId)
 
 float DisplayInfoJni::GetDensityPixels(int displayId)
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::GetDensityPixels env is NULL");
         return -1;
@@ -331,7 +349,8 @@ float DisplayInfoJni::GetDensityPixels(int displayId)
 
 int DisplayInfoJni::GetDensityDpi(int displayId)
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::GetDensityDpi env is NULL");
         return -1;
@@ -345,7 +364,8 @@ int DisplayInfoJni::GetDensityDpi(int displayId)
 
 float DisplayInfoJni::GetScaledDensity(int displayId)
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::GetScaledDensity env is NULL");
         return -1;
@@ -360,7 +380,8 @@ float DisplayInfoJni::GetScaledDensity(int displayId)
 
 float DisplayInfoJni::GetXDpi(int displayId)
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::GetXDpi env is NULL");
         return -1;
@@ -378,7 +399,8 @@ float DisplayInfoJni::GetXDpi(int displayId)
 
 float DisplayInfoJni::GetYDpi(int displayId)
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayInfo::GetYDpi env is NULL");
         return -1;
