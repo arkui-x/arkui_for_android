@@ -90,7 +90,8 @@ public class StageConfiguration {
             if (fontWeightAdjustment <= 0) {
                 return;
             }
-            json.put(SYSTEM_FONT_WEIGHT_SCALE, String.valueOf(fontWeightAdjustment));
+            float scale = (float) fontWeightAdjustment / (float) DEFAULT_FONT_WEIGHT_ADJUSTMENT;
+            json.put(SYSTEM_FONT_WEIGHT_SCALE, String.valueOf(scale));
         } catch (JSONException e) {
             ALog.w(LOG_TAG, "setFontWeightScale failed");
         }
