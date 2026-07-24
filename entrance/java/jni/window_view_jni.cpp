@@ -67,6 +67,16 @@ static const JNINativeMethod COMMON_METHODS[] = {
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::Background),
     },
     {
+        .name = "nativeResumed",
+        .signature = "(J)V",
+        .fnPtr = reinterpret_cast<void*>(&WindowViewJni::Resumed),
+    },
+    {
+        .name = "nativePaused",
+        .signature = "(J)V",
+        .fnPtr = reinterpret_cast<void*>(&WindowViewJni::Paused),
+    },
+    {
         .name = "nativeDestroy",
         .signature = "(J)V",
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::Destroy),
@@ -207,6 +217,22 @@ void WindowViewJni::Background(JNIEnv* env, jobject myObject, jlong window)
     auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
     if (windowPtr != nullptr) {
         windowPtr->Background();
+    }
+}
+
+void WindowViewJni::Resumed(JNIEnv* env, jobject myObject, jlong window)
+{
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
+    if (windowPtr != nullptr) {
+        windowPtr->Resumed();
+    }
+}
+
+void WindowViewJni::Paused(JNIEnv* env, jobject myObject, jlong window)
+{
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
+    if (windowPtr != nullptr) {
+        windowPtr->Paused();
     }
 }
 

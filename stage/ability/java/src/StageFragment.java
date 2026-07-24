@@ -139,6 +139,8 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
 
     private boolean isBackground = true;
 
+    private boolean isResumed = false;
+
     private KeyboardHeightProvider keyboardHeightProvider;
 
     @Override
@@ -211,6 +213,10 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
     public void onResume() {
         ALog.i(LOG_TAG, "OnResume called, instance name:" + getInstanceName());
         super.onResume();
+        isResumed = true;
+        if (!isHidden()) {
+            windowView.resumed();
+        }
     }
 
     @Override
@@ -234,6 +240,9 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
         Trace.beginSection("StageFragment::foreground");
         fragmentDelegate.dispatchOnForeground(getInstanceName(), this);
         windowView.foreground();
+        if (isResumed) {
+            windowView.resumed();
+        }
         if (platformPlugin != null) {
             platformPlugin.notifyLifecycleChanged(false);
         }
@@ -285,6 +294,8 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
     public void onPause() {
         ALog.i(LOG_TAG, "onPause called, instance name:" + getInstanceName());
         super.onPause();
+        isResumed = false;
+        windowView.paused();
     }
 
     private void background() {

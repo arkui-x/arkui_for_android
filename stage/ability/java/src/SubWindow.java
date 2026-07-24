@@ -16,12 +16,15 @@
 package ohos.stage.ability.adapter;
 
 import android.app.Activity;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.PopupWindow;
 
 import ohos.ace.adapter.ALog;
@@ -39,6 +42,7 @@ import java.util.Arrays;
  */
 public class SubWindow {
     private static final String TAG = "SubWindow";
+    private static final int WINDOW_TYPE_DIALOG = 2122;
     private static final int WINDOW_MODALITY = 0;
 
     private long nativeSubWindowPtr = 0L;
@@ -64,6 +68,7 @@ public class SubWindow {
     private View mainView;
     private int mainWindowX;
     private int mainWindowY;
+    private FrameLayout modalContainerView;
     private WindowViewAospInterface windowView;
     private int originWindowY;
 
@@ -143,10 +148,12 @@ public class SubWindow {
          * The type Window param.
          */
         public void shutdown() {
-            View cView = getContentView();
+            View cView = SubWindow.this.contentView;
             if (cView != null && cView instanceof WindowViewAospInterface) {
                 ((WindowViewAospInterface) cView).destroyAosp();
-                cView = null;
+            }
+            if (cView != null && cView.getParent() instanceof ViewGroup) {
+                ((ViewGroup) cView.getParent()).removeView(cView);
             }
             super.dismiss();
         }
@@ -182,8 +189,8 @@ public class SubWindow {
      */
     public void createSubWindow(WindowParam param) {
         subWindowView = new PopupSubWindow();
-        subWindowView.setOutsideTouchable(!isModal);
-        subWindowView.setFocusable(isFocusable);
+        subWindowView.setOutsideTouchable(!isEffectiveModalWindow());
+        subWindowView.setFocusable(isFocusable || isEffectiveModalWindow());
         subWindowView.setTouchable(true);
 
         windowView = WindowViewBuilder.makeWindowViewAosp(rootActivity, windowId, true);
@@ -207,6 +214,14 @@ public class SubWindow {
                 int x = (int) event.getX();
                 int y = (int) event.getY();
                 ALog.d(TAG, "subWindowView onTouch. event.getAction()=" + event.getAction() + ", x=" + x + ", y=" + y);
+
+                if (isTouchOutsideModalContent(x, y)) {
+                    ALog.d(TAG, "touch outside modal window content");
+                    if (nativeSubWindowPtr != 0L && event.getAction() == MotionEvent.ACTION_DOWN) {
+                        nativeOnWindowTouchOutside(nativeSubWindowPtr);
+                    }
+                    return true;
+                }
 
                 if (isTouchOutsideWindow(event, x, y)) {
                     return handleTouchOutside();
@@ -236,7 +251,7 @@ public class SubWindow {
         if (nativeSubWindowPtr != 0L) {
             nativeOnWindowTouchOutside(nativeSubWindowPtr);
         }
-        if (!isModal) {
+        if (!isEffectiveModalWindow()) {
             releaseFocus();
             return false;
         }
@@ -262,7 +277,7 @@ public class SubWindow {
         if (event.getAction() == MotionEvent.ACTION_DOWN && nativeSubWindowPtr != 0L) {
             nativeOnWindowTouchOutside(nativeSubWindowPtr);
         }
-        if (isModal) {
+        if (isEffectiveModalWindow()) {
             return true;
         }
         return dispatchTouchEventToMainWindow(event);
@@ -349,16 +364,31 @@ public class SubWindow {
                 windowParam.height = mainView.getHeight();
             }
         }
-        subWindowView.setWidth(windowParam.width);
-        subWindowView.setHeight(windowParam.height);
         subWindowView.setElevation(0);
-        subWindowView.setContentView(contentView);
 
         int screenX = windowParam.x + mainWindowX;
         int screenY = windowParam.y + mainWindowY;
         ALog.d(TAG, "showWindow called. x=" + windowParam.x + ", y=" + windowParam.y + ", screenX=" + screenX +
             ", screenY=" + screenY + ", width=" + windowParam.width + ", height=" + windowParam.height);
-        subWindowView.showAtLocation(rootView, Gravity.TOP | Gravity.START, screenX, screenY);
+        if (isEffectiveModalWindow()) {
+            // Force fullscreen dimensions for modal dialog content rendering
+            windowParam.x = 0;
+            windowParam.y = 0;
+            windowParam.width = getModalContainerWidth();
+            windowParam.height = getModalContainerHeight();
+            prepareModalContentView();
+            subWindowView.setWidth(windowParam.width);
+            subWindowView.setHeight(windowParam.height);
+            subWindowView.setContentView(modalContainerView);
+            // Allow PopupWindow to extend under system bars (status bar, navigation bar)
+            subWindowView.setClippingEnabled(false);
+            subWindowView.showAtLocation(rootView, Gravity.TOP | Gravity.START, 0, 0);
+        } else {
+            subWindowView.setWidth(windowParam.width);
+            subWindowView.setHeight(windowParam.height);
+            subWindowView.setContentView(contentView);
+            subWindowView.showAtLocation(rootView, Gravity.TOP | Gravity.START, screenX, screenY);
+        }
         if (requestFocus) {
             getFocus();
         }
@@ -373,7 +403,12 @@ public class SubWindow {
 
         ALog.d(TAG, "updateWindow called. x=" + windowParam.x + ", y=" + windowParam.y + ", screenX=" + screenX +
             ", screenY=" + screenY + ", width=" + windowParam.width + ", height=" + windowParam.height);
-        subWindowView.update(screenX, screenY, windowParam.width, windowParam.height, true);
+        if (isEffectiveModalWindow()) {
+            updateModalContentLayout();
+            subWindowView.update(0, 0, getModalContainerWidth(), getModalContainerHeight(), true);
+        } else {
+            subWindowView.update(screenX, screenY, windowParam.width, windowParam.height, true);
+        }
     }
 
     /**
@@ -578,6 +613,9 @@ public class SubWindow {
      * release focus.
      */
     public void releaseFocus() {
+        if (isEffectiveModalWindow()) {
+            return;
+        }
         ALog.d(TAG, "releaseFocus(), isFocusable=" + this.isFocusable);
         if (this.isFocusable) {
             hasFocus = false;
@@ -655,7 +693,7 @@ public class SubWindow {
      * @return true if modal
      */
     public boolean isModalWindow() {
-        return isModal;
+        return isEffectiveModalWindow();
     }
 
     /**
@@ -674,6 +712,59 @@ public class SubWindow {
      */
     public boolean isRequestedVisible() {
         return requestedVisible;
+    }
+
+    private boolean isDialogWindow() {
+        return windowType == WINDOW_TYPE_DIALOG;
+    }
+
+    private boolean isEffectiveModalWindow() {
+        return isModal || isDialogWindow();
+    }
+
+    private int getModalContainerWidth() {
+        android.graphics.Point screenSize = new android.graphics.Point();
+        rootActivity.getWindowManager().getDefaultDisplay().getRealSize(screenSize);
+        return screenSize.x;
+    }
+
+    private int getModalContainerHeight() {
+        android.graphics.Point screenSize = new android.graphics.Point();
+        rootActivity.getWindowManager().getDefaultDisplay().getRealSize(screenSize);
+        return screenSize.y;
+    }
+
+    private void prepareModalContentView() {
+        if (modalContainerView == null) {
+            modalContainerView = new FrameLayout(rootActivity);
+            modalContainerView.setClickable(true);
+        }
+        if (contentView.getParent() instanceof ViewGroup) {
+            ((ViewGroup) contentView.getParent()).removeView(contentView);
+        }
+        if (contentView.getParent() == null) {
+            modalContainerView.addView(contentView);
+        }
+        updateModalContentLayout();
+    }
+
+    private void updateModalContentLayout() {
+        if (modalContainerView == null || contentView == null) {
+            return;
+        }
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(windowParam.width, windowParam.height);
+        params.leftMargin = windowParam.x;
+        params.topMargin = windowParam.y;
+        contentView.setLayoutParams(params);
+    }
+
+    private boolean isTouchOutsideModalContent(int x, int y) {
+        if (!isEffectiveModalWindow()) {
+            return false;
+        }
+        int left = windowParam.x;
+        int top = windowParam.y;
+        return x < left || x > left + windowParam.width || y < top || y > top + windowParam.height;
     }
 
     /**
