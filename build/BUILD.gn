@@ -276,16 +276,10 @@ component_modules = [
   "toggle",
   "button",
   "dialog",
-  "progress",
-  "texttimer",
-  "badge",
-  "loading_progress",
-  "span",
   "select",
   "lazy_grid_layout",
   "refresh",
   "grid",
-  "text_field",
   "bubble",
 ]
 
@@ -294,12 +288,8 @@ component_modules_libs = []
 foreach(module, component_modules) {
   sub_name = string_replace(module, "_", "")
   module_name = "arkui_$sub_name"
-  module_path = module
-  if (module == "span") {
-    module_path = "text/span"
-  }
   ohos_shared_library(module_name) {
-    deps = [ "$ace_root/frameworks/core/components_ng/pattern/${module_path}:ace_core_components_${module}_pattern_ng_android" ]
+    deps = [ "$ace_root/frameworks/core/components_ng/pattern/${module}:ace_core_components_${module}_pattern_ng_android" ]
     deps += [ libace_target ]
 
     part_name = ace_engine_part
