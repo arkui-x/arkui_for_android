@@ -60,4 +60,14 @@ bool FeatureParam::IsSmartLayoutEnabled()
 {
     return false;
 }
+
+bool FeatureParam::IsSmartLayoutPageOverflowFixEnabled(const std::string& pathHash)
+{
+    return false;
+}
+
+bool FeatureParam::IsSmartLayoutWidgetSplitEnabled(const std::string& pageUrl)
+{
+    return false;
+}
 } // OHOS::Ace
