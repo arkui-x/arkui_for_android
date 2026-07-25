@@ -1599,6 +1599,7 @@
       "OHOS::Ace::NG::FocusHub::HasForwardFocusMovementInChildren()";
       "OHOS::Ace::NG::FocusHub::ClearFocusMovementFlagsInChildren()";
       "OHOS::Ace::NG::FocusHub::RequestFocus() const";
+      "OHOS::Ace::NG::FocusHub::RemoveSelf(OHOS::Ace::BlurReason)";
       "OHOS::Ace::LifeCycleCheckable::OnDetectedObjDestroyInUse()";
       "OHOS::Ace::Referenced::OnDetectedClaimDeathObj(bool)";
 
@@ -1711,6 +1712,8 @@
       "OHOS::Ace::Napi::JsDrawableDescriptor::Export(napi_env__*, napi_value__*)";
       OHOS::Ace::SystemProperties::extSurfaceEnabled_;
       OHOS::Ace::SystemProperties::layoutTraceEnable_;
+      "OHOS::Ace::SystemProperties::debugFlags_";
+      "OHOS::Ace::SystemProperties::debugEnabled_";
       "OHOS::Ace::AceScopedTraceFlag::AceScopedTraceFlag(bool, char const*, ...)";
       "OHOS::Ace::AceScopedTraceFlag::~AceScopedTraceFlag()";
       "OHOS::Ace::FrameReport::GetInstance()";
