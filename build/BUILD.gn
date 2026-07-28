@@ -315,6 +315,9 @@ component_modules_libs = []
 
 foreach(module, component_modules) {
   sub_name = string_replace(module, "_", "")
+  if (module == "shape") {
+    sub_name = "shapes"
+  }
   module_name = "arkui_$sub_name"
   module_path = module
   if (module == "span") {
