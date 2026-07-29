@@ -277,9 +277,6 @@ component_modules = [
   "button",
   "dialog",
   "select",
-  "lazy_grid_layout",
-  "refresh",
-  "grid",
   "bubble",
 ]
 

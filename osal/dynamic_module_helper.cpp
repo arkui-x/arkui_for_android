@@ -68,14 +68,7 @@ const std::unordered_map<std::string, std::string> soMap = {
     {"Toggle", "toggle"},
     {"Button", "button"},
     {"Dialog", "dialog" },
-    {"ArcList", "arclist"},
-    {"ArcListItem", "arclist"},
-    {"ArcScrollBar", "arcscrollbar"},
     {"Select", "select"},
-    { "LazyVGridLayout", "lazygridlayout" },
-    { "Refresh", "refresh" },
-    { "Grid", "grid" },
-    { "GridItem", "grid" },
     { "Bubble", "bubble" },
 };
 } // namespace
