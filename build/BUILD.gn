@@ -21,7 +21,6 @@ import("//foundation/arkui/napi/napi.gni")
 import("//plugins/component/components.gni")
 import("//plugins/plugin_lib.gni")
 import("config.gni")
-import("ndk_symbol.gni")
 
 # libace target
 ohos_shared_library("libarkui_android") {
@@ -42,20 +41,11 @@ ohos_shared_library("libarkui_android") {
     ]
   }
 
-  libs = [ "c++_static", "c++abi" ]
 
   public_configs = [ "//foundation/arkui/napi:ace_napi_config" ]
 
-  ldflags = []
-
-  # 从 ndk_symbol.gni 导入需要强制拉入 libc++_static.a 的符号,
-  # 让 libarkui_android.map 里挂着的这些符号真正进入 .dynsym。
-  foreach(sym, force_keep_symbols) {
-    ldflags += [ "-Wl,-u,$sym" ]
-  }
-
   if (ace_engine_enable_reduce_eh_frame) {
-    ldflags += [ "-Wl,--no-eh-frame-hdr" ]
+    ldflags = [ "-Wl,--no-eh-frame-hdr" ]
   }
 
   version_script = "libarkui_android.map"
