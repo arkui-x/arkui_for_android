@@ -40,6 +40,8 @@ struct SubWindowManagerStruct {
     jmethodID setBackgroundColorMethod;
     jmethodID setAppScreenBrightnessMethod;
     jmethodID getAppScreenBrightnessMethod;
+    jmethodID getWindowDensityMethod;
+    jmethodID getWindowDefaultDensityMethod;
     jmethodID setKeepScreenOnMethod;
     jmethodID isKeepScreenOnMethod;
     jmethodID requestOrientationMethod;
@@ -99,6 +101,8 @@ public:
     static bool SetBackgroundColor(uint32_t color);
     static bool SetAppScreenBrightness(float brightness);
     static float GetAppScreenBrightness();
+    static float GetWindowDensity();
+    static float GetWindowDefaultDensity();
     static bool SetKeepScreenOn(bool keepScreenOn);
     static bool IsKeepScreenOn();
     static bool RequestOrientation(Rosen::Orientation orientation);

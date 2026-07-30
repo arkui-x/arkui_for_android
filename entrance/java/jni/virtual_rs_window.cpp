@@ -594,7 +594,8 @@ WMError Window::SetBackgroundColor(uint32_t color)
 WMError Window::SetBrightness(float brightness)
 {
     LOGI("Window::SetBrightness called. brightness=%.3f", brightness);
-    if (brightness < MINIMUM_BRIGHTNESS || brightness > MAXIMUM_BRIGHTNESS) {
+    if (brightness != UNDEFINED_BRIGHTNESS &&
+        (brightness < MINIMUM_BRIGHTNESS || brightness > MAXIMUM_BRIGHTNESS)) {
         LOGE("invalid brightness value: %{public}f", brightness);
         return WMError::WM_ERROR_INVALID_PARAM;
     }
@@ -608,6 +609,26 @@ WMError Window::SetBrightness(float brightness)
         return WMError::WM_ERROR_INVALID_WINDOW;
     }
 }
+
+WMError Window::GetWindowDensityInfo(WindowDensityInfo& densityInfo)
+{
+    float systemDensity = SubWindowManagerJni::GetWindowDensity();
+    if (systemDensity <= 0.0f) {
+        LOGE("Window::GetWindowDensityInfo: invalid systemDensity=%{public}f", systemDensity);
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+    float defaultDensity = SubWindowManagerJni::GetWindowDefaultDensity();
+    if (defaultDensity <= 0.0f) {
+        defaultDensity = systemDensity;
+    }
+    densityInfo.systemDensity = systemDensity;
+    densityInfo.defaultDensity = defaultDensity;
+    densityInfo.customDensity = systemDensity;
+    LOGI("Window::GetWindowDensityInfo: system=%{public}f, default=%{public}f, custom=%{public}f",
+        densityInfo.systemDensity, densityInfo.defaultDensity, densityInfo.customDensity);
+    return WMError::WM_OK;
+}
+
 WMError Window::SetKeepScreenOn(bool keepScreenOn)
 {
     LOGI("Window::SetKeepScreenOn called. keepScreenOn=%d", keepScreenOn);
