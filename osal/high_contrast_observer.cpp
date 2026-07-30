@@ -23,12 +23,6 @@ HighContrastObserver& HighContrastObserver::GetInstance()
     return instance;
 }
 
-void HighContrastObserver::SubscribeHighContrastChange(int32_t instanceId, HighContrastCallback&& callback)
-{
-    std::lock_guard<std::mutex> lock(mutex_);
-    callbacks_[instanceId] = std::move(callback);
-}
-
 void HighContrastObserver::SetListenHighContrastCallback(ListenHighContrastCallback&& callback)
 {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -41,12 +35,6 @@ void HighContrastObserver::SetListenHighContrastCallback(ListenHighContrastCallb
             pair.second();
         }
     }
-}
-
-void HighContrastObserver::UnsubscribeHighContrastChange(int32_t instanceId)
-{
-    std::lock_guard<std::mutex> lock(mutex_);
-    callbacks_.erase(instanceId);
 }
 
 void HighContrastObserver::OnHighContrastChange(bool newHighContrast)

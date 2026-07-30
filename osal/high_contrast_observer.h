@@ -28,9 +28,7 @@ using ListenHighContrastCallback = std::function<void(bool)>;
 class HighContrastObserver {
 public:
     static HighContrastObserver& GetInstance();
-    void SubscribeHighContrastChange(int32_t instanceId, HighContrastCallback&& callback);
     void SetListenHighContrastCallback(ListenHighContrastCallback&& callback);
-    void UnsubscribeHighContrastChange(int32_t instanceId);
     void OnHighContrastChange(bool newHighContrast);
 
 private:
