@@ -1086,6 +1086,10 @@
 
       "VTT for OHOS::Ace::NG::Pattern";
       "OHOS::Ace::NG::LazyLayoutUtils::ValidateLazyLayoutParentWithAxis(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, OHOS::Ace::Axis)";
+      "OHOS::Ace::NG::LazyLayoutPattern::NotifyParentOnStickyHeaderChange()";
+      "OHOS::Ace::NG::LazyLayoutPattern::DumpStickyHeaderHandoffInfo() const";
+      "OHOS::Ace::NG::LazyLayoutPattern::OnDetachFromMainTree()";
+      "OHOS::Ace::NG::LazyLayoutPattern::DumpStickyHeaderHandoffInfo(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&) const";
 
       "VTT for OHOS::Ace::NG::BoxLayoutAlgorithm";
       "VTT for OHOS::Ace::NG::ParticlePattern";
@@ -3335,6 +3339,7 @@
       "OHOS::Ace::NG::TextPattern::OnModifyDone()";
       "OHOS::Ace::NG::TextPattern::~TextPattern()";
       "OHOS::Ace::NG::TextPattern::GetTextForDisplay() const";
+      "OHOS::Ace::NG::TextPattern::GetEnvFontScaleFromLayout()";
       "OHOS::Ace::NG::TextPattern::IsTextArea() const";
       "OHOS::Ace::NG::TextPattern::GetTextRect() const";
       "OHOS::Ace::NG::TextPattern::GetTextContentRect(bool) const";
@@ -3894,7 +3899,7 @@
       "OHOS::Ace::NG::BaseTextSelectOverlay::IsAncestorNodeGeometryChange(unsigned int)";
       "OHOS::Ace::NG::BaseTextSelectOverlay::IsAncestorNodeStartScroll(unsigned int)";
       "OHOS::Ace::NG::BaseTextSelectOverlay::IsAncestorNodeEndScroll(unsigned int)";
-      "OHOS::Ace::NG::BaseTextSelectOverlay::OnAncestorNodeChanged(unsigned int)";
+      "OHOS::Ace::NG::BaseTextSelectOverlay::OnAncestorNodeChanged(unsigned int, bool, bool)";
       "OHOS::Ace::NG::BaseTextSelectOverlay::UpdateFirstHandleOffset()";
       "OHOS::Ace::NG::BaseTextSelectOverlay::UpdateSecondHandleOffset()";
       "OHOS::Ace::NG::BaseTextSelectOverlay::CheckHasTransformAttr()";
@@ -4050,7 +4055,7 @@
       "OHOS::Ace::NG::TextSelectOverlay::CheckHandleVisible(OHOS::Ace::NG::RectT<float> const&)";
       "OHOS::Ace::NG::TextSelectOverlay::OnResetTextSelection()";
       "OHOS::Ace::NG::TextSelectOverlay::OnHandleLevelModeChanged(OHOS::Ace::NG::HandleLevelMode)";
-      "OHOS::Ace::NG::TextSelectOverlay::OnAncestorNodeChanged(unsigned int)";
+      "OHOS::Ace::NG::TextSelectOverlay::OnAncestorNodeChanged(unsigned int, bool, bool)";
       "OHOS::Ace::NG::TextSelectOverlay::OnCloseOverlay(OHOS::Ace::NG::OptionMenuType, OHOS::Ace::NG::CloseReason, OHOS::Ace::RefPtr<OHOS::Ace::NG::OverlayInfo>)";
       "OHOS::Ace::NG::TextSelectOverlay::OnHandleMoveStart(OHOS::Ace::GestureEvent const&, bool)";
       "OHOS::Ace::NG::TextSelectOverlay::OnHandleMoveDone(OHOS::Ace::NG::RectT<float> const&, bool)";
@@ -4186,6 +4191,9 @@
       "OHOS::Ace::NG::FocusHub::AnyChildFocusHub(std::__ndk1::function<bool (OHOS::Ace::RefPtr<OHOS::Ace::NG::FocusHub> const&)> const&, bool)";
       "OHOS::Ace::NG::PipelineContext::GetTaihangOptimizer() const";
       "OHOS::Ace::NG::PipelineContext::GetCurrentPageName()";
+      "OHOS::Ace::NG::PipelineContext::GetLastPageInfo() const";
+      "OHOS::Ace::NG::PipelineContext::GetNavDestinationPageName(OHOS::Ace::RefPtr<OHOS::Ace::NG::PageInfo> const&) const";
+      "OHOS::Ace::NG::PipelineContext::GetNavDestinationJSViewName(OHOS::Ace::RefPtr<OHOS::Ace::NG::PageInfo> const&) const";
       "OHOS::Ace::NG::UINode::GetPath()";
       "OHOS::Ace::NG::PipelineContext::AddNodesToNotifyMemoryLevel(int)";
       "OHOS::Ace::NG::PipelineContext::FlushDirtyNodeUpdate()";
@@ -4240,6 +4248,7 @@
       "OHOS::Ace::NG::FormVisibleManager::RemoveFormVisibleChangeNode(int)";
       "OHOS::Ace::NG::FormVisibleManager::AddFormVisibleChangeNode(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, std::__ndk1::function<void (bool)> const&)";
       "OHOS::Ace::TaihangOptimizer::CheckSwiperPageValid(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "OHOS::Ace::TaihangOptimizer::CheckSwiperPageValid(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::ResSchedReport::GetInstance()";
       "OHOS::Ace::ResSchedReport::HandleSwiperChange(std::__ndk1::unordered_map<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, std::__ndk1::hash<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > >, std::__ndk1::equal_to<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > >, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > > > >&)";
       "OHOS::Ace::NG::ContentChangeManager::OnTransitionAdded(int)";
@@ -4340,6 +4349,7 @@
       "OHOS::Rosen::RSNode::CancelAnimationByProperty(unsigned long long const&, bool)";
       "OHOS::Rosen::RSTransactionHandler::ExecuteSynchronousTask(std::__ndk1::shared_ptr<OHOS::Rosen::RSSyncTask> const&, bool)";
       "OHOS::Rosen::RSUIContext::GetRSImplicitAnimator()";
+      "OHOS::Rosen::RSUIDirector::GetHybridRenderCanvasEnabled()";
       "OHOS::Rosen::RSImplicitAnimator::NeedImplicitAnimation()";
       "OHOS::Rosen::RSImplicitAnimator::BeginImplicitPathAnimation(std::__ndk1::shared_ptr<OHOS::Rosen::RSMotionPathOption> const&)";
       "OHOS::Rosen::RSImplicitAnimator::CreateImplicitAnimation(std::__ndk1::shared_ptr<OHOS::Rosen::RSNode> const&, std::__ndk1::shared_ptr<OHOS::Rosen::RSPropertyBase>, std::__ndk1::shared_ptr<OHOS::Rosen::RSPropertyBase> const&, std::__ndk1::shared_ptr<OHOS::Rosen::RSPropertyBase> const&)";
