@@ -1125,5 +1125,11 @@ void UIContentImpl::InitializeSubWindow()
     window_->RegisterLifeCycleListener(windowLifeCycleListener_);
     occupiedAreaChangeListener_ = new OccupiedAreaChangeListener(instanceId_);
     window_->RegisterOccupiedAreaChangeListener(occupiedAreaChangeListener_);
+    auto context = context_.lock();
+    CHECK_NULL_VOID(context);
+    auto appInfo = context->GetApplicationInfo();
+    if (appInfo) {
+        container->SetApiTargetVersion(appInfo->apiTargetVersion);
+    }
 }
 } // namespace OHOS::Ace::Platform
