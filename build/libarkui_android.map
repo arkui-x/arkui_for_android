@@ -3334,6 +3334,7 @@
       "OHOS::Ace::NG::TextPattern::CheckClickedOnSpanOrText(OHOS::Ace::NG::RectT<float>, OHOS::Ace::Offset const&)";
       "OHOS::Ace::NG::TextPattern::GetClickedSpanPosition()";
       "OHOS::Ace::NG::TextPattern::UpdateSelectionType(OHOS::Ace::SelectionInfo const&)";
+      "OHOS::Ace::NG::TextPattern::UpdateStyledStringByColorMode(bool)";
       "OHOS::Ace::NG::TextPattern::ShowAIEntityMenu(OHOS::Ace::AISpan const&, std::__ndk1::function<void ()> const&, std::__ndk1::function<void (OHOS::Ace::NG::RectT<float> const&, OHOS::Ace::NG::RectT<float> const&)> const&)";
       "OHOS::Ace::NG::TextPattern::SetOnClickMenu(OHOS::Ace::AISpan const&, std::__ndk1::function<void ()> const&, std::__ndk1::function<void (OHOS::Ace::NG::RectT<float> const&, OHOS::Ace::NG::RectT<float> const&)> const&)";
       "OHOS::Ace::NG::TextPattern::GetCopyAndSelectable()";
