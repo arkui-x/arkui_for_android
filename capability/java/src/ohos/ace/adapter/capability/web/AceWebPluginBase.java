@@ -19,6 +19,7 @@ import android.webkit.WebBackForwardList;
 import ohos.ace.adapter.AceResourcePlugin;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicLong;
@@ -42,12 +43,16 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      */
     private static boolean hasInit = false;
 
+    private final Map<Long, AceWebBase> instanceWebMap = new HashMap<>();
+
     private final AtomicLong nextWebId = new AtomicLong(0L);
 
     public AceWebPluginBase() {
         // plugin name is web, version is 1.0.
         super("web", 1.0f);
-        objectMap = new HashMap<Long, AceWebBase>();
+        if (objectMap == null) {
+            objectMap = new HashMap<Long, AceWebBase>();
+        }
     }
 
     /**
@@ -165,6 +170,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      */
     public void addResource(long id, AceWebBase web, boolean richTextInit) {
         objectMap.put(id, web);
+        instanceWebMap.put(id, web);
         registerCallMethod(web.getCallMethod());
         if (!hasInit && !richTextInit) {
             nativeInit();
@@ -217,7 +223,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      *
      */
     public void onActivityResume() {
-        for (Map.Entry<Long, AceWebBase> entry : objectMap.entrySet()) {
+        for (Map.Entry<Long, AceWebBase> entry : instanceWebMap.entrySet()) {
             entry.getValue().onActivityResume();
         }
     }
@@ -227,7 +233,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      *
      */
     public void onActivityPause() {
-        for (Map.Entry<Long, AceWebBase> entry : objectMap.entrySet()) {
+        for (Map.Entry<Long, AceWebBase> entry : instanceWebMap.entrySet()) {
             entry.getValue().onActivityPause();
         }
     }
@@ -245,6 +251,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
             unregisterCallMethod(web.getCallMethod());
             web.release();
             objectMap.remove(id);
+            instanceWebMap.remove(id);
             return true;
         }
         return false;
@@ -256,8 +263,12 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      */
     @Override
     public void release() {
-        for (Map.Entry<Long, AceWebBase> entry : objectMap.entrySet()) {
+        Iterator<Map.Entry<Long, AceWebBase>> it = instanceWebMap.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<Long, AceWebBase> entry = it.next();
             entry.getValue().release();
+            objectMap.remove(entry.getKey());
+            it.remove();
         }
     }
 
