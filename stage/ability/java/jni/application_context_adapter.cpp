@@ -193,8 +193,20 @@ std::string ApplicationContextAdapter::GetTopAbility()
     env->DeleteLocalRef(objClass);
 
     jstring result = (jstring) env->CallObjectMethod(object_.get(), getTopActivityMethod);
+    if (result == nullptr) {
+        LOGE("getTopActivity returned null jstring");
+        return "";
+    }
     const char* topAbility = env->GetStringUTFChars(result, NULL);
-    return topAbility;
+    if (topAbility == nullptr) {
+        LOGE("GetStringUTFChars returned null");
+        env->DeleteLocalRef(result);
+        return "";
+    }
+    std::string abilityName(topAbility);
+    env->ReleaseStringUTFChars(result, topAbility);
+    env->DeleteLocalRef(result);
+    return abilityName;
 }
 
 void ApplicationContextAdapter::Print(std::string msg)
