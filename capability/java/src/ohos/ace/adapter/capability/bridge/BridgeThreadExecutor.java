@@ -98,7 +98,7 @@ public class BridgeThreadExecutor {
      */
     public void execute(Runnable task) {
         if (task == null) {
-            ALog.e(LOG_TAG, "Task is null, BridgeThread execute exits.");
+            ALog.e(LOG_TAG, "execute failed: task is null");
             return;
         }
         executor.execute(task);
@@ -120,7 +120,7 @@ public class BridgeThreadExecutor {
      */
     public void postToMainThreadSync(Runnable task) {
         if (task == null) {
-            ALog.e(LOG_TAG, "Task is null, postToMainThreadSync exits.");
+            ALog.e(LOG_TAG, "postToMainThreadSync failed: task is null");
             return;
         }
         if (isOnMainThread()) {

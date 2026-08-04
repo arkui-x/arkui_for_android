@@ -225,6 +225,17 @@ std::string BridgeManager::PlatformCallMethodSync(
     }
 
     auto receiver = FindReceiver(bridgeName);
+    if (receiver == nullptr) {
+        LOGE("PlatformCallMethodSync: BridgeReceiver is null, bridgeName=%{public}s, method=%{public}s",
+            bridgeName.c_str(), methodName.c_str());
+        return "{\"errorCode\":1, \"errorMessage\":\"BridgeReceiver is null!\", \"result\":null}";
+    }
+
+    if (receiver->callMethodSyncCallback_ == nullptr) {
+        LOGE("PlatformCallMethodSync: Callback_ is null, bridgeName=%{public}s, method=%{public}s",
+            bridgeName.c_str(), methodName.c_str());
+        return "{\"errorCode\":1, \"errorMessage\":\"callMethodSyncCallback_ is null!\", \"result\":null}";
+    }
     std::string result = receiver->callMethodSyncCallback_(methodName, parameter);
     return result;
 }
@@ -233,6 +244,7 @@ int BridgeManager::GetBridgeType(const std::string& bridgeName)
 {
     auto receiver = FindReceiver(bridgeName);
     if (!receiver) {
+        LOGE("receiver is null");
         return -1;
     }
     return receiver->bridgeType_;
