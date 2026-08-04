@@ -31,6 +31,7 @@ public final class AceTextureHolder {
 
     private static final Map<Long, SurfaceTexture> surfaceTextureMap = new ConcurrentHashMap<Long, SurfaceTexture>();
     private static final Map<Long, Surface> surfaceMap = new ConcurrentHashMap<Long, Surface>();
+    private static final Map<Long, Integer> rotationMap = new ConcurrentHashMap<Long, Integer>();
 
     /**
      * Get surfaceTexture by id
@@ -80,6 +81,28 @@ public final class AceTextureHolder {
      */
     public static void removeSurface(long id) {
         surfaceMap.remove(id);
+        rotationMap.remove(id);
+    }
+
+    /**
+     * Set video rotation degrees by id
+     *
+     * @param id id of surface or surfaceTexture
+     * @param rotation rotation degrees of the video (0, 90, 180, 270)
+     */
+    public static void setRotation(long id, int rotation) {
+        rotationMap.put(id, rotation);
+    }
+
+    /**
+     * Get video rotation degrees by id
+     *
+     * @param id id of surface or surfaceTexture
+     * @return rotation degrees of the video, 0 if not set
+     */
+    public static int getRotation(long id) {
+        Integer rotation = rotationMap.get(id);
+        return rotation == null ? 0 : rotation;
     }
 
     /**
@@ -101,5 +124,6 @@ public final class AceTextureHolder {
     public static void removeSurfaceTexture(long id) {
         ALog.i(LOG_TAG, "removeSurfaceTexture");
         surfaceTextureMap.remove(id);
+        rotationMap.remove(id);
     }
 }

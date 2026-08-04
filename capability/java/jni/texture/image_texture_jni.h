@@ -18,6 +18,7 @@
 
 #include <android/hardware_buffer_jni.h>
 #include <android/native_window.h>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -97,6 +98,17 @@ public:
 
     void SetUpdateState(bool state);
     bool GetUpdateState();
+
+    void SetRotation(int32_t rotation)
+    {
+        rotationDegrees_.store(rotation);
+    }
+
+    int32_t GetRotation() const
+    {
+        return rotationDegrees_.load();
+    }
+
     std::shared_ptr<AcquiredFrame> AcquireLatestHardwareBuffer();
     static bool Register(const std::shared_ptr<JNIEnv>& env);
     static jlong JniCreateImageTexture(JNIEnv* env, jobject myObject);
@@ -104,6 +116,7 @@ public:
         jint width, jint height, jint format, jlong usageFlags, jint maxImages);
     static jlong JniGetImageReader(JNIEnv* env, jobject myObject, jlong imageTextureId);
     static void JniDeleteImageTexture(JNIEnv* env, jobject myObject, jlong imageTextureId);
+    static void JniSetRotation(JNIEnv* env, jobject myObject, jlong imageTextureId, jint rotation);
     static jlong JniSetImageAvailableListener(JNIEnv* env, jobject myObject, jlong imageTextureId, jobject listener);
     static void JniRemoveImageAvailableListener(JNIEnv* env, jobject myObject, jlong imageTextureId, jlong listenerId);
     static void JninativeGetId(
@@ -147,6 +160,7 @@ private:
     ImageTextureId textureId_ = 0;
     jlong instanceId_;
     jlong id_;
+    std::atomic<int32_t> rotationDegrees_ { 0 };
     AHardwareBuffer* lastHardwareBuffer_ = nullptr;
 };
 } // namespace OHOS::Ace::Platform

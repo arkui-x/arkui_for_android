@@ -38,6 +38,8 @@ import java.util.Set;
 public class AceImageTexture implements IAceSurfaceTexture {
     private static final String LOG_TAG = "AceImageTexture";
     private static final int MAX_IMAGES = 3;
+    private static final int ROTATION_90 = 90;
+    private static final int ROTATION_270 = 270;
 
     // Device whitelist that requires USAGE_GPU_COLOR_OUTPUT for proper Vulkan texture rendering
     // Some devices (like OPPO foldable with mt6985) need this flag, while others (like Xiaomi with mt6897)
@@ -64,6 +66,8 @@ public class AceImageTexture implements IAceSurfaceTexture {
     private Handler mainHandler;
     private boolean hasRegistered = false;
     private volatile int rotationDegrees = 0;
+    private int requestedWidth = 0;
+    private int requestedHeight = 0;
 
     public AceImageTexture(int instanceId, long id, IAceTexture textureImpl) {
         this.instanceId = instanceId;
@@ -98,6 +102,8 @@ public class AceImageTexture implements IAceSurfaceTexture {
 
     private native void nativeRemoveImageAvailableListener(long handle, long listenerId);
 
+    private native void nativeSetRotation(long handle, int rotation);
+
     private boolean init() {
         this.imageTextureId = nativeCreateImageTexture();
         if (this.imageTextureId == 0) {
@@ -119,6 +125,7 @@ public class AceImageTexture implements IAceSurfaceTexture {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
+                syncRotationToNative();
                 if (onFrameAvailableListener != null) {
                     onFrameAvailableListener.onFrameAvailable(AceImageTexture.this);
                 }
@@ -126,7 +133,18 @@ public class AceImageTexture implements IAceSurfaceTexture {
         });
     }
 
-    private void createImageReader() {
+    private void syncRotationToNative() {
+        int rotation = AceTextureHolder.getRotation(id);
+        if (rotation != rotationDegrees) {
+            rotationDegrees = rotation;
+            nativeSetRotation(imageTextureId, rotation);
+            if (requestedWidth > 0 && requestedHeight > 0) {
+                setTextureSize(requestedWidth, requestedHeight);
+            }
+        }
+    }
+
+    private synchronized void createImageReader() {
         if (this.surface != null) {
             AceSurfaceHolder.removeSurface(this.instanceId, this.id);
             AceTextureHolder.removeSurface(this.id);
@@ -166,16 +184,30 @@ public class AceImageTexture implements IAceSurfaceTexture {
 
     /**
      * Sets the size of the texture.
+     * <p>
+     * The requested size is the display (layout) size. When the video has a rotation
+     * of 90/270 degrees, the ImageReader buffer must be created with swapped dimensions
+     * so that it matches the video's raw orientation; otherwise the media player would
+     * scale the raw frames into the rotated size and the content would be stretched.
      *
-     * @param width  the width of the texture in pixels
-     * @param height the height of the texture in pixels
+     * @param width  the width of the requested display size in pixels
+     * @param height the height of the requested display size in pixels
      */
     @Override
     public void setTextureSize(int width, int height) {
-        if (width > 0 && height > 0 && (this.textureWidth != width || this.textureHeight != height)) {
-            this.textureWidth = width;
-            this.textureHeight = height;
-            ALog.i(LOG_TAG, "setTextureSize: width " + width + ", height " + height);
+        if (width <= 0 || height <= 0) {
+            return;
+        }
+        requestedWidth = width;
+        requestedHeight = height;
+        int rotation = AceTextureHolder.getRotation(id);
+        boolean swapped = (rotation == ROTATION_90 || rotation == ROTATION_270);
+        int bufferWidth = swapped ? height : width;
+        int bufferHeight = swapped ? width : height;
+        if (this.textureWidth != bufferWidth || this.textureHeight != bufferHeight) {
+            this.textureWidth = bufferWidth;
+            this.textureHeight = bufferHeight;
+            ALog.i(LOG_TAG, "setTextureSize: width " + bufferWidth + ", height " + bufferHeight);
             createImageReader();
         }
     }
