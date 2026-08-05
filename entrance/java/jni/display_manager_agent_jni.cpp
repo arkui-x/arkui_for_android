@@ -87,7 +87,8 @@ void DisplayManagerAgentJni::SetupDisplayManagerAgent(JNIEnv* env, jobject obj)
 
 bool DisplayManagerAgentJni::IsFoldable()
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayManagerAgentJni::IsFoldable env is NULL");
         return -1;
@@ -105,7 +106,8 @@ bool DisplayManagerAgentJni::IsFoldable()
 
 uint32_t DisplayManagerAgentJni::GetFoldStatus()
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayManagerAgentJni::GetFoldStatus env is NULL");
         return -1;
@@ -124,7 +126,8 @@ uint32_t DisplayManagerAgentJni::GetFoldStatus()
 std::vector<uint64_t> DisplayManagerAgentJni::GetAllDisplayIds()
 {
     std::vector<uint64_t> result;
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayManagerAgentJni::GetAllDisplayIds env is NULL");
         return result;
@@ -161,7 +164,8 @@ std::vector<uint64_t> DisplayManagerAgentJni::GetAllDisplayIds()
 std::vector<int32_t> DisplayManagerAgentJni::GetLiveCreaseRegion()
 {
     std::vector<int32_t> result;
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayManagerAgentJni::GetLiveCreaseRegion env is NULL");
         return result;
@@ -197,7 +201,8 @@ std::vector<int32_t> DisplayManagerAgentJni::GetLiveCreaseRegion()
 
 void DisplayManagerAgentJni::RegisterDisplayListener()
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayManagerAgentJni::RegisterDisplayListener env is NULL");
     }
@@ -211,7 +216,8 @@ void DisplayManagerAgentJni::RegisterDisplayListener()
 
 void DisplayManagerAgentJni::UnregisterDisplayListener()
 {
-    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
     if (env == nullptr) {
         LOGE("DisplayManagerAgentJni::UnregisterDisplayListener env is NULL");
     }
