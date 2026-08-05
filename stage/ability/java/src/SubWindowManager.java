@@ -24,12 +24,18 @@ import android.view.View;
 import android.view.Surface;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.OrientationEventListener;
 import android.widget.PopupWindow;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
+import android.database.ContentObserver;
 import android.graphics.Rect;
 
 import ohos.ace.adapter.WindowViewCommon;
 import ohos.ace.adapter.ALog;
+import ohos.ace.adapter.FoldInfo;
+import ohos.ace.adapter.FoldManager;
 import ohos.ace.adapter.WindowViewInterface;
 
 import java.lang.reflect.Field;
@@ -66,6 +72,19 @@ public class SubWindowManager {
     private static final int HORIZONTAL = 2;
     private static final int REVERSE_VERTICAL = 3;
     private static final int REVERSE_HORIZONTAL = 4;
+    private static final int SENSOR = 5;
+    private static final int SENSOR_VERTICAL = 6;
+    private static final int SENSOR_HORIZONTAL = 7;
+    private static final int AUTO_ROTATION_RESTRICTED = 8;
+    private static final int AUTO_ROTATION_PORTRAIT_RESTRICTED = 9;
+    private static final int AUTO_ROTATION_LANDSCAPE_RESTRICTED = 10;
+    private static final int LOCKED = 11;
+    private static final int AUTO_ROTATION_UNSPECIFIED = 12;
+    private static final int USER_ROTATION_PORTRAIT = 13;
+    private static final int USER_ROTATION_LANDSCAPE = 14;
+    private static final int USER_ROTATION_PORTRAIT_INVERTED = 15;
+    private static final int USER_ROTATION_LANDSCAPE_INVERTED = 16;
+    private static final int FOLLOW_DESKTOP = 17;
     private static final int UI_DARK_COLOR = 0x66000000;
     private static final int UI_LIGHT_COLOR = 0xE5FFFFFF;
     private static SubWindowManager sinstance;
@@ -74,6 +93,10 @@ public class SubWindowManager {
     private String mInstanceName;
     private Map<String, SubWindow> mSubWindowMap = new HashMap<>();
     private int uiOptions_ = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+    private OrientationEventListener mOrientationEventListener;
+
+    private ContentObserver mRotationLockObserver;
+    private int mAutoRotationUnlockedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 
     private SubWindowManager() {
         ALog.d(TAG, "SubWindowManager created.");
@@ -204,6 +227,7 @@ public class SubWindowManager {
     public void releaseActivity(String instanceName) {
         ALog.d(TAG, "releaseActivity called, instanceName: " + instanceName + ", mInstanceName: " + mInstanceName);
         if (instanceName == mInstanceName) {
+            disableOrientationListener();
             mRootActivity = null;
             WindowViewCommon.setOnSubwindowKeyboardAvoidHeightChangedListener(null);
         }
@@ -550,34 +574,371 @@ public class SubWindowManager {
     public boolean requestOrientation(int direction) {
         ALog.d(TAG, "requestOrientation called: direction=" + direction);
 
-        if (mRootActivity != null) {
-            int orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        if (mRootActivity == null) {
+            return false;
+        }
 
-            switch (direction) {
-                case UNSPECIFIED:
-                    orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-                break;
-                case VERTICAL:
-                    orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-                    break;
-                case HORIZONTAL:
-                    orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-                    break;
-                case REVERSE_VERTICAL:
-                    orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
-                    break;
-                case REVERSE_HORIZONTAL:
-                    orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
-                    break;
-                default:
-                    ALog.e(TAG, "unspecified orientation: " + orientation);
-                    break;
-            }
+        int orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        disableOrientationListener();
 
-            mRootActivity.setRequestedOrientation(orientation);
+        if (handleSpecialOrientation(direction)) {
             return true;
         }
-        return false;
+
+        switch (direction) {
+            case VERTICAL:
+                orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                break;
+            case HORIZONTAL:
+                orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+                break;
+            case REVERSE_VERTICAL:
+                orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+                break;
+            case REVERSE_HORIZONTAL:
+                orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+                break;
+            case SENSOR:
+                orientation = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
+                break;
+            case SENSOR_VERTICAL:
+                orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
+                break;
+            case SENSOR_HORIZONTAL:
+                orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
+                break;
+            case AUTO_ROTATION_PORTRAIT_RESTRICTED:
+                orientation = ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT;
+                break;
+            case AUTO_ROTATION_LANDSCAPE_RESTRICTED:
+                orientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE;
+                break;
+            case LOCKED:
+                orientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED;
+                break;
+            default:
+                ALog.e(TAG, "unspecified orientation: " + orientation);
+                break;
+        }
+
+        mRootActivity.setRequestedOrientation(orientation);
+        return true;
+    }
+
+    private boolean handleSpecialOrientation(int direction) {
+        switch (direction) {
+            case UNSPECIFIED:
+                enableUnSpecified();
+                return true;
+            case AUTO_ROTATION_RESTRICTED:
+                enableAutoRotationRestricted(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
+                return true;
+            case AUTO_ROTATION_UNSPECIFIED:
+                enableAutoRotationRestricted(ActivityInfo.SCREEN_ORIENTATION_USER);
+                return true;
+            case USER_ROTATION_PORTRAIT:
+                enableUserRotationPortrait();
+                return true;
+            case USER_ROTATION_LANDSCAPE:
+                enableUserRotationLandscape();
+                return true;
+            case USER_ROTATION_PORTRAIT_INVERTED:
+                enableUserRotationPortrait();
+                return true;
+            case USER_ROTATION_LANDSCAPE_INVERTED:
+                enableUserRotationLandscapeInverted();
+                return true;
+            case FOLLOW_DESKTOP:
+                enableFollowDesktop();
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Disable the orientation event listener.
+     */
+    private void disableOrientationListener() {
+        if (mOrientationEventListener != null) {
+            mOrientationEventListener.disable();
+            mOrientationEventListener = null;
+        }
+        if (mRotationLockObserver != null) {
+            if (mRootActivity != null) {
+                mRootActivity.getContentResolver().unregisterContentObserver(mRotationLockObserver);
+            }
+            mRotationLockObserver = null;
+        }
+    }
+
+    /**
+     * Read the system rotation-lock state from Settings.System.ACCELEROMETER_ROTATION.
+     * Value 0 means auto-rotate is disabled (locked); 1 means enabled (unlocked).
+     *
+     * @return true if rotation is locked, false otherwise.
+     */
+    private boolean isRotationLocked() {
+        if (mRootActivity == null) {
+            return false;
+        }
+        int rotationEnabled = Settings.System.getInt(
+            mRootActivity.getContentResolver(),
+            Settings.System.ACCELEROMETER_ROTATION, 1);
+        return rotationEnabled == 0;
+    }
+
+    /**
+     * Enable auto-rotation constrained by the system rotation lock.
+     * - Rotation unlocked: use the given unlockedOrientation.
+     * - Rotation locked:
+     *     phone (not tablet-like)  -> SCREEN_ORIENTATION_PORTRAIT
+     *     tablet-like              -> unlockedOrientation (e.g. FULL_USER / USER), which
+     *                                 already respects the system rotation lock, staying at
+     *                                 the current orientation, so no explicit LOCKED is needed.
+     *
+     * @param unlockedOrientation orientation applied when rotation is unlocked
+     *                            (FULL_USER for AUTO_ROTATION_RESTRICTED, USER for
+     *                            AUTO_ROTATION_UNSPECIFIED)
+     */
+    private void enableAutoRotationRestricted(int unlockedOrientation) {
+        if (mRootActivity == null) {
+            ALog.e(TAG, "enableAutoRotationRestricted failed, mRootActivity is null");
+            return;
+        }
+
+        applyAutoRotationRestricted(unlockedOrientation);
+        disableOrientationListener();
+
+        mAutoRotationUnlockedOrientation = unlockedOrientation;
+        mRotationLockObserver = new ContentObserver(new Handler(Looper.getMainLooper())) {
+            @Override
+            public void onChange(boolean selfChange) {
+                applyAutoRotationRestricted(mAutoRotationUnlockedOrientation);
+            }
+        };
+        mRootActivity.getContentResolver().registerContentObserver(
+            Settings.System.getUriFor(Settings.System.ACCELEROMETER_ROTATION),
+            false, mRotationLockObserver);
+    }
+
+    /**
+     * Called from StageActivity.onResume(). For LOCKED mode, temporarily switches to
+     * LOCKED mode: uses reflection to get system global display rotation and
+     * Apply the auto-rotation-restricted rule for the current rotation-lock state.
+     * - Phone with rotation locked: force back to PORTRAIT.
+     * - Tablet-like (locked or unlocked), or phone unlocked: the given unlockedOrientation,
+     *   which already respects the system rotation lock automatically (stays at the current
+     *   orientation when locked), so no explicit LOCKED is needed.
+     *
+     * @param unlockedOrientation orientation applied when not in the phone-locked case
+     */
+    private void applyAutoRotationRestricted(int unlockedOrientation) {
+        if (mRootActivity == null) {
+            return;
+        }
+        if (!isTabletLikeDevice() && isRotationLocked()) {
+            mRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        } else {
+            mRootActivity.setRequestedOrientation(unlockedOrientation);
+        }
+    }
+
+    /**
+     * Enable user-preferred orientation starting from portrait.
+     */
+    private void enableUserRotationPortrait() {
+        if (isTabletLikeDevice()) {
+            mRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
+            return;
+        }
+        enableUserRotation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT,
+            "User rotation portrait");
+    }
+
+    /**
+     * Enable user-preferred orientation starting from landscape.
+     */
+    private void enableUserRotationLandscape() {
+        enableUserRotation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE,
+            "User rotation landscape");
+    }
+
+    /**
+     * Enable user-preferred orientation starting from landscape inverted.
+     */
+    private void enableUserRotationLandscapeInverted() {
+        enableUserRotation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE,
+            "User rotation landscape inverted");
+    }
+
+    private void enableUnSpecified() {
+        if (mRootActivity == null) {
+            return;
+        }
+
+        int foldFeatureCount = FoldManager.getFoldFeatureCount(mRootActivity);
+        if (foldFeatureCount == 1) {
+            int[] foldStatuses = FoldManager.getFoldStatuses(mRootActivity);
+            if (foldStatuses.length > 0 && foldStatuses[0] == FoldInfo.FOLD_STATUS_EXPANDED) {
+                mRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                return;
+            }
+        }
+
+        enableFollowDesktop();
+    }
+
+    private void enableFollowDesktop() {
+        if (mRootActivity == null) {
+            ALog.e(TAG, "enableFollowDesktop failed, mRootActivity is null");
+            return;
+        }
+
+        if (!isTabletLikeDevice()) {
+            mRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            return;
+        }
+
+        disableOrientationListener();
+
+        mOrientationEventListener = new OrientationEventListener(mRootActivity) {
+            private int lastRotationEnabled = 1;
+
+            @Override
+            public void onOrientationChanged(int orientation) {
+                if (orientation == OrientationEventListener.ORIENTATION_UNKNOWN) {
+                    return;
+                }
+
+                final Activity finalRootActivity = mRootActivity;
+                if (finalRootActivity == null) {
+                    return;
+                }
+
+                int rotationEnabled = Settings.System.getInt(
+                    finalRootActivity.getContentResolver(),
+                    Settings.System.ACCELEROMETER_ROTATION, 1);
+
+                if (rotationEnabled == lastRotationEnabled) {
+                    return;
+                }
+                lastRotationEnabled = rotationEnabled;
+                if (rotationEnabled == 0) {
+                    finalRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
+                } else {
+                    finalRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
+                }
+            }
+        };
+
+        if (mOrientationEventListener.canDetectOrientation()) {
+            mOrientationEventListener.enable();
+        } else {
+            ALog.e(TAG, "Device cannot detect orientation, fallback to user.");
+            mRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
+        }
+    }
+
+    /**
+     * Common method for user-preferred orientation.
+     * Uses OrientationEventListener with ACCELEROMETER_ROTATION detection:
+     * - Immediately forces the given initialOrientation on first call.
+     * - When control center is unlocked: maps sensor angle to device-native orientations
+     *   (bar phones: 3 directions no reverse portrait; tablets: 4 directions).
+     * - When control center is locked: stays at current orientation on all devices.
+     *
+     * @param initialOrientation orientation to force immediately (PORTRAIT or LANDSCAPE)
+     * @param logTag            tag for log messages
+     */
+    private void enableUserRotation(int initialOrientation, String logTag) {
+        if (mRootActivity == null) {
+            ALog.e(TAG, logTag + " failed, mRootActivity is null");
+            return;
+        }
+
+        mRootActivity.setRequestedOrientation(initialOrientation);
+
+        if (isTabletLikeDevice()) {
+            mRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
+            return;
+        }
+
+        disableOrientationListener();
+
+        mOrientationEventListener = new OrientationEventListener(mRootActivity) {
+            @Override
+            public void onOrientationChanged(int orientation) {
+                if (orientation == OrientationEventListener.ORIENTATION_UNKNOWN) {
+                    return;
+                }
+
+                final Activity finalRootActivity = mRootActivity;
+                if (finalRootActivity == null) {
+                    return;
+                }
+
+                int rotationEnabled = Settings.System.getInt(
+                    finalRootActivity.getContentResolver(),
+                    Settings.System.ACCELEROMETER_ROTATION, 1);
+                if (rotationEnabled == 0) {
+                    return;
+                }
+
+                int requestedOrientation = getOrientationFromAngle(orientation);
+                if (!isTabletLikeDevice()
+                        && requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT) {
+                    return;
+                }
+                finalRootActivity.setRequestedOrientation(requestedOrientation);
+            }
+        };
+
+        if (mOrientationEventListener.canDetectOrientation()) {
+            final OrientationEventListener pendingListener = mOrientationEventListener;
+            pendingListener.enable();
+        } else {
+            ALog.e(TAG, "Device cannot detect orientation, fallback to user.");
+            mRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
+        }
+    }
+
+    /**
+     * Map sensor orientation angle to all 4 orientation directions.
+     * Device hardware determines which directions actually take effect
+     * (phones typically skip reverse portrait, tablets support all 4).
+     *
+     * OrientationEventListener reports counterclockwise rotation from natural orientation:
+     *   0° = upright portrait, 90° = top-to-left, 180° = upside-down, 270° = top-to-right.
+     * Android SCREEN_ORIENTATION_LANDSCAPE = top-to-right (clockwise).
+     *
+     * @param orientation sensor orientation in degrees (0-359)
+     * @return ActivityInfo orientation constant
+     */
+    private static int getOrientationFromAngle(int orientation) {
+        if (orientation > 45 && orientation < 135) {
+            return ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+        } else if (orientation >= 135 && orientation <= 225) {
+            return ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+        } else if (orientation > 225 && orientation < 315) {
+            return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+        } else {
+            return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        }
+    }
+
+    /**
+     * Check current device
+     * 
+     * @return if current device is a tablet-like device
+     */
+    private boolean isTabletLikeDevice() {
+        if (mRootActivity == null) {
+            return false;
+        }
+        int screenLayout = mRootActivity.getResources().getConfiguration().screenLayout
+                & Configuration.SCREENLAYOUT_SIZE_MASK;
+        return screenLayout >= Configuration.SCREENLAYOUT_SIZE_LARGE;
     }
 
     private void setLayoutInDisplayCutoutMode(Window window) {
