@@ -46,7 +46,7 @@
 #include "core/components/theme/app_theme.h"
 #include "core/components/theme/theme_manager_impl.h"
 #include "core/components_ng/manager/drag_drop/drag_drop_manager.h"
-#include "core/components_ng/pattern/text_field/text_field_manager.h"
+#include "core/common/text_field_manager_ng.h"
 #ifdef ENABLE_ROSEN_BACKEND
 #include "core/components_ng/render/adapter/rosen_window.h"
 #endif

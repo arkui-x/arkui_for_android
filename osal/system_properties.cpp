@@ -125,6 +125,8 @@ HeightLayoutBreakPoint SystemProperties::heightLayoutBreakpoints_ = HeightLayout
 bool SystemProperties::syncLoadEnabled_ = false;
 
 int32_t SystemProperties::velocityTrackerPointNumber_ = DEFAULT_VELOCITY_TRACKER_POINTNUMBER_VALUE;
+int32_t SystemProperties::syntaxMemOptStrategy_ = -1;
+int32_t SystemProperties::bootVendorDdrSize_ = 12;
 bool SystemProperties::isVelocityWithinTimeWindow_ = true;
 bool SystemProperties::isVelocityWithoutUpPoint_ = true;
 bool SystemProperties::prebuildInMultiFrameEnabled_ = false;
