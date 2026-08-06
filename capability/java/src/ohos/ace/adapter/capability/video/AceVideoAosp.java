@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.media.AudioAttributes;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Handler;
@@ -73,6 +74,16 @@ public class AceVideoAosp extends AceVideoBase
     private static final int INSTANCE_ARRAY_ID = 3;
 
     private static final int SECOND_TO_MSEC = 1000;
+
+    private static final int ROTATION_90 = 90;
+
+    private static final int ROTATION_270 = 270;
+
+    private static final int FULL_CIRCLE = 360;
+
+    private static final int SDK_VERSION_M = 23;
+
+    private static final String KEY_ROTATION_DEGREES = "rotation-degrees";
 
     private static final AudioAttributes ATTR_VIDEO = new AudioAttributes.Builder().setUsage(
             AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
@@ -138,6 +149,12 @@ public class AceVideoAosp extends AceVideoBase
     private boolean isManualStartFromStopped = false;
 
     private boolean shouldNotifyCurrentTimeOnPrepared = false;
+
+    private int rotationDegrees = 0;
+
+    private int codedVideoWidth = 0;
+
+    private int codedVideoHeight = 0;
 
     /**
      * constructor of AceVideo on AOSP platform
@@ -251,6 +268,102 @@ public class AceVideoAosp extends AceVideoBase
         return true;
     }
 
+    private int readVideoRotation() {
+        int rotation = readRotationFromTrackInfo();
+        if (rotation == 0) {
+            rotation = readRotationFromMetadata();
+        }
+        return ((rotation % FULL_CIRCLE) + FULL_CIRCLE) % FULL_CIRCLE;
+    }
+
+    private int readRotationFromTrackInfo() {
+        if (Build.VERSION.SDK_INT < SDK_VERSION_M || mediaPlayer == null) {
+            return 0;
+        }
+        try {
+            MediaPlayer.TrackInfo[] trackInfos = mediaPlayer.getTrackInfo();
+            if (trackInfos == null) {
+                return 0;
+            }
+            for (MediaPlayer.TrackInfo trackInfo : trackInfos) {
+                if (trackInfo == null || trackInfo.getTrackType() != MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_VIDEO) {
+                    continue;
+                }
+                android.media.MediaFormat format = trackInfo.getFormat();
+                if (format != null && format.containsKey(KEY_ROTATION_DEGREES)) {
+                    return format.getInteger(KEY_ROTATION_DEGREES);
+                }
+            }
+        } catch (IllegalStateException | ClassCastException | NullPointerException ignored) {
+            ALog.e(LOG_TAG, "readRotationFromTrackInfo failed, invalid player state or format");
+        }
+        return 0;
+    }
+
+    /**
+     * Read the rotation and coded (unrotated) video size from the video metadata.
+     * MediaPlayer.getVideoWidth()/getVideoHeight() may return the size with rotation
+     * already applied on some devices, so the metadata is the reliable source.
+     *
+     * @return rotation degrees of the video, 0 if not present or unavailable
+     */
+    private int readRotationFromMetadata() {
+        if (source == null) {
+            return 0;
+        }
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        try {
+            if (source.startsWith(FILE_SCHEME)) {
+                retriever.setDataSource(source.substring(FILE_SCHEME.length()));
+            } else if (source.startsWith(HAP_SCHEME)) {
+                AssetManager assetManager = context.getAssets();
+                if (assetManager == null) {
+                    return 0;
+                }
+                String filePath = "arkui-x" + File.separator + moduleName + File.separator + "ets" + source;
+                try (AssetFileDescriptor assetFd = assetManager.openFd(filePath)) {
+                    retriever.setDataSource(assetFd.getFileDescriptor(), assetFd.getStartOffset(),
+                        assetFd.getLength());
+                }
+            } else {
+                return 0;
+            }
+            String value = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
+            String metaWidth = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+            String metaHeight = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
+            if (metaWidth != null && metaHeight != null) {
+                try {
+                    codedVideoWidth = Integer.parseInt(metaWidth);
+                    codedVideoHeight = Integer.parseInt(metaHeight);
+                } catch (NumberFormatException ignored) {
+                    ALog.e(LOG_TAG, "readRotationFromMetadata parse size failed, NumberFormatException");
+                }
+            }
+            if (value != null) {
+                return Integer.parseInt(value);
+            }
+        } catch (IOException ignored) {
+            ALog.e(LOG_TAG, "readRotationFromMetadata failed, IOException");
+        } catch (IllegalArgumentException | IllegalStateException ignored) {
+            ALog.e(LOG_TAG, "readRotationFromMetadata failed, invalid argument or state");
+        } finally {
+            try {
+                retriever.release();
+            } catch (IllegalStateException ignored) {
+                ALog.e(LOG_TAG, "metadata retriever release failed, IllegalStateException");
+            }
+        }
+        return 0;
+    }
+
+    private void applyVideoRotation() {
+        runOnUIThread(() -> {
+            if (isTexture) {
+                AceTextureHolder.setRotation(surfaceId, rotationDegrees);
+            }
+        });
+    }
+
     @Override
     public String initMediaPlayer(Map<String, String> param) {
         ALog.i(LOG_TAG, "initMediaPlayer param:" + param);
@@ -304,6 +417,7 @@ public class AceVideoAosp extends AceVideoBase
                 return;
             }
             isMediaPrepared = true;
+            rotationDegrees = readVideoRotation();
             attachSurfaceIfNeededForSeek();
             try {
                 boolean isManualStartPlaying = mediaPlayer.isPlaying() && !isPaused;
@@ -346,6 +460,7 @@ public class AceVideoAosp extends AceVideoBase
             if (finalShouldNotifyCurrentTime) {
                 fireGetCurrenttime(0);
             }
+            applyVideoRotation();
             handlePreparedOnUiThread();
             updateFirstFrameVisibility();
         });
@@ -447,8 +562,20 @@ public class AceVideoAosp extends AceVideoBase
                 return;
             }
             try {
-                int videoWidth = mediaPlayer.getVideoWidth();
-                int videoHeight = mediaPlayer.getVideoHeight();
+                int videoWidth;
+                int videoHeight;
+                if (codedVideoWidth > 0 && codedVideoHeight > 0) {
+                    videoWidth = codedVideoWidth;
+                    videoHeight = codedVideoHeight;
+                } else {
+                    videoWidth = mediaPlayer.getVideoWidth();
+                    videoHeight = mediaPlayer.getVideoHeight();
+                }
+                if (rotationDegrees == ROTATION_90 || rotationDegrees == ROTATION_270) {
+                    int swap = videoWidth;
+                    videoWidth = videoHeight;
+                    videoHeight = swap;
+                }
                 int duration = mediaPlayer.getDuration();
                 boolean isPlaying = mediaPlayer.isPlaying();
                 firePrepared(videoWidth, videoHeight, duration, isPlaying, false);
@@ -916,6 +1043,7 @@ public class AceVideoAosp extends AceVideoBase
         } finally {
             mediaPlayerLock.unlock();
         }
+        applyVideoRotation();
         updateFirstFrameVisibility();
         return SUCCESS;
     }
@@ -1115,6 +1243,9 @@ public class AceVideoAosp extends AceVideoBase
         shouldDelaySurfaceAttachForReset = false;
         shouldDelaySurfaceAttachForSourceSwitch = false;
         isManualStartFromStopped = false;
+        rotationDegrees = 0;
+        codedVideoWidth = 0;
+        codedVideoHeight = 0;
 
         if (mediaPlayer == null) {
             ALog.w(LOG_TAG, "media player is null.");
@@ -1248,7 +1379,10 @@ public class AceVideoAosp extends AceVideoBase
                 resetUpdateFlags();
                 return FAIL;
             }
-            runOnUIThread(() -> handlePreparedOnUiThread());
+            runOnUIThread(() -> {
+                applyVideoRotation();
+                handlePreparedOnUiThread();
+            });
             if (isResetRequest) {
                 return keepFrameAfterReset();
             }
@@ -1309,11 +1443,15 @@ public class AceVideoAosp extends AceVideoBase
         state = PlayState.IDLE;
         position = 0;
         isSetSurfaced = false;
+        rotationDegrees = 0;
+        codedVideoWidth = 0;
+        codedVideoHeight = 0;
         if (!params.containsKey(KEY_SOURCE) || !setDataSource(params.get(KEY_SOURCE))) {
             return false;
         }
         mediaPlayer.prepare();
         isMediaPrepared = true;
+        rotationDegrees = readVideoRotation();
         state = PlayState.PREPARED;
         return true;
     }
