@@ -997,6 +997,7 @@
 
       "VTT for OHOS::Ace::NG::Pattern";
       "OHOS::Ace::NG::LazyLayoutUtils::ValidateLazyLayoutParentWithAxis(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, OHOS::Ace::Axis)";
+      "OHOS::Ace::NG::LazyLayoutPattern::OnDetachFromMainTree()";
 
       "VTT for OHOS::Ace::NG::BoxLayoutAlgorithm";
       "VTT for OHOS::Ace::NG::ParticlePattern";
