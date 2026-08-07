@@ -212,6 +212,8 @@ static void FillHolderFromJava(const std::shared_ptr<JNIEnv>& env, jobject holde
             LOGE("FillHolderFromJava buffer invalid");
         }
         env->DeleteLocalRef(resultBufferObj);
+    } else {
+        LOGE("FillHolderFromJava: resultBufferObj is null");
     }
     env->DeleteLocalRef(holderCls);
     env->DeleteLocalRef(holderObj);
@@ -326,7 +328,7 @@ std::string BridgeJni::JSCallMethodSyncJni(const std::string& bridgeName,
         bridgeName.c_str(), methodName.c_str());
     auto env = Platform::JniEnvironment::GetInstance().GetJniEnv();
     CHECK_NULL_RETURN(env, "");
-    CHECK_NULL_RETURN(g_pluginClass.JSCallMethodJni_, "");
+    CHECK_NULL_RETURN(g_pluginClass.JSCallMethodSyncJni_, "");
     if (g_JObject == nullptr) {
         LOGE("JSCallMethodSyncJni failed BridgeManager object is null,"
             "bridgeName is %{public}s, methodName is %{public}s", bridgeName.c_str(), methodName.c_str());
@@ -350,16 +352,19 @@ std::string BridgeJni::JSCallMethodSyncJni(const std::string& bridgeName,
         env->ExceptionDescribe();
         env->ExceptionClear();
     }
-    const char* cStr = env->GetStringUTFChars(jStr, nullptr);
-    if (cStr) {
-        env->ReleaseStringUTFChars(jStr, cStr);
-    }
-    std::string result(cStr);
-    env->DeleteLocalRef(jStr);
     env->DeleteLocalRef(jBridgeName);
     env->DeleteLocalRef(jMethodName);
     env->DeleteLocalRef(jParameters);
-    return result;
+    const char* cStr = env->GetStringUTFChars(jStr, nullptr);
+    if (cStr) {
+        std::string result(cStr);
+        env->ReleaseStringUTFChars(jStr, cStr);
+        env->DeleteLocalRef(jStr);
+        return result;
+    } else {
+        LOGE("JSCallMethodSyncJni: cStr is null");
+        return "";
+    }
 }
 
 void BridgeJni::PlatformSendMethodResult(JNIEnv* env, jobject jobj,

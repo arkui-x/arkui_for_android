@@ -74,6 +74,7 @@ public class BridgeBinaryCodec implements BridgeBaseCodec<Object> {
     @Override
     public Object decodeData(ByteBuffer byteBuffer) {
         if (byteBuffer == null) {
+            ALog.e("BridgeBinaryCodec", "decodeData failed: byteBuffer is null");
             return null;
         }
         byteBuffer.order(ByteOrder.nativeOrder());
