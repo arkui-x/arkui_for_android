@@ -346,6 +346,12 @@
       "OHOS::Ace::NG::GestureEventHub::IsClickable() const";
       "OHOS::Ace::NG::GestureEventHub::WillRecreateGesture() const";
       "OHOS::Ace::NG::GestureEventHub::AddGesture(OHOS::Ace::RefPtr<OHOS::Ace::NG::Gesture> const&)";
+      "OHOS::Ace::NG::GetCommonWidthBreakpoint(double, double)";
+      "OHOS::Ace::NG::GetCalcWidthBreakpoint(OHOS::Ace::WidthLayoutBreakPoint const&, double, double)";
+      "OHOS::Ace::NG::GetCalcWidthBreakpoint(std::__ndk1::vector<double, std::__ndk1::allocator<double> > const&, double, double)";
+      "OHOS::Ace::NG::GetCommonHeightBreakpoint(double)";
+      "OHOS::Ace::NG::GetCalcHeightBreakpoint(OHOS::Ace::HeightLayoutBreakPoint const&, double)";
+      "OHOS::Ace::NG::GetCalcHeightBreakpoint(std::__ndk1::vector<double, std::__ndk1::allocator<double> > const&, double)";
       "OHOS::Ace::NG::FrameNode::GetOrCreateGestureEventHub()";
       "OHOS::Ace::NG::FrameNode::GetOrCreateFocusHub()";
       "OHOS::Ace::NG::FrameNode::GetOrCreateInputEventHub()";
@@ -704,6 +710,7 @@
       "OHOS::Ace::NG::ViewStackProcessor::ApplyParentThemeScopeId(OHOS::Ace::RefPtr<OHOS::Ace::NG::UINode> const&)";
       "OHOS::Ace::NG::ViewStackProcessor::IsCurrentVisualStateProcess()";
       "OHOS::Ace::NG::ViewStackProcessor::PopContainer()";
+      "OHOS::Ace::NG::ViewStackProcessor::Pop()";
       "OHOS::Ace::NG::UINode::GetChildAtIndex(int) const";
       "OHOS::Ace::NG::UINode::GetContext() const";
       "OHOS::Ace::NG::UINode::GetThemeByType(unsigned long, bool) const";
