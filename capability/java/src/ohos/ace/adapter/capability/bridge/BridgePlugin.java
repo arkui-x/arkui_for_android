@@ -301,7 +301,7 @@ public abstract class BridgePlugin {
         ALog.d(LOG_TAG,
                 "callMethod enter, bridgeName is " + bridgeName_ + ", methodName is " + methodData.getMethodName());
         if (!this.isAvailable_) {
-            ALog.e(LOG_TAG, "callMethod, The bridge is not available. bridgeName is " + bridgeName_);
+            ALog.e(LOG_TAG, "callMethod enter, bridgeName is " + bridgeName_ + ". The bridge is not available.");
             return;
         }
         Runnable task = () -> {
@@ -331,7 +331,7 @@ public abstract class BridgePlugin {
      */
     public Object callMethodSync(String methodName, Object... parameters) {
         if (!this.isAvailable_) {
-            ALog.e(LOG_TAG, "callMethodSync, The bridge is not available. bridgeName is " + bridgeName_);
+            ALog.e(LOG_TAG, "callMethodSync, bridgeName is " + bridgeName_ + ". The bridge is not available.");
             throw new IllegalStateException("Bridge '" + bridgeName_ + "' is not available, errorCode ="
                 + BridgeErrorCode.BRIDGE_INVALID.getId());
         }
@@ -393,7 +393,7 @@ public abstract class BridgePlugin {
      */
     public void sendMessage(Object data) {
         if (!this.isAvailable_) {
-            ALog.e(LOG_TAG, "sendMessage, The bridge is not available. bridgeName is " + bridgeName_);
+            ALog.e(LOG_TAG, "sendMessage, bridgeName is " + bridgeName_ + ". The bridge is not available.");
             return;
         }
         Runnable task = () -> {
@@ -407,7 +407,7 @@ public abstract class BridgePlugin {
      *
      */
     public void release() {
-        ALog.i(LOG_TAG, "release bridge " + bridgeName_);
+        ALog.i(LOG_TAG, "release bridge , bridgeName is " + bridgeName_);
         this.isAvailable_ = false;
         this.bridgeManagerInstance = null;
     }
