@@ -129,6 +129,7 @@ public class WindowViewCommon {
     private Surface delayNotifyCreateSurface = null;
     private WindowViewInterface windowViewInterface = null;
     private HashMap<Integer, AvoidArea> avoidAreaRects = new HashMap<>();
+    private WindowInsetsCompat lastInsets = null;
 
     /**
      * Interface for listening to subwindow keyboard avoid height changes.
@@ -187,6 +188,21 @@ public class WindowViewCommon {
     public void registerWindow(long windowHandle) {
         nativeWindowPtr = windowHandle;
         setupWindowInsetsListener();
+        if (windowViewInterface != null && windowViewInterface.getView() != null) {
+            View rootView = windowViewInterface.getView().getRootView();
+            WindowInsetsCompat currentInsets = ViewCompat.getRootWindowInsets(rootView);
+            if (currentInsets != null && rootView.isAttachedToWindow() && rootView.getWidth() > 0) {
+                Rect rect = new Rect();
+                int[] location = new int[2];
+                View view = windowViewInterface.getView();
+                view.getLocationInWindow(location);
+                rect.left = location[0];
+                rect.top = location[1];
+                rect.right = rect.left + view.getWidth();
+                rect.bottom = rect.top + view.getHeight();
+                processAvoidAreas(currentInsets, rect);
+            }
+        }
         delayNotifyIfNeeded();
     }
 
@@ -273,6 +289,11 @@ public class WindowViewCommon {
             this.nativeSurfaceChanged(
                 this.nativeWindowPtr, this.surfaceWidth, this.surfaceHeight, this.density);
         }
+        // Re-evaluate avoid areas when surface size changes (e.g. orientation change),
+        // since system bars may have moved and the view rect has changed.
+        if (lastInsets != null) {
+            onInsetsAreaChanged(lastInsets);
+        }
     }
 
     /**
@@ -318,6 +339,7 @@ public class WindowViewCommon {
             ALog.w(TAG, "AndroidX is not available.");
             return;
         }
+        lastInsets = insets;
         ALog.d(TAG, "Window " + "onInsetsAreaChanged " + nativeWindowPtr);
         getLocationOnScreen(new LocationCallback() {
             @Override
