@@ -41,6 +41,8 @@ public:
     static void OnWindowFocusChanged(JNIEnv* env, jobject myObject, jlong window, jboolean hasWindowFocus);
     static void Foreground(JNIEnv* env, jobject myObject, jlong window);
     static void Background(JNIEnv* env, jobject myObject, jlong window);
+    static void Resumed(JNIEnv* env, jobject myObject, jlong window);
+    static void Paused(JNIEnv* env, jobject myObject, jlong window);
     static void Destroy(JNIEnv* env, jobject myObject, jlong window);
 
     static jboolean BackPressed(JNIEnv* env, jobject myObject, jlong window);

@@ -137,6 +137,8 @@ public:
     void WindowFocusChanged(bool hasWindowFocus);
     void Foreground();
     void Background();
+    void Resumed();
+    void Paused();
     WMError Destroy();
     void RegisterWindowDestroyedListener(const NotifyNativeWinDestroyFunc& func);
     WMError RegisterOccupiedAreaChangeListener(const sptr<IOccupiedAreaChangeListener>& listener);
@@ -144,7 +146,8 @@ public:
 
     bool IsSubWindow() const
     {
-        return windowType_  == OHOS::Rosen::WindowType::WINDOW_TYPE_APP_SUB_WINDOW;
+        return windowType_ == OHOS::Rosen::WindowType::WINDOW_TYPE_APP_SUB_WINDOW ||
+            windowType_ == OHOS::Rosen::WindowType::WINDOW_TYPE_DIALOG;
     }
     // event process
     bool ProcessBackPressed();
@@ -527,6 +530,16 @@ private:
     inline void NotifyAfterInactive()
     {
         CALL_LIFECYCLE_LISTENER(AfterUnfocused);
+    }
+
+    inline void NotifyAfterResumed()
+    {
+        CALL_LIFECYCLE_LISTENER(AfterActive);
+    }
+
+    inline void NotifyAfterPaused()
+    {
+        CALL_LIFECYCLE_LISTENER(AfterInactive);
     }
 
     inline void NotifyBeforeDestroy(std::string windowName)
