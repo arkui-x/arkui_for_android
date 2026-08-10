@@ -89,6 +89,7 @@ public class ParameterHelper {
      */
     public static Object[] jsonTransformObject(JSONObject paramJsonObj) {
         if (paramJsonObj == null) {
+            ALog.e(LOG_TAG, "jsonTransformObject failed: paramJsonObj is null");
             return null;
         }
         List<Object> resultObjectList = new ArrayList<>();
@@ -97,6 +98,7 @@ public class ParameterHelper {
             String currentKey = keyIterator.next();
             Object currentValue = paramJsonObj.opt(currentKey);
             if (currentValue == null) {
+                ALog.e(LOG_TAG, "jsonTransformObject failed: currentValue is null");
                 return null;
             }
             if (currentValue instanceof JSONArray) {
@@ -248,11 +250,13 @@ public class ParameterHelper {
             int key = 0;
             for (Object objectParamter : objectParamters) {
                 if (objectParamter == null) {
+                    ALog.e(LOG_TAG, "objectTransformJson failed: objectParamter is null");
                     return null;
                 }
                 if (objectParamter.getClass().isArray()) {
                     JSONArray array = objectTransformJsonArray(objectParamter);
                     if (array == null) {
+                        ALog.e(LOG_TAG, "objectTransformJson failed: array is null");
                         return null;
                     }
                     jsonParamters.put(String.valueOf(key), array);

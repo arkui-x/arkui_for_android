@@ -91,6 +91,7 @@ public class BridgeSerializer {
     private static byte[] readBytes(ByteBuffer buffer) {
         int length = readSize(buffer);
         if (length == SIZE_ERROR) {
+            ALog.e(LOG_TAG, "readBytes failed: invalid size=" + length);
             return null;
         }
         byte[] bytes = new byte[length];
@@ -328,6 +329,7 @@ public class BridgeSerializer {
     private static Object readString(ByteBuffer data) {
         byte[] bytes = readBytes(data);
         if (bytes == null) {
+            ALog.e(LOG_TAG, "readString failed: bytes is null");
             return null;
         }
         String result = "Waiting for reading";
@@ -343,6 +345,7 @@ public class BridgeSerializer {
     private static ByteBuffer readByteBuffer(ByteBuffer data) {
         byte[] bytes = readBytes(data);
         if (bytes == null) {
+            ALog.e(LOG_TAG, "readByteBuffer failed: bytes is null");
             return null;
         }
         ByteBuffer result = ByteBuffer.allocateDirect(bytes.length);
@@ -353,6 +356,7 @@ public class BridgeSerializer {
     private static Object readBoolArray(ByteBuffer data) {
         int length = readSize(data);
         if (length == SIZE_ERROR) {
+            ALog.e(LOG_TAG, "readBoolArray failed: invalid size=" + length);
             return null;
         }
         List<Object> list = new ArrayList<>(length);
@@ -371,6 +375,7 @@ public class BridgeSerializer {
     private static Object readIntArray(ByteBuffer data) {
         int length = readSize(data);
         if (length == SIZE_ERROR) {
+            ALog.e(LOG_TAG, "readIntArray failed: invalid size=" + length);
             return null;
         }
         int[] result = new int[length];
@@ -383,6 +388,7 @@ public class BridgeSerializer {
     private static Object readLongArray(ByteBuffer data) {
         int length = readSize(data);
         if (length == SIZE_ERROR) {
+            ALog.e(LOG_TAG, "readLongArray failed: invalid size=" + length);
             return null;
         }
         long[] result = new long[length];
@@ -395,6 +401,7 @@ public class BridgeSerializer {
     private static Object readDoubleArray(ByteBuffer data) {
         int length = readSize(data);
         if (length == SIZE_ERROR) {
+            ALog.e(LOG_TAG, "readDoubleArray failed: invalid size=" + length);
             return null;
         }
         double[] result = new double[length];
@@ -407,6 +414,7 @@ public class BridgeSerializer {
     private static Object readStringArray(ByteBuffer data) {
         int length = readSize(data);
         if (length == SIZE_ERROR) {
+            ALog.e(LOG_TAG, "readStringArray failed: invalid size=" + length);
             return null;
         }
         List<Object> result = new ArrayList<>(length);
