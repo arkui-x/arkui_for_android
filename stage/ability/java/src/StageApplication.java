@@ -112,6 +112,11 @@ public class StageApplication extends Application {
             ALog.e(LOG_TAG, "StageApplication not initialized, skip destroyVm.");
             return false;
         }
+        if (!StageActivity.isAllOnDestroyFinished()) {
+            ALog.e(LOG_TAG, "destroyVm: some StageActivity.onDestroy not finished, "
+                + "refuse to destroy VM.");
+            return false;
+        }
         return StageApplicationDelegate.nativeDestroyVm();
     }
 
