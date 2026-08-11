@@ -18,6 +18,7 @@
 #include "adapter/android/stage/uicontent/ace_view_sg.h"
 #include "adapter/android/entrance/java/jni/display_info.h"
 #include "base/error/error_code.h"
+#include "base/external_instance_id_mapper.h"
 #include "core/accessibility/accessibility_manager.h"
 #include "core/components_ng/pattern/menu/wrapper/menu_wrapper_pattern.h"
 #include "display_manager.h"
@@ -56,7 +57,7 @@ void SubwindowAndroid::InitContainer()
     std::string url = "";
     window_->SetUIContent(
         url, reinterpret_cast<NativeEngine*>(parentContainer->GetSharedRuntime()), nullptr, false, nullptr, false);
-    childContainerId_ = SubwindowManager::GetInstance()->GetContainerId(window_->GetWindowId());
+    childContainerId_ = ExternalInstanceIdMapper::GetInstance().GetInstanceId(window_->GetWindowId());
     if (childContainerId_ < 0) {
         LOGE("Failed to get child container id for windowId %{public}u", window_->GetWindowId());
         SetIsRosenWindowCreate(false);
