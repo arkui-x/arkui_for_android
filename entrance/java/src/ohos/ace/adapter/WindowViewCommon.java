@@ -977,7 +977,11 @@ public class WindowViewCommon {
                 ALog.d(TAG, "Window" + "view not instanceof WindowViewInterface");
                 Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
                 lastImeBottom = imeInsets.bottom;
+                int prevHeight = WindowViewCommon.sSubwindowKeyboardAvoidHeight;
                 WindowViewCommon.sSubwindowKeyboardAvoidHeight = lastImeBottom;
+                if (prevHeight != lastImeBottom && WindowViewCommon.sKeyboardAvoidHeightListener != null) {
+                    WindowViewCommon.sKeyboardAvoidHeightListener.onSubwindowKeyboardAvoidHeightChanged(lastImeBottom);
+                }
                 ViewGroup contentParent = (ViewGroup) view.findViewById(android.R.id.content);
                 for (int i = 0; i < contentParent.getChildCount(); i++) {
                     View childView = contentParent.getChildAt(i);
