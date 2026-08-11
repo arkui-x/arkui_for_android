@@ -198,6 +198,11 @@ static JNINativeMethod g_methods[] = {
         .name = "nativeRemoveImageAvailableListener",
         .signature = "(JJ)V",
         .fnPtr = reinterpret_cast<void*>(&ImageTextureJni::JniRemoveImageAvailableListener),
+    },
+    {
+        .name = "nativeSetRotation",
+        .signature = "(JI)V",
+        .fnPtr = reinterpret_cast<void*>(&ImageTextureJni::JniSetRotation),
     }
 };
 
@@ -362,5 +367,12 @@ void ImageTextureJni::JniRemoveImageAvailableListener(
     CHECK_NULL_VOID(texture);
 
     texture->RemoveImageAvailableListener(listenerId);
+}
+
+void ImageTextureJni::JniSetRotation(JNIEnv* env, jobject myObject, jlong imageTextureId, jint rotation)
+{
+    auto texture = GetImageTexture(imageTextureId);
+    CHECK_NULL_VOID(texture);
+    texture->SetRotation(static_cast<int32_t>(rotation));
 }
 } // namespace OHOS::Ace::Platform
