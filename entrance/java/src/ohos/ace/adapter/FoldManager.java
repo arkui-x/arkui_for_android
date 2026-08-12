@@ -244,6 +244,80 @@ public class FoldManager {
             };
     }
 
+    /**
+     * get the count of folding features of the device.
+     *
+     * @param activity the activity
+     * @return count of folding features
+     */
+    public static int getFoldFeatureCount(Activity activity) {
+        if (Build.VERSION.SDK_INT < ANDROID_API_31) {
+            return 0;
+        }
+        try {
+            WindowInfoTrackerCallbackAdapter adapter =
+                new WindowInfoTrackerCallbackAdapter(WindowInfoTracker.getOrCreate(activity));
+            AtomicReference<Integer> countRef = new AtomicReference<>(0);
+            Consumer<WindowLayoutInfo> consumer = windowLayoutInfo -> {
+                activity.runOnUiThread(() -> {
+                    long count = windowLayoutInfo.getDisplayFeatures().stream()
+                        .filter(FoldingFeature.class::isInstance)
+                        .count();
+                    countRef.set((int) count);
+                });
+            };
+            adapter.addWindowLayoutInfoListener(activity, Runnable::run, consumer);
+            adapter.removeWindowLayoutInfoListener(consumer);
+            return countRef.get();
+        } catch (NoClassDefFoundError e) {
+            ALog.e(TAG, "androidx.window is not support!\n" + e.toString());
+            return 0;
+        }
+    }
+
+    /**
+     * get fold statuses for all folding features of the device.
+     *
+     * @param activity the activity
+     * @return array of fold statuses
+     */
+    public static int[] getFoldStatuses(Activity activity) {
+        if (Build.VERSION.SDK_INT < ANDROID_API_31) {
+            return new int[0];
+        }
+        try {
+            WindowInfoTrackerCallbackAdapter adapter =
+                new WindowInfoTrackerCallbackAdapter(WindowInfoTracker.getOrCreate(activity));
+            AtomicReference<int[]> statusesRef = new AtomicReference<>(new int[0]);
+            Consumer<WindowLayoutInfo> consumer = windowLayoutInfo -> {
+                activity.runOnUiThread(() -> {
+                    int[] statuses = windowLayoutInfo.getDisplayFeatures().stream()
+                        .filter(FoldingFeature.class::isInstance)
+                        .map(FoldingFeature.class::cast)
+                        .mapToInt(FoldManager::getStatusFromFeature)
+                        .toArray();
+                    statusesRef.set(statuses);
+                });
+            };
+            adapter.addWindowLayoutInfoListener(activity, Runnable::run, consumer);
+            adapter.removeWindowLayoutInfoListener(consumer);
+            return statusesRef.get();
+        } catch (NoClassDefFoundError e) {
+            ALog.e(TAG, "androidx.window is not support!\n" + e.toString());
+            return new int[0];
+        }
+    }
+
+    private static int getStatusFromFeature(FoldingFeature feature) {
+        if (feature.getState() == FoldingFeature.State.FLAT) {
+            return FoldInfo.FOLD_STATUS_EXPANDED;
+        } else if (feature.getState() == FoldingFeature.State.HALF_OPENED) {
+            return FoldInfo.FOLD_STATUS_HALF_FOLDED;
+        } else {
+            return FoldInfo.FOLD_STATUS_UNKNOWN;
+        }
+    }
+
     private static void handleFoldStatusChange(WindowLayoutInfo windowLayoutInfo,
         AtomicReference<FoldingFeature> foldingFeature) {
         windowLayoutInfo.getDisplayFeatures().stream()
