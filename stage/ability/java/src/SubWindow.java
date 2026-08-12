@@ -137,6 +137,7 @@ public class SubWindow {
             }
             super.dismiss();
             if (!skipNativeHideCallbackForRestack) {
+                sendCancelEventToMainWindow();
                 requestedVisible = false;
             }
             if (!skipNativeHideCallbackForRestack && nativeSubWindowPtr != 0L) {
@@ -258,6 +259,16 @@ public class SubWindow {
         return true;
     }
 
+    private void sendCancelEventToMainWindow() {
+        if (mainView == null) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        MotionEvent cancelEvent = MotionEvent.obtain(now, now, MotionEvent.ACTION_CANCEL, 0, 0, 0);
+        mainView.dispatchTouchEvent(cancelEvent);
+        cancelEvent.recycle();
+    }
+
     private boolean isPointInHotAreas(int x, int y) {
         for (Rect rect : hotAreas) {
             if (rect.contains(x, y)) {
@@ -280,7 +291,7 @@ public class SubWindow {
         if (isEffectiveModalWindow()) {
             return true;
         }
-        return dispatchTouchEventToMainWindow(event);
+        return true;
     }
 
     private void setupGlobalLayoutListener() {
@@ -301,19 +312,6 @@ public class SubWindow {
             }
         };
         mainView.getViewTreeObserver().addOnGlobalLayoutListener(listener);
-    }
-
-    /**
-     * Dispatch touch event to main window.
-     */
-    public boolean dispatchTouchEventToMainWindow(MotionEvent event) {
-        int touchX = (int) event.getX() + windowParam.x;
-        int touchY = (int) event.getY() + windowParam.y;
-        MotionEvent newEvent = MotionEvent.obtain(event.getDownTime(), event.getEventTime(), event.getAction(),
-            touchX, touchY, event.getMetaState());
-        mainView.dispatchTouchEvent(newEvent);
-        newEvent.recycle();
-        return true;
     }
 
     /**
