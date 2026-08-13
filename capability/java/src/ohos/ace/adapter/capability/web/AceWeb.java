@@ -1522,6 +1522,9 @@ public class AceWeb extends AceWebBase {
     @Override
     public String onActive(Map<String, String> params) {
         this.webView.onResume();
+        if (this.webView.getVisibility() != View.VISIBLE) {
+            this.webView.setVisibility(View.VISIBLE);
+        }
         return SUCCESS_TAG;
     }
 
@@ -1534,6 +1537,9 @@ public class AceWeb extends AceWebBase {
     @Override
     public String onInactive(Map<String, String> params) {
         this.webView.onPause();
+        if (this.webView.getVisibility() != View.INVISIBLE) {
+            this.webView.setVisibility(View.INVISIBLE);
+        }
         return SUCCESS_TAG;
     }
 
