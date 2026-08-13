@@ -198,24 +198,32 @@ public class WindowViewCommon {
     public void registerWindow(long windowHandle) {
         nativeWindowPtr = windowHandle;
         setupWindowInsetsListener();
-        if (windowViewInterface != null && windowViewInterface.getView() != null) {
-            View rootView = windowViewInterface.getView().getRootView();
-            WindowInsetsCompat currentInsets = ViewCompat.getRootWindowInsets(rootView);
-            if (currentInsets != null && rootView.isAttachedToWindow() && rootView.getWidth() > 0) {
-                Rect rect = new Rect();
-                int[] location = new int[2];
-                View view = windowViewInterface.getView();
-                view.getLocationInWindow(location);
-                rect.left = location[0];
-                rect.top = location[1];
-                rect.right = rect.left + view.getWidth();
-                rect.bottom = rect.top + view.getHeight();
-                processAvoidAreas(currentInsets, rect);
-            }
-        }
+        trySyncCurrentInsets();
         setupWindowRectChangeListener();
         notifyWindowRectChanged();
         delayNotifyIfNeeded();
+    }
+
+    private void trySyncCurrentInsets() {
+        if (!sAndroidXAvailable || !sAndroidXVersionSupportedGetInsets) {
+            return;
+        }
+        if (windowViewInterface == null || windowViewInterface.getView() == null) {
+            return;
+        }
+        View rootView = windowViewInterface.getView().getRootView();
+        WindowInsetsCompat currentInsets = ViewCompat.getRootWindowInsets(rootView);
+        if (currentInsets != null && rootView.isAttachedToWindow() && rootView.getWidth() > 0) {
+            Rect rect = new Rect();
+            int[] location = new int[2];
+            View view = windowViewInterface.getView();
+            view.getLocationInWindow(location);
+            rect.left = location[0];
+            rect.top = location[1];
+            rect.right = rect.left + view.getWidth();
+            rect.bottom = rect.top + view.getHeight();
+            processAvoidAreas(currentInsets, rect);
+        }
     }
 
     /**
