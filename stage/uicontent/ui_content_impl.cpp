@@ -41,6 +41,7 @@
 #include "base/log/event_report.h"
 #include "base/log/log.h"
 #include "base/perfmonitor/perf_monitor.h"
+#include "base/external_instance_id_mapper.h"
 #include "base/subwindow/subwindow_manager.h"
 #include "base/utils/layout_break_point.h"
 #include "base/utils/system_properties.h"
@@ -427,9 +428,8 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     ContainerScope::Add(instanceId_);
     container->SetWindowName(window_->GetWindowName());
     container->SetWindowId(window_->GetWindowId());
-    SubwindowManager::GetInstance()->AddContainerId(window_->GetWindowId(), instanceId_);
-    uiContentInstanceId_ = window_->IsSubWindow() ? window_->GetWindowId() : info->instanceId;
-    Ace::Platform::UIContent::AddUIContent(uiContentInstanceId_, this);
+    ExternalInstanceIdMapper::GetInstance().Add(window_->GetWindowId(), instanceId_);
+    Ace::Platform::UIContent::AddUIContent(instanceId_, info->instanceId, this);
     container->SetInstanceName(info->name);
     container->SetHostClassName(info->name);
     if (runtime_) {
@@ -644,7 +644,7 @@ void UIContentImpl::Destroy()
     auto container = AceEngine::Get().GetContainer(instanceId_);
     CHECK_NULL_VOID(container);
     if (window_) {
-        SubwindowManager::GetInstance()->RemoveContainerId(window_->GetWindowId());
+        ExternalInstanceIdMapper::GetInstance().Remove(window_->GetWindowId());
     }
     Platform::AceContainerSG::DestroyContainer(instanceId_);
     ContainerScope::RemoveAndCheck(instanceId_);
@@ -1117,7 +1117,7 @@ void UIContentImpl::InitializeSubWindow()
 
     container->SetWindowName(window_->GetWindowName());
     container->SetWindowId(window_->GetWindowId());
-    SubwindowManager::GetInstance()->AddContainerId(window_->GetWindowId(), instanceId_);
+    ExternalInstanceIdMapper::GetInstance().Add(window_->GetWindowId(), instanceId_);
     AceEngine::Get().AddContainer(instanceId_, container);
     touchOutsideListener_ = new TouchOutsideListener(instanceId_);
     window_->RegisterTouchOutsideListener(touchOutsideListener_);

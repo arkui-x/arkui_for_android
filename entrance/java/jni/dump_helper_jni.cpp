@@ -20,11 +20,28 @@
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/log/dump_log.h"
 #include "base/log/log.h"
+#include "base/external_instance_id_mapper.h"
 #include "base/utils/utils.h"
 #include "core/common/ace_engine.h"
-#include "core/common/container.h"
 
 namespace OHOS::Ace::Platform {
+namespace {
+void DumpContainer(int32_t instanceId, const std::vector<std::string>& params)
+{
+    int32_t containerId = ExternalInstanceIdMapper::GetInstance().GetInstanceId(static_cast<uint32_t>(instanceId));
+    if (containerId < 0) {
+        containerId = instanceId;
+    }
+    auto container = AceEngine::Get().GetContainer(containerId);
+    if (!container) {
+        LOGE("Dump failed, container not found, containerId:%{public}d (instanceId:%{public}d)",
+            containerId, instanceId);
+        return;
+    }
+    std::vector<std::string> info;
+    container->Dump(params, info);
+}
+} // namespace
 
 bool DumpHelperJni::Register(const std::shared_ptr<JNIEnv>& env)
 {
@@ -87,10 +104,7 @@ void DumpHelperJni::Dump(
 
         if (file) {
             DumpLog::GetInstance().SetDumpFile(file);
-            auto container = AceEngine::Get().GetContainer(instanceId);
-            CHECK_NULL_VOID(container);
-            std::vector<std::string> info;
-            container->Dump(params, info);
+            DumpContainer(instanceId, params);
             DumpLog::GetInstance().Reset();
         } else {
             LOGE("Failed to open fd as file");
