@@ -363,8 +363,8 @@
       "OHOS::Ace::NG::FrameNode::AddHotZoneRect(OHOS::Ace::DimensionRect const&)";
       "OHOS::Ace::NG::FrameNode::ShouldDetectAceObjTypeConvertion()";
       "OHOS::Ace::NG::FrameNode::GetPaintPropertyTypeName() const";
-      "OHOS::Ace::NG::FrameNode::CreateFrameNode(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, int, OHOS::Ace::RefPtr<OHOS::Ace::NG::Pattern> const&, bool)";
-      "OHOS::Ace::NG::FrameNode::GetOrCreateFrameNode(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, int, std::__ndk1::function<OHOS::Ace::RefPtr<OHOS::Ace::NG::Pattern> ()> const&)";
+      "OHOS::Ace::NG::FrameNode::CreateFrameNode(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char> >, int, OHOS::Ace::RefPtr<OHOS::Ace::NG::Pattern> const&, bool)";
+      "OHOS::Ace::NG::FrameNode::GetOrCreateFrameNode(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char> >, int, std::__ndk1::function<OHOS::Ace::RefPtr<OHOS::Ace::NG::Pattern> ()> const&)";
       "OHOS::Ace::NG::FrameNode::SetDraggable(bool)";
       "OHOS::Ace::NG::FrameNode::RegisterLpxAttribute(OHOS::Ace::NG::LpxAttribute)";
       "OHOS::Ace::NG::FrameNode::UnRegisterLpxAttribute(OHOS::Ace::NG::LpxAttribute)";
@@ -374,7 +374,7 @@
       "OHOS::Ace::NG::FrameNode::OnAccessibilityEvent(OHOS::Ace::AccessibilityEventType, OHOS::Ace::WindowsContentChangeTypes, bool)";
       "OHOS::Ace::NG::FrameNode::~FrameNode()";
       "OHOS::Ace::NG::FrameNode::OnMountToParentDone()";
-      "OHOS::Ace::NG::FrameNode::FrameNode(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, int, OHOS::Ace::RefPtr<OHOS::Ace::NG::Pattern> const&, bool, bool)";
+      "OHOS::Ace::NG::FrameNode::FrameNode(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char> >, int, OHOS::Ace::RefPtr<OHOS::Ace::NG::Pattern> const&, bool, bool)";
       "OHOS::Ace::NG::FrameNode::OnDelete()";
       "OHOS::Ace::NG::FrameNode::IsAtomicNode() const";
       "OHOS::Ace::NG::FrameNode::AttachContext(OHOS::Ace::NG::PipelineContext*, bool)";
@@ -450,7 +450,7 @@
       "OHOS::Ace::NG::FrameNode::IsVisibleAndActive() const";
       "OHOS::Ace::NG::FrameNode::SetIsFree(bool)";
       "OHOS::Ace::NG::FrameNode::OnGenerateOneDepthVisibleFrame(std::__ndk1::list<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode>, std::__ndk1::allocator<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> > >&)";
-      "OHOS::Ace::NG::FrameNode::OnGenerateOneDepthVisibleFrameWithTransition(std::__ndk1::list<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode>, std::__ndk1::allocator<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> > >&)";
+      "OHOS::Ace::NG::FrameNode::OnGenerateOneDepthVisibleFrameWithTransition(std::__ndk1::vector<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode>, std::__ndk1::allocator<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> > >&)";
       "OHOS::Ace::NG::FrameNode::OnGenerateOneDepthVisibleFrameWithOffset(std::__ndk1::list<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode>, std::__ndk1::allocator<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> > >&, OHOS::Ace::NG::OffsetT<float>&)";
       "OHOS::Ace::NG::FrameNode::OnGenerateOneDepthAllFrame(std::__ndk1::list<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode>, std::__ndk1::allocator<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> > >&)";
       "OHOS::Ace::NG::FrameNode::AfterMountToParent()";
@@ -505,13 +505,13 @@
       "OHOS::Ace::NG::FrameNode::RemoveFromPartFrameNodeChildren(std::__ndk1::list<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode>, std::__ndk1::allocator<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> > > const&)";
       "OHOS::Ace::NG::FrameNode::ReplacePattern(OHOS::Ace::RefPtr<OHOS::Ace::NG::Pattern> const&)";
       "OHOS::Ace::NG::FrameNode::MarkNeedRenderOnly()";
-      "OHOS::Ace::NG::FrameNode::GetFrameNode(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, int)";
+      "OHOS::Ace::NG::FrameNode::GetFrameNode(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char> >, int)";
       "OHOS::Ace::NG::FrameNode::OnAccessibilityEvent(OHOS::Ace::AccessibilityEventType, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::NG::FrameNode::AddFRCSceneInfo(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, float, OHOS::Ace::NG::SceneStatus)";
       "OHOS::Ace::NG::FrameNode::GetPaintRectOffset(bool, bool, bool) const";
       "OHOS::Ace::NG::FrameNode::GetPaintRectOffsetNG(bool, bool) const";
       "OHOS::Ace::NG::FrameNode::GetParentGlobalOffsetDuringLayout() const";
-      "OHOS::Ace::NG::FrameNode::GetFrameNodeOnly(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, int)";
+      "OHOS::Ace::NG::FrameNode::GetFrameNodeOnly(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char> >, int)";
       "OHOS::Ace::NG::FrameNode::GetDragPreviewOption()";
       "OHOS::Ace::NG::FrameNode::GetRectWithRender()";
       "OHOS::Ace::NG::FrameNode::GetPaintRectGlobalOffsetWithTranslate(bool, bool) const";
@@ -794,7 +794,7 @@
       "OHOS::Ace::NG::UINode::GetInspectorValue()";
       "OHOS::Ace::NG::UINode::NotifyWebPattern(bool)";
       "OHOS::Ace::NG::UINode::NotifyChange(int, int, long, OHOS::Ace::NG::UINode::NotificationType)";
-      "OHOS::Ace::NG::UINode::OnGenerateOneDepthVisibleFrameWithTransition(std::__ndk1::list<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode>, std::__ndk1::allocator<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> > >&)";
+      "OHOS::Ace::NG::UINode::OnGenerateOneDepthVisibleFrameWithTransition(std::__ndk1::vector<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode>, std::__ndk1::allocator<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> > >&)";
       "OHOS::Ace::NG::UINode::OnGenerateOneDepthVisibleFrameWithOffset(std::__ndk1::list<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode>, std::__ndk1::allocator<OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> > >&, OHOS::Ace::NG::OffsetT<float>&)";
       "OHOS::Ace::NG::UINode::OnAttachToMainTree(bool)";
       "OHOS::Ace::NG::UINode::OnDetachFromMainTree(bool, OHOS::Ace::NG::PipelineContext*)";
@@ -809,7 +809,7 @@
       "OHOS::Ace::NG::UINode::SetAccessibilityNodeVirtual()";
       "OHOS::Ace::NG::UINode::SetAccessibilityVirtualNodeParent(OHOS::Ace::RefPtr<OHOS::Ace::NG::UINode> const&)";
       "OHOS::Ace::NG::UINode::SetJSViewActive(bool, bool, bool, bool)";
-      "OHOS::Ace::NG::UINode::UINode(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, int, bool)";
+      "OHOS::Ace::NG::UINode::UINode(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char> >, int, bool)";
       "OHOS::Ace::NG::UINode::MovePosition(int)";
       "OHOS::Ace::NG::UINode::UpdateConfigurationUpdate(OHOS::Ace::ConfigurationChange const&)";
       "OHOS::Ace::NG::OverlayManager::CloseDialog(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
@@ -2268,7 +2268,7 @@
       "OHOS::Ace::NG::TextFreeScrollController::StopScrollAnimation(bool)";
       "OHOS::Ace::NG::MediaPlayer::Create()";
       "OHOS::Ace::NG::TextFreeScrollController::TextFreeScrollController(OHOS::Ace::WeakPtr<OHOS::Ace::NG::ScrollablePattern> const&)";
-      "OHOS::Ace::NG::TextScrollBar2D::OnDraw(OHOS::Ace::NG::DrawingContext&) const";
+      "OHOS::Ace::NG::TextScrollBar2D::OnDraw(OHOS::Ace::NG::DrawingContext&, OHOS::Ace::RefPtr<OHOS::Ace::NG::OverlayModifier> const&) const";
       "OHOS::Ace::NG::TextScrollBar2D::AddScrollableEvent()";
       "OHOS::Ace::NG::TextScrollBar2D::TextScrollBar2D(OHOS::Ace::WeakPtr<OHOS::Ace::NG::ScrollablePattern> const&)";
       "OHOS::Ace::NG::TextScrollBar2D::UpdateVerticalBar(float, float, OHOS::Ace::Size const&, OHOS::Ace::Offset)";
@@ -2738,6 +2738,7 @@
       "OHOS::Ace::UiSessionManager::GetInstance()";
       "OHOS::Ace::UiMaterial::SetImmersiveOptions(OHOS::Ace::ImmersiveOptions const&)";
       "OHOS::Ace::UiMaterial::GetImmersiveOptions() const";
+      "OHOS::Ace::UiMaterial::CopyImmersiveOptions() const";
       "OHOS::Ace::TokenColors::GetSystemColorResIdByIndex(int)";
       "OHOS::Ace::TokenColors::FontPrimary() const";
       "OHOS::Ace::TokenColors::FontEmphasize() const";
@@ -3449,9 +3450,9 @@
       "OHOS::Ace::NG::TextPattern::GetLineMetrics(int)";
       "OHOS::Ace::NG::TextPattern::GetRectsForRange(int, int, OHOS::Ace::RectHeightStyle, OHOS::Ace::RectWidthStyle)";
       "OHOS::Ace::NG::TextPattern::GetGlyphPositionAtCoordinate(int, int)";
-      "OHOS::Ace::NG::TextPattern::GetCharacterPositionAtCoordinate(int, int)";
-      "OHOS::Ace::NG::TextPattern::GetGlyphRangeForCharacterRange(int, int)";
-      "OHOS::Ace::NG::TextPattern::GetCharacterRangeForGlyphRange(int, int)";
+      "OHOS::Ace::NG::TextPattern::GetCharacterPositionAtCoordinate(int, int, OHOS::Ace::NG::TextEncoding)";
+      "OHOS::Ace::NG::TextPattern::GetGlyphRangeForCharacterRange(int, int, OHOS::Ace::NG::TextEncoding)";
+      "OHOS::Ace::NG::TextPattern::GetCharacterRangeForGlyphRange(int, int, OHOS::Ace::NG::TextEncoding)";
       "OHOS::Ace::NG::TextPattern::OnFrameNodeChanged(unsigned int)";
       "OHOS::Ace::NG::TextPattern::BeforeCreatePaintWrapper()";
       "OHOS::Ace::NG::TextPattern::CalculateDefaultHandleHeight(float&)";
@@ -3613,9 +3614,9 @@
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetLineMetrics(int)";
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetRectsForRange(int, int, OHOS::Ace::RectHeightStyle, OHOS::Ace::RectWidthStyle)";
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetGlyphPositionAtCoordinate(int, int)";
-      "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetCharacterPositionAtCoordinate(int, int)";
-      "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetGlyphRangeForCharacterRange(int, int)";
-      "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetCharacterRangeForGlyphRange(int, int)";
+      "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetCharacterPositionAtCoordinate(int, int, OHOS::Ace::NG::TextEncoding)";
+      "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetGlyphRangeForCharacterRange(int, int, OHOS::Ace::NG::TextEncoding)";
+      "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetCharacterRangeForGlyphRange(int, int, OHOS::Ace::NG::TextEncoding)";
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::~TextPattern()";
       "OHOS::Ace::NG::SelectOverlayClient::RequestCloseSelectOverlay(bool)";
       "OHOS::Ace::NG::SelectOverlayClient::OnParentScrollStartOrEnd(bool, bool)";
@@ -3984,6 +3985,7 @@
       "OHOS::Ace::TextEmojiProcessor::SubU16string(int, int, std::__ndk1::basic_string<char16_t, std::__ndk1::char_traits<char16_t>, std::__ndk1::allocator<char16_t> > const&, bool, bool)";
       "OHOS::Ace::InputMethodManager::SetEditingState(OHOS::Ace::TextEditingValue const&, int, bool)";
       "OHOS::Ace::InputMethodManager::CloseKeyboard(int)";
+      "OHOS::Ace::InputMethodManager::CloseKeyboardInProcess()";
       "OHOS::Ace::InputMethodManager::Attach(OHOS::Ace::WeakPtr<OHOS::Ace::TextInputClient> const&, OHOS::Ace::TextInputConfiguration const&, OHOS::Ace::RefPtr<OHOS::Ace::TaskExecutor> const&, int)";
       "OHOS::Ace::InputMethodManager::FinishComposing(int)";
       "OHOS::Ace::InputMethodManager::ShowKeyboard(bool, int)";
@@ -4307,9 +4309,9 @@
       "OHOS::Ace::NG::ParagraphManager::GetGlyphPositionAtCoordinate(OHOS::Ace::Offset)";
       "OHOS::Ace::NG::ParagraphManager::ComputeCursorInfoByClick(int, float&, OHOS::Ace::NG::OffsetT<float> const&) const";
       "OHOS::Ace::NG::ParagraphManager::GetWordBoundary(int, int&, int&) const";
-      "OHOS::Ace::NG::ParagraphManager::GetCharacterPositionAtCoordinate(OHOS::Ace::Offset)";
-      "OHOS::Ace::NG::ParagraphManager::GetGlyphRangeForCharacterRange(int, int)";
-      "OHOS::Ace::NG::ParagraphManager::GetCharacterRangeForGlyphRange(int, int)";
+      "OHOS::Ace::NG::ParagraphManager::GetCharacterPositionAtCoordinate(OHOS::Ace::Offset, OHOS::Ace::NG::TextEncoding)";
+      "OHOS::Ace::NG::ParagraphManager::GetGlyphRangeForCharacterRange(int, int, OHOS::Ace::NG::TextEncoding)";
+      "OHOS::Ace::NG::ParagraphManager::GetCharacterRangeForGlyphRange(int, int, OHOS::Ace::NG::TextEncoding)";
       "OHOS::Ace::NG::ParagraphManager::CalcCaretMetricsByPosition(int, OHOS::Ace::NG::CaretMetricsF&, OHOS::Ace::TextAffinity) const";
       "OHOS::Ace::NG::ParagraphManager::IsSelectLineHeadAndUseLeadingMargin(int) const";
       "OHOS::Ace::NG::ParagraphManager::GetLineCount() const";
