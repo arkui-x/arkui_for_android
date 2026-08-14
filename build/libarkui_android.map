@@ -3056,9 +3056,9 @@
       "OHOS::Ace::NG::TextPattern::GetLineMetrics(int)";
       "OHOS::Ace::NG::TextPattern::GetRectsForRange(int, int, OHOS::Ace::RectHeightStyle, OHOS::Ace::RectWidthStyle)";
       "OHOS::Ace::NG::TextPattern::GetGlyphPositionAtCoordinate(int, int)";
-      "OHOS::Ace::NG::TextPattern::GetCharacterPositionAtCoordinate(int, int)";
-      "OHOS::Ace::NG::TextPattern::GetGlyphRangeForCharacterRange(int, int)";
-      "OHOS::Ace::NG::TextPattern::GetCharacterRangeForGlyphRange(int, int)";
+      "OHOS::Ace::NG::TextPattern::GetCharacterPositionAtCoordinate(int, int, OHOS::Ace::NG::TextEncoding)";
+      "OHOS::Ace::NG::TextPattern::GetGlyphRangeForCharacterRange(int, int, OHOS::Ace::NG::TextEncoding)";
+      "OHOS::Ace::NG::TextPattern::GetCharacterRangeForGlyphRange(int, int, OHOS::Ace::NG::TextEncoding)";
       "OHOS::Ace::NG::TextPattern::OnFrameNodeChanged(unsigned int)";
       "OHOS::Ace::NG::TextPattern::BeforeCreatePaintWrapper()";
       "OHOS::Ace::NG::TextPattern::CalculateDefaultHandleHeight(float&)";
@@ -3219,9 +3219,9 @@
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetLineMetrics(int)";
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetRectsForRange(int, int, OHOS::Ace::RectHeightStyle, OHOS::Ace::RectWidthStyle)";
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetGlyphPositionAtCoordinate(int, int)";
-      "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetCharacterPositionAtCoordinate(int, int)";
-      "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetGlyphRangeForCharacterRange(int, int)";
-      "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetCharacterRangeForGlyphRange(int, int)";
+      "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetCharacterPositionAtCoordinate(int, int, OHOS::Ace::NG::TextEncoding)";
+      "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetGlyphRangeForCharacterRange(int, int, OHOS::Ace::NG::TextEncoding)";
+      "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetCharacterRangeForGlyphRange(int, int, OHOS::Ace::NG::TextEncoding)";
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::~TextPattern()";
       "OHOS::Ace::NG::SelectOverlayClient::RequestCloseSelectOverlay(bool)";
       "OHOS::Ace::NG::SelectOverlayClient::OnParentScrollStartOrEnd(bool, bool)";
