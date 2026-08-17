@@ -19,8 +19,10 @@ import android.webkit.WebBackForwardList;
 import ohos.ace.adapter.AceResourcePlugin;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -35,7 +37,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
 
     private static final int CAN_NOT_REGISTER_MESSAGE_EVENT = 17100006;
 
-    private static Map<Long, AceWebBase> objectMap;
+    private static Map<Long, AceWebBase> objectMap = new HashMap<Long, AceWebBase>();
 
     /**
      * Initialize the webview.
@@ -48,10 +50,15 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
 
     private final AtomicLong nextWebId = new AtomicLong(0L);
 
+    /**
+     * Tracks which web IDs belong to this plugin instance, used to scope
+     * release() to only entries owned by this instance.
+     */
+    private final Set<Long> ownedIds = new HashSet<Long>();
+
     public AceWebPluginBase() {
         // plugin name is web, version is 1.0.
         super("web", 1.0f);
-        objectMap = new HashMap<Long, AceWebBase>();
     }
 
     /**
@@ -193,6 +200,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      */
     public void addResource(long id, AceWebBase web, boolean richTextInit) {
         objectMap.put(id, web);
+        ownedIds.add(id);
         registerCallMethod(web.getCallMethod());
         if (!hasInit && !richTextInit) {
             nativeInit();
@@ -290,6 +298,7 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
             unregisterCallMethod(web.getCallMethod());
             web.release();
             objectMap.remove(id);
+            ownedIds.remove(id);
             return true;
         }
         return false;
@@ -301,9 +310,15 @@ public abstract class AceWebPluginBase extends AceResourcePlugin {
      */
     @Override
     public void release() {
-        for (Map.Entry<Long, AceWebBase> entry : objectMap.entrySet()) {
-            entry.getValue().release();
+        Long[] ids = ownedIds.toArray(new Long[0]);
+        for (Long id : ids) {
+            AceWebBase web = objectMap.remove(id);
+            if (web != null) {
+                unregisterCallMethod(web.getCallMethod());
+                web.release();
+            }
         }
+        ownedIds.clear();
     }
 
     /**
