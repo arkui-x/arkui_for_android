@@ -22,7 +22,7 @@
 #include "adapter/android/entrance/java/jni/jni_environment.h"
 #include "base/json/json_util.h"
 #include "base/log/log.h"
-#include "base/subwindow/subwindow_manager.h"
+#include "base/external_instance_id_mapper.h"
 #include "core/common/ime/text_input_proxy.h"
 
 namespace OHOS::Ace::Platform {
@@ -70,8 +70,8 @@ static JniEnvironment::JavaGlobalRef* FindJavaObject(int32_t instanceId)
     if (it != g_jobjects.end()) {
         return &it->second;
     }
-    // Fallback: translate instanceId -> windowId via SubwindowManager reverse mapping
-    auto windowId = SubwindowManager::GetInstance()->GetWindowIdByContainerId(instanceId);
+    // Fallback: translate instanceId -> windowId via ExternalInstanceIdMapper reverse mapping
+    auto windowId = ExternalInstanceIdMapper::GetInstance().GetWindowId(instanceId);
     if (windowId >= 0) {
         it = g_jobjects.find(windowId);
         if (it != g_jobjects.end()) {
@@ -375,7 +375,7 @@ bool TextInputJni::ClearClient(int32_t instanceId)
 void TextInputJni::ReleaseInstance(int32_t instanceId)
 {
     g_jobjects.erase(instanceId);
-    auto windowId = SubwindowManager::GetInstance()->GetWindowIdByContainerId(instanceId);
+    auto windowId = ExternalInstanceIdMapper::GetInstance().GetWindowId(instanceId);
     if (windowId >= 0) {
         g_jobjects.erase(windowId);
     }
