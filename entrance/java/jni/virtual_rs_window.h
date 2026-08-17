@@ -18,6 +18,7 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 
 #include "foundation/appframework/window_manager/interfaces/innerkits/wm/window_interface.h"
 #include "foundation/appframework/window_manager/interfaces/innerkits/wm/window_option.h"
@@ -100,7 +101,9 @@ public:
 
     virtual uint32_t GetStatusBarHeight() const
     {
-        return 0;
+        std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+        auto iter = avoidAreaMap_.find(AvoidAreaType::TYPE_SYSTEM);
+        return iter == avoidAreaMap_.end() ? 0 : iter->second.topRect_.height_;
     }
 
     virtual void FlushLayoutSize(int32_t width, int32_t height) {}
