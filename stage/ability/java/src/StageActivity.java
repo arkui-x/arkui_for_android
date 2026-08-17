@@ -127,6 +127,8 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
 
     private static final int ANDROID_API_31 = 31;
 
+    private static final ConcurrentHashMap<Integer, Boolean> onDestroyStateMap = new ConcurrentHashMap<>();
+
     private int requestCode = 0;
 
     private int instanceId = InstanceIdGenerator.getAndIncrement();
@@ -179,6 +181,7 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ALog.i(LOG_TAG, "StageActivity onCreate called");
+        onDestroyStateMap.put(instanceId, false);
         super.onCreate(savedInstanceState);
         Trace.beginSection("StageActivity::onCreate");
 
@@ -276,18 +279,37 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     @Override
     protected void onDestroy() {
         ALog.i(LOG_TAG, "StageActivity onDestroy called");
-        activityDelegate.dispatchOnDestroy(getInstanceName());
-        windowView.destroy();
-        arkUIXPluginRegistry.unRegistryAllPlugins();
-        keyboardHeightProvider.close();
-        this.bridgeManager = null;
-        if (platformPlugin != null) {
-            platformPlugin.release();
-            ALog.i(LOG_TAG, "StageActivity onDestroy platformPlugin release called");
+        onDestroyStateMap.put(instanceId, false);
+        try {
+            activityDelegate.dispatchOnDestroy(getInstanceName());
+            windowView.destroy();
+            arkUIXPluginRegistry.unRegistryAllPlugins();
+            keyboardHeightProvider.close();
+            this.bridgeManager = null;
+            if (platformPlugin != null) {
+                platformPlugin.release();
+                ALog.i(LOG_TAG, "StageActivity onDestroy platformPlugin release called");
+            }
+            super.onDestroy();
+            ALog.i(LOG_TAG, "StageActivity onDestroy end");
+            offFoldStatusChange();
+        } finally {
+            onDestroyStateMap.remove(instanceId);
         }
-        super.onDestroy();
-        ALog.i(LOG_TAG, "StageActivity onDestroy end");
-        offFoldStatusChange();
+    }
+
+    /**
+     * Check whether all Abilities' onDestroy have finished.
+     *
+     * @return true if every Ability's onDestroy has finished, false otherwise.
+     */
+    public static boolean isAllOnDestroyFinished() {
+        for (Boolean finished : onDestroyStateMap.values()) {
+            if (!finished) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
