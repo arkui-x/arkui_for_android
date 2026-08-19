@@ -20,7 +20,7 @@
 #include "adapter/android/entrance/java/jni/native_window_surface.h"
 #include "base/log/event_report.h"
 #include "base/log/log.h"
-#include "base/subwindow/subwindow_manager.h"
+#include "base/external_instance_id_mapper.h"
 #include "base/utils/macros.h"
 #include "base/utils/utils.h"
 
@@ -33,7 +33,7 @@ std::unordered_map<int, NativeTextureMap> g_surfaceTextureMaps;
 
 static int32_t ResolveInstanceId(int32_t instanceId)
 {
-    auto windowId = SubwindowManager::GetInstance()->GetWindowIdByContainerId(instanceId);
+    auto windowId = ExternalInstanceIdMapper::GetInstance().GetWindowId(instanceId);
     return (windowId >= 0) ? windowId : instanceId;
 }
 bool AcePlatformPluginJni::Register(const std::shared_ptr<JNIEnv>& env)
