@@ -1111,6 +1111,8 @@
       "OHOS::Ace::NG::LazyLayoutPattern::NotifyParentOnStickyHeaderChange()";
       "OHOS::Ace::NG::LazyLayoutPattern::DumpStickyHeaderHandoffInfo() const";
       "OHOS::Ace::NG::LazyLayoutPattern::OnDetachFromMainTree()";
+      "OHOS::Ace::NG::LazyLayoutPattern::AfterMountToParent()";
+      "OHOS::Ace::NG::LazyLayoutPattern::OnAttachToFrameNode()";
       "OHOS::Ace::NG::LazyLayoutPattern::DumpStickyHeaderHandoffInfo(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&) const";
 
       "VTT for OHOS::Ace::NG::BoxLayoutAlgorithm";
@@ -4405,6 +4407,7 @@
       "bool OHOS::Rosen::RSMarshallingHelper::Marshalling<std::__ndk1::shared_ptr<OHOS::Rosen::RSNGRenderShapeBase> >(OHOS::Parcel&, std::__ndk1::shared_ptr<OHOS::Rosen::RSRenderProperty<std::__ndk1::shared_ptr<OHOS::Rosen::RSNGRenderShapeBase> > > const&)";
       "OHOS::Rosen::RSRenderPropertyBase::Attach(OHOS::Rosen::RSRenderNode&, std::__ndk1::weak_ptr<OHOS::Rosen::ModifierNG::RSRenderModifier>)";
       "OHOS::Rosen::RSRenderPropertyBase::Detach()";
+      "OHOS::Rosen::RSRenderPropertyBase::CheckPropertyType(OHOS::Rosen::RSPropertyType, char const*) const";
       "OHOS::Rosen::RSNGRenderEffectHelper::CalculatePropTagHashImpl(unsigned int&, float)";
       "OHOS::Rosen::RSNGRenderEffectHelper::CalculatePropTagHashImpl(unsigned int&, OHOS::Rosen::Vector3<float> const&)";
       "OHOS::Rosen::RSNGRenderEffectHelper::CalculatePropTagHashImpl(unsigned int&, std::__ndk1::shared_ptr<OHOS::Media::PixelMap>)";
@@ -4727,6 +4730,7 @@
       "OHOS::Rosen::RSTransactionHandler::Commit(unsigned long long)";
       "OHOS::Rosen::RSTransactionHandler::FlushImplicitTransaction(unsigned long long, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, bool, unsigned long long)";
       "panda::NativePointerRef::New(panda::ecmascript::EcmaVM const*, void*, void (*)(void*, void*, void*), void*, unsigned int)";
+      "OHOS::Ace::NG::UiMaterialFilterCreator::ConvertToUiMaterialFilter(OHOS::Ace::ImmersiveMaterialConfig const&)";
     };
     extern "C" {
       "StartTrace";
