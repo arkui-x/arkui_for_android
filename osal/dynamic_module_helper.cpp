@@ -30,6 +30,7 @@ const std::string DYNAMIC_MODULE_LIB_POSTFIX = ".so";
 const std::unordered_map<std::string, std::string> soMap = {
     {"ContainerReader", "containerreader"},
     {"DynamicLayout", "dynamiclayout"},
+    {"LazyDynamicLayout", "dynamiclayout"},
     {"ImageAnimator", "imageanimator"},
     {"Canvas", "canvas"},
     {"Video", "video"},
@@ -45,6 +46,7 @@ const std::unordered_map<std::string, std::string> soMap = {
     { "TextInput", "textfield" },
     { "TextArea", "textfield" },
     {"WaterFlow", "waterflow" },
+    {"LazyVWaterFlowLayout", "lazywaterflowlayout"},
     {"Counter", "counter"},
     { "Blank", "spacing" },
     { "Divider", "spacing" },
@@ -96,6 +98,7 @@ const std::unordered_map<std::string, std::string> soMap = {
     {"IndicatorComponent", "tabswiper"},
     {"Tabs", "tabswiper"},
     {"TabContent", "tabswiper"},
+    { "LazyColumnLayout", "lazycolumnlayout" },
     { "LazyVGridLayout", "lazygridlayout" },
     { "Refresh", "refresh" },
     { "Grid", "grid" },

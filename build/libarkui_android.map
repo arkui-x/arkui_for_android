@@ -379,6 +379,7 @@
       "OHOS::Ace::NG::FrameNode::IsAtomicNode() const";
       "OHOS::Ace::NG::FrameNode::AttachContext(OHOS::Ace::NG::PipelineContext*, bool)";
       "OHOS::Ace::NG::FrameNode::DetachContext(bool)";
+      "OHOS::Ace::NG::FrameNode::SwapDirtyLayoutWrapperOnMainThread(OHOS::Ace::RefPtr<OHOS::Ace::NG::LayoutWrapper> const&)";
       "OHOS::Ace::NG::FrameNode::CreateLayoutWrapper(bool, bool)";
       "OHOS::Ace::NG::FrameNode::OnMixedMountChildAdded(OHOS::Ace::RefPtr<OHOS::Ace::NG::UINode> const&)";
       "OHOS::Ace::NG::FrameNode::OnMixedMountChildRemoved(OHOS::Ace::RefPtr<OHOS::Ace::NG::UINode> const&)";
@@ -1108,6 +1109,7 @@
 
       "VTT for OHOS::Ace::NG::Pattern";
       "OHOS::Ace::NG::LazyLayoutUtils::ValidateLazyLayoutParentWithAxis(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, OHOS::Ace::Axis)";
+      "OHOS::Ace::NG::LazyLayoutPattern::PublishNextStickyHeaderGap(std::__ndk1::optional<float> const&)";
       "OHOS::Ace::NG::LazyLayoutPattern::NotifyParentOnStickyHeaderChange()";
       "OHOS::Ace::NG::LazyLayoutPattern::DumpStickyHeaderHandoffInfo() const";
       "OHOS::Ace::NG::LazyLayoutPattern::OnDetachFromMainTree()";
