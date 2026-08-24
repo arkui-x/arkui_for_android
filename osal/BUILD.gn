@@ -102,6 +102,7 @@ template("ace_osal_android_source_set") {
       "view_data_wrap_impl.cpp",
       "want_wrap_android.cpp",
       "websocket_manager.cpp",
+      "download_manager_android.cpp",
     ]
 
     include_dirs = [
