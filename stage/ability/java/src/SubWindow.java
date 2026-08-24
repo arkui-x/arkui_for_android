@@ -273,9 +273,6 @@ public class SubWindow {
         if (event.getAction() == MotionEvent.ACTION_DOWN && nativeSubWindowPtr != 0L) {
             nativeOnWindowTouchOutside(nativeSubWindowPtr);
         }
-        if (isModal) {
-            return true;
-        }
         return true;
     }
 
