@@ -497,30 +497,15 @@ public class WindowViewCommon {
         try {
             int source = event.getSource();
             if (source == InputDevice.SOURCE_MOUSE) {
+                lastMouseX = event.getX(event.getActionIndex());
+                lastMouseY = event.getY(event.getActionIndex());
                 int actionMasked = event.getActionMasked();
-                int actionIndex = event.getActionIndex();
-                boolean isResetAction = actionMasked == MotionEvent.ACTION_DOWN ||
-                    actionMasked == MotionEvent.ACTION_POINTER_DOWN ||
-                    actionMasked == MotionEvent.ACTION_UP ||
-                    actionMasked == MotionEvent.ACTION_POINTER_UP ||
-                    actionMasked == MotionEvent.ACTION_HOVER_ENTER ||
-                    actionMasked == MotionEvent.ACTION_HOVER_EXIT;
-                if (isResetAction) {
-                    lastMouseX = event.getX(actionIndex);
-                    lastMouseY = event.getY(actionIndex);
-                }
                 int buttonState = event.getButtonState();
+
                 int actionKey = getActionKey(actionMasked, buttonState);
                 ByteBuffer mousePacket = AceEventProcessorAosp.processMouseEvent(event, actionKey, lastMouseX,
                         lastMouseY);
                 nativeDispatchMouseDataPacket(nativeWindowPtr, mousePacket, mousePacket.position());
-                boolean isContinuousAction = actionMasked == MotionEvent.ACTION_MOVE ||
-                    actionMasked == MotionEvent.ACTION_HOVER_MOVE ||
-                    actionMasked == MotionEvent.ACTION_SCROLL;
-                if (isContinuousAction) {
-                    lastMouseX = event.getX(actionIndex);
-                    lastMouseY = event.getY(actionIndex);
-                }
             }
             ByteBuffer packet = AceEventProcessorAosp.processHoverTouchEvent(event);
             nativeDispatchPointerDataPacket(nativeWindowPtr, packet, packet.position());
@@ -545,29 +530,15 @@ public class WindowViewCommon {
             return windowViewInterface.superOnHoverEvent(event);
         }
         try {
+            lastMouseX = event.getX(event.getActionIndex());
+            lastMouseY = event.getY(event.getActionIndex());
+
             int actionMasked = event.getActionMasked();
-            int actionIndex = event.getActionIndex();
-            boolean isResetAction = actionMasked == MotionEvent.ACTION_DOWN ||
-                actionMasked == MotionEvent.ACTION_POINTER_DOWN ||
-                actionMasked == MotionEvent.ACTION_UP ||
-                actionMasked == MotionEvent.ACTION_POINTER_UP ||
-                actionMasked == MotionEvent.ACTION_HOVER_ENTER ||
-                actionMasked == MotionEvent.ACTION_HOVER_EXIT;
-            if (isResetAction) {
-                lastMouseX = event.getX(actionIndex);
-                lastMouseY = event.getY(actionIndex);
-            }
             int buttonState = event.getButtonState();
+
             int actionKey = getActionKey(actionMasked, buttonState);
             ByteBuffer packet = AceEventProcessorAosp.processMouseEvent(event, actionKey, lastMouseX, lastMouseY);
             nativeDispatchMouseDataPacket(nativeWindowPtr, packet, packet.position());
-            boolean isContinuousAction = actionMasked == MotionEvent.ACTION_MOVE ||
-                actionMasked == MotionEvent.ACTION_HOVER_MOVE ||
-                actionMasked == MotionEvent.ACTION_SCROLL;
-            if (isContinuousAction) {
-                lastMouseX = event.getX(actionIndex);
-                lastMouseY = event.getY(actionIndex);
-            }
             return true;
         } catch (AssertionError error) {
             ALog.e(TAG, "process hover event failed: " + error.getMessage());
@@ -594,30 +565,20 @@ public class WindowViewCommon {
         try {
             int source = event.getSource();
             if (source == InputDevice.SOURCE_MOUSE) {
+                lastMouseX = event.getX(event.getActionIndex());
+                lastMouseY = event.getY(event.getActionIndex());
                 int actionMasked = event.getActionMasked();
                 int buttonState = event.getButtonState();
-                int actionIndex = event.getActionIndex();
-                boolean upOrDown = actionMasked == MotionEvent.ACTION_DOWN ||
-                    actionMasked == MotionEvent.ACTION_POINTER_DOWN ||
-                    actionMasked == MotionEvent.ACTION_UP ||
-                    actionMasked == MotionEvent.ACTION_POINTER_UP;
-                if (upOrDown) {
-                    lastMouseX = event.getX(actionIndex);
-                    lastMouseY = event.getY(actionIndex);
-                }
+
+                int savedLastMouseButtonState = lastMouseButtonState;
                 int actionKey = getActionKey(actionMasked, buttonState);
                 ByteBuffer mousePacket = AceEventProcessorAosp.processMouseEvent(event, actionKey, lastMouseX,
                         lastMouseY);
                 nativeDispatchMouseDataPacket(nativeWindowPtr, mousePacket, mousePacket.position());
-                if (actionMasked == MotionEvent.ACTION_MOVE) {
-                    lastMouseX = event.getX(actionIndex);
-                    lastMouseY = event.getY(actionIndex);
-                }
 
                 boolean isNormalAction = (actionMasked == MotionEvent.ACTION_DOWN) ||
                                         (actionMasked == MotionEvent.ACTION_UP) ||
                                         (actionMasked == MotionEvent.ACTION_MOVE);
-                int savedLastMouseButtonState = lastMouseButtonState;
                 boolean isButtonPrimaryPressed = (savedLastMouseButtonState & MotionEvent.BUTTON_PRIMARY) != 0;
                 boolean shouldSendTouch = (isNormalAction &&
                                             ((buttonState == MotionEvent.BUTTON_PRIMARY) || isButtonPrimaryPressed)) ||

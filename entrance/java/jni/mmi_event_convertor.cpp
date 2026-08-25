@@ -204,8 +204,6 @@ void ConvertPointerEvent(const std::shared_ptr<MMI::PointerEvent>& pointerEvent,
     event.windowY = pointerItem.GetWindowY();
     event.displayX = pointerItem.GetDisplayX();
     event.displayY = pointerItem.GetDisplayY();
-    event.globalDisplayX = pointerItem.GetGlobalX();
-    event.globalDisplayY = pointerItem.GetGlobalY();
     event.size = std::max(pointerItem.GetWidth(), pointerItem.GetHeight()) / SIZE_DIVIDE;
     event.force = static_cast<float>(pointerItem.GetPressure());
     event.deviceId = pointerItem.GetDeviceId();
@@ -330,8 +328,6 @@ void ConvertMouseEvent(const std::vector<uint8_t>& data, MouseEvent& events)
     events.deltaX = mouseActionData->deltaX;
     events.deltaY = mouseActionData->deltaY;
     events.deltaZ = mouseActionData->deltaZ;
-    events.rawDeltaX = static_cast<float>(mouseActionData->deltaX);
-    events.rawDeltaY = static_cast<float>(mouseActionData->deltaY);
     events.scrollX = mouseActionData->scrollDeltaX;
     events.scrollY = mouseActionData->scrollDeltaY;
     events.scrollZ = mouseActionData->scrollDeltaZ;
@@ -340,12 +336,6 @@ void ConvertMouseEvent(const std::vector<uint8_t>& data, MouseEvent& events)
     SetMouseEventAction(mouseActionData->action, events);
     SetMouseEventActionButton(mouseActionData->actionButton, events);
     events.pressedButtons = static_cast<int32_t>(mouseActionData->pressedButtons);
-    int32_t buttonMask = static_cast<int32_t>(mouseActionData->pressedButtons);
-    for (int32_t bit = 1; bit <= static_cast<int32_t>(MouseButton::TASK_BUTTON); bit <<= 1) {
-        if (buttonMask & bit) {
-            events.pressedButtonsArray.emplace_back(static_cast<MouseButton>(bit));
-        }
-    }
     events.time = time;
     events.deviceId = mouseActionData->deviceId;
     events.sourceType = static_cast<SourceType>(mouseActionData->deviceType);
