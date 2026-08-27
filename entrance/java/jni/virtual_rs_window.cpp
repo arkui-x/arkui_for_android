@@ -1076,14 +1076,20 @@ void Window::NotifySizeChange(Rect rect)
 
 void Window::NotifyWindowRectChange(const Rect& rect, WindowSizeChangeReason reason)
 {
+    Rect notifyRect = rect;
     {
         std::lock_guard<std::recursive_mutex> lock(globalMutex_);
-        rect_ = rect;
+        if (!IsSubWindow()) {
+            rect_ = rect;
+            notifyRect = rect;
+        } else {
+            notifyRect = rect_;
+        }
     }
     auto windowRectChangeListeners = GetListeners<IWindowRectChangeListener>();
     for (auto& listener : windowRectChangeListeners) {
         if (listener != nullptr) {
-            listener->OnRectChange(rect, reason);
+            listener->OnRectChange(notifyRect, reason);
         }
     }
 }
