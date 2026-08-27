@@ -28,6 +28,7 @@ import ohos.ace.adapter.ALog;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -52,6 +53,8 @@ public class AceWebPluginAosp extends AceWebPluginBase {
     private static final String WEBVIEW_LEFT = "left";
 
     private static final String WEBVIEW_SRC = "src";
+
+    private static final String WEBVIEW_FILE_ACCESS = "fileAccess";
 
     private static final String WEBVIEW_PAGE_URL = "pageUrl";
 
@@ -182,6 +185,13 @@ public class AceWebPluginAosp extends AceWebPluginBase {
             aceWeb.setPageUrl(pageUrl);
             if (param.containsKey(RUN_JAVASCRIPT_ON_DOCUMENT_END)) {
                 aceWeb.runJavaScriptOnDocumentEnd(param);
+            }
+            // Apply fileAccess before loadUrl to ensure file:// URLs can be loaded
+            String fileAccessValue = param.get(WEBVIEW_FILE_ACCESS);
+            if (fileAccessValue != null) {
+                Map<String, String> fileAccessParam = new HashMap<>();
+                fileAccessParam.put(WEBVIEW_FILE_ACCESS, fileAccessValue);
+                aceWeb.fileAccess(fileAccessParam);
             }
             String webSrc = param.get(WEBVIEW_SRC);
             aceWeb.loadUrl(toAndroidAssetUrl(webSrc));
