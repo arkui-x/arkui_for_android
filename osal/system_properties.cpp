@@ -85,6 +85,7 @@ bool SystemProperties::dynamicDetectionTraceEnable_ = false;
 bool SystemProperties::enableScrollableItemPool_ = false;
 bool SystemProperties::navigationBlurEnabled_ = true;
 std::optional<bool> SystemProperties::arkUIHookEnabled_;
+bool SystemProperties::smartLayoutEnabled_ = true;
 bool SystemProperties::gridCacheEnabled_ = false;
 bool SystemProperties::sideBarContainerBlurEnable_ = false;
 std::atomic<bool> SystemProperties::acePerformanceMonitorEnable_(false);
@@ -315,6 +316,11 @@ bool SystemProperties::GetGridCacheEnabled()
 bool SystemProperties::GetGridIrregularLayoutEnabled()
 {
     return false;
+}
+
+bool SystemProperties::GetSmartLayoutEnabled()
+{
+    return smartLayoutEnabled_;
 }
 
 bool SystemProperties::GetSideBarContainerBlurEnable()
