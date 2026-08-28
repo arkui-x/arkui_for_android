@@ -184,6 +184,7 @@
       "OHOS::Ace::Framework::AccessibilityEventManager::SendEventInfo(OHOS::Ace::Framework::AccessibilityEventInfo const&)";
       "OHOS::Ace::Framework::CreateCurve(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, bool)";
       "OHOS::Ace::Framework::JSThemeScope::jsCurrentTheme";
+      "OHOS::Ace::Framework::JSThemeUtils::GetThemeColors()";
       "OHOS::Ace::Framework::JsEngine::GetPixelMapNapiEntry()";
       "OHOS::Ace::Framework::JsEngine::UnregisterDrawChildrenWithParameterInspectorCallback(OHOS::Ace::RefPtr<OHOS::Ace::Framework::InspectorEvent> const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::Framework::JsEngine::UnregisterLayoutChildrenInspectorCallback(OHOS::Ace::RefPtr<OHOS::Ace::Framework::InspectorEvent> const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
@@ -2513,6 +2514,8 @@
       "OHOS::Ace::NG::ScrollableModelNG::SetEdgeEffect(OHOS::Ace::EdgeEffect, bool, OHOS::Ace::EffectEdge)";
       "OHOS::Ace::NG::ScrollableModelNG::SetScrollBarMode(OHOS::Ace::DisplayMode)";
       "OHOS::Ace::NG::ScrollableModelNG::SetScrollBarMode(OHOS::Ace::NG::FrameNode*, int)";
+      "OHOS::Ace::NG::ScrollableModelNG::SetScrollBarMode(OHOS::Ace::NG::FrameNode*, std::__ndk1::optional<OHOS::Ace::DisplayMode> const&)";
+      "OHOS::Ace::NG::ScrollableModelNG::SetContentClip(OHOS::Ace::NG::FrameNode*, OHOS::Ace::NG::ContentClipMode, OHOS::Ace::RefPtr<OHOS::Ace::ShapeRect> const&)";
       "OHOS::Ace::NG::ScrollableModelNG::SetScrollBarColor(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::NG::ScrollableModelNG::SetScrollBarColor(OHOS::Ace::NG::FrameNode*, std::__ndk1::optional<OHOS::Ace::Color> const&)";
       "OHOS::Ace::NG::ScrollableModelNG::SetScrollBarColor(OHOS::Ace::NG::FrameNode*, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
@@ -3002,6 +3005,8 @@
       OHOS::Ace::V2::SLIDER_ETS_TAG;
       OHOS::Ace::V2::ROW_ETS_TAG;
       OHOS::Ace::V2::TEXT_ETS_TAG;
+      "OHOS::Ace::V2::TABS_SIDE_BAR_TAG";
+      "OHOS::Ace::V2::TABS_SIDE_BAR_TAB_LIST_TAG";
       OHOS::Ace::V2::ARC_INDEXER_ETS_TAG;
       OHOS::Ace::NG::SafeAreaManager::*;
       "OHOS::Ace::NG::VibratorUtils::StartViratorDirectly(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
@@ -3068,6 +3073,7 @@
       "OHOS::Ace::NG::NodeModifier::GetLazyGridLayoutCustomModifier()";
       "OHOS::Ace::NG::NodeModifier::GetLoadingProgressModifier()";
       "OHOS::Ace::NG::NodeModifier::GetSelectCustomModifier()";
+      "OHOS::Ace::NG::NodeModifier::GetSearchCustomModifier()";
       "OHOS::Ace::NG::NodeModifier::GetButtonCustomModifier()";
       "OHOS::Ace::NG::NodeModifier::GetDialogInnerModifier()";
       "OHOS::Ace::NG::NodeModifier::GetDividerModifier()";
@@ -3392,6 +3398,8 @@
       "OHOS::Ace::NG::TextPattern::GetLineHeight() const";
       "OHOS::Ace::NG::TextPattern::GetTextBoxes()";
       "OHOS::Ace::NG::TextPattern::GetParentGlobalOffset() const";
+      "OHOS::Ace::NG::TextPattern::GetPageTranslateNodeId() const";
+      "OHOS::Ace::NG::TextPattern::GetPageTranslateTextForReport() const";
       "OHOS::Ace::NG::TextPattern::MoveDragNode()";
       "OHOS::Ace::NG::TextPattern::GetDragParagraph() const";
       "OHOS::Ace::NG::TextPattern::CloseSelectOverlay()";
@@ -3429,6 +3437,8 @@
       "OHOS::Ace::NG::TextPattern::HandleSurfaceChanged(int, int, int, int)";
       "OHOS::Ace::NG::TextPattern::GetThumbnailCallback()";
       "OHOS::Ace::NG::TextPattern::AddUdmfData(OHOS::Ace::RefPtr<OHOS::Ace::DragEvent> const&)";
+      "OHOS::Ace::NG::TextPattern::ApplyPageTranslateResult(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, long)";
+      "OHOS::Ace::NG::TextPattern::ApplyPageTranslateResult(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, long long)";
       "OHOS::Ace::NG::TextPattern::GetChildByIndex(int) const";
       "OHOS::Ace::NG::TextPattern::SetResultObjectText(OHOS::Ace::ResultObject&, OHOS::Ace::RefPtr<OHOS::Ace::NG::SpanItem> const&)";
       "OHOS::Ace::NG::TextPattern::IsMeasureBoundary() const";
@@ -3438,6 +3448,7 @@
       "OHOS::Ace::NG::TextPattern::GetParagraphs() const";
       "OHOS::Ace::NG::TextPattern::OnHandleAreaChanged()";
       "OHOS::Ace::NG::TextPattern::ResetDragOption()";
+      "OHOS::Ace::NG::TextPattern::ResetPageTranslate()";
       "OHOS::Ace::NG::TextPattern::NeedShowAIDetect()";
       "OHOS::Ace::NG::TextPattern::GetDragRecordSize()";
       "OHOS::Ace::NG::TextPattern::GetAllChildren() const";
@@ -3602,9 +3613,13 @@
       "OHOS::Ace::DragEvent::GetResult()";
       "OHOS::Ace::DragEvent::GetPressedKeyCodes() const";
       "OHOS::Ace::DataDetectorAdapter::IsAskCeliaSupported()";
+      "non-virtual thunk to OHOS::Ace::NG::TextPattern::ApplyPageTranslateResult(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, long)";
+      "non-virtual thunk to OHOS::Ace::NG::TextPattern::ApplyPageTranslateResult(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, long long)";
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::BetweenSelectedPosition(OHOS::Ace::Offset const&)";
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::OnHandleMove(OHOS::Ace::NG::RectT<float> const&, bool)";
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetContentOffset()";
+      "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetPageTranslateNodeId() const";
+      "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetPageTranslateTextForReport() const";
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::CanAIEntityDrag()";
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetTextPaintOffset() const";
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::OnHandleAreaChanged()";
@@ -3622,6 +3637,7 @@
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetGlyphRangeForCharacterRange(int, int, OHOS::Ace::NG::TextEncoding)";
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::GetCharacterRangeForGlyphRange(int, int, OHOS::Ace::NG::TextEncoding)";
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::~TextPattern()";
+      "non-virtual thunk to OHOS::Ace::NG::TextPattern::ResetPageTranslate()";
       "OHOS::Ace::NG::SelectOverlayClient::RequestCloseSelectOverlay(bool)";
       "OHOS::Ace::NG::SelectOverlayClient::OnParentScrollStartOrEnd(bool, bool)";
       "OHOS::Ace::NG::SelectOverlayClient::GetVisibleContentRect(OHOS::Ace::WeakPtr<OHOS::Ace::NG::FrameNode>, OHOS::Ace::NG::RectT<float>)";
@@ -3875,6 +3891,19 @@
       "OHOS::Ace::NG::BaseTextSelectOverlay::ConvertToLocalOffsetWithTransform(OHOS::Ace::NG::OffsetT<float> const&)";
       "OHOS::Ace::NG::BaseTextSelectOverlay::ConvertToGlobalOffsetWithTransform(OHOS::Ace::NG::OffsetT<float> const&)";
       "OHOS::Ace::NG::BaseTextSelectOverlay::FlushAfterOverlayShowTask()";
+      "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuHasOnPrepareMenuCallback(OHOS::Ace::NG::SelectMenuInfo&)";
+      "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuShowCameraInput(OHOS::Ace::NG::SelectMenuInfo&, bool, bool, bool, bool)";
+      "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuVisibility(OHOS::Ace::NG::SelectMenuInfo&, bool, bool, bool, bool, unsigned int)";
+      "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuShowPaste(OHOS::Ace::NG::SelectMenuInfo&)";
+      "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuMenuType(OHOS::Ace::NG::SelectMenuInfo&)";
+      "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuShowCopyAndCut(OHOS::Ace::NG::SelectMenuInfo&, bool, bool, bool)";
+      "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuShowCopyAll(OHOS::Ace::NG::SelectMenuInfo&, bool, bool)";
+      "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuShowAutoFill(OHOS::Ace::NG::SelectMenuInfo&, bool)";
+      "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuShowTranslate(OHOS::Ace::NG::SelectMenuInfo&, bool, bool)";
+      "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuShowSearch(OHOS::Ace::NG::SelectMenuInfo&, bool, bool)";
+      "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuShowShare(OHOS::Ace::NG::SelectMenuInfo&, bool)";
+      "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuShowAIWrite(OHOS::Ace::NG::SelectMenuInfo&, bool)";
+      "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuAIMenuOptionType(OHOS::Ace::NG::SelectMenuInfo&, bool, bool, bool, OHOS::Ace::TextDataDetectType)";
       "OHOS::Ace::NG::BaseTextSelectOverlay::GetDragViewHandleRects(OHOS::Ace::NG::RectT<float>&, OHOS::Ace::NG::RectT<float>&)";
       "OHOS::Ace::NG::BaseTextSelectOverlay::GetGlobalRectWithTransform(OHOS::Ace::NG::RectT<float>&)";
       "OHOS::Ace::NG::BaseTextSelectOverlay::GetLocalRectWithTransform(OHOS::Ace::NG::RectT<float>&)";
@@ -4168,6 +4197,7 @@
       "OHOS::Ace::NG::PaddingPropertyT<OHOS::Ace::NG::CalcLength>::ToJsonString() const";
       "OHOS::Ace::NG::PaddingPropertyF::Plus(OHOS::Ace::NG::PaddingPropertyF const&, bool)";
       "OHOS::Ace::NG::LayoutProperty::GetPixelRound() const";
+      "OHOS::Ace::NG::LayoutProperty::MarkUserDefinedHeightConfigured()";
       "OHOS::Ace::NG::ViewAbstract::SetZIndex(OHOS::Ace::NG::FrameNode*, int)";
       "OHOS::Ace::JsonValue::PutFixedAttr(char const*, bool, OHOS::Ace::NG::InspectorFilter const&, OHOS::Ace::NG::FixedAttrBit)";
       "OHOS::Ace::NG::UIObserverHandler::NotifyTabContentStateUpdate(OHOS::Ace::NG::TabContentInfo const&)";
@@ -4646,6 +4676,7 @@
       OHOS::Ace::NG::RosenRenderContext::*;
       *RenderSurfaceImpl*SetSurfaceRotation*;
       "OHOS::Ace::NG::PipelineContext::RegisterTransformHintChangeCallback(std::__ndk1::function<void (unsigned int)>&&)";
+      "OHOS::Ace::NG::PipelineContext::RegisterListenerForTranslate(OHOS::Ace::WeakPtr<OHOS::Ace::NG::FrameNode>)";
       "OHOS::Ace::UIDisplaySync::IsOnPipeline()";
       "OHOS::Ace::UIDisplaySync::AddToPipeline(OHOS::Ace::WeakPtr<OHOS::Ace::PipelineBase>&)";
       "OHOS::Ace::UIDisplaySync::DelFromPipelineOnContainer()";
@@ -4657,6 +4688,7 @@
       "OHOS::Ace::NG::FrameNode::UnregisterNodeChangeListener()";
       "OHOS::Ace::NG::PipelineContext::GetBundleName() const";
       "OHOS::Ace::NG::PipelineContext::UnregisterTransformHintChangedCallback(int)";
+      "OHOS::Ace::NG::PipelineContext::UnRegisterListenerForTranslate(int)";
       "OHOS::Ace::NG::RenderContext::RequestNextFrame(bool) const";
       "OHOS::Ace::NG::UINode::GetParentCustomNode() const";
       "OHOS::Ace::PerfMonitor::ReportSurface(unsigned long const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, int)";
