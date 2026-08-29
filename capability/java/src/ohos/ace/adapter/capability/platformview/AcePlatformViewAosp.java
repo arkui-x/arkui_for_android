@@ -355,7 +355,30 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
         }
     }
 
+    /**
+     * Process touch cancel event for platform view.
+     * Always dispatch a real ACTION_CANCEL regardless of the last stored motion event,
+     * so the native view can cancel its in-progress tap/scroll tracker.
+     */
+    public void processTouchCancelEvent() {
+        MotionEvent eventClone = getMotionEvent(MotionEvent.ACTION_CANCEL);
+        if (eventClone != null) {
+            synchronized (PLATFORM_VIEW_LOCK) {
+                if (platformView != null) {
+                    platformView.getView().dispatchTouchEvent(eventClone);
+                }
+            }
+        }
+    }
+
     private MotionEvent getMotionEvent() {
+        if (motionEvent == null) {
+            return null;
+        }
+        return getMotionEvent(motionEvent.getAction());
+    }
+
+    private MotionEvent getMotionEvent(int action) {
         if (motionEvent == null) {
             return null;
         }
@@ -388,7 +411,7 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
         MotionEvent translatedEvent = MotionEvent.obtain(
                 motionEvent.getDownTime(),
                 motionEvent.getEventTime(),
-                motionEvent.getAction(),
+                action,
                 motionEvent.getPointerCount(),
                 pointerProperties,
                 pointerCoords,
@@ -455,8 +478,35 @@ public class AcePlatformViewAosp extends AcePlatformViewBase {
             ALog.e(LOG_TAG, "touchCancel failed: platformViewTouchPointOffsetX is illegal");
             return FAIL;
         }
-        processTouchEvent();
+        processTouchCancelEvent();
         return SUCCESS;
+    }
+
+    @Override
+    public String gestureJudge(Map<String, String> params) {
+        if (!params.containsKey(PLATFORM_VIEW_TOUCH_POINT_OFFSET_X)) {
+            ALog.e(LOG_TAG, "gestureJudge failed: platformViewTouchPointOffsetX is illegal");
+            return "false";
+        }
+        if (!params.containsKey(PLATFORM_VIEW_TOUCH_POINT_OFFSET_Y)) {
+            ALog.e(LOG_TAG, "gestureJudge failed: platformViewTouchPointOffsetY is illegal");
+            return "false";
+        }
+        float touchoffsetX = 0.0f;
+        float touchoffsetY = 0.0f;
+        try {
+            touchoffsetX = Float.parseFloat(params.get(PLATFORM_VIEW_TOUCH_POINT_OFFSET_X));
+            touchoffsetY = Float.parseFloat(params.get(PLATFORM_VIEW_TOUCH_POINT_OFFSET_Y));
+        } catch (NumberFormatException ignored) {
+            ALog.e(LOG_TAG, "gestureJudge failed: parse offset error");
+            return "false";
+        }
+        synchronized (PLATFORM_VIEW_LOCK) {
+            if (platformView != null && platformView.onGestureJudge(touchoffsetX, touchoffsetY)) {
+                return "true";
+            }
+        }
+        return "false";
     }
 
     @Override

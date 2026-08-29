@@ -42,4 +42,18 @@ public interface IPlatformView {
      * @return String
      */
     String getPlatformViewID();
+
+    /**
+     * Called by ArkUI before a pan gesture is accepted, to ask the native view
+     * whether it wants to consume the gesture (so ArkUI can let the parent List
+     * scroll or not).
+     *
+     * @param offsetX cumulative pan offset on X axis
+     * @param offsetY cumulative pan offset on Y axis
+     * @return true if the native view consumes the gesture; false to let the
+     *         parent List scroll.
+     */
+    default boolean onGestureJudge(float offsetX, float offsetY) {
+        return true;
+    }
 }
