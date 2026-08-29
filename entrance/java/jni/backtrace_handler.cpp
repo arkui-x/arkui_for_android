@@ -423,11 +423,48 @@ void DumpSignalHeader(DumpBuffer& buf, int sig, siginfo_t* info)
     AppendCh(buf, '\n');
 }
 
-void DumpBacktrace(DumpBuffer& buf, uintptr_t fp)
+// Appends one frame line "  #<idx> pc=0x<abs> <module> +0x<rel>". Does NOT flush;
+// callers do the threshold flush before calling, keeping the batch-flush strategy.
+void AppendFrame(DumpBuffer& buf, uint32_t idx, uintptr_t pc)
+{
+    AppendLit(buf, "  #");
+    AppendDec(buf, idx);
+    AppendLit(buf, " pc=");
+    AppendHex0x(buf, pc);
+
+    const MapRecord* mod = FindRecord(pc);
+    if (mod != nullptr) {
+        AppendLit(buf, " ");
+        AppendStr(buf, mod->name);
+        AppendLit(buf, " +0x");
+        // Print the vaddr = pc - load base, which addr2line / llvm-symbolizer
+        // consume directly (no manual +base correction). Fall back to the
+        // mapping-relative offset if the load base is unknown.
+        uintptr_t loadBase = FindLoadBase(mod);
+        uintptr_t relOffset = (loadBase != 0) ? (pc - loadBase) : (pc - mod->start);
+        AppendHex(buf, relOffset);
+    }
+    AppendCh(buf, '\n');
+}
+
+void DumpBacktrace(DumpBuffer& buf, uintptr_t fp, uintptr_t faultPc)
 {
     AppendLit(buf, "Backtrace (frame-pointer chain):\n");
 
 #if defined(__aarch64__)
+    uint32_t idx = 0;
+
+    // #0 = the faulting instruction itself (mcontext.pc), so the crashing function
+    // is the innermost frame — matches iOS and the standard backtrace convention.
+    // Without this the FP chain only yields the caller of the crashing frame, so
+    // the crashing function would be missing for non-recursive crashes.
+    if (faultPc != 0) {
+        if (buf.len > DUMP_BUF_SIZE - FLUSH_THRESHOLD) {
+            FlushDump(buf);
+        }
+        AppendFrame(buf, idx++, faultPc);
+    }
+
     if (fp == 0) {
         AppendLit(buf, "  fp == 0, cannot walk the chain\n");
         return;
@@ -440,7 +477,7 @@ void DumpBacktrace(DumpBuffer& buf, uintptr_t fp)
     const uintptr_t stackLo = stack ? stack->start : 0;
     const uintptr_t stackHi = stack ? stack->end : 0;
 
-    for (uint32_t idx = 0; idx < MAX_STACK_DEPTH; ++idx) {
+    for (; idx < MAX_STACK_DEPTH; ++idx) {
         // The whole frame [fp, fp + 2*sizeof(uintptr_t)) must lie inside the
         // stack mapping before we dereference it. Checking only `fp < stackHi`
         // is not enough: the two 8-byte reads at fp/fp+8 would still run past
@@ -470,31 +507,19 @@ void DumpBacktrace(DumpBuffer& buf, uintptr_t fp)
         uintptr_t next = *reinterpret_cast<uintptr_t*>(fp);
         uintptr_t callSite = (lr != 0) ? lr - INSTRUCTION_LENGTH : 0;
 
+        // Bottom-of-stack: saved LR is 0 (no caller). Stop instead of emitting a
+        // meaningless pc=0 frame — matches iOS and the standard backtrace convention.
+        if (callSite == 0) {
+            break;
+        }
+
         // A deep native stack can hold more frames than DUMP_BUF_SIZE; flush
         // and reuse the buffer before appending this frame so frames are never
         // silently dropped. FlushDump is async-signal-safe and resets buf.len.
         if (buf.len > DUMP_BUF_SIZE - FLUSH_THRESHOLD) {
             FlushDump(buf);
         }
-
-        AppendLit(buf, "  #");
-        AppendDec(buf, idx);
-        AppendLit(buf, " pc=");
-        AppendHex0x(buf, callSite);
-
-        const MapRecord* mod = FindRecord(callSite);
-        if (mod != nullptr) {
-            AppendLit(buf, " ");
-            AppendStr(buf, mod->name);
-            AppendLit(buf, " +0x");
-            // Print the vaddr = callSite - load base, which addr2line /
-            // llvm-symbolizer consume directly (no manual +base correction).
-            // Fall back to the mapping-relative offset if the load base is unknown.
-            uintptr_t loadBase = FindLoadBase(mod);
-            uintptr_t relOffset = (loadBase != 0) ? (callSite - loadBase) : (callSite - mod->start);
-            AppendHex(buf, relOffset);
-        }
-        AppendCh(buf, '\n');
+        AppendFrame(buf, idx, callSite);
 
         // The saved fp must point upward (stack grows down); otherwise the
         // chain has ended or is corrupted. The full [next, next+16) range is
@@ -505,7 +530,8 @@ void DumpBacktrace(DumpBuffer& buf, uintptr_t fp)
         fp = next;
     }
 #else
-    (void)fp; // FP-chain walk is aarch64-only; nothing to traverse on this ABI.
+    (void)fp;        // FP-chain walk is aarch64-only; nothing to traverse on this ABI.
+    (void)faultPc;
     AppendLit(buf, "  FP-chain walk is only implemented on aarch64 (arch skipped)\n");
 #endif
 }
@@ -562,17 +588,19 @@ void CrashHandler(int sig, siginfo_t* info, void* context)
     }
 
     uintptr_t fp = 0;
+    uintptr_t faultPc = 0;
 #if defined(__aarch64__)
     if (context != nullptr) {
         auto* uc = static_cast<ucontext_t*>(context);
         fp = uc->uc_mcontext.regs[REG_FP]; // saved x29 of the interrupted frame
+        faultPc = uc->uc_mcontext.pc;      // the faulting instruction (crash site)
     }
 #endif
 
     DumpBuffer dump {};
     DumpSignalHeader(dump, sig, info);
     LoadMaps();
-    DumpBacktrace(dump, fp);
+    DumpBacktrace(dump, fp, faultPc);
     AppendLit(dump, "======================================================\n");
     FlushDump(dump);
 
@@ -634,7 +662,7 @@ void DumpBacktraceFromFp(uintptr_t fp)
 
     DumpBuffer dump {};
     LoadMaps();
-    DumpBacktrace(dump, fp);
+    DumpBacktrace(dump, fp, 0);
     AppendLit(dump, "(end of manual backtrace)\n");
     FlushDump(dump);
 
