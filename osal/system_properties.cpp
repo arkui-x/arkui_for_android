@@ -373,6 +373,16 @@ bool SystemProperties::IsSmallFoldProduct()
     return false;
 }
 
+bool SystemProperties::IsBigFoldProduct()
+{
+    return false;
+}
+
+bool SystemProperties::IsPortraitFoldProduct()
+{
+    return false;
+}
+
 std::string SystemProperties::GetWebDebugRenderMode()
 {
     return UNDEFINED_PARAM;
