@@ -95,4 +95,8 @@ void EventReport::FrameRateDurationsStatistics(int32_t expectedRate, const std::
 void EventReport::ReportPageSlidInfo(NG::SlidInfo &slidInfo) {}
 
 void EventReport::ReportGeneralInteractionError(const GeneralInteractionErrorInfo& generalEventErrorInfo) {}
+
+void EventReport::ReportHoverStatusChange(int32_t foldStatus, int32_t time, bool isHoverMode,
+    int32_t appRotation, int32_t windowMode)
+{}
 } // namespace OHOS::Ace

@@ -289,6 +289,7 @@ component_modules = [
   "text_field",
   "bubble",
   "xcomponent",
+  "folder_stack",
 ]
 
 component_modules_libs = []
