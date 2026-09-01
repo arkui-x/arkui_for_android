@@ -44,9 +44,17 @@ ohos_shared_library("libarkui_android") {
 
   public_configs = [ "//foundation/arkui/napi:ace_napi_config" ]
 
+  ldflags = []
   if (ace_engine_enable_reduce_eh_frame) {
-    ldflags = [ "-Wl,--no-eh-frame-hdr" ]
+    ldflags += [ "-Wl,--no-eh-frame-hdr" ]
   }
+
+  # Force-keep symbols referenced by split component libs (libarkui_richeditor /
+  # libarkui_tabswiper) that would otherwise be GC'ed from this lib.
+  ldflags += [
+    "-u_ZN4OHOS3Ace2NG21BaseTextSelectOverlay31ConvertToLocalRectWithTransformERKNS1_5RectTIfEE",
+    "-u_ZN4OHOS3Ace2NG17ComponentSnapshot16GetNormalCaptureERKNS0_6RefPtrINS1_9FrameNodeEEEONSt6__ndk18functionIFvNS8_10shared_ptrINS_5Media8PixelMapEEEEEE",
+  ]
 
   version_script = "libarkui_android.map"
   part_name = "arkui-x"
@@ -261,6 +269,10 @@ component_modules = [
   "symbol",
   "rich_editor",
   "menu",
+  "sheet",
+  "navigator",
+  "tabswiper",
+  "panel",
   "text_clock",
   "toggle",
   "button",
