@@ -35,7 +35,7 @@ RefPtr<ImageSource> ImageSource::Create(int32_t fd)
     return MakeRefPtr<ImageSourceAndroid>(std::move(src));
 }
 
-RefPtr<ImageSource> ImageSource::Create(const uint8_t* data, uint32_t size, uint32_t& errorCode)
+RefPtr<ImageSource> ImageSource::Create(const uint8_t* data, uint32_t size, uint32_t& errorCode, int32_t svgLimitsId)
 {
     Media::SourceOptions options;
     auto src = Media::ImageSource::CreateImageSource(data, size, options, errorCode);
@@ -46,7 +46,7 @@ RefPtr<ImageSource> ImageSource::Create(const uint8_t* data, uint32_t size, uint
     return MakeRefPtr<ImageSourceAndroid>(std::move(src));
 }
 
-RefPtr<ImageSource> ImageSource::Create(const uint8_t* data, uint32_t size)
+RefPtr<ImageSource> ImageSource::Create(const uint8_t* data, uint32_t size, int32_t svgLimitsId)
 {
     uint32_t errorCode = 0;
     Media::SourceOptions options;
@@ -58,7 +58,7 @@ RefPtr<ImageSource> ImageSource::Create(const uint8_t* data, uint32_t size)
     return MakeRefPtr<ImageSourceAndroid>(std::move(src));
 }
 
-RefPtr<ImageSource> ImageSource::Create(const std::string& filePath)
+RefPtr<ImageSource> ImageSource::Create(const std::string& filePath, int32_t svgLimitsId)
 {
     Media::SourceOptions opts;
     opts.formatHint = "image/svg+xml";

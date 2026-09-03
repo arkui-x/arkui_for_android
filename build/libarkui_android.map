@@ -1392,6 +1392,7 @@
       ucnv_setToUCallBack_74;
       ucnv_close_74;
       ucnv_reset_74;
+      ucnv_resetToUnicode_74;
       ucnv_getType_74;
       ucnv_open_74;
       ucnv_setFromUCallBack_74;
@@ -3874,6 +3875,8 @@
       "OHOS::Ace::NG::TextFieldManagerNG::RemoveTextFieldInfo(int const&, int const&)";
       "OHOS::Ace::NG::TextFieldManagerNG::UpdateScrollableParentViewPort(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
       "OHOS::Ace::NG::TextFieldManagerNG::UpdateTextFieldInfo(OHOS::Ace::NG::TextFieldInfo const&)";
+      "OHOS::Ace::NG::TextFieldTypeUtils::ToInputTypeString(OHOS::Ace::TextInputType, bool, bool)";
+      "OHOS::Ace::NG::TextFieldTypeUtils::ToContentTypeString(OHOS::Ace::NG::TextContentType)";
       "OHOS::Ace::NG::ScrollBar::ScheduleDisappearDelayTask()";
       "OHOS::Ace::NG::ScrollBar::SetDisplayMode(OHOS::Ace::DisplayMode)";
       "OHOS::Ace::NG::ScrollBar::SetPositionMode(OHOS::Ace::PositionMode)";
