@@ -128,6 +128,12 @@ public abstract class AcePlatformViewBase {
                 "touchCancel" +
                 PARAM_BEGIN,
                 callTouchCancel);
+        IAceOnCallResourceMethod callGestureJudge = (param) -> gestureJudge(param);
+        this.callMethodMap.put(PLATFORM_VIEW_FLAG + id + METHOD +
+                PARAM_EQUALS +
+                "gestureJudge" +
+                PARAM_BEGIN,
+                callGestureJudge);
         IAceOnCallResourceMethod callDispose = (param) -> dispose(param);
         this.callMethodMap.put(PLATFORM_VIEW_FLAG + id + METHOD +
                 PARAM_EQUALS +
@@ -278,6 +284,14 @@ public abstract class AcePlatformViewBase {
      * @return result of call.
      */
     public abstract String touchCancel(Map<String, String> params);
+
+    /**
+     * Ask the native view whether it wants to consume the in-progress pan gesture.
+     *
+     * @param params is param map, containing pan offset X/Y.
+     * @return "true" if the native view consumes the gesture, "false" otherwise.
+     */
+    public abstract String gestureJudge(Map<String, String> params);
 
     /**
      * dispose.
