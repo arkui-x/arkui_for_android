@@ -172,9 +172,9 @@ public class StageActivityDelegate {
      * @param timeout timeout.
      * @param socket socket.
      */
-    public void createAbilityDelegator(String bundleName, String moduleName, String testRunerName, String timeout,
-        String socket) {
-        nativeCreateAbilityDelegator(bundleName, moduleName, testRunerName, timeout, socket);
+    public void createAbilityDelegator(String bundleName, String moduleName, String testRunerName,
+        String testClassName, String timeout, String socket) {
+        nativeCreateAbilityDelegator(bundleName, moduleName, testRunerName, testClassName, timeout, socket);
     }
 
     /**
@@ -218,7 +218,8 @@ public class StageActivityDelegate {
     private native void nativeSetWindowView(String instanceName, WindowViewInterface windowView);
 
     private native void nativeCreateAbilityDelegator(String bundleName, String moduleName,
-                                                        String testRunerName, String timeout, String socket);
+                                                        String testRunerName, String testClassName,
+                                                        String timeout, String socket);
 
     private native void nativeDispatchOnAbilityResult(
         String instanceName, int requestCode, int resultCode, String resultWantParams);

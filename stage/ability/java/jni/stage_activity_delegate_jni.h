@@ -43,7 +43,7 @@ public:
     static void DispatchOnNewWant(JNIEnv* env, jclass myclass, jstring str, jstring params);
     static void SetWindowView(JNIEnv* env, jclass myclass, jstring str, jobject jwindowView);
     static void CreateAbilityDelegator(JNIEnv* env, jclass myclass, jstring jbundleName,
-        jstring jmoduleName, jstring jtestName, jstring jtimeout, jstring jsocket);
+        jstring jmoduleName, jstring jtestName, jstring jtestClassName, jstring jtimeout, jstring jsocket);
     static void DispatchOnAbilityResult(
         JNIEnv* env, jclass myclass, jstring str, jint requestCode, jint resultCode, jstring resultWantParams);
     static void SetStageActivityStruct(JNIEnv* env, jobject object);

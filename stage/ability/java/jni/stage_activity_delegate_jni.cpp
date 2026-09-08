@@ -72,7 +72,7 @@ bool StageActivityDelegateJni::Register(const std::shared_ptr<JNIEnv>& env)
             .name = "nativeCreateAbilityDelegator",
             .signature =
                 "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;"
-                "Ljava/lang/String;Ljava/lang/String;)V",
+                "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
             .fnPtr = reinterpret_cast<void*>(&CreateAbilityDelegator),
         },
         {
@@ -212,7 +212,7 @@ void StageActivityDelegateJni::SetWindowView(JNIEnv* env, jclass myclass, jstrin
 }
 
 void StageActivityDelegateJni::CreateAbilityDelegator(JNIEnv* env, jclass myclass, jstring jbundleName,
-    jstring jmoduleName, jstring jtestName, jstring jtimeout, jstring jsocket)
+    jstring jmoduleName, jstring jtestName, jstring jtestClassName, jstring jtimeout, jstring jsocket)
 {
     if (env == nullptr) {
         LOGE("env is nullptr");
@@ -236,12 +236,21 @@ void StageActivityDelegateJni::CreateAbilityDelegator(JNIEnv* env, jclass myclas
         env->ReleaseStringUTFChars(jmoduleName, moduleName);
         return;
     }
+    auto testClassName = env->GetStringUTFChars(jtestClassName, nullptr);
+    if (testClassName == nullptr) {
+        LOGE("testClassName is nullptr");
+        env->ReleaseStringUTFChars(jbundleName, bundleName);
+        env->ReleaseStringUTFChars(jmoduleName, moduleName);
+        env->ReleaseStringUTFChars(jtestName, testName);
+        return;
+    }
     auto timeout = env->GetStringUTFChars(jtimeout, nullptr);
     if (timeout == nullptr) {
         LOGE("timeout is nullptr");
         env->ReleaseStringUTFChars(jbundleName, bundleName);
         env->ReleaseStringUTFChars(jmoduleName, moduleName);
         env->ReleaseStringUTFChars(jtestName, testName);
+        env->ReleaseStringUTFChars(jtestClassName, testClassName);
         return;
     }
     auto socket = env->GetStringUTFChars(jsocket, nullptr);
@@ -250,13 +259,16 @@ void StageActivityDelegateJni::CreateAbilityDelegator(JNIEnv* env, jclass myclas
         env->ReleaseStringUTFChars(jbundleName, bundleName);
         env->ReleaseStringUTFChars(jmoduleName, moduleName);
         env->ReleaseStringUTFChars(jtestName, testName);
+        env->ReleaseStringUTFChars(jtestClassName, testClassName);
         env->ReleaseStringUTFChars(jtimeout, timeout);
         return;
     }
-    AppMain::GetInstance()->PrepareAbilityDelegator(bundleName, moduleName, testName, timeout, socket);
+    AppMain::GetInstance()->PrepareAbilityDelegator(
+        bundleName, moduleName, testName, testClassName, timeout, socket);
     env->ReleaseStringUTFChars(jbundleName, bundleName);
     env->ReleaseStringUTFChars(jmoduleName, moduleName);
     env->ReleaseStringUTFChars(jtestName, testName);
+    env->ReleaseStringUTFChars(jtestClassName, testClassName);
     env->ReleaseStringUTFChars(jtimeout, timeout);
     env->ReleaseStringUTFChars(jsocket, socket);
 }
