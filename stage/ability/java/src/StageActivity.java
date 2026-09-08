@@ -487,13 +487,18 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
         String testBundleName = intent.getStringExtra("bundleName");
         String testModuleName = intent.getStringExtra("moduleName");
         String testRunerName = intent.getStringExtra("unittest");
+        String testClassName = intent.getStringExtra("class");
+        if (testClassName == null) {
+            testClassName = "";
+        }
         String timeout = intent.getStringExtra("timeout");
         String socket = intent.getStringExtra("socket");
         boolean isExist = !(testBundleName == null || testModuleName == null ||
                 testRunerName == null || timeout == null || socket == null);
         if (hasTestValue && !isFirst && isExist) {
             ALog.i(LOG_TAG, "Start creating abilityDelegate");
-            activityDelegate.createAbilityDelegator(testBundleName, testModuleName, testRunerName, timeout, socket);
+            activityDelegate.createAbilityDelegator(testBundleName, testModuleName, testRunerName,
+                testClassName, timeout, socket);
             isFirst = true;
         } else {
             ALog.i(LOG_TAG, "No need to start creating abilityDelegate");
