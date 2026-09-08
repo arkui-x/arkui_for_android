@@ -242,6 +242,14 @@ public class StageActivity extends Activity implements KeyboardHeightObserver {
     protected void onResume() {
         ALog.i(LOG_TAG, "StageActivity onResume called");
         super.onResume();
+        windowView.resumed();
+    }
+
+    @Override
+    protected void onPause() {
+        ALog.i(LOG_TAG, "StageActivity onPause called");
+        super.onPause();
+        windowView.paused();
     }
 
     @Override

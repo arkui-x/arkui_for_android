@@ -277,6 +277,22 @@ public class WindowViewTexture extends TextureView implements TextureView.Surfac
     }
 
     /**
+     * Notify nativeWindow resumed.
+     */
+    @Override
+    public void resumed() {
+        windowViewCommon.resumed();
+    }
+
+    /**
+     * Notify nativeWindow paused.
+     */
+    @Override
+    public void paused() {
+        windowViewCommon.paused();
+    }
+
+    /**
      * Set whether current window view can gain focus.
      *
      * @param isFocusable whether current view is focusable

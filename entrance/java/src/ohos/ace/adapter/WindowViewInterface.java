@@ -60,6 +60,16 @@ public interface WindowViewInterface {
     void foreground();
 
     /**
+     * Notify nativeWindow resumed.
+     */
+    void resumed();
+
+    /**
+     * Notify nativeWindow paused.
+     */
+    void paused();
+
+    /**
      * Set whether current window view can gain focus.
      *
      * @param isFocusable whether current view is focusable
