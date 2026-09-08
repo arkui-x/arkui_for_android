@@ -185,6 +185,8 @@ std::map<uint32_t, std::vector<sptr<ITouchOutsideListener>>> Window::touchOutsid
 std::map<uint32_t, std::vector<sptr<IWindowSurfaceNodeListener>>> Window::surfaceNodeListeners_;
 std::map<uint32_t, std::vector<sptr<IAvoidAreaChangedListener>>> Window::avoidAreaChangeListeners_;
 std::map<uint32_t, std::vector<sptr<IWindowStatusChangeListener>>> Window::windowStatusChangeListeners_;
+std::map<uint32_t, std::vector<sptr<IWindowRectChangeListener>>> Window::windowRectChangeListeners_;
+std::map<uint32_t, std::vector<sptr<IWindowStatusDidChangeListener>>> Window::windowStatusDidChangeListeners_;
 std::recursive_mutex Window::globalMutex_;
 std::recursive_mutex g_sysBarPropMapMutex;
 uint32_t g_KeyboardHeight = 0;
@@ -515,8 +517,13 @@ WMError Window::ShowWindow()
     bool result = SubWindowManagerJni::ShowWindow(this->GetWindowName());
     if (result) {
         if (IsSubWindow()) {
-            rect_ = requestRect_;
-            NotifySizeChange(rect_);
+            Rect rect;
+            {
+                std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+                rect_ = requestRect_;
+                rect = rect_;
+            }
+            NotifySizeChange(rect);
         }
         isForground_ = true;
         NotifyAfterForeground();
@@ -548,9 +555,14 @@ WMError Window::MoveWindowTo(int32_t x, int32_t y)
 
     bool result = SubWindowManagerJni::MoveWindowTo(this->GetWindowName(), x, y);
     if (result) {
-        rect_.posX_ = requestRect_.posX_;
-        rect_.posY_ = requestRect_.posY_;
-        NotifySizeChange(rect_);
+        Rect rect;
+        {
+            std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+            rect_.posX_ = requestRect_.posX_;
+            rect_.posY_ = requestRect_.posY_;
+            rect = rect_;
+        }
+        NotifySizeChange(rect);
         return WMError::WM_OK;
     } else {
         return WMError::WM_ERROR_INVALID_WINDOW;
@@ -569,9 +581,14 @@ WMError Window::ResizeWindowTo(int32_t width, int32_t height)
     requestRect_.height_ = height;
     bool result = SubWindowManagerJni::ResizeWindowTo(this->GetWindowName(), width, height);
     if (result) {
-        rect_.width_ = requestRect_.width_;
-        rect_.height_ = requestRect_.height_;
-        NotifySizeChange(rect_);
+        Rect rect;
+        {
+            std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+            rect_.width_ = requestRect_.width_;
+            rect_.height_ = requestRect_.height_;
+            rect = rect_;
+        }
+        NotifySizeChange(rect);
         return WMError::WM_OK;
     } else {
         LOGI("Window::ResizeWindowTo: failed");
@@ -731,6 +748,8 @@ void Window::ClearListenersById(uint32_t winId)
     ClearUselessListeners(occupiedAreaChangeListeners_, winId);
     ClearUselessListeners(lifecycleListeners_, winId);
     ClearUselessListeners(avoidAreaChangeListeners_, winId);
+    ClearUselessListeners(windowRectChangeListeners_, winId);
+    ClearUselessListeners(windowStatusDidChangeListeners_, winId);
 }
 
 WMError Window::RegisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener)
@@ -802,6 +821,40 @@ WMError Window::UnregisterWindowStatusChangeListener(const sptr<IWindowStatusCha
 {
     LOGI("Start unregister WindowChangeListener");
     std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return WMError::WM_ERROR_DEVICE_NOT_SUPPORT;
+}
+
+WMError Window::RegisterWindowRectChangeListener(const sptr<IWindowRectChangeListener>& listener)
+{
+    LOGI("Start register WindowRectChangeListener");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return RegisterListener(windowRectChangeListeners_[GetWindowId()], listener);
+}
+
+WMError Window::UnregisterWindowRectChangeListener(const sptr<IWindowRectChangeListener>& listener)
+{
+    LOGI("Start unregister WindowRectChangeListener");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return UnregisterListener(windowRectChangeListeners_[GetWindowId()], listener);
+}
+
+WMError Window::RegisterWindowStatusDidChangeListener(const sptr<IWindowStatusDidChangeListener>& listener)
+{
+    LOGI("Start register WindowStatusDidChangeListener");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return WMError::WM_ERROR_DEVICE_NOT_SUPPORT;
+}
+
+WMError Window::UnregisterWindowStatusDidChangeListener(const sptr<IWindowStatusDidChangeListener>& listener)
+{
+    LOGI("Start unregister WindowStatusDidChangeListener");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return WMError::WM_ERROR_DEVICE_NOT_SUPPORT;
+}
+
+WMError Window::GetWindowStatus(WindowStatus& status)
+{
+    status = WindowStatus::WINDOW_STATUS_UNDEFINED;
     return WMError::WM_ERROR_DEVICE_NOT_SUPPORT;
 }
 
@@ -904,9 +957,14 @@ void Window::CreateSurfaceNode(void* nativeWindow)
 
 void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
 {
-    rect_.width_ = width;
-    rect_.height_ = height;
-    NotifySizeChange(rect_);
+    Rect rect;
+    {
+        std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+        rect_.width_ = width;
+        rect_.height_ = height;
+        rect = rect_;
+    }
+    NotifySizeChange(rect);
     if (!surfaceNode_) {
         LOGE("Window Notify Surface Changed, surfaceNode_ is nullptr!");
         return;
@@ -964,6 +1022,36 @@ void Window::NotifySizeChange(Rect rect)
     for (auto& listener : windowChangeListeners) {
         if (listener != nullptr) {
             listener->OnSizeChange(rect);
+        }
+    }
+}
+
+void Window::NotifyWindowRectChange(const Rect& rect, WindowSizeChangeReason reason)
+{
+    Rect notifyRect = rect;
+    {
+        std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+        if (!IsSubWindow()) {
+            rect_ = rect;
+            notifyRect = rect;
+        } else {
+            notifyRect = rect_;
+        }
+    }
+    auto windowRectChangeListeners = GetListeners<IWindowRectChangeListener>();
+    for (auto& listener : windowRectChangeListeners) {
+        if (listener != nullptr) {
+            listener->OnRectChange(notifyRect, reason);
+        }
+    }
+}
+
+void Window::NotifyWindowStatusDidChange(WindowStatus windowStatus)
+{
+    auto windowStatusDidChangeListeners = GetListeners<IWindowStatusDidChangeListener>();
+    for (auto& listener : windowStatusDidChangeListeners) {
+        if (listener != nullptr) {
+            listener->OnWindowStatusDidChange(windowStatus);
         }
     }
 }

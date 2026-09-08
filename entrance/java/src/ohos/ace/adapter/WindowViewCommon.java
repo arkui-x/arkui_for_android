@@ -30,6 +30,7 @@ import androidx.core.view.ViewCompat;
 import android.view.View;
 import android.graphics.Rect;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.content.Context;
 import android.view.inputmethod.InputMethodManager;
 
@@ -79,6 +80,11 @@ public class WindowViewCommon {
     private static final int AVOID_TYPE_SYSTEM_GESTURE = 2; // area for system gesture
     private static final int AVOID_TYPE_KEYBOARD = 3; // area for soft input keyboard
     private static final int AVOID_TYPE_NAVIGATION_INDICATOR = 4; // area for navigation indicator
+    private static final int WINDOW_RECT_PARAM_COUNT = 4;
+    private static final int WINDOW_RECT_LEFT_INDEX = 0;
+    private static final int WINDOW_RECT_TOP_INDEX = 1;
+    private static final int WINDOW_RECT_WIDTH_INDEX = 2;
+    private static final int WINDOW_RECT_HEIGHT_INDEX = 3;
     private static boolean sAndroidXAvailable;
     private static boolean sAndroidXVersionSupportedGetInsets;
     private static int sSubwindowKeyboardAvoidHeight = 0;
@@ -117,6 +123,7 @@ public class WindowViewCommon {
     private boolean delayNotifySurfaceDestroyed = false;
     private boolean delayNotifyForeground = false;
     private boolean delayNotifyAvoidAreaChanged = false;
+    private boolean delayNotifyWindowRectChanged = false;
     private boolean enterPressed = false;
     private boolean numpadEnterPressed = false;
     private boolean isWindowOrientationChanging = false;
@@ -128,6 +135,8 @@ public class WindowViewCommon {
     private InputConnectionClient inputClient = null;
     private Surface delayNotifyCreateSurface = null;
     private WindowViewInterface windowViewInterface = null;
+    private ViewTreeObserver.OnGlobalLayoutListener windowRectGlobalLayoutListener = null;
+    private Rect lastWindowRect = new Rect();
     private HashMap<Integer, AvoidArea> avoidAreaRects = new HashMap<>();
 
     /**
@@ -187,6 +196,8 @@ public class WindowViewCommon {
     public void registerWindow(long windowHandle) {
         nativeWindowPtr = windowHandle;
         setupWindowInsetsListener();
+        setupWindowRectChangeListener();
+        notifyWindowRectChanged();
         delayNotifyIfNeeded();
     }
 
@@ -194,6 +205,7 @@ public class WindowViewCommon {
      * Called by native to unregister Window Handle.
      */
     public void unRegisterWindow() {
+        removeWindowRectChangeListener();
         nativeWindowPtr = 0L;
     }
 
@@ -273,6 +285,7 @@ public class WindowViewCommon {
             this.nativeSurfaceChanged(
                 this.nativeWindowPtr, this.surfaceWidth, this.surfaceHeight, this.density);
         }
+        notifyWindowRectChanged();
     }
 
     /**
@@ -319,7 +332,8 @@ public class WindowViewCommon {
             return;
         }
         ALog.d(TAG, "Window " + "onInsetsAreaChanged " + nativeWindowPtr);
-        getLocationOnScreen(new LocationCallback() {
+        notifyWindowRectChanged();
+        getLocationInWindow(new LocationCallback() {
             @Override
             public void onLocationReceived(Rect rect) {
                 processAvoidAreas(insets, rect);
@@ -725,6 +739,72 @@ public class WindowViewCommon {
         }
     }
 
+    private void setupWindowRectChangeListener() {
+        if (windowViewInterface == null || windowViewInterface.getView() == null ||
+            windowRectGlobalLayoutListener != null) {
+            return;
+        }
+        View view = windowViewInterface.getView();
+        windowRectGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                notifyWindowRectChanged();
+            }
+        };
+        view.getViewTreeObserver().addOnGlobalLayoutListener(windowRectGlobalLayoutListener);
+    }
+
+    private void removeWindowRectChangeListener() {
+        if (windowViewInterface == null || windowViewInterface.getView() == null ||
+            windowRectGlobalLayoutListener == null) {
+            windowRectGlobalLayoutListener = null;
+            return;
+        }
+        ViewTreeObserver observer = windowViewInterface.getView().getViewTreeObserver();
+        if (observer != null && observer.isAlive()) {
+            observer.removeOnGlobalLayoutListener(windowRectGlobalLayoutListener);
+        }
+        windowRectGlobalLayoutListener = null;
+    }
+
+    private void notifyWindowRectChanged() {
+        getLocationOnScreen(new LocationCallback() {
+            @Override
+            public void onLocationReceived(Rect rect) {
+                notifyWindowRectChanged(rect);
+            }
+        });
+    }
+
+    private void notifyWindowRectChanged(Rect rect) {
+        if (rect == null) {
+            ALog.w(TAG, "Window notifyWindowRectChanged: rect is null");
+            return;
+        }
+        if (rect.width() <= 0 || rect.height() <= 0) {
+            return;
+        }
+        if (lastWindowRect.equals(rect)) {
+            return;
+        }
+        if (nativeWindowPtr == 0L) {
+            delayNotifyWindowRectChanged = true;
+            ALog.w(TAG, "Window rect changed nativeWindow not ready.");
+            return;
+        }
+        lastWindowRect.set(rect);
+        nativeWindowRectChanged(nativeWindowPtr, createWindowRectParams(rect));
+    }
+
+    private int[] createWindowRectParams(Rect rect) {
+        int[] rectParams = new int[WINDOW_RECT_PARAM_COUNT];
+        rectParams[WINDOW_RECT_LEFT_INDEX] = rect.left;
+        rectParams[WINDOW_RECT_TOP_INDEX] = rect.top;
+        rectParams[WINDOW_RECT_WIDTH_INDEX] = rect.width();
+        rectParams[WINDOW_RECT_HEIGHT_INDEX] = rect.height();
+        return rectParams;
+    }
+
     private void adjustToWindowCoordinate(AvoidArea avoidArea, Rect windowRect) {
         if (avoidArea == null || windowRect == null) {
             return;
@@ -842,48 +922,78 @@ public class WindowViewCommon {
         /**
          * Called when the location of the view is received.
          *
-         * @param rect The rectangle representing the location and size of the view on screen.
+         * @param rect The rectangle representing the location and size of the view.
          */
         void onLocationReceived(Rect rect);
     }
 
+    private void getLocationInWindow(LocationCallback callback) {
+        getViewRect(callback, false);
+    }
+
     private void getLocationOnScreen(LocationCallback callback) {
-        ALog.d(TAG, "Window" + "getLocationOnScreen");
-        if (windowViewInterface == null || windowViewInterface.getView() == null) {
-            if (callback != null) {
-                callback.onLocationReceived(new Rect(0, 0, 0, 0));
-            }
-            ALog.e(TAG, "Window" + "windowViewInterface == null || windowViewInterface.getView() == null");
+        getViewRect(callback, true);
+    }
+
+    private void getViewRect(LocationCallback callback, boolean onScreen) {
+        ALog.d(TAG, "Window" + (onScreen ? "getLocationOnScreen" : "getLocationInWindow"));
+        View view = getAttachedWindowView(callback);
+        if (view == null) {
             return;
+        }
+        postViewRect(callback, view, onScreen);
+    }
+
+    private View getAttachedWindowView(LocationCallback callback) {
+        if (windowViewInterface == null || windowViewInterface.getView() == null) {
+            notifyLocationReceived(callback, new Rect(0, 0, 0, 0));
+            ALog.e(TAG, "Window" + "windowViewInterface == null || windowViewInterface.getView() == null");
+            return null;
         }
         View view = windowViewInterface.getView();
         if (view.getWindowToken() == null || !view.isAttachedToWindow()) {
             ALog.d(TAG, "Window" + "View is not attached to window, returning default rect");
-            if (callback != null) {
-                callback.onLocationReceived(new Rect(0, 0, 0, 0));
-            }
-            return;
+            notifyLocationReceived(callback, new Rect(0, 0, 0, 0));
+            return null;
         }
+        return view;
+    }
+
+    private void postViewRect(LocationCallback callback, View view, boolean onScreen) {
         // return the rect after the view is layouted and measured
         view.post(new Runnable() {
             @Override
             public void run() {
-                Rect rect = new Rect();
-                if (windowViewInterface != null && windowViewInterface.getView() != null) {
-                    View view = windowViewInterface.getView();
-                    int[] location = new int[2];
-                    view.getLocationInWindow(location);
-                    rect.left = location[0];
-                    rect.top = location[1];
-                    rect.right = rect.left + view.getWidth();
-                    rect.bottom = rect.top + view.getHeight();
-                    ALog.d(TAG, "Window" + "getLocationOnScreen delayed: left=" + rect.left + ", top=" + rect.top);
-                }
-                if (callback != null) {
-                    callback.onLocationReceived(rect);
-                }
+                notifyLocationReceived(callback, createViewRect(onScreen));
             }
         });
+    }
+
+    private Rect createViewRect(boolean onScreen) {
+        Rect rect = new Rect();
+        if (windowViewInterface == null || windowViewInterface.getView() == null) {
+            return rect;
+        }
+        View view = windowViewInterface.getView();
+        int[] location = new int[2];
+        if (onScreen) {
+            view.getLocationOnScreen(location);
+        } else {
+            view.getLocationInWindow(location);
+        }
+        rect.left = location[0];
+        rect.top = location[1];
+        rect.right = rect.left + view.getWidth();
+        rect.bottom = rect.top + view.getHeight();
+        ALog.d(TAG, "Window" + (onScreen ? "getLocationOnScreen" : "getLocationInWindow") +
+            " delayed: left=" + rect.left + ", top=" + rect.top);
+        return rect;
+    }
+
+    private void notifyLocationReceived(LocationCallback callback, Rect rect) {
+        if (callback != null) {
+            callback.onLocationReceived(rect);
+        }
     }
 
     private int avoidTypeFromType(int type) {
@@ -999,6 +1109,12 @@ public class WindowViewCommon {
                     avoidAreaRect.bottomRect.width(), avoidAreaRect.bottomRect.height());
             }
             delayNotifyAvoidAreaChanged = false;
+        }
+
+        if (delayNotifyWindowRectChanged) {
+            ALog.i(TAG, "delay notify window rect changed");
+            delayNotifyWindowRectChanged = false;
+            notifyWindowRectChanged();
         }
 
         if (delayNotifyForeground) {
@@ -1122,7 +1238,7 @@ public class WindowViewCommon {
 
     private native void nativeKeyboardHeightChanged(long windowPtr, int height);
 
-    private native void nativeWindowSizeChanged(long windowPtr, int width, int height);
+    private native void nativeWindowRectChanged(long windowPtr, int[] rect);
 
     private native void nativeOnWindowFocusChanged(long windowPtr, boolean hasWindowFocus);
 
