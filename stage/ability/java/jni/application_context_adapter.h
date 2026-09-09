@@ -35,6 +35,7 @@ public:
     static std::shared_ptr<ApplicationContextAdapter> GetInstance();
     void SetStageApplicationDelegate(jobject stageApplicationDelegate);
     std::vector<RunningProcessInfo> GetRunningProcessInformation();
+    std::string GetProcessName();
     std::string GetTopAbility();
     int32_t StartAbility(const AAFwk::Want& want);
     void Print(std::string msg);

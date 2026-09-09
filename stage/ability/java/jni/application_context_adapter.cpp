@@ -16,6 +16,7 @@
 #include "application_context_adapter.h"
 
 #include <cctype>
+#include <unistd.h>
 #include "ability_manager_errors.h"
 #include "base/log/log.h"
 
@@ -319,6 +320,18 @@ std::vector<RunningProcessInfo> ApplicationContextAdapter::GetRunningProcessInfo
         infos.emplace_back(info);
     }
     return infos;
+}
+
+std::string ApplicationContextAdapter::GetProcessName()
+{
+    pid_t currentPid = getpid();
+    auto infos = GetRunningProcessInformation();
+    for (const auto& info : infos) {
+        if (info.pid == static_cast<int32_t>(currentPid)) {
+            return info.processName;
+        }
+    }
+    return "";
 }
 } // namespace Platform
 } // namespace AbilityRuntime
