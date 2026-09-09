@@ -286,6 +286,22 @@ public class WindowViewSurface extends SurfaceView implements SurfaceHolder.Call
     }
 
     /**
+     * Notify nativeWindow resumed.
+     */
+    @Override
+    public void resumed() {
+        windowViewCommon.resumed();
+    }
+
+    /**
+     * Notify nativeWindow paused.
+     */
+    @Override
+    public void paused() {
+        windowViewCommon.paused();
+    }
+
+    /**
      * Notify nativeWindow destroy.
      */
     @Override

@@ -116,6 +116,7 @@ public class WindowViewCommon {
     private boolean delayNotifySurfaceChanged = false;
     private boolean delayNotifySurfaceDestroyed = false;
     private boolean delayNotifyForeground = false;
+    private boolean delayNotifyResumed = false;
     private boolean delayNotifyAvoidAreaChanged = false;
     private boolean enterPressed = false;
     private boolean numpadEnterPressed = false;
@@ -432,6 +433,32 @@ public class WindowViewCommon {
         }
         ALog.i(TAG, "background call");
         nativeBackground(nativeWindowPtr);
+    }
+
+    /**
+     * Notify nativeWindow resumed.
+     */
+    public void resumed() {
+        if (nativeWindowPtr == 0L) {
+            ALog.w(TAG, "resumed: nativeWindow is null, delay notify");
+            delayNotifyResumed = true;
+        } else {
+            ALog.i(TAG, "resumed call");
+            nativeResumed(nativeWindowPtr);
+        }
+    }
+
+    /**
+     * Notify nativeWindow paused.
+     */
+    public void paused() {
+        if (nativeWindowPtr == 0L) {
+            ALog.w(TAG, "paused: nativeWindow is null");
+            delayNotifyResumed = false;
+            return;
+        }
+        ALog.i(TAG, "paused call");
+        nativePaused(nativeWindowPtr);
     }
 
     /**
@@ -1006,6 +1033,11 @@ public class WindowViewCommon {
             nativeForeground(nativeWindowPtr);
             delayNotifyForeground = false;
         }
+        if (delayNotifyResumed) {
+            ALog.i(TAG, "delay notify resumed");
+            nativeResumed(nativeWindowPtr);
+            delayNotifyResumed = false;
+        }
     }
 
     private void setWebTouchEvent(MotionEvent event) {
@@ -1129,6 +1161,10 @@ public class WindowViewCommon {
     private native void nativeForeground(long windowPtr);
 
     private native void nativeBackground(long windowPtr);
+
+    private native void nativeResumed(long windowPtr);
+
+    private native void nativePaused(long windowPtr);
 
     private native void nativeDestroy(long windowPtr);
 

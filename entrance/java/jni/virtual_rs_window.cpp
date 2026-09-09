@@ -237,8 +237,7 @@ void Window::AddToSubWindowMap(std::shared_ptr<Window> window)
         LOGE("window is null");
         return;
     }
-    if (window->GetType() != OHOS::Rosen::WindowType::WINDOW_TYPE_APP_SUB_WINDOW ||
-        window->GetParentId() == INVALID_WINDOW_ID) {
+    if (!window->IsSubWindow() || window->GetParentId() == INVALID_WINDOW_ID) {
         LOGE("window is not subwindow");
         return;
     }
@@ -381,7 +380,7 @@ WMError Window::Destroy()
         uiContent_ = nullptr;
     }
 
-    if (GetType() == OHOS::Rosen::WindowType::WINDOW_TYPE_APP_SUB_WINDOW && !GetWindowName().empty()) {
+    if (IsSubWindow() && !GetWindowName().empty()) {
         SubWindowManagerJni::DestroyWindow(GetWindowName());
     }
 
@@ -492,12 +491,26 @@ std::shared_ptr<Window> Window::GetTopWindow(const std::shared_ptr<OHOS::Ability
     while (iter != windowMap_.end()) {
         std::pair<uint32_t, std::shared_ptr<Window>> pair = iter->second;
         std::shared_ptr<Window> window = pair.second;
-        if (context.get() == window->GetContext().get() &&
-            window->GetType() != OHOS::Rosen::WindowType::WINDOW_TYPE_APP_SUB_WINDOW) {
+        if (context == nullptr && !window->IsSubWindow() && window->isForground()) {
+            return window;
+        }
+        if (context != nullptr && context.get() == window->GetContext().get() && !window->IsSubWindow()) {
             return window;
         }
 
         iter++;
+    }
+
+    if (context == nullptr) {
+        iter = windowMap_.begin();
+        while (iter != windowMap_.end()) {
+            std::pair<uint32_t, std::shared_ptr<Window>> pair = iter->second;
+            std::shared_ptr<Window> window = pair.second;
+            if (!window->IsSubWindow()) {
+                return window;
+            }
+            iter++;
+        }
     }
 
     LOGE("Window::GetTopWindow no window on forground");
@@ -740,7 +753,17 @@ WMError Window::RegisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener
 {
     LOGD("Start register");
     std::lock_guard<std::recursive_mutex> lock(globalMutex_);
-    return RegisterListener(lifecycleListeners_[GetWindowId()], listener);
+    WMError ret = RegisterListener(lifecycleListeners_[GetWindowId()], listener);
+    if (ret != WMError::WM_OK || listener == nullptr) {
+        return ret;
+    }
+    if (isForground_) {
+        listener->AfterForeground();
+    }
+    if (isFocused_) {
+        listener->AfterFocused();
+    }
+    return ret;
 }
 
 WMError Window::UnregisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener)
@@ -1118,6 +1141,18 @@ void Window::Background()
     LOGI("Window: notify uiContent Background");
     NotifyAfterBackground();
     isForground_ = false;
+}
+
+void Window::Resumed()
+{
+    LOGI("Window: notify resumed");
+    NotifyAfterResumed();
+}
+
+void Window::Paused()
+{
+    LOGI("Window: notify paused");
+    NotifyAfterPaused();
 }
 
 bool Window::ProcessBackPressed()
