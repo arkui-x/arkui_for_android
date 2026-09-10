@@ -31,6 +31,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.database.ContentObserver;
 import android.graphics.Rect;
+import android.util.DisplayMetrics;
 
 import ohos.ace.adapter.WindowViewCommon;
 import ohos.ace.adapter.ALog;
@@ -60,9 +61,11 @@ public class SubWindowManager {
     private static final int LOCATION_X = 0;
     private static final int LOCATION_Y = 1;
     private static final int LOCATION_SIZE = 2;
+    private static final int API_24 = 24;
     private static final int API_28 = 28;
     private static final int API_29 = 29;
     private static final int API_30 = 30;
+    private static final float DEFAULT_DENSITY_BASE_DPI = 160.0f;
 
     /*
      ** copy from native wm_common.h: enum class Orientation
@@ -523,6 +526,45 @@ public class SubWindowManager {
         float appBrightness = systemBrightness / 255f;
         ALog.d(TAG, "getAppScreenBrightness called: system brightnessValue=" + appBrightness);
         return appBrightness;
+    }
+
+    /**
+     * Gets the current window density (display density scale, densityDpi / 160).
+     * Tracks the user's display-size setting, equivalent to OH systemDensity.
+     *
+     * @return the current density scale, or 0.0f if the activity is unavailable.
+     */
+    public float getWindowDensity() {
+        if (mRootActivity == null) {
+            ALog.e(TAG, "getWindowDensity failed, mRootActivity is null");
+            return 0.0f;
+        }
+        float density = mRootActivity.getResources().getDisplayMetrics().density;
+        ALog.d(TAG, "getWindowDensity called: density=" + density);
+        return density;
+    }
+
+    /**
+     * Gets the device-stable default density (DENSITY_DEVICE_STABLE / 160).
+     * This is the factory-default density that does NOT change with the user's
+     * display-size setting, equivalent to OH defaultDensity. Falls back to the
+     * current density on API < 24.
+     *
+     * @return the default density scale, or 0.0f if the activity is unavailable.
+     */
+    public float getWindowDefaultDensity() {
+        if (mRootActivity == null) {
+            ALog.e(TAG, "getWindowDefaultDensity failed, mRootActivity is null");
+            return 0.0f;
+        }
+        float defaultDensity;
+        if (Build.VERSION.SDK_INT >= API_24 && DisplayMetrics.DENSITY_DEVICE_STABLE > 0) {
+            defaultDensity = DisplayMetrics.DENSITY_DEVICE_STABLE / DEFAULT_DENSITY_BASE_DPI;
+        } else {
+            defaultDensity = mRootActivity.getResources().getDisplayMetrics().density;
+        }
+        ALog.d(TAG, "getWindowDefaultDensity called: defaultDensity=" + defaultDensity);
+        return defaultDensity;
     }
 
     /**
