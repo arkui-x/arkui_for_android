@@ -139,6 +139,7 @@ ohos_shared_library("ace_ndk") {
 
   deps = [
     "$ace_root/adapter/android/build:libarkui_android",
+    "//foundation/graphic/graphic_2d/rosen/modules/2d_graphics/drawing_ndk:drawing_ndk_core_arkui_x",
     "//foundation/multimedia/image_framework/interfaces/innerkits:image_native",
     "//third_party/bounds_checking_function:libsec_static",
   ]
