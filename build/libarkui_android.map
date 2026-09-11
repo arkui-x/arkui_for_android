@@ -211,6 +211,7 @@
       "OHOS::Ace::ImageProvider::GetDrawingImage(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, OHOS::Ace::WeakPtr<OHOS::Ace::PipelineBase>, OHOS::Ace::Size)";
       "OHOS::Ace::JsonUtil::ParseJsonString(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, char const**)";
       "OHOS::Ace::ImageProvider::MakeRSBitmapFormatFromPixelMap(OHOS::Ace::RefPtr<OHOS::Ace::PixelMap> const&)";
+      "OHOS::Ace::ImageResizableSlice::operator==(OHOS::Ace::ImageResizableSlice const&) const";
       "OHOS::Ace::JsonUtil::Create(bool)";
       "OHOS::Ace::JsonUtil::CreateArray(bool)";
       "OHOS::Ace::JsonUtil::CreateSharedPtrJson(bool)";
@@ -2900,9 +2901,16 @@
       "OHOS::Ace::NG::ImageModelNG::GetColorFilter(OHOS::Ace::NG::FrameNode*)";
       "OHOS::Ace::DrawingColorFilter::CreateDrawingColorFilterFromNative(void*)";
       "OHOS::Ace::NG::ImageModelNG::GetDrawingColorFilter(OHOS::Ace::NG::FrameNode*)";
+      "OHOS::Ace::NG::ImageModelNG::GetResizableSlice(OHOS::Ace::NG::FrameNode*)";
       "OHOS::Ace::NG::ImageModelNG::SetSupportSvg2(OHOS::Ace::NG::FrameNode*, bool)";
+      "OHOS::Ace::NG::ImageModelNG::SetResizableSlice(OHOS::Ace::NG::FrameNode*, OHOS::Ace::ImageResizableSlice&)";
+      "OHOS::Ace::NG::ImageModelNG::SetResizableLattice(OHOS::Ace::NG::FrameNode*, OHOS::Ace::RefPtr<OHOS::Ace::DrawingLattice> const&)";
       "OHOS::Ace::NG::ImageModelNG::ResetSupportSvg2(OHOS::Ace::NG::FrameNode*)";
+      "OHOS::Ace::NG::ImageModelNG::ResetResizableSlice(OHOS::Ace::NG::FrameNode*)";
+      "OHOS::Ace::NG::ImageModelNG::ResetResizableLattice(OHOS::Ace::NG::FrameNode*)";
       "OHOS::Ace::NG::ImageModelNG::GetSupportSvg2(OHOS::Ace::NG::FrameNode*)";
+      "OHOS::Ace::DrawingLattice::CreateDrawingLatticeFromNative(void*)";
+      "OHOS::Ace::DrawingLattice::CreateDrawingLatticeFromSptr(void*)";
       "void OHOS::Ace::NG::SpanNode::RegisterResource<OHOS::Ace::CalcDimension>(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject> const&, OHOS::Ace::CalcDimension)";
       "bool OHOS::Ace::NG::ArkTSUtils::ConvertFromJSValueNG<OHOS::Ace::Dimension>(panda::ecmascript::EcmaVM const*, panda::Local<panda::JSValueRef> const&, OHOS::Ace::Dimension&, OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject>&)";
       "bool OHOS::Ace::NG::ArkTSUtils::ConvertFromJSValue<OHOS::Ace::Color>(panda::ecmascript::EcmaVM const*, panda::Local<panda::JSValueRef> const&, OHOS::Ace::Color&, OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject>&)";
@@ -3413,7 +3421,7 @@
       "OHOS::Ace::NG::TextPattern::ShowAIEntityMenuForCancel()";
       "OHOS::Ace::NG::TextPattern::IsPreviewMenuShow()";
       "OHOS::Ace::NG::TextPattern::GetContentHost() const";
-      "OHOS::Ace::NG::TextPattern::GetTextContentLength()";
+      "OHOS::Ace::NG::TextPattern::GetTextContentLength() const";
       "OHOS::Ace::NG::TextPattern::CreateNodePaintMethod()";
       "OHOS::Ace::NG::TextPattern::CreateLayoutAlgorithm()";
       "OHOS::Ace::NG::TextPattern::CreateAccessibilityProperty()";
@@ -4622,6 +4630,8 @@
       "OHOS::Ace::ShadowConfig::DefaultShadowS";
       "OHOS::Rosen::Drawing::Vertices::Builder::Detach()";
       "OHOS::Rosen::SPText::DefaultFamilyNameMgr::IsThemeFontFamily(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >)";
+    "OHOS::Rosen::SPText::DefaultFamilyNameMgr::GetInstance()";
+    "OHOS::Rosen::SPText::DefaultFamilyNameMgr::GetThemeFontFamilies() const";
       "SkWebpEncoder::Encode(SkWStream*, SkPixmap const&, SkWebpEncoder::Options const&)";
       "panda::Local<panda::JSValueRef> OHOS::Ace::NG::ArkTSUtils::ToJsValueWithVM<bool>(panda::ecmascript::EcmaVM const*, bool)";
       "OHOS::Rosen::Drawing::ColorSpace::CreateSRGB()";
