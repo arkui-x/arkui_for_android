@@ -138,6 +138,7 @@
       "OHOS::Ace::Container::GetContainer(int)";
       "OHOS::Ace::Container::GetActive()";
       "OHOS::Ace::Container::CurrentTaskExecutor()";
+      "OHOS::Ace::Container::CurrentTaskExecutorSafely()";
       "OHOS::Ace::Container::CurrentTaskExecutorSafelyWithCheck()";
       "OHOS::Ace::Container::CurrentSafelyWithCheck()";
       "OHOS::Ace::ConvertTimestampToStr(long)";
@@ -1131,6 +1132,7 @@
 
       "OHOS::Ace::Platform::JniEnvironment::GetInstance()";
       "OHOS::Ace::Platform::JniEnvironment::GetJniEnv(_JNIEnv*, bool) const";
+      "OHOS::Ace::Platform::PluginManagerJni::RegisterPlugin(bool (*)(void*), std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::Platform::BridgeManager::JSRegisterBridge(std::__ndk1::shared_ptr<OHOS::Ace::Platform::BridgeReceiver>)";
       "OHOS::Ace::Platform::BridgeManager::JSUnRegisterBridge(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::Platform::BridgeManager::JSCallMethodSync(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
@@ -1550,6 +1552,43 @@
       "OHOS::AppExecFwk::EventHandler::~EventHandler()";
       "OHOS::AppExecFwk::EventHandler::SendEvent(std::__ndk1::unique_ptr<OHOS::AppExecFwk::InnerEvent, void (*)(OHOS::AppExecFwk::InnerEvent*)>&, long long, OHOS::AppExecFwk::EventQueue::Priority)";
       "OHOS::AppExecFwk::EventRunner::Current()";
+      "OHOS::AppExecFwk::EventRunner::IsCurrentRunnerThread()";
+
+      # cacheDownload static-lib integration: the thin NAPI .so
+      # (librequest_cachedownload) resolves these against libarkui_android.so
+      # at runtime (SO1 retired). Both LP64 and ILP32 (arm) parameter
+      # manglings are listed (long/long long differ).
+      "OHOS::Plugin::CacheDownload::GetBriefTaskId(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadJni::Register(void*)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::Initialize(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::GetInstance()";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::ClearFileCache()";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::GetDownloadInfo(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::OnDownloadError(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, long, std::__ndk1::function<void (OHOS::Plugin::CacheDownload::CacheDownloadError const&)>)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::ClearMemoryCache()";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::OffDownloadError(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, long)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::SetFileCacheSize(unsigned long)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::OnDownloadSuccess(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, long, std::__ndk1::function<void ()>)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::OffDownloadSuccess(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, long)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::SetMemoryCacheSize(unsigned long)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::SetGlobalRetryOptions(std::__ndk1::optional<unsigned long>)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::SetDownloadInfoListSize(unsigned short)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::SetGlobalTimeoutOptions(std::__ndk1::optional<unsigned int>, std::__ndk1::optional<unsigned int>)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::Fetch(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::Cancel(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::Download(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, OHOS::Plugin::CacheDownload::CacheDownloadOptions const&)";
+      "OHOS::Plugin::CacheDownload::CacheHttpClientAndroid::InitializeJni(_JNIEnv*)";
+      "OHOS::Plugin::CacheDownload::CacheHttpClientAndroid::NotifyRegisterFailed()";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::IsInitialized() const";
+      "OHOS::Plugin::CacheDownload::RamCache::Data() const";
+      "OHOS::Plugin::CacheDownload::RamCache::Size() const";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::OnDownloadError(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, long long, std::__ndk1::function<void (OHOS::Plugin::CacheDownload::CacheDownloadError const&)>)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::OffDownloadError(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, long long)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::SetFileCacheSize(unsigned long long)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::OnDownloadSuccess(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, long long, std::__ndk1::function<void ()>)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::OffDownloadSuccess(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, long long)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::SetMemoryCacheSize(unsigned long long)";
+      "OHOS::Plugin::CacheDownload::CacheDownloadService::SetGlobalRetryOptions(std::__ndk1::optional<unsigned int>)";
       "OHOS::AppExecFwk::EventRunner::Create(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::AppExecFwk::InnerEvent::Get(std::__ndk1::function<void ()> const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::AppExecFwk::InnerEvent::WarnSmartPtrCastMismatch()";
