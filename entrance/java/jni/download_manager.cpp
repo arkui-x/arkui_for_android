@@ -24,7 +24,7 @@
 #include "base/utils/utils.h"
 
 namespace OHOS::Ace {
-class DownloadManagerImpl final : public DownloadManager {
+class DownloadManagerImplJni final : public DownloadManager {
 public:
     bool Download(const std::string& url, std::vector<uint8_t>& dataOut) override
     {
@@ -87,14 +87,14 @@ public:
         return nullptr;
     }
 
-    DownloadManagerImpl() = default;
+    DownloadManagerImplJni() = default;
 
-    ~DownloadManagerImpl() = default;
+    ~DownloadManagerImplJni() = default;
 };
 
 DownloadManager* CreateAndroidDownloadManager()
 {
-    return new DownloadManagerImpl();
+    return new DownloadManagerImplJni();
 }
 
 } // namespace OHOS::Ace
