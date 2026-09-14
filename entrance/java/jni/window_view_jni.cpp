@@ -23,6 +23,12 @@
 
 namespace OHOS::Ace::Platform {
 namespace {
+constexpr int32_t WINDOW_RECT_PARAM_COUNT = 4;
+constexpr int32_t WINDOW_RECT_LEFT_INDEX = 0;
+constexpr int32_t WINDOW_RECT_TOP_INDEX = 1;
+constexpr int32_t WINDOW_RECT_WIDTH_INDEX = 2;
+constexpr int32_t WINDOW_RECT_HEIGHT_INDEX = 3;
+
 static jmethodID gRegisterWindowMethodID;
 static jmethodID gUnRegisterWindowMethodID;
 static jmethodID gSetWindowFocusableMethodID;
@@ -45,6 +51,11 @@ static const JNINativeMethod COMMON_METHODS[] = {
         .name = "nativeKeyboardHeightChanged",
         .signature = "(JI)V",
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::KeyboardHeightChanged),
+    },
+    {
+        .name = "nativeWindowRectChanged",
+        .signature = "(J[I)V",
+        .fnPtr = reinterpret_cast<void*>(&WindowViewJni::WindowRectChanged),
     },
     {
         .name = "nativeSurfaceDestroyed",
@@ -107,6 +118,30 @@ static const JNINativeMethod COMMON_METHODS[] = {
         .fnPtr = reinterpret_cast<void*>(&WindowViewJni::AvoidAreaChange),
     },
 };
+
+bool GetWindowRectFromArray(JNIEnv* env, jintArray rectArray, Rosen::Rect& rect)
+{
+    if (env == nullptr || rectArray == nullptr) {
+        return false;
+    }
+    if (env->GetArrayLength(rectArray) < WINDOW_RECT_PARAM_COUNT) {
+        return false;
+    }
+    jint rectValues[WINDOW_RECT_PARAM_COUNT] = {};
+    env->GetIntArrayRegion(rectArray, 0, WINDOW_RECT_PARAM_COUNT, rectValues);
+    if (env->ExceptionCheck()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return false;
+    }
+    rect = {
+        rectValues[WINDOW_RECT_LEFT_INDEX],
+        rectValues[WINDOW_RECT_TOP_INDEX],
+        static_cast<uint32_t>(rectValues[WINDOW_RECT_WIDTH_INDEX] < 0 ? 0 : rectValues[WINDOW_RECT_WIDTH_INDEX]),
+        static_cast<uint32_t>(rectValues[WINDOW_RECT_HEIGHT_INDEX] < 0 ? 0 : rectValues[WINDOW_RECT_HEIGHT_INDEX])
+    };
+    return true;
+}
 } // namespace
 
 void WindowViewJni::SurfaceCreated(JNIEnv* env, jobject myObject, jlong window, jobject jsurface)
@@ -125,6 +160,16 @@ void WindowViewJni::SurfaceChanged(
     if (windowPtr != nullptr) {
         windowPtr->NotifySurfaceChanged(width, height, density);
     }
+}
+
+void WindowViewJni::WindowRectChanged(JNIEnv* env, jobject myObject, jlong window, jintArray rectArray)
+{
+    auto windowPtr = JavaLongToPointer<Rosen::Window>(window);
+    Rosen::Rect rect = {};
+    if (windowPtr == nullptr || !GetWindowRectFromArray(env, rectArray, rect)) {
+        return;
+    }
+    windowPtr->NotifyWindowRectChange(rect);
 }
 
 void WindowViewJni::AvoidAreaChange(JNIEnv* env, jobject myObject, jlong window, jint type,

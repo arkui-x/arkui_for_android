@@ -62,24 +62,6 @@ struct VsyncCallback {
 };
 class VSyncReceiver;
 
-enum class WindowSizeChangeReason : uint32_t {
-    UNDEFINED = 0,
-    MAXIMIZE,
-    RECOVER,
-    ROTATION,
-    DRAG,
-    DRAG_START,
-    DRAG_END,
-    RESIZE,
-    MOVE,
-    HIDE,
-    TRANSFORM,
-    CUSTOM_ANIMATION_SHOW,
-    FULL_TO_SPLIT,
-    SPLIT_TO_FULL,
-    END,
-};
-
 class Window : public RefBase {
 public:
     static bool Register(const std::shared_ptr<JNIEnv>& env);
@@ -130,6 +112,9 @@ public:
     void NotifySurfaceChanged(int32_t width, int32_t height, float density);
     void NotifyKeyboardHeightChanged(int32_t height);
     void NotifySizeChange(Rect rect);
+    void NotifyWindowRectChange(const Rect& rect,
+        WindowSizeChangeReason reason = WindowSizeChangeReason::UNDEFINED);
+    void NotifyWindowStatusDidChange(WindowStatus windowStatus);
     void NotifySurfaceDestroyed();
     void NotifyTouchOutside();
     void NotifyAvoidAreaChange(const std::shared_ptr<AvoidArea>& avoidArea, AvoidAreaType type);
@@ -198,6 +183,11 @@ public:
     WMError UnregisterAvoidAreaChangeListener(const sptr<IAvoidAreaChangedListener>& listener);
     WMError RegisterWindowStatusChangeListener(const sptr<IWindowStatusChangeListener>& listener);
     WMError UnregisterWindowStatusChangeListener(const sptr<IWindowStatusChangeListener>& listener);
+    WMError RegisterWindowRectChangeListener(const sptr<IWindowRectChangeListener>& listener);
+    WMError UnregisterWindowRectChangeListener(const sptr<IWindowRectChangeListener>& listener);
+    WMError RegisterWindowStatusDidChangeListener(const sptr<IWindowStatusDidChangeListener>& listener);
+    WMError UnregisterWindowStatusDidChangeListener(const sptr<IWindowStatusDidChangeListener>& listener);
+    WMError GetWindowStatus(WindowStatus& status);
 
     WMError SetLayoutFullScreen(bool status);
     WMError SetSpecificBarProperty(WindowType type, const SystemBarProperty& property);
@@ -264,6 +254,7 @@ public:
     // @override
     Rect GetRect()
     {
+        std::lock_guard<std::recursive_mutex> lock(globalMutex_);
         return rect_;
     }
     // @override
@@ -405,6 +396,8 @@ private:
     static std::map<uint32_t, std::vector<sptr<IWindowSurfaceNodeListener>>> surfaceNodeListeners_;
     static std::map<uint32_t, std::vector<sptr<IAvoidAreaChangedListener>>> avoidAreaChangeListeners_;
     static std::map<uint32_t, std::vector<sptr<IWindowStatusChangeListener>>> windowStatusChangeListeners_;
+    static std::map<uint32_t, std::vector<sptr<IWindowRectChangeListener>>> windowRectChangeListeners_;
+    static std::map<uint32_t, std::vector<sptr<IWindowStatusDidChangeListener>>> windowStatusDidChangeListeners_;
 
     template<typename T1, typename T2, typename Ret>
     using EnableIfSame = typename std::enable_if<std::is_same_v<T1, T2>, Ret>::type;
@@ -507,6 +500,33 @@ private:
             }
         }
         return windowStatusChangeListeners;
+    }
+
+    template<typename T>
+    inline EnableIfSame<T, IWindowRectChangeListener, std::vector<sptr<IWindowRectChangeListener>>> GetListeners()
+    {
+        std::vector<sptr<IWindowRectChangeListener>> windowRectChangeListeners;
+        {
+            std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+            for (auto& listener : windowRectChangeListeners_[GetWindowId()]) {
+                windowRectChangeListeners.push_back(listener);
+            }
+        }
+        return windowRectChangeListeners;
+    }
+
+    template<typename T>
+    inline EnableIfSame<T, IWindowStatusDidChangeListener,
+        std::vector<sptr<IWindowStatusDidChangeListener>>> GetListeners()
+    {
+        std::vector<sptr<IWindowStatusDidChangeListener>> windowStatusDidChangeListeners;
+        {
+            std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+            for (auto& listener : windowStatusDidChangeListeners_[GetWindowId()]) {
+                windowStatusDidChangeListeners.push_back(listener);
+            }
+        }
+        return windowStatusDidChangeListeners;
     }
 
 #define CALL_LIFECYCLE_LISTENER(windowLifecycleCb)                  \
