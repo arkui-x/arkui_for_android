@@ -210,6 +210,9 @@ void SubWindowManagerJni::SetupSubWindowManager(JNIEnv* env, jobject obj)
     subWindowManagerStruct_.setBackgroundColorMethod = env->GetMethodID(clazz, "setBackgroundColor", "(I)Z");
     subWindowManagerStruct_.setAppScreenBrightnessMethod = env->GetMethodID(clazz, "setAppScreenBrightness", "(F)Z");
     subWindowManagerStruct_.getAppScreenBrightnessMethod = env->GetMethodID(clazz, "getAppScreenBrightness", "()F");
+    subWindowManagerStruct_.getWindowDensityMethod = env->GetMethodID(clazz, "getWindowDensity", "()F");
+    subWindowManagerStruct_.getWindowDefaultDensityMethod =
+        env->GetMethodID(clazz, "getWindowDefaultDensity", "()F");
     subWindowManagerStruct_.setKeepScreenOnMethod = env->GetMethodID(clazz, "setKeepScreenOn", "(Z)Z");
     subWindowManagerStruct_.isKeepScreenOnMethod = env->GetMethodID(clazz, "isKeepScreenOn", "()Z");
     subWindowManagerStruct_.requestOrientationMethod = env->GetMethodID(clazz, "requestOrientation", "(I)Z");
@@ -493,6 +496,34 @@ float SubWindowManagerJni::GetAppScreenBrightness()
 
     jfloat ret =
         env->CallFloatMethod(subWindowManagerStruct_.object, subWindowManagerStruct_.getAppScreenBrightnessMethod);
+    return ret;
+}
+
+float SubWindowManagerJni::GetWindowDensity()
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("SubWindowManagerJni::GetWindowDensity: env is NULL");
+        return 0.0f;
+    }
+
+    jfloat ret =
+        env->CallFloatMethod(subWindowManagerStruct_.object, subWindowManagerStruct_.getWindowDensityMethod);
+    LOGI("SubWindowManagerJni::GetWindowDensity: density=%{public}f", ret);
+    return ret;
+}
+
+float SubWindowManagerJni::GetWindowDefaultDensity()
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("SubWindowManagerJni::GetWindowDefaultDensity: env is NULL");
+        return 0.0f;
+    }
+
+    jfloat ret =
+        env->CallFloatMethod(subWindowManagerStruct_.object, subWindowManagerStruct_.getWindowDefaultDensityMethod);
+    LOGI("SubWindowManagerJni::GetWindowDefaultDensity: defaultDensity=%{public}f", ret);
     return ret;
 }
 

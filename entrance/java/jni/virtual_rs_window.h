@@ -171,6 +171,7 @@ public:
         return backgroundColor_;
     }
     WMError SetBrightness(float brightness);
+    WMError GetWindowDensityInfo(WindowDensityInfo& densityInfo);
 
     WMError SetColorSpace(ColorSpace colorSpace);
     ColorSpace GetColorSpace() const;
