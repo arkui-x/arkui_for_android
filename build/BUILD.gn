@@ -313,6 +313,7 @@ group("ace_packages") {
     ":ace_android_adapter_java",
     ":ace_ndk",
     ":libarkui_android",
+    "//foundation/appframework:appframework_napis"
   ]
 
   # include ark_js debugger shared library

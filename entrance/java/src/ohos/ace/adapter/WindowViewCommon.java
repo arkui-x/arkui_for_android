@@ -139,6 +139,7 @@ public class WindowViewCommon {
     private ViewTreeObserver.OnGlobalLayoutListener windowRectGlobalLayoutListener = null;
     private Rect lastWindowRect = new Rect();
     private HashMap<Integer, AvoidArea> avoidAreaRects = new HashMap<>();
+    private WindowInsetsCompat lastInsets = null;
 
     /**
      * Interface for listening to subwindow keyboard avoid height changes.
@@ -197,9 +198,32 @@ public class WindowViewCommon {
     public void registerWindow(long windowHandle) {
         nativeWindowPtr = windowHandle;
         setupWindowInsetsListener();
+        trySyncCurrentInsets();
         setupWindowRectChangeListener();
         notifyWindowRectChanged();
         delayNotifyIfNeeded();
+    }
+
+    private void trySyncCurrentInsets() {
+        if (!sAndroidXAvailable || !sAndroidXVersionSupportedGetInsets) {
+            return;
+        }
+        if (windowViewInterface == null || windowViewInterface.getView() == null) {
+            return;
+        }
+        View rootView = windowViewInterface.getView().getRootView();
+        WindowInsetsCompat currentInsets = ViewCompat.getRootWindowInsets(rootView);
+        if (currentInsets != null && rootView.isAttachedToWindow() && rootView.getWidth() > 0) {
+            Rect rect = new Rect();
+            int[] location = new int[2];
+            View view = windowViewInterface.getView();
+            view.getLocationInWindow(location);
+            rect.left = location[0];
+            rect.top = location[1];
+            rect.right = rect.left + view.getWidth();
+            rect.bottom = rect.top + view.getHeight();
+            processAvoidAreas(currentInsets, rect);
+        }
     }
 
     /**
@@ -286,6 +310,11 @@ public class WindowViewCommon {
             this.nativeSurfaceChanged(
                 this.nativeWindowPtr, this.surfaceWidth, this.surfaceHeight, this.density);
         }
+        // Re-evaluate avoid areas when surface size changes (e.g. orientation change),
+        // since system bars may have moved and the view rect has changed.
+        if (lastInsets != null) {
+            onInsetsAreaChanged(lastInsets);
+        }
         notifyWindowRectChanged();
     }
 
@@ -332,6 +361,7 @@ public class WindowViewCommon {
             ALog.w(TAG, "AndroidX is not available.");
             return;
         }
+        lastInsets = insets;
         ALog.d(TAG, "Window " + "onInsetsAreaChanged " + nativeWindowPtr);
         notifyWindowRectChanged();
         getLocationInWindow(new LocationCallback() {

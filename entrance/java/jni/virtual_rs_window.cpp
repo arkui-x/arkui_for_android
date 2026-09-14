@@ -305,11 +305,15 @@ std::shared_ptr<Window> Window::Create(
 
 void Window::AvoidAreaMapInit(std::shared_ptr<Window> window)
 {
-    for (auto type : { AvoidAreaType::TYPE_SYSTEM, AvoidAreaType::TYPE_CUTOUT, AvoidAreaType::TYPE_SYSTEM_GESTURE,
-             AvoidAreaType::TYPE_KEYBOARD, AvoidAreaType::TYPE_NAVIGATION_INDICATOR }) {
-        auto avoidArea = std::make_shared<Rosen::AvoidArea>();
-        window->GetAvoidAreaByType(type, *avoidArea);
-        window->avoidAreaMap_.insert(std::make_pair(type, *avoidArea));
+    window->avoidAreaMap_.clear();
+
+    if (window->GetType() == OHOS::Rosen::WindowType::WINDOW_TYPE_APP_SUB_WINDOW) {
+        for (auto type : { AvoidAreaType::TYPE_SYSTEM, AvoidAreaType::TYPE_CUTOUT, AvoidAreaType::TYPE_SYSTEM_GESTURE,
+                AvoidAreaType::TYPE_KEYBOARD, AvoidAreaType::TYPE_NAVIGATION_INDICATOR }) {
+            auto avoidArea = std::make_shared<Rosen::AvoidArea>();
+            window->GetAvoidAreaByType(type, *avoidArea);
+            window->avoidAreaMap_.insert(std::make_pair(type, *avoidArea));
+        }
     }
 }
 
@@ -1499,9 +1503,12 @@ void Window::OnSafeAreaChange(int type, AvoidArea avoidArea)
 WMError Window::GetAvoidAreaByType(AvoidAreaType type, AvoidArea& avoidArea)
 {
     std::lock_guard<std::recursive_mutex> lock(globalMutex_);
-    auto avoidArea_ = avoidAreaMap_[type];
-    avoidArea = avoidArea_;
-    return WMError::WM_OK;
+    auto it = avoidAreaMap_.find(type);
+    if (it != avoidAreaMap_.end()) {
+        avoidArea = it->second;
+        return WMError::WM_OK;
+    }
+    return WMError::WM_ERROR_NULLPTR;
 }
 
 WMError Window::UpdateSystemBarProperties(const std::unordered_map<WindowType, SystemBarProperty>& systemBarProperties,
