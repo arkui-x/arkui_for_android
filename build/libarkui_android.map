@@ -983,6 +983,8 @@
       "OHOS::Ace::SystemProperties::GetGridIrregularLayoutEnabled()";
       "OHOS::Ace::SystemProperties::ConfigChangePerform()";
       "OHOS::Ace::SystemProperties::GetDeviceType()";
+      "OHOS::Ace::SystemProperties::IsBigFoldProduct()";
+      "OHOS::Ace::SystemProperties::IsPortraitFoldProduct()";
       OHOS::Ace::SystemProperties::devicePhysicalHeight_;
       "OHOS::Ace::VelocityTracker::VelocityTracker(OHOS::Ace::Axis)";
       OHOS::Ace::V2::*_ETS_TAG;
@@ -3010,6 +3012,14 @@
       "OHOS::Ace::NG::SwiperPattern::TotalCount() const";
       "VTT for OHOS::Ace::NG::StackPattern";
       "vtable for OHOS::Ace::NG::StackPattern";
+      "OHOS::Ace::NG::StackPattern::CreateEventHub()";
+      "OHOS::Ace::NG::StackPattern::OnDirtyLayoutWrapperSwap(OHOS::Ace::RefPtr<OHOS::Ace::NG::LayoutWrapper> const&, OHOS::Ace::NG::DirtySwapConfig const&)";
+      "OHOS::Ace::NG::StackPattern::DumpInfo()";
+      "OHOS::Ace::NG::StackPattern::GetOrCreateVerticalOverflowHandler(OHOS::Ace::WeakPtr<OHOS::Ace::NG::FrameNode> const&)";
+      "OHOS::Ace::Alignment::GetAlignmentStr(OHOS::Ace::TextDirection) const";
+      "OHOS::Ace::Alignment::GetAlignment(OHOS::Ace::TextDirection, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "OHOS::Ace::NG::LayoutProperty::GenIgnoreOpts() const";
+      "OHOS::Ace::NG::EventHub::SetOnDisappear(std::__ndk1::function<void ()>&&)";
       "VTT for OHOS::Ace::NG::StackLayoutAlgorithm";
       "OHOS::Ace::NG::CalcSize::IsValid() const";
       "OHOS::Ace::InspectorJsonUtil::Create(bool)";
@@ -3031,6 +3041,7 @@
       "OHOS::Ace::NG::RosenRenderContext::GetRSNode()";
       "OHOS::Rosen::RSNode::SetDrawRegion(std::__ndk1::shared_ptr<OHOS::Rosen::RectT<float> >)";
       "OHOS::Ace::EventReport::SendComponentExceptionNG(OHOS::Ace::ComponentExcepTypeNG, int, int, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "OHOS::Ace::EventReport::ReportHoverStatusChange(int, int, bool, int, int)";
       "OHOS::Ace::SystemProperties::widthLayoutBreakpoints_";
       "OHOS::Ace::NG::LayoutProperty::GetFlexItemProperty() const";
       "OHOS::Ace::GridContainerInfo::GetMarginLeft() const";
