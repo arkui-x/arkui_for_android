@@ -287,6 +287,7 @@ component_modules = [
   "select",
   "text_field",
   "bubble",
+  "folder_stack",
 ]
 
 component_modules_libs = []
