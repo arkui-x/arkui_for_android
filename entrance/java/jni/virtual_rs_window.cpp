@@ -758,6 +758,7 @@ void Window::SetRequestedOrientation(Orientation orientation)
     LOGI("Window::SetRequestedOrientation called.");
 
     if (IsSubWindow() || GetMode() == WindowMode::WINDOW_MODE_FLOATING) {
+        orientation_ = orientation;
         return;
     }
     bool result = SubWindowManagerJni::RequestOrientation(orientation);
