@@ -3468,6 +3468,7 @@
       "OHOS::Ace::NG::TextPattern::InitSpanImageLayout(std::__ndk1::vector<int, std::__ndk1::allocator<int> > const&, std::__ndk1::vector<OHOS::Ace::NG::RectT<float>, std::__ndk1::allocator<OHOS::Ace::NG::RectT<float> > > const&, OHOS::Ace::NG::OffsetT<float>)";
       "OHOS::Ace::NG::TextPattern::GetContentOffset()";
       "OHOS::Ace::NG::TextPattern::ResetAISelected(OHOS::Ace::NG::AIResetSelectionReason)";
+      "OHOS::Ace::NG::TextPattern::RegisterTranslateListener()";
       "OHOS::Ace::NG::TextPattern::ShowAIEntityMenuForCancel()";
       "OHOS::Ace::NG::TextPattern::IsPreviewMenuShow()";
       "OHOS::Ace::NG::TextPattern::GetContentHost() const";
