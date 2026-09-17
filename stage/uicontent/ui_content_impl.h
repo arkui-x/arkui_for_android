@@ -20,6 +20,7 @@
 
 #include "adapter/android/entrance/java/jni/virtual_rs_window.h"
 #include "adapter/android/stage/uicontent/ace_container_sg.h"
+#include "display_manager.h"
 
 #include "base/memory/ace_type.h"
 #include "base/utils/macros.h"
@@ -121,6 +122,7 @@ private:
     OHOS::sptr<OHOS::Rosen::IAvoidAreaChangedListener> avoidAreaChangedListener_ = nullptr;
     OHOS::Rosen::ITouchOutsideListener* touchOutsideListener_ = nullptr;
     OHOS::Rosen::IWindowLifeCycle* windowLifeCycleListener_ = nullptr;
+    OHOS::sptr<OHOS::Rosen::DisplayManager::FoldStatusListener> foldStatusListener_ = nullptr;
 };
 } // namespace OHOS::Ace::Platform
 #endif // FOUNDATION_ACE_ADAPTER_ANDROID_STAGE_UI_CONTENT_IMPL_H

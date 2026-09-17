@@ -1626,6 +1626,7 @@
       "OHOS::Rosen::DisplayInfo::GetXDpi() const";
       "OHOS::Rosen::DisplayInfo::GetYDpi() const";
       "OHOS::Rosen::DisplayManagerAgent::GetAllDisplayIds() const";
+      "OHOS::Rosen::DisplayManagerAgent::GetFoldCreaseDirection() const";
       "OHOS::Rosen::DisplayManagerAgent::GetInstance()";
       "OHOS::Rosen::DisplayManagerAgent::GetLiveCreaseRegion() const";
       "OHOS::Rosen::DisplayManagerAgent::IsFoldable() const";

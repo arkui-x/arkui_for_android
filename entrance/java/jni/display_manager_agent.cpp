@@ -57,6 +57,12 @@ uint32_t DisplayManagerAgent::GetFoldStatus() const
     return DisplayManagerAgentJni::GetFoldStatus();
 }
 
+int32_t DisplayManagerAgent::GetFoldCreaseDirection() const
+{
+    auto direction = DisplayManagerAgentJni::GetFoldCreaseDirection();
+    return direction;
+}
+
 std::vector<uint64_t> DisplayManagerAgent::GetAllDisplayIds() const
 {
     return DisplayManagerAgentJni::GetAllDisplayIds();
