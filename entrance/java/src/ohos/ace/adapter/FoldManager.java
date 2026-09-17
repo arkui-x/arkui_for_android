@@ -17,6 +17,7 @@ package ohos.ace.adapter;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Build;
 
 import androidx.core.util.Consumer;
@@ -66,8 +67,9 @@ public class FoldManager {
         FoldingFeature foldingFeature = null;
         if (isOpenFoldListener(activity)) {
             foldingFeature = getFoldingFeatureInvoke(activity);
-        } else {
-            foldingFeature = getFoldingFeature(activity);
+        }
+        if (foldingFeature == null) {
+            foldingFeature = getFoldingFeatureSync(activity);
         }
         if (foldingFeature != null) {
             foldAble = true;
@@ -88,8 +90,9 @@ public class FoldManager {
         FoldingFeature foldingFeature = null;
         if (isOpenFoldListener(activity)) {
             foldingFeature = getFoldingFeatureInvoke(activity);
-        } else {
-            foldingFeature = getFoldingFeature(activity);
+        }
+        if (foldingFeature == null) {
+            foldingFeature = getFoldingFeatureSync(activity);
         }
         int currentStatus = getStatusFromFeature(activity, foldingFeature);
         foldStatus = currentStatus;
@@ -208,6 +211,83 @@ public class FoldManager {
             ALog.e(TAG, "invoke getFoldingFeature fail:" + e.getMessage());
             return null;
         }
+    }
+
+    /**
+     * get folding feature synchronously (without runOnUiThread wrapper).
+     * Sets the result directly in the Consumer callback on the calling thread,
+     * avoiding the race where the listener is removed before the callback fires.
+     *
+     * @param activity the activity
+     * @return FoldingFeature or null if unavailable
+     */
+    public static FoldingFeature getFoldingFeatureSync(Activity activity) {
+        if (activity == null) {
+            return null;
+        }
+        try {
+            AtomicReference<FoldingFeature> featureRef = new AtomicReference<>();
+            WindowInfoTracker windowInfoTracker = WindowInfoTracker.getOrCreate(activity);
+            WindowInfoTrackerCallbackAdapter windowInfoTrackerCallbackAdapter =
+                new WindowInfoTrackerCallbackAdapter(windowInfoTracker);
+            Consumer<WindowLayoutInfo> consumer = windowLayoutInfo -> {
+                windowLayoutInfo.getDisplayFeatures().stream()
+                    .filter(FoldingFeature.class::isInstance)
+                    .map(FoldingFeature.class::cast)
+                    .findFirst()
+                    .ifPresent(feature -> featureRef.set(feature));
+            };
+            windowInfoTrackerCallbackAdapter.addWindowLayoutInfoListener(activity, Runnable::run, consumer);
+            windowInfoTrackerCallbackAdapter.removeWindowLayoutInfoListener(consumer);
+            return featureRef.get();
+        } catch (NoClassDefFoundError e) {
+            ALog.e(TAG, "getFoldingFeatureSync: androidx.window not available, error=" + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * get fold crease direction of the device.
+     * Uses the crease rect's width vs height as the official fold crease direction criterion
+     * (consistent with OHOS display_info_utils.cpp GetFoldCreaseDirection):
+     *   - width > height → FOLD_CREASE_DIRECTION_HORIZONTAL
+     *   - width < height → FOLD_CREASE_DIRECTION_VERTICAL
+     *   - width == height → FOLD_CREASE_DIRECTION_UNKNOWN
+     * The crease rect is obtained from FoldingFeature.getBounds() via androidx.window.
+     * When FoldingFeature is unavailable (e.g. androidx.window not packaged),
+     * returns FOLD_CREASE_DIRECTION_UNKNOWN without any device-type-based fallback.
+     *
+     * @param activity the activity
+     * @return fold crease direction (FOLD_CREASE_DIRECTION_UNKNOWN / HORIZONTAL / VERTICAL)
+     */
+    public static int getFoldCreaseDirection(Activity activity) {
+        if (Build.VERSION.SDK_INT < ANDROID_API_31) {
+            return FoldInfo.FOLD_CREASE_DIRECTION_UNKNOWN;
+        }
+        // Get FoldingFeature from Jetpack WindowManager
+        FoldingFeature foldingFeature = null;
+        if (isOpenFoldListener(activity)) {
+            foldingFeature = getFoldingFeatureInvoke(activity);
+        }
+        if (foldingFeature == null) {
+            foldingFeature = getFoldingFeatureSync(activity);
+        }
+        if (foldingFeature == null) {
+            return FoldInfo.FOLD_CREASE_DIRECTION_UNKNOWN;
+        }
+        // Use crease rect width vs height as the official fold crease direction criterion
+        android.graphics.Rect bounds = foldingFeature.getBounds();
+        if (bounds == null) {
+            return FoldInfo.FOLD_CREASE_DIRECTION_UNKNOWN;
+        }
+        int width = bounds.width();
+        int height = bounds.height();
+        if (width > height) {
+            return FoldInfo.FOLD_CREASE_DIRECTION_HORIZONTAL;
+        } else if (width < height) {
+            return FoldInfo.FOLD_CREASE_DIRECTION_VERTICAL;
+        }
+        return FoldInfo.FOLD_CREASE_DIRECTION_UNKNOWN;
     }
 
     /**

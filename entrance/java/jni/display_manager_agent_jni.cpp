@@ -77,6 +77,8 @@ void DisplayManagerAgentJni::SetupDisplayManagerAgent(JNIEnv* env, jobject obj)
     displayManagerAgentJniStruct_.clazz = (jclass)env->NewGlobalRef(clazz);
     displayManagerAgentJniStruct_.isFoldableMethod = env->GetMethodID(clazz, "isFoldable", "()Z");
     displayManagerAgentJniStruct_.getFoldStatusMethod = env->GetMethodID(clazz, "getFoldStatus", "()I");
+    displayManagerAgentJniStruct_.getFoldCreaseDirectionMethod =
+        env->GetMethodID(clazz, "getFoldCreaseDirection", "()I");
     displayManagerAgentJniStruct_.getAllDisplayIdsMethod = env->GetMethodID(clazz, "getAllDisplayIds", "()[I");
     displayManagerAgentJniStruct_.getLiveCreaseRegionMethod = env->GetMethodID(clazz, "getLiveCreaseRegion", "()[I");
     displayManagerAgentJniStruct_.registerDisplayListenerMethod = env->GetMethodID(clazz, "registerDisplayListener",
@@ -121,6 +123,24 @@ uint32_t DisplayManagerAgentJni::GetFoldStatus()
         return -1;
     }
     return (uint32_t)foldStatus;
+}
+
+int32_t DisplayManagerAgentJni::GetFoldCreaseDirection()
+{
+    auto envPtr = JniEnvironment::GetInstance().GetJniEnv();
+    JNIEnv* env = envPtr.get();
+    if (env == nullptr) {
+        return 0;
+    }
+
+    jint direction = env->CallIntMethod(displayManagerAgentJniStruct_.object,
+        displayManagerAgentJniStruct_.getFoldCreaseDirectionMethod);
+    if (env->ExceptionCheck()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return 0;
+    }
+    return (int32_t)direction;
 }
 
 std::vector<uint64_t> DisplayManagerAgentJni::GetAllDisplayIds()
