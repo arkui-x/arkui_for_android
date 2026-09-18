@@ -40,6 +40,8 @@ bool StylusDetectorMgr::Notify(const NotifyInfo& notifyInfo)
     return false;
 }
 
+void StylusDetectorMgr::InitImfHook() {}
+
 bool StylusDetectorMgr::IsNeedInterceptedTouchEvent(
     const TouchEvent& touchEvent, std::unordered_map<size_t, TouchTestResult> touchTestResults)
 {
