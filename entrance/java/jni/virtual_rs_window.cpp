@@ -633,6 +633,10 @@ WMError Window::SetBrightness(float brightness)
         LOGE("invalid brightness value: %{public}f", brightness);
         return WMError::WM_ERROR_INVALID_PARAM;
     }
+    if (IsSubWindow()) {
+        brightness_ = brightness;
+        return WMError::WM_OK;
+    }
     bool result = SubWindowManagerJni::SetAppScreenBrightness(brightness);
 
     brightness_ = brightness;
