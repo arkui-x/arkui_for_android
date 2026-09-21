@@ -2387,9 +2387,13 @@
       "OHOS::Rosen::FontCollectionMgr::GetInstance()";
       /* arkui-x: host-provided engine symbols for include-only NDK source sets
        * (text_ndk, drawing_ndk_core_arkui_x) in libace_ndk.so; resolved at
-       * runtime through this library's DT_NEEDED edge. Kept alive via the
-       * -Wl,-u list in BUILD.gn (gc-sections roots). lld ignores glob patterns
-       * inside extern "C++", so names are listed explicitly. */
+       * runtime through this library's DT_NEEDED edge. Exact entries only:
+       * each entry is itself a --gc-sections root (no -Wl,-u keep-alive
+       * needed), and wildcard patterns would always lose to the trailing
+       * local: *; fallback (exact names bind first; among wildcards the last
+       * declared wins). size_t / uint64_t parameters are listed per ABI
+       * where their manglings differ (see the CheckInstanceIsValid pair
+       * above for the existing convention). */
       "OHOS::Rosen::Drawing::Color::SetColorQuad(unsigned int)";
       "OHOS::Rosen::Drawing::ObjectMgr::AddObject(void*)";
       "OHOS::Rosen::Drawing::ObjectMgr::GetInstance()";
@@ -2402,6 +2406,7 @@
       "OHOS::Rosen::FontFeatures::Clear()";
       "OHOS::Rosen::SPText::Utf16Utils::HandleIncompleteSurrogatePairs(std::__ndk1::basic_string<char16_t, std::__ndk1::char_traits<char16_t>, std::__ndk1::allocator<char16_t> >&)";
       "OHOS::Rosen::Str32ToStr16ByIcu(int const*, unsigned long)";
+      "OHOS::Rosen::Str32ToStr16ByIcu(int const*, unsigned int)";
       "OHOS::Rosen::Str8ToStr16ByIcu(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Rosen::TextEngine::FontConfig::FontConfig(char const*)";
       "OHOS::Rosen::TextEngine::FontParser::FontParser()";
@@ -2562,6 +2567,7 @@
       "OHOS::Rosen::Symbol::DefaultSymbolConfig::GetSymbolLayersGroups(unsigned short)";
       "OHOS::Rosen::Drawing::CoreCanvas::ReadPixels(OHOS::Rosen::Drawing::Bitmap const&, int, int)";
       "OHOS::Rosen::Drawing::CoreCanvas::ReadPixels(OHOS::Rosen::Drawing::ImageInfo const&, void*, unsigned long, int, int)";
+      "OHOS::Rosen::Drawing::CoreCanvas::ReadPixels(OHOS::Rosen::Drawing::ImageInfo const&, void*, unsigned int, int, int)";
       "OHOS::Rosen::Drawing::CoreCanvas::GetImageInfo()";
       "OHOS::Rosen::Drawing::CoreCanvas::DrawSingleCharacter(int, OHOS::Rosen::Drawing::Font const&, float, float)";
       "OHOS::Rosen::Drawing::CoreCanvas::DrawSingleCharacterWithFeatures(char const*, OHOS::Rosen::Drawing::Font const&, float, float, std::__ndk1::shared_ptr<std::__ndk1::vector<std::__ndk1::unordered_map<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, double, std::__ndk1::hash<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > >, std::__ndk1::equal_to<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > >, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const, double> > >, std::__ndk1::allocator<std::__ndk1::unordered_map<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, double, std::__ndk1::hash<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > >, std::__ndk1::equal_to<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > >, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const, double> > > > > >)";
