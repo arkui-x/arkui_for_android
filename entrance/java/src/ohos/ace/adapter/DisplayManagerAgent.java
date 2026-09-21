@@ -121,6 +121,19 @@ public class DisplayManagerAgent {
     }
 
     /**
+     * get fold crease direction of the device.
+     *
+     * @return the fold crease direction (0=UNKNOWN, 1=HORIZONTAL, 2=VERTICAL)
+     */
+    public int getFoldCreaseDirection() {
+        if (this.activity != null) {
+            return FoldManager.getFoldCreaseDirection(this.activity);
+        } else {
+            return FoldInfo.FOLD_CREASE_DIRECTION_UNKNOWN;
+        }
+    }
+
+    /**
      * get live crease region of current fold state.
      *
      * @return int array [left, top, width, height], empty when unsupported
@@ -129,7 +142,13 @@ public class DisplayManagerAgent {
         if (activity == null) {
             return new int[0];
         }
-        FoldingFeature foldingFeature = FoldManager.getFoldingFeature(activity);
+        FoldingFeature foldingFeature = null;
+        if (FoldManager.isOpenFoldListener(activity)) {
+            foldingFeature = FoldManager.getFoldingFeatureInvoke(activity);
+        }
+        if (foldingFeature == null) {
+            foldingFeature = FoldManager.getFoldingFeatureSync(activity);
+        }
         if (foldingFeature == null) {
             return new int[0];
         }

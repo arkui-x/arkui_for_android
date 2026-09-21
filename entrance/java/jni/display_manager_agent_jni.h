@@ -28,6 +28,7 @@ struct DisplayManagerAgentJniStruct {
     jclass clazz;
     jmethodID isFoldableMethod;
     jmethodID getFoldStatusMethod;
+    jmethodID getFoldCreaseDirectionMethod;
     jmethodID getAllDisplayIdsMethod;
     jmethodID getLiveCreaseRegionMethod;
     jmethodID registerDisplayListenerMethod;
@@ -39,6 +40,7 @@ public:
     static bool Register(const std::shared_ptr<JNIEnv>& env);
     static bool IsFoldable();
     static uint32_t GetFoldStatus();
+    static int32_t GetFoldCreaseDirection();
     static std::vector<uint64_t> GetAllDisplayIds();
     static std::vector<int32_t> GetLiveCreaseRegion();
     static void RegisterDisplayListener();

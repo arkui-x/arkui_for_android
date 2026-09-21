@@ -15,6 +15,7 @@
 
 #include "core/common/display_info_utils.h"
 
+#include "base/log/log.h"
 #include "core/common/display_info.h"
 #include "core/pipeline_ng/pipeline_context.h"
 #include "display_info_jni.h"
@@ -46,6 +47,8 @@ RefPtr<DisplayInfo> DisplayInfoUtils::GetDisplayInfo(int32_t displayId)
     GetIsFoldable();
     GetCurrentFoldStatus();
     GetCurrentFoldCreaseRegion();
+    GetLiveFoldCreaseRegion();
+    GetFoldCreaseDirection();
     return displayInfo_;
 }
 
@@ -119,5 +122,52 @@ std::vector<Rect> DisplayInfoUtils::GetCurrentFoldCreaseRegion()
     displayInfo_->SetCurrentFoldCreaseRegion(rects);
     hasInitFoldCreaseRegion_ = true;
     return rects;
+}
+
+std::vector<Rect> DisplayInfoUtils::GetLiveFoldCreaseRegion()
+{
+    std::vector<Rect> rects;
+    auto agent = Rosen::DisplayManagerAgent::GetInstance();
+    if (!agent) {
+        displayInfo_->SetLiveFoldCreaseRegion(rects);
+        return rects;
+    }
+    auto creaseRegionData = agent->GetLiveCreaseRegion();
+    if (creaseRegionData.empty()) {
+        displayInfo_->SetLiveFoldCreaseRegion(rects);
+        return rects;
+    }
+
+    int32_t rectCount = static_cast<int32_t>(creaseRegionData.size()) / RECT_PARAM_COUNT;
+    for (int32_t i = 0; i < rectCount; i++) {
+        Rect rect;
+        const int32_t baseIdx = i * RECT_PARAM_COUNT;
+        rect.SetRect(
+            static_cast<double>(creaseRegionData[baseIdx + RECT_X_OFFSET]),
+            static_cast<double>(creaseRegionData[baseIdx + RECT_Y_OFFSET]),
+            static_cast<double>(creaseRegionData[baseIdx + RECT_WIDTH_OFFSET]),
+            static_cast<double>(creaseRegionData[baseIdx + RECT_HEIGHT_OFFSET]));
+        rects.insert(rects.end(), rect);
+    }
+
+    displayInfo_->SetLiveFoldCreaseRegion(rects);
+    return rects;
+}
+
+FoldCreaseDirection DisplayInfoUtils::GetFoldCreaseDirection()
+{
+    auto agent = Rosen::DisplayManagerAgent::GetInstance();
+    if (!agent) {
+        displayInfo_->SetFoldCreaseDirection(FoldCreaseDirection::UNKNOWN);
+        return FoldCreaseDirection::UNKNOWN;
+    }
+    int32_t direction = agent->GetFoldCreaseDirection();
+    auto creaseDirection = FoldCreaseDirection::UNKNOWN;
+    if (direction >= static_cast<int32_t>(FoldCreaseDirection::UNKNOWN) &&
+        direction <= static_cast<int32_t>(FoldCreaseDirection::VERTICAL)) {
+        creaseDirection = static_cast<FoldCreaseDirection>(static_cast<uint32_t>(direction));
+    }
+    displayInfo_->SetFoldCreaseDirection(creaseDirection);
+    return creaseDirection;
 }
 } // namespace OHOS::Ace::DisplayInfoUtils

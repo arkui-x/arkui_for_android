@@ -43,6 +43,21 @@ public class FoldInfo {
     public static final int FOLD_STATUS_HALF_FOLDED = 3;
 
     /**
+     * fold crease direction is unknown
+     */
+    public static final int FOLD_CREASE_DIRECTION_UNKNOWN = 0;
+
+    /**
+     * fold crease direction is horizontal (hinge runs left-to-right, e.g. Z Flip)
+     */
+    public static final int FOLD_CREASE_DIRECTION_HORIZONTAL = 1;
+
+    /**
+     * fold crease direction is vertical (hinge runs top-to-bottom, e.g. Z Fold)
+     */
+    public static final int FOLD_CREASE_DIRECTION_VERTICAL = 2;
+
+    /**
      * is foldable
      */
     private boolean isFoldable = false;
