@@ -38,6 +38,9 @@ template("ace_uicontent_android_source_set") {
       "//foundation/arkui/napi",
       "//foundation/appframework/ability/ability_runtime/cross_platform/interfaces/kits/native/appkit",
       "//foundation/appframework/arkui/uicontent",
+      "//foundation/appframework/window_manager/dm/include",
+      "//foundation/appframework/window_manager/interfaces/innerkits/dm",
+      "//foundation/appframework/window_manager/utils/include",
       "//third_party/zlib",
       "//foundation/arkui/ace_engine/adapter/android/osal/mock",
     ]

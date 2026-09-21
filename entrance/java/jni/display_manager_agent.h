@@ -34,6 +34,7 @@ public:
     static std::shared_ptr<DisplayManagerAgent> GetInstance();
     bool IsFoldable() const;
     uint32_t GetFoldStatus() const;
+    int32_t GetFoldCreaseDirection() const;
     std::vector<uint64_t> GetAllDisplayIds() const;
     std::vector<int32_t> GetLiveCreaseRegion() const;
     void RegisterDisplayListener();

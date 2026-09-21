@@ -1351,6 +1351,12 @@ void AceContainerSG::InitWindowCallback()
             SystemProperties::GetWidthLayoutBreakpoints();
         return window->GetWidthBreakpoint(layoutWidthBreakpoints);
     });
+    windowManager->SetWindowGetModeCallBack(
+        [window = uiWindow_]() -> WindowMode {
+        CHECK_NULL_RETURN(window, WindowMode::WINDOW_MODE_UNDEFINED);
+        auto mode = static_cast<WindowMode>(static_cast<uint32_t>(window->GetMode()));
+        return mode;
+    });
 }
 
 void AceContainerSG::SetCurPointerEvent(const std::shared_ptr<MMI::PointerEvent>& currentEvent)

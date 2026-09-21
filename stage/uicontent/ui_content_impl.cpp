@@ -228,6 +228,34 @@ private:
     int32_t targetId_ = -1;
 };
 
+class FoldScreenListener : public OHOS::Rosen::DisplayManager::FoldStatusListener {
+public:
+    explicit FoldScreenListener(int32_t instanceId) : instanceId_(instanceId) {}
+    ~FoldScreenListener() = default;
+    void OnFoldStatusChanged(OHOS::Rosen::FoldStatus foldStatus) override
+    {
+        auto container = Platform::AceContainerSG::GetContainer(instanceId_);
+        CHECK_NULL_VOID(container);
+        auto taskExecutor = container->GetTaskExecutor();
+        CHECK_NULL_VOID(taskExecutor);
+        ContainerScope scope(instanceId_);
+        auto instanceId = instanceId_;
+        taskExecutor->PostTask(
+            [instanceId, foldStatus] {
+                auto container = Platform::AceContainerSG::GetContainer(instanceId);
+                CHECK_NULL_VOID(container);
+                auto context = container->GetPipelineContext();
+                CHECK_NULL_VOID(context);
+                auto aceFoldStatus = static_cast<FoldStatus>(static_cast<uint32_t>(foldStatus));
+                context->OnFoldStatusChanged(aceFoldStatus);
+            },
+            TaskExecutor::TaskType::UI, "ArkUIFoldStatusChanged");
+    }
+
+private:
+    int32_t instanceId_ = -1;
+};
+
 UIContentImpl::UIContentImpl(OHOS::AbilityRuntime::Platform::Context* context, NativeEngine* runtime)
     : runtime_(reinterpret_cast<void*>(runtime))
 {
@@ -508,6 +536,8 @@ void UIContentImpl::CommonInitialize(OHOS::Rosen::Window* window, const std::str
     if (window_) {
         occupiedAreaChangeListener_ = new OccupiedAreaChangeListener(instanceId_);
         window_->RegisterOccupiedAreaChangeListener(occupiedAreaChangeListener_);
+        foldStatusListener_ = new FoldScreenListener(instanceId_);
+        OHOS::Rosen::DisplayManager::GetInstance().RegisterFoldStatusListener(foldStatusListener_);
     }
 
     if (appInfo) {
@@ -641,6 +671,10 @@ void UIContentImpl::Destroy()
 {
     LOGI("UIContentImpl: window destroy");
     OHOS::AbilityRuntime::Platform::ModuleLoadCallbackManager::GetInstance().UnregisterCallback(instanceId_);
+    if (foldStatusListener_) {
+        OHOS::Rosen::DisplayManager::GetInstance().UnregisterFoldStatusListener(foldStatusListener_);
+        foldStatusListener_ = nullptr;
+    }
     auto container = AceEngine::Get().GetContainer(instanceId_);
     CHECK_NULL_VOID(container);
     if (window_) {
