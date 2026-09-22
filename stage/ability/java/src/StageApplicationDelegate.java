@@ -358,7 +358,7 @@ public class StageApplicationDelegate {
         try {
             PackageManager pm = context.getPackageManager();
             if (pm == null) {
-                ALog.d(LOG_TAG, "get uid when package manager is null");
+                ALog.e(LOG_TAG, "get uid when package manager is null");
                 return uid;
             }
             ApplicationInfo applicationInfo = pm.getApplicationInfo(
@@ -504,6 +504,7 @@ public class StageApplicationDelegate {
     private boolean shouldSkipResourceCopy(SharedPreferences sharedPreferences, int currentVersionCode) {
         int oldVersionCode = sharedPreferences.getInt(APP_VERSION_CODE, DEFAULT_VERSION_CODE);
         boolean isDebug = isApkInDebug(stageApplication);
+        ALog.setApkInDebug(isDebug);
         ALog.i(LOG_TAG, "Version check - old: " + oldVersionCode + ", current: " + currentVersionCode
                 + ", debug: " + isDebug);
 
