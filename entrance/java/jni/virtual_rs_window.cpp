@@ -798,13 +798,10 @@ void Window::ClearListenersById(uint32_t winId)
     ClearUselessListeners(windowStatusDidChangeListeners_, winId);
 }
 
-WMError Window::RegisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener)
+void Window::RegisterLifeCycleListenerWithReplay(const sptr<IWindowLifeCycle>& listener)
 {
-    LOGD("Start register");
-    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
-    WMError ret = RegisterListener(lifecycleListeners_[GetWindowId()], listener);
-    if (ret != WMError::WM_OK || listener == nullptr) {
-        return ret;
+    if (listener == nullptr) {
+        return;
     }
     if (isForground_) {
         listener->AfterForeground();
@@ -812,7 +809,13 @@ WMError Window::RegisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener
     if (isFocused_) {
         listener->AfterFocused();
     }
-    return ret;
+}
+
+WMError Window::RegisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener)
+{
+    LOGD("Start register");
+    std::lock_guard<std::recursive_mutex> lock(globalMutex_);
+    return RegisterListener(lifecycleListeners_[GetWindowId()], listener);
 }
 
 WMError Window::UnregisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener)

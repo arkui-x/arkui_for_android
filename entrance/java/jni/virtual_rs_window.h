@@ -171,6 +171,7 @@ public:
     SystemBarProperty GetSystemBarPropertyByType(WindowType type) const;
     void SetRequestedOrientation(Orientation);
     Orientation GetRequestedOrientation();
+    void RegisterLifeCycleListenerWithReplay(const sptr<IWindowLifeCycle>& listener);
     WMError RegisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener);
     WMError UnregisterLifeCycleListener(const sptr<IWindowLifeCycle>& listener);
     WMError RegisterWindowChangeListener(const sptr<IWindowChangeListener>& listener);
