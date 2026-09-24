@@ -19,6 +19,7 @@
 #include "base/log/log.h"
 #include "core/common/container.h"
 #include "core/common/interaction/interaction_data.h"
+#include "core/common/udmf/udmf_client.h"
 
 #ifdef ENABLE_DRAG_FRAMEWORK
 #include "drag_data.h"
@@ -155,9 +156,7 @@ int32_t InteractionImpl::GetShadowOffset(ShadowOffsetData& shadowOffsetData)
     return -1;
 }
 
-int32_t InteractionImpl::GetDragSummary(std::map<std::string, int64_t>& summary,
-    std::map<std::string, int64_t>& detailedSummary, std::map<std::string, std::vector<int32_t>>& summaryFormat,
-    int32_t& version, int64_t& totalSize, std::string& tag)
+int32_t InteractionImpl::GetDragSummary(DragSummaryInfo& summaryInfo)
 {
 #ifdef ENABLE_DRAG_FRAMEWORK
     Msdp::DeviceStatus::DragSummaryInfo dragSummary;
@@ -165,11 +164,12 @@ int32_t InteractionImpl::GetDragSummary(std::map<std::string, int64_t>& summary,
     if (ret != 0) {
         return ret;
     }
-    summary = dragSummary.summarys;
-    detailedSummary = dragSummary.detailedSummarys;
-    summaryFormat = dragSummary.summaryFormat;
-    version = dragSummary.version;
-    totalSize = dragSummary.totalSize;
+    summaryInfo.summary = dragSummary.summarys;
+    summaryInfo.detailedSummary = dragSummary.detailedSummarys;
+    summaryInfo.summaryFormat = dragSummary.summaryFormat;
+    summaryInfo.version = dragSummary.version;
+    summaryInfo.totalSize = dragSummary.totalSize;
+    summaryInfo.filenameExtensions = dragSummary.filenameExtensions;
     return ret;
 #endif
     return -1;

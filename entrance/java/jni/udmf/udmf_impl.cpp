@@ -83,6 +83,19 @@ RefPtr<UnifiedData> UdmfClientImpl::TransformUnifiedDataFromANI(void* rawData)
 void UdmfClientImpl::TransformSummaryANI(std::map<std::string, int64_t>& summary, std::shared_ptr<void> summaryPtr)
 {}
 
+void UdmfClientImpl::TransformSummaryANI(
+    const DragSummaryInfo& summaryInfo, std::shared_ptr<void> summaryPtr)
+{
+    auto udmfSummary = std::static_pointer_cast<OHOS::UDMF::Summary>(summaryPtr);
+    CHECK_NULL_VOID(udmfSummary);
+    udmfSummary->totalSize = 0;
+    for (const auto& element : summaryInfo.summary) {
+        udmfSummary->totalSize += element.second;
+    }
+    udmfSummary->summary = summaryInfo.summary;
+    udmfSummary->filenameExtensions = summaryInfo.filenameExtensions;
+}
+
 RefPtr<DataLoadParams> UdmfClientImpl::TransformDataLoadParamsFromANI(void* rawData)
 {
     return nullptr;
@@ -139,6 +152,25 @@ napi_value UdmfClientImpl::TransformSummary(std::map<std::string, int64_t>& summ
     napi_value dataVal = nullptr;
     UDMF::SummaryNapi::NewInstance(env, udmfSummary, dataVal);
     CHECK_NULL_RETURN(dataVal, nullptr);
+    return dataVal;
+}
+
+napi_value UdmfClientImpl::TransformSummary(const DragSummaryInfo& summaryInfo)
+{
+    auto engine = EngineHelper::GetCurrentEngine();
+    CHECK_NULL_RETURN(engine, nullptr);
+    NativeEngine* nativeEngine = engine->GetNativeEngine();
+    napi_env env = reinterpret_cast<napi_env>(nativeEngine);
+    auto udmfSummary = std::make_shared<UDMF::Summary>();
+    CHECK_NULL_RETURN(udmfSummary, nullptr);
+    udmfSummary->totalSize = 0;
+    for (const auto& element : summaryInfo.summary) {
+        udmfSummary->totalSize += element.second;
+    }
+    udmfSummary->summary = summaryInfo.summary;
+    udmfSummary->filenameExtensions = summaryInfo.filenameExtensions;
+    napi_value dataVal = nullptr;
+    UDMF::SummaryNapi::NewInstance(env, udmfSummary, dataVal);
     return dataVal;
 }
 
