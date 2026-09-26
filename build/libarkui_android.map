@@ -48,6 +48,8 @@
       "OHOS::Ace::AceEngine::GetContainer(int)";
       "OHOS::Ace::AceScopedTrace::AceScopedTrace(char const*, ...)";
       "OHOS::Ace::AceScopedTrace::~AceScopedTrace()";
+      "OHOS::Ace::AceTraceEnd()";
+      "OHOS::Ace::AceTraceBeginWithArgs(char const*, ...)";
       "OHOS::Ace::Alignment::TOP_CENTER";
       "OHOS::Ace::Alignment::CENTER";
       "OHOS::Ace::Alignment::TOP_LEFT";
@@ -1755,6 +1757,7 @@
       "OHOS::Ace::NG::PipelineContext::FreeMouseStyleHoldNode()";
       "OHOS::Ace::NG::PipelineContext::GetSelectOverlayManager()";
       "OHOS::Ace::NG::PipelineContext::GetOrCreateAIWriteAdapter()";
+      "OHOS::Ace::NG::PipelineContext::GetOrCreateScrollPlaceholderManager()";
       "OHOS::Ace::NG::PipelineContext::SendEventToAccessibilityWithNode(OHOS::Ace::AccessibilityEvent const&, OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
       "OHOS::Ace::NG::PipelineContext::GetFontScaleFromEnv(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
       "OHOS::Ace::NG::PipelineContext::AddAfterModifierTask(std::__ndk1::function<void ()>&&)";
@@ -2811,6 +2814,8 @@
       "OHOS::Ace::NG::ToggleButtonModelNG::SetSelectedColorSetByUser(OHOS::Ace::NG::FrameNode*, bool)";
       "OHOS::Ace::NG::ToggleButtonModelNG::SetBackgroundColor(OHOS::Ace::NG::FrameNode*, OHOS::Ace::Color const&)";
       "OHOS::Ace::NG::ToggleButtonModelNG::SetBackgroundColor(OHOS::Ace::NG::FrameNode*, OHOS::Ace::Color const&, bool)";
+      "OHOS::Ace::NG::TokenThemeStorage::GetInstance()";
+      "OHOS::Ace::NG::TokenThemeStorage::GetDefaultTheme()";
       "VTT for OHOS::Ace::NG::ToggleButtonPattern";
       "vtable for OHOS::Ace::NG::ToggleButtonPattern";
       "OHOS::Ace::NG::DialogManager::GetEmbeddedOverlay(int, OHOS::Ace::RefPtr<OHOS::Ace::NG::PipelineContext> const&)";
@@ -3663,6 +3668,9 @@
       "OHOS::Ace::NG::NodeModifier::GetMenuViewInnerModifier()";
       "OHOS::Ace::NG::ScrollPattern::TriggerScrollBarDisplay()";
       "OHOS::Ace::NG::ScrollPattern::TriggerModifyDone()";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::NotifyRealBuildStart(OHOS::Ace::NG::ScrollPlaceholderPredictParams const&)";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::NotifyRealBuildEnd(OHOS::Ace::NG::ScrollPlaceholderPredictParams const&, long)";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::NotifyRealBuildEnd(OHOS::Ace::NG::ScrollPlaceholderPredictParams const&, long long)";
 
 
       OHOS::Ace::NG::UINode::MaybeOnDelete*;

@@ -61,6 +61,7 @@ bool SystemProperties::downloadByNetworkEnabled_ = true;
 bool SystemProperties::recycleImageEnabled_ = false;
 bool SystemProperties::navigationImageRecycleEnabled_ = false;
 bool SystemProperties::imageReleaseManageObjectEnabled_ = false;
+bool SystemProperties::svgCacheSkipEnabled_ = false;
 bool SystemProperties::isHookModeEnabled_ = false;
 bool SystemProperties::syncDebugTraceEnable_ = false;
 bool SystemProperties::measureDebugTraceEnable_ = false;
