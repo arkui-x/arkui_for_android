@@ -2263,6 +2263,7 @@
       "OHOS::Rosen::Drawing::Color::SetColorQuad(unsigned int)";
       "OHOS::Rosen::Drawing::ObjectMgr::AddObject(void*)";
       "OHOS::Rosen::Drawing::ObjectMgr::GetInstance()";
+      "OHOS::Rosen::Drawing::ObjectMgr::HasObject(void*)";
       "OHOS::Rosen::Drawing::ObjectMgr::RemoveObject(void*)";
       "OHOS::Rosen::Drawing::RecordingCanvas::SetIsCustomTypeface(bool)";
       "OHOS::Rosen::FontCollection::CreateStandalone()";
