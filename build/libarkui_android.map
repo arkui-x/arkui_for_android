@@ -565,6 +565,7 @@
       "OHOS::Ace::NG::LayoutProperty::HasUserDefinedHeightConfig() const";
       "OHOS::Ace::NG::LayoutProperty::UpdateMargin(OHOS::Ace::NG::PaddingPropertyT<OHOS::Ace::NG::CalcLength> const&)";
       "OHOS::Ace::NG::LayoutProperty::UpdateMeasureType(OHOS::Ace::NG::MeasureType)";
+      "OHOS::Ace::NG::LayoutProperty::UpdateMaterialBorderWidth(OHOS::Ace::NG::BorderWidthPropertyT<OHOS::Ace::Dimension> const&)";
       "OHOS::Ace::NG::LayoutProperty::UpdateAlignment(OHOS::Ace::Alignment)";
       "OHOS::Ace::NG::LayoutProperty::UpdatePadding(OHOS::Ace::NG::PaddingPropertyT<OHOS::Ace::NG::CalcLength> const&)";
       "OHOS::Ace::NG::LayoutProperty::UpdateCalcLayoutProperty(OHOS::Ace::NG::MeasureProperty const&)";
@@ -635,6 +636,7 @@
       "OHOS::Ace::NG::OneStepDragController::FillJsonValue(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> > const&)";
       "OHOS::Ace::NG::PipelineContext::GetCurrentContext()";
       "OHOS::Ace::NG::PanRecognizer::GetDistance() const";
+      "OHOS::Ace::NG::PanRecognizer::SetEscapeModeForPan(std::__ndk1::unordered_set<int, std::__ndk1::hash<int>, std::__ndk1::equal_to<int>, std::__ndk1::allocator<int> > const&, bool)";
       "OHOS::Ace::RoundToMaxPrecision(double)";
       "OHOS::Ace::NG::SwiperPattern::IsAtStart() const";
       "OHOS::Ace::NG::SwiperPattern::IsAtEnd() const";
@@ -1928,6 +1930,8 @@
       "panda::ObjectRef::Get(panda::ecmascript::EcmaVM const*, char const*)";
       "panda::ObjectRef::NewWithNamedProperties(panda::ecmascript::EcmaVM const*, unsigned int, char const**, panda::Local<panda::JSValueRef> const*)";
       "panda::ObjectRef::SetNativePointerField(panda::ecmascript::EcmaVM const*, int, void*, void (*)(void*, void*, void*), void*, unsigned int)";
+      "panda::ObjectRef::SetConcurrentNativePointerField(panda::ecmascript::EcmaVM const*, int, void*, void (*)(void*, void*, void*), void*, unsigned long)";
+      "panda::ObjectRef::SetConcurrentNativePointerField(panda::ecmascript::EcmaVM const*, int, void*, void (*)(void*, void*, void*), void*, unsigned int)";
       "NapiValueToLocalValue(napi_value__*)";
 
       "panda::os::thread::GetCurrentThreadId()";
@@ -2325,6 +2329,8 @@
       "OHOS::Ace::NG::TextScrollBar2D::TextScrollBar2D(OHOS::Ace::WeakPtr<OHOS::Ace::NG::ScrollablePattern> const&)";
       "OHOS::Ace::NG::TextScrollBar2D::UpdateVerticalBar(float, float, OHOS::Ace::Size const&, OHOS::Ace::Offset)";
       "OHOS::Ace::NG::TextScrollBar2D::UpdateHorizontalBar(float, float, OHOS::Ace::Size const&, OHOS::Ace::Offset)";
+      "OHOS::Ace::NG::TextScrollBar2D::~TextScrollBar2D()";
+      "virtual thunk to OHOS::Ace::NG::TextScrollBar2D::~TextScrollBar2D()";
       "OHOS::Ace::NG::Pattern::AddResObj(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject> const&, std::__ndk1::function<void (OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject> const&)>&&)";
       "OHOS::Ace::NG::Pattern::RemoveResObj(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::ImageCache::ClearCacheImage(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
@@ -3268,6 +3274,7 @@
       "OHOS::Ace::SystemProperties::textTraceEnable_";
       "OHOS::Ace::SystemProperties::IsAutoFillSupport()";
       "OHOS::Ace::SystemProperties::GetSideBarContainerBlurEnable()";
+      "OHOS::Ace::SystemProperties::GetEventBenchMarkEnabled()";
       "OHOS::Ace::SystemProperties::Is24HourClock()";
       "OHOS::Ace::SystemProperties::measureDebugTraceEnable_";
       "OHOS::Ace::ShadowConfig::DefaultShadowXS";
@@ -3626,6 +3633,8 @@
       OHOS::Ace::CardScope::*;
       OHOS::Ace::AnimationUtils::*;
       OHOS::Ace::LogWrapper::*;
+      "OHOS::Ace::LogBacktrace(unsigned long)";
+      "OHOS::Ace::LogBacktrace(unsigned int)";
       "OHOS::Ace::Framework::JsiObject::JsiObject(panda::Local<panda::ObjectRef>)";
  	    "OHOS::Ace::Framework::JsiCallbackInfo::JsiCallbackInfo(panda::JsiRuntimeCallInfo*)";
  	    "OHOS::Ace::TextTimerModel::GetInstance()";

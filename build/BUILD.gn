@@ -95,6 +95,7 @@ ohos_shared_library("ace_ndk") {
     "$ace_root/interfaces/native/node/native_node_extented.cpp",
     "$ace_root/interfaces/native/node/node_extened.cpp",
     "$ace_root/interfaces/native/node/gesture_impl.cpp",
+    "$ace_root/interfaces/native/node/config_manager.cpp",
     "$ace_root/interfaces/native/node/node_model.cpp",
     "$ace_root/interfaces/native/node/event_converter.cpp",
     "$ace_root/interfaces/native/node/node_model_safely.cpp",
