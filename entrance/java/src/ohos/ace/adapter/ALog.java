@@ -28,6 +28,7 @@ public class ALog {
     private static ILogger logger;
     private static final ReentrantLock loggerLock = new ReentrantLock();
     private static int logLevel = 0;
+    private static volatile boolean isDebug;
 
     private ALog() {
         /* Do nothing */
@@ -75,6 +76,15 @@ public class ALog {
     }
 
     /**
+     * Set if is debug app.
+     *
+     * @param isIndebug if is debug or release app
+     */
+    public static void setApkInDebug(boolean isIndebug) {
+        isDebug = isIndebug;
+    }
+
+    /**
      * Determines if debug log is permitted output.
      *
      * @return true if debuggable, false otherwise.
@@ -95,7 +105,7 @@ public class ALog {
     public static void d(String tag, String msg) {
         if (logger != null && logLevel <= ILogger.LOG_DEBUG) {
             logger.d(tag, msg);
-        } else {
+        } else if (isDebug) {
             Log.d(tag, msg);
         }
     }
