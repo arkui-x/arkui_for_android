@@ -581,6 +581,7 @@ void UIContentImpl::InitOnceAceInfo()
         AceApplicationInfo::GetInstance().SetProcessName(context->GetBundleName());
         AceApplicationInfo::GetInstance().SetPackageName(context->GetBundleName());
         AceApplicationInfo::GetInstance().SetDataFileDirPath(context->GetFilesDir());
+        AceApplicationInfo::GetInstance().SetDebugForParallel(context->GetApplicationInfo()->debug);
         AceApplicationInfo::GetInstance().SetUid(context->GetApplicationInfo()->uid);
         AceApplicationInfo::GetInstance().SetPid(context->GetApplicationInfo()->pid);
         ImageFileCache::GetInstance().SetImageCacheFilePath(context->GetCacheDir());
