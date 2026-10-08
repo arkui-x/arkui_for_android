@@ -57,7 +57,7 @@ ScreenShape SystemProperties::screenShape_ { ScreenShape::NOT_ROUND };
 std::atomic<bool> SystemProperties::unZipHap_(true);
 bool SystemProperties::svgTraceEnable_ = false;
 bool SystemProperties::rosenBackendEnabled_ = true;
-bool SystemProperties::downloadByNetworkEnabled_ = false;
+bool SystemProperties::downloadByNetworkEnabled_ = true;
 bool SystemProperties::recycleImageEnabled_ = false;
 bool SystemProperties::imageReleaseManageObjectEnabled_ = false;
 bool SystemProperties::isHookModeEnabled_ = false;
