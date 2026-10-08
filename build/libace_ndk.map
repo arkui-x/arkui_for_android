@@ -18,6 +18,7 @@
       OH_ArkUI_NodeUtils_GetNodeUniqueId;
       OH_ArkUI_NativeModule_GetPageRootNodeHandleByContext;
       OH_ArkUI_NativeModule_InvalidateAttributes;
+      OH_ArkUI_NativeModule_SetRuntimeCheckMode;
       OH_ArkUI_NodeUtils_GetNodeHandleByUniqueId;
       OH_ArkUI_RunTaskInScope;
       OH_ArkUI_NodeUtils_GetFirstChildIndexWithoutExpand;
