@@ -259,6 +259,7 @@ void AceContainerSG::InitPiplineContext(
 {
     ACE_DCHECK(aceView_ && window && taskExecutor_ && assetManager_ && resRegister_ && frontend_);
     auto instanceId = aceView_->GetInstanceId();
+    LOGI("AceContainerSG::AttachView begin, instance=%{public}d", instanceId);
     pipelineContext_ = AceType::MakeRefPtr<NG::PipelineContext>(
         std::move(window), taskExecutor_, assetManager_, resRegister_, frontend_, instanceId);
     LOGI("AceContainerSG::InitPiplineContext density: %{public}f", density);
