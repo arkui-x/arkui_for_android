@@ -259,7 +259,6 @@ void AceContainerSG::InitPiplineContext(
 {
     ACE_DCHECK(aceView_ && window && taskExecutor_ && assetManager_ && resRegister_ && frontend_);
     auto instanceId = aceView_->GetInstanceId();
-    LOGI("AceContainerSG::AttachView begin, instance=%{public}d", instanceId);
     pipelineContext_ = AceType::MakeRefPtr<NG::PipelineContext>(
         std::move(window), taskExecutor_, assetManager_, resRegister_, frontend_, instanceId);
     LOGI("AceContainerSG::InitPiplineContext density: %{public}f", density);
@@ -664,6 +663,7 @@ void AceContainerSG::AttachView(
 {
     aceView_ = view;
     auto instanceId = aceView_->GetInstanceId();
+    LOGI("AceContainerSG::AttachView begin, instance=%{public}d", instanceId);
 #ifdef ENABLE_ROSEN_BACKEND
     auto taskExecutorImpl = AceType::DynamicCast<TaskExecutorImpl>(taskExecutor_);
     CHECK_NULL_VOID(taskExecutorImpl);
