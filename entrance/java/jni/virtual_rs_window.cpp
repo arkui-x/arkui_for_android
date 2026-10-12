@@ -1336,12 +1336,14 @@ void Window::DelayNotifyUIContentIfNeeded()
         LOGE("Window Delay Notify uiContent_ is nullptr!");
         return;
     }
+    LOGI("Window DelayNotify replay: created=%{public}d changed=%{public}d destroyed=%{public}d",
+        delayNotifySurfaceCreated_, delayNotifySurfaceChanged_, delayNotifySurfaceDestroyed_);
     if (delayNotifySurfaceCreated_) {
-        LOGD("Window Delay Notify uiContent_ Surface Created");
+        LOGI("Window Delay Notify uiContent_ Surface Created (replay)");
         uiContent_->NotifySurfaceCreated();
     }
     if (delayNotifySurfaceChanged_) {
-        LOGD("Window Delay Notify uiContent_ Surface Changed wh:[%{public}d, %{public}d]", surfaceWidth_,
+        LOGI("Window Delay Notify uiContent_ Surface Changed (replay) wh:[%{public}d, %{public}d]", surfaceWidth_,
             surfaceHeight_);
         Ace::ViewportConfig config;
         config.SetDensity(density_);
@@ -1350,7 +1352,7 @@ void Window::DelayNotifyUIContentIfNeeded()
         uiContent_->UpdateViewportConfig(config, WindowSizeChangeReason::RESIZE, avoidAreaMap_);
     }
     if (delayNotifySurfaceDestroyed_) {
-        LOGD("Window Delay Notify uiContent_ Surface Destroyed");
+        LOGI("Window Delay Notify uiContent_ Surface Destroyed (replay)");
         uiContent_->NotifySurfaceDestroyed();
         delayNotifySurfaceDestroyed_ = false;
     }

@@ -663,6 +663,7 @@ void AceContainerSG::AttachView(
 {
     aceView_ = view;
     auto instanceId = aceView_->GetInstanceId();
+    LOGI("AceContainerSG::AttachView begin, instance=%{public}d", instanceId);
 #ifdef ENABLE_ROSEN_BACKEND
     auto taskExecutorImpl = AceType::DynamicCast<TaskExecutorImpl>(taskExecutor_);
     CHECK_NULL_VOID(taskExecutorImpl);
