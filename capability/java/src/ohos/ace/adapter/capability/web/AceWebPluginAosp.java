@@ -94,7 +94,6 @@ public class AceWebPluginAosp extends AceWebPluginBase {
         this.context = context;
         this.rootView = view;
         dataBase = WebDataBaseManager.getInstance(context);
-        ensureDefaultUserAgent(context);
     }
 
     private static void ensureDefaultUserAgent(Context context) {
@@ -157,11 +156,16 @@ public class AceWebPluginAosp extends AceWebPluginBase {
     /**
      * Returns the default user agent string on Android.
      *
-     * <p>The value is initialized once on the UI thread and reused on all subsequent calls.</p>
+     * <p>The value is lazily initialized on first call (on the UI thread) and reused on all
+     * subsequent calls, so that constructing the plugin does not initialize the WebView
+     * provider during application startup.</p>
      *
      * @return the default user agent string, or empty string if unavailable
      */
     public String getDefaultUserAgent() {
+        if (cachedDefaultUserAgent == null) {
+            ensureDefaultUserAgent(context);
+        }
         return cachedDefaultUserAgent != null ? cachedDefaultUserAgent : "";
     }
 
