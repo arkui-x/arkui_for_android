@@ -309,7 +309,7 @@ void Window::AvoidAreaMapInit(std::shared_ptr<Window> window)
 
     if (window->GetType() == OHOS::Rosen::WindowType::WINDOW_TYPE_APP_SUB_WINDOW) {
         for (auto type : { AvoidAreaType::TYPE_SYSTEM, AvoidAreaType::TYPE_CUTOUT, AvoidAreaType::TYPE_SYSTEM_GESTURE,
-                AvoidAreaType::TYPE_KEYBOARD, AvoidAreaType::TYPE_NAVIGATION_INDICATOR }) {
+                 AvoidAreaType::TYPE_KEYBOARD, AvoidAreaType::TYPE_NAVIGATION_INDICATOR }) {
             auto avoidArea = std::make_shared<Rosen::AvoidArea>();
             window->GetAvoidAreaByType(type, *avoidArea);
             window->avoidAreaMap_.insert(std::make_pair(type, *avoidArea));
@@ -628,8 +628,7 @@ WMError Window::SetBackgroundColor(uint32_t color)
 WMError Window::SetBrightness(float brightness)
 {
     LOGI("Window::SetBrightness called. brightness=%.3f", brightness);
-    if (brightness != UNDEFINED_BRIGHTNESS &&
-        (brightness < MINIMUM_BRIGHTNESS || brightness > MAXIMUM_BRIGHTNESS)) {
+    if (brightness != UNDEFINED_BRIGHTNESS && (brightness < MINIMUM_BRIGHTNESS || brightness > MAXIMUM_BRIGHTNESS)) {
         LOGE("invalid brightness value: %{public}f", brightness);
         return WMError::WM_ERROR_INVALID_PARAM;
     }
@@ -1056,23 +1055,29 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
 
 void Window::NotifyKeyboardHeightChanged(int32_t height)
 {
-    if (!isFocused_) {
-        LOGI("Window is not focused, skip notify keyboard height change");
-        return;
-    }
+    LOGI("Notify keyboardHeightChanged begin, win=%{public}s isFocused=%{public}d last=%{public}d height=%{public}d",
+        GetWindowName().c_str(), isFocused_, lastNotifiedKeyboardHeight_, height);
     if (height == lastNotifiedKeyboardHeight_) {
-        LOGI("Window keyboard height unchanged: %{public}d", height);
+        LOGW("Window keyboard height unchanged: %{public}d", height);
         return;
     }
+
+    if (height != 0 && !isFocused_) {
+        LOGW("Window is not focused, skip notify keyboard height change");
+        return;
+    }
+
     lastNotifiedKeyboardHeight_ = height;
     g_KeyboardHeight = height;
     auto occupiedAreaChangeListeners = GetListeners<IOccupiedAreaChangeListener>();
     for (auto& listener : occupiedAreaChangeListeners) {
         if (listener != nullptr) {
+            LOGD("Notify lisener end");
             Rect rect = { 0, 0, 0, height };
             listener->OnSizeChange(rect, OccupiedAreaType::TYPE_INPUT);
         }
     }
+    LOGI("Notify keyboardHeightChanged end");
 }
 
 void Window::NotifySizeChange(Rect rect)
