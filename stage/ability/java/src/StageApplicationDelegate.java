@@ -641,6 +641,10 @@ public class StageApplicationDelegate {
                 }
                 fos.flush();
             }
+        } catch (FileNotFoundException e) {
+            // A missing asset path is skipped instead of being treated as a copy
+            // failure, so one absent path cannot block the version code recording.
+            ALog.w(LOG_TAG, "asset path not found, skip: " + e.getMessage());
         } catch (IOException e) {
             ALog.e(LOG_TAG, "read or write data err: " + e.getMessage());
             isCopyResources = false;
