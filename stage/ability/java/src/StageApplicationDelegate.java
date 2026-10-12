@@ -95,6 +95,8 @@ public class StageApplicationDelegate {
 
     private static final String APP_VERSION_CODE = "versionCode";
 
+    private static final String STUB_VERSION_CODE = "stubVersionCode";
+
     private static final String WANT_PARAMS = "params";
 
     private static final String ARKUIX_LIBS = "/arkui-x/libs/";
@@ -895,6 +897,17 @@ public class StageApplicationDelegate {
 
         String destPath = filesDir + "/stub/" + archDir + "/stub.an";
         File destFile = new File(destPath);
+
+        // stub.an is immutable within one app version; skip the re-extraction
+        // (about 15.7 MB of file I/O) when the current version is already extracted.
+        int versionCode = getAppVersionCode();
+        SharedPreferences sharedPreferences = getSharedPreferences();
+        if (destFile.exists() && destFile.length() > 0 && sharedPreferences != null
+                && versionCode != DEFAULT_VERSION_CODE
+                && sharedPreferences.getInt(STUB_VERSION_CODE, DEFAULT_VERSION_CODE) == versionCode) {
+            return destPath;
+        }
+
         if (destFile.exists() && !destFile.delete()) {
             ALog.e(LOG_TAG, "extractStubAnFromApk failed to delete existing file: " + destPath);
             return null;
@@ -909,6 +922,9 @@ public class StageApplicationDelegate {
                 fos.write(buffer, 0, len);
             }
             fos.flush();
+            if (sharedPreferences != null && versionCode != DEFAULT_VERSION_CODE) {
+                sharedPreferences.edit().putInt(STUB_VERSION_CODE, versionCode).commit();
+            }
             return destPath;
         } catch (IOException e) {
             ALog.e(LOG_TAG, "extractStubAnFromApk failed, assetPath=" + assetPath + ", error: " + e.getMessage());
