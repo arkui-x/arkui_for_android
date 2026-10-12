@@ -551,6 +551,10 @@ public class StageApplicationDelegate {
             for (String name : list) {
                 if ("systemres".equals(name)) {
                     moduleResources.add(name);
+                } else if ("stub".equals(name)) {
+                    // stub.an is packaged for ArkVM and extracted by extractStubAnFromApk
+                    // separately; it is not a module resource directory.
+                    continue;
                 } else {
                     moduleResources.add(name + "/resources");
                     moduleResources.add(name + "/resources.index");
