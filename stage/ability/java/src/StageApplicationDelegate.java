@@ -43,6 +43,7 @@ import android.view.WindowManager;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.File;
 import java.io.FileReader;
@@ -660,20 +661,19 @@ public class StageApplicationDelegate {
             ALog.e(LOG_TAG, "read or write data err: " + e.getMessage());
             isCopyResources = false;
         } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    ALog.e(LOG_TAG, "InputStream close err: " + e.getMessage());
-                }
-            }
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    ALog.e(LOG_TAG, "FileOutputStream close err: " + e.getMessage());
-                }
-            }
+            closeStreamQuietly(is, "InputStream");
+            closeStreamQuietly(fos, "FileOutputStream");
+        }
+    }
+
+    private void closeStreamQuietly(Closeable stream, String name) {
+        if (stream == null) {
+            return;
+        }
+        try {
+            stream.close();
+        } catch (IOException e) {
+            ALog.e(LOG_TAG, name + " close err: " + e.getMessage());
         }
     }
 
