@@ -80,6 +80,8 @@ public class AceWebPluginAosp extends AceWebPluginBase {
 
     private static volatile String cachedDefaultUserAgent = null;
 
+    private static volatile boolean defaultUserAgentLoadAttempted = false;
+
     private final AtomicLong nextMapid = new AtomicLong(0L);
 
     private final View rootView;
@@ -97,11 +99,15 @@ public class AceWebPluginAosp extends AceWebPluginBase {
     }
 
     private static void ensureDefaultUserAgent(Context context) {
-        if (cachedDefaultUserAgent != null || context == null) {
+        // The user agent is loaded at most once per process: after a failed attempt
+        // (e.g. main-thread timeout) subsequent calls return the empty fallback
+        // instead of blocking on the timed initialization again.
+        if (defaultUserAgentLoadAttempted || context == null) {
             return;
         }
         synchronized (DEFAULT_USER_AGENT_LOCK) {
-            if (cachedDefaultUserAgent == null) {
+            if (!defaultUserAgentLoadAttempted) {
+                defaultUserAgentLoadAttempted = true;
                 cachedDefaultUserAgent = loadDefaultUserAgentOnMainThread(context);
             }
         }
@@ -156,9 +162,10 @@ public class AceWebPluginAosp extends AceWebPluginBase {
     /**
      * Returns the default user agent string on Android.
      *
-     * <p>The value is lazily initialized on first call (on the UI thread) and reused on all
-     * subsequent calls, so that constructing the plugin does not initialize the WebView
-     * provider during application startup.</p>
+     * <p>The value is lazily initialized on the first call (on the UI thread) and reused on
+     * all subsequent calls, so that constructing the plugin does not initialize the WebView
+     * provider during application startup. The initialization is attempted only once per
+     * process; if it fails, subsequent calls return the empty fallback.</p>
      *
      * @return the default user agent string, or empty string if unavailable
      */
