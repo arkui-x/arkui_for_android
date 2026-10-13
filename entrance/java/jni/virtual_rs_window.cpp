@@ -1056,23 +1056,29 @@ void Window::NotifySurfaceChanged(int32_t width, int32_t height, float density)
 
 void Window::NotifyKeyboardHeightChanged(int32_t height)
 {
-    if (!isFocused_) {
-        LOGI("Window is not focused, skip notify keyboard height change");
-        return;
-    }
+    LOGI("Notify keyboardHeightChanged begin, win=%{public}s isFocused=%{public}d last=%{public}d height=%{public}d",
+        GetWindowName().c_str(), isFocused_, lastNotifiedKeyboardHeight_, height);
     if (height == lastNotifiedKeyboardHeight_) {
-        LOGI("Window keyboard height unchanged: %{public}d", height);
+        LOGW("Window keyboard height unchanged: %{public}d", height);
         return;
     }
+
+    if (height != 0 && !isFocused_) {
+        LOGW("Window is not focused, skip notify keyboard height change");
+        return;
+    }
+
     lastNotifiedKeyboardHeight_ = height;
     g_KeyboardHeight = height;
     auto occupiedAreaChangeListeners = GetListeners<IOccupiedAreaChangeListener>();
+    LOGD("Listeners size=%{public}zu", occupiedAreaChangeListeners.size());
     for (auto& listener : occupiedAreaChangeListeners) {
         if (listener != nullptr) {
             Rect rect = { 0, 0, 0, height };
             listener->OnSizeChange(rect, OccupiedAreaType::TYPE_INPUT);
         }
     }
+    LOGI("Notify keyboardHeightChanged end");
 }
 
 void Window::NotifySizeChange(Rect rect)
