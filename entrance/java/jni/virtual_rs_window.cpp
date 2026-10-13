@@ -309,7 +309,7 @@ void Window::AvoidAreaMapInit(std::shared_ptr<Window> window)
 
     if (window->GetType() == OHOS::Rosen::WindowType::WINDOW_TYPE_APP_SUB_WINDOW) {
         for (auto type : { AvoidAreaType::TYPE_SYSTEM, AvoidAreaType::TYPE_CUTOUT, AvoidAreaType::TYPE_SYSTEM_GESTURE,
-                 AvoidAreaType::TYPE_KEYBOARD, AvoidAreaType::TYPE_NAVIGATION_INDICATOR }) {
+                AvoidAreaType::TYPE_KEYBOARD, AvoidAreaType::TYPE_NAVIGATION_INDICATOR }) {
             auto avoidArea = std::make_shared<Rosen::AvoidArea>();
             window->GetAvoidAreaByType(type, *avoidArea);
             window->avoidAreaMap_.insert(std::make_pair(type, *avoidArea));
@@ -1070,9 +1070,9 @@ void Window::NotifyKeyboardHeightChanged(int32_t height)
     lastNotifiedKeyboardHeight_ = height;
     g_KeyboardHeight = height;
     auto occupiedAreaChangeListeners = GetListeners<IOccupiedAreaChangeListener>();
+    LOGD("Listeners size=%{public}zu", occupiedAreaChangeListeners.size());
     for (auto& listener : occupiedAreaChangeListeners) {
         if (listener != nullptr) {
-            LOGD("Notify lisener end");
             Rect rect = { 0, 0, 0, height };
             listener->OnSizeChange(rect, OccupiedAreaType::TYPE_INPUT);
         }
