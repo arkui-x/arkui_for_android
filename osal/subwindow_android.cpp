@@ -21,6 +21,7 @@
 #include "base/external_instance_id_mapper.h"
 #include "core/accessibility/accessibility_manager.h"
 #include "core/components_ng/pattern/menu/wrapper/menu_wrapper_pattern.h"
+#include "core/components_v2/inspector/inspector_constants.h"
 #include "display_manager.h"
 #include "frameworks/bridge/common/utils/engine_helper.h"
 #include "interfaces/inner_api/ace/viewport_config.h"
@@ -252,6 +253,12 @@ void SubwindowAndroid::HideWindow()
     CHECK_NULL_VOID(context);
     auto rootNode = context->GetRootElement();
     CHECK_NULL_VOID(rootNode);
+    if (!rootNode->GetChildren().empty() &&
+        !(rootNode->GetChildren().size() == 1 && rootNode->GetLastChild()->GetTag() == V2::KEYBOARD_ETS_TAG)) {
+        LOGW("Subwindow has other node, the last child is %{public}s",
+            rootNode->GetLastChild()->GetTag().c_str());
+        return;
+    }
     auto focusHub = rootNode->GetFocusHub();
     CHECK_NULL_VOID(focusHub);
     focusHub->SetIsDefaultHasFocused(false);
