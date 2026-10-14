@@ -78,7 +78,7 @@ bool SystemProperties::dynamicDetectionTraceEnable_ = false;
 bool SystemProperties::enableScrollableItemPool_ = false;
 bool SystemProperties::navigationBlurEnabled_ = true;
 std::optional<bool> SystemProperties::arkUIHookEnabled_;
-bool SystemProperties::gridCacheEnabled_ = false;
+bool SystemProperties::gridCacheEnabled_ = true;
 bool SystemProperties::sideBarContainerBlurEnable_ = false;
 std::atomic<bool> SystemProperties::acePerformanceMonitorEnable_(false);
 std::atomic<bool> SystemProperties::focusCanBeActive_(true);
