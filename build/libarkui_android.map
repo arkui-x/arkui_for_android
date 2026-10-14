@@ -215,6 +215,7 @@
       "OHOS::Ace::JsonUtil::ParseJsonString(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, char const**)";
       "OHOS::Ace::ImageProvider::MakeRSBitmapFormatFromPixelMap(OHOS::Ace::RefPtr<OHOS::Ace::PixelMap> const&)";
       "OHOS::Ace::ImageResizableSlice::operator==(OHOS::Ace::ImageResizableSlice const&) const";
+      "OHOS::Ace::ImageResizableSlice::ToString() const";
       "OHOS::Ace::JsonUtil::Create(bool)";
       "OHOS::Ace::JsonUtil::CreateArray(bool)";
       "OHOS::Ace::JsonUtil::CreateSharedPtrJson(bool)";
