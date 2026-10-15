@@ -940,6 +940,7 @@
       "OHOS::Ace::NG::OverlayManager::SheetSpringBack()";
       "OHOS::Ace::NG::OverlayManager::UpdateSheetPage(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, OHOS::Ace::NG::SheetStyle const&)";
       "OHOS::Ace::NG::OverlayManager::CheckTargetIdIsValid(int)";
+      "OHOS::Ace::NG::OverlaySafeAreaHelper::ComputeDisplayableRect(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, OHOS::Ace::NG::AvoidConfig const&, int)";
       "OHOS::Ace::PipelineBase::GetCurrentContext()";
       "OHOS::Ace::PipelineBase::GetCurrentContextSafely()";
       "OHOS::Ace::PipelineBase::GetCurrentContextSafelyWithCheck()";
@@ -1550,6 +1551,7 @@
       "OHOS::Ace::NG::FocusHub::HasBackwardFocusMovementInChildren()";
       "OHOS::Ace::NG::FocusHub::HasForwardFocusMovementInChildren()";
       "OHOS::Ace::NG::FocusHub::ClearFocusMovementFlagsInChildren()";
+      "OHOS::Ace::NG::FocusHub::CopyEvent(OHOS::Ace::RefPtr<OHOS::Ace::NG::FocusHub> const&)";
       "OHOS::Ace::NG::FocusHub::RequestFocus() const";
       "OHOS::Ace::LifeCycleCheckable::OnDetectedObjDestroyInUse()";
       "OHOS::Ace::Referenced::OnDetectedClaimDeathObj(bool)";
@@ -3008,6 +3010,7 @@
       "OHOS::Ace::NG::ScrollablePattern::UpdateScrollBarRegion(float, float, OHOS::Ace::Size, OHOS::Ace::Offset)";
       "OHOS::Ace::NG::ScrollablePattern::HandleOnDragStatusCallback(OHOS::Ace::NG::DragEventType const&, OHOS::Ace::RefPtr<OHOS::Ace::NotifyDragEvent> const&)";
       "OHOS::Ace::NG::ScrollablePattern::IsScrollableSpringEffect() const";
+      "OHOS::Ace::NG::ScrollablePattern::IsMouseDragScrollDefaultEnabled() const";
       "OHOS::Ace::NG::ScrollablePattern::AddScrollableFrameInfo(int)";
       "OHOS::Ace::NG::ScrollablePattern::HandleScroll(float, int, OHOS::Ace::NG::NestedState, float)";
       "OHOS::Ace::NG::ScrollablePattern::HandleScrollVelocity(float, OHOS::Ace::RefPtr<OHOS::Ace::NG::NestableScrollContainer> const&)";
@@ -3038,6 +3041,7 @@
       "OHOS::Ace::NG::ScrollablePattern::ScrollPage(bool, bool, OHOS::Ace::AccessibilityScrollType)";
       "OHOS::Ace::NG::ScrollablePattern::GetEventDumpInfo()";
       "OHOS::Ace::NG::ScrollablePattern::GetEventDumpInfo(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&)";
+      "OHOS::Ace::NG::ScrollablePattern::GetEnableEditMode() const";
       "OHOS::Ace::NG::ScrollablePattern::OnStatusBarClick()";
       "OHOS::Ace::NG::ScrollablePattern::CustomizeSafeAreaPadding(OHOS::Ace::NG::PaddingPropertyF, bool)";
       "OHOS::Ace::NG::ScrollablePattern::AccumulatingTerminateHelper(OHOS::Ace::NG::RectT<float>&, OHOS::Ace::NG::PaddingPropertyF&, bool, unsigned int)";
@@ -3074,6 +3078,7 @@
       "OHOS::Ace::NG::ScrollablePattern::AddEventsFiredInfo(OHOS::Ace::ScrollableEventType)";
       "OHOS::Ace::NG::ScrollablePattern::FireObserverOnReachEnd()";
       "OHOS::Ace::NG::ScrollablePattern::GetIsOverScroll() const";
+      "OHOS::Ace::NG::ScrollablePattern::GetIsAllowMouse() const";
       "OHOS::Ace::NG::ScrollablePattern::SetIsOverScroll(bool)";
       "OHOS::Ace::NG::ScrollablePattern::ContentChangeReport(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, unsigned int)";
       "OHOS::Ace::NG::ScrollablePattern::GetViewSizeMinusPadding() const";
@@ -3643,6 +3648,7 @@
  	    "OHOS::Ace::NG::Converter::OptConvertFromArkLength(Ark_Length const&, OHOS::Ace::DimensionUnit)";
       "OHOS::Ace::ToRSUIColor(OHOS::Ace::LinearColor const&, OHOS::Ace::Color const&)";
       "OHOS::Ace::NG::InputEventHub::SetHoverEffect(OHOS::Ace::HoverEffectType)";
+      "OHOS::Ace::NG::InputEventHub::CopyEvent(OHOS::Ace::RefPtr<OHOS::Ace::NG::InputEventHub> const&)";
       "OHOS::Ace::NG::ArkTSUtils::ParseJsColorAlpha(panda::ecmascript::EcmaVM const*, panda::Local<panda::JSValueRef> const&, OHOS::Ace::Color&, OHOS::Ace::Color&)";
       "OHOS::Ace::NG::ArkTSUtils::CompleteResourceObjectFromColor(OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject>&, OHOS::Ace::Color&, bool, OHOS::Ace::NG::NodeInfo const&)";
       "OHOS::Rosen::Drawing::PathEffect::CreatePathDashEffect(OHOS::Rosen::Drawing::Path const&, float, float, OHOS::Rosen::Drawing::PathDashStyle)";
@@ -5036,6 +5042,7 @@
       "OHOS::Ace::NG::ScrollablePattern::HandleLeaveHotzoneEvent()";
  	  "OHOS::Ace::NG::ScrollablePattern::HandleMoveEventInComp(OHOS::Ace::NG::PointT<float> const&, bool)";
       "OHOS::Ace::NG::ScrollablePattern::MarkUserScrollSource(int)";
+      "OHOS::Ace::NG::ScrollablePattern::MultiSelectable() const";
       "OHOS::Ace::NG::ScrollablePattern::SetVelocityScale(double)";
       "OHOS::Ace::NG::ScrollablePattern::SuggestOpIncGroup(bool)";
       "OHOS::Ace::NG::ScrollableUtils::RecycleItemsOutOfBoundary(OHOS::Ace::Axis, float, int, int, OHOS::Ace::NG::LayoutWrapper*)";
