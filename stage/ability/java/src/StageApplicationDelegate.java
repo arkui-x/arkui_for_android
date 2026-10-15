@@ -43,6 +43,7 @@ import android.view.WindowManager;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.File;
 import java.io.FileReader;
@@ -94,6 +95,8 @@ public class StageApplicationDelegate {
     private static final String ASSETS_PATH_KEY = "assets_path_key";
 
     private static final String APP_VERSION_CODE = "versionCode";
+
+    private static final String STUB_VERSION_CODE = "stubVersionCode";
 
     private static final String WANT_PARAMS = "params";
 
@@ -551,6 +554,10 @@ public class StageApplicationDelegate {
             for (String name : list) {
                 if ("systemres".equals(name)) {
                     moduleResources.add(name);
+                } else if ("stub".equals(name)) {
+                    // stub.an is packaged for ArkVM and extracted by extractStubAnFromApk
+                    // separately; it is not a module resource directory.
+                    continue;
                 } else {
                     moduleResources.add(name + "/resources");
                     moduleResources.add(name + "/resources.index");
@@ -618,7 +625,15 @@ public class StageApplicationDelegate {
         InputStream is = null;
         FileOutputStream fos = null;
         try {
-            String[] fileNames = stageApplication.getAssets().list(assetsPath);
+            String[] fileNames;
+            try {
+                fileNames = stageApplication.getAssets().list(assetsPath);
+            } catch (FileNotFoundException e) {
+                // A missing source path is skipped instead of being treated as a copy
+                // failure, so one absent path cannot block the version code recording.
+                ALog.w(LOG_TAG, "asset path not found, skip: " + e.getMessage());
+                return;
+            }
             File file = new File(savePath);
             if (fileNames.length > 0) {
                 if (!file.exists()) {
@@ -628,7 +643,12 @@ public class StageApplicationDelegate {
                     copyFilesFromAssets(assetsPath + "/" + fileName, savePath + "/" + fileName);
                 }
             } else {
-                is = stageApplication.getAssets().open(assetsPath);
+                try {
+                    is = stageApplication.getAssets().open(assetsPath);
+                } catch (FileNotFoundException e) {
+                    ALog.w(LOG_TAG, "asset file not found, skip: " + e.getMessage());
+                    return;
+                }
                 fos = new FileOutputStream(file);
                 byte[] buffer = new byte[1024];
                 int byteCount = 0;
@@ -641,20 +661,19 @@ public class StageApplicationDelegate {
             ALog.e(LOG_TAG, "read or write data err: " + e.getMessage());
             isCopyResources = false;
         } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    ALog.e(LOG_TAG, "InputStream close err: " + e.getMessage());
-                }
-            }
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    ALog.e(LOG_TAG, "FileOutputStream close err: " + e.getMessage());
-                }
-            }
+            closeStreamQuietly(is, "InputStream");
+            closeStreamQuietly(fos, "FileOutputStream");
+        }
+    }
+
+    private void closeStreamQuietly(Closeable stream, String name) {
+        if (stream == null) {
+            return;
+        }
+        try {
+            stream.close();
+        } catch (IOException e) {
+            ALog.e(LOG_TAG, name + " close err: " + e.getMessage());
         }
     }
 
@@ -887,6 +906,21 @@ public class StageApplicationDelegate {
 
         String destPath = filesDir + "/stub/" + archDir + "/stub.an";
         File destFile = new File(destPath);
+
+        // stub.an is immutable within one app version; skip the re-extraction
+        // (about 15.7 MB of file I/O) when the current version is already extracted.
+        // Debuggable builds keep re-extracting, mirroring the debug exemption of
+        // shouldSkipResourceCopy, so an updated stub.an is picked up even when the
+        // version code is unchanged.
+        int versionCode = getAppVersionCode();
+        SharedPreferences sharedPreferences = getSharedPreferences();
+        if (!isApkInDebug(context) && destFile.exists() && destFile.length() > 0
+                && sharedPreferences != null
+                && versionCode != DEFAULT_VERSION_CODE
+                && sharedPreferences.getInt(STUB_VERSION_CODE, DEFAULT_VERSION_CODE) == versionCode) {
+            return destPath;
+        }
+
         if (destFile.exists() && !destFile.delete()) {
             ALog.e(LOG_TAG, "extractStubAnFromApk failed to delete existing file: " + destPath);
             return null;
@@ -901,6 +935,9 @@ public class StageApplicationDelegate {
                 fos.write(buffer, 0, len);
             }
             fos.flush();
+            if (sharedPreferences != null && versionCode != DEFAULT_VERSION_CODE) {
+                sharedPreferences.edit().putInt(STUB_VERSION_CODE, versionCode).commit();
+            }
             return destPath;
         } catch (IOException e) {
             ALog.e(LOG_TAG, "extractStubAnFromApk failed, assetPath=" + assetPath + ", error: " + e.getMessage());
