@@ -303,7 +303,8 @@ std::string StageActivityDelegateJni::OnFoldStatusChange()
 {
     JNIEnv* env = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv().get();
     if (env == nullptr) {
-        LOGE("StageActivityDelegateJni:: env is NULL");
+        LOGE("StageActivityDelegateJni::OnFoldStatusChange env is NULL");
+        return "";
     }
     jstring instanceName = static_cast<jstring>(env->CallObjectMethod(stageActivityStruct_.object,
         stageActivityStruct_.onFoldStatusChangeMethod));
@@ -311,12 +312,22 @@ std::string StageActivityDelegateJni::OnFoldStatusChange()
         env->ExceptionDescribe();
         env->ExceptionClear();
     }
+    if (instanceName == nullptr) {
+        LOGE("StageActivityDelegateJni::OnFoldStatusChange instanceName is null");
+        return "";
+    }
     const char *instance = env->GetStringUTFChars(instanceName, nullptr);
     if (instance == nullptr) {
+        if (env->ExceptionCheck()) {
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+        }
+        env->DeleteLocalRef(instanceName);
         return "";
     }
     std::string instanceStr(instance);
     env->ReleaseStringUTFChars(instanceName, instance);
+    env->DeleteLocalRef(instanceName);
     return instanceStr;
 }
 
@@ -324,7 +335,8 @@ void StageActivityDelegateJni::OffFoldStatusChange()
 {
     JNIEnv* env = Ace::Platform::JniEnvironment::GetInstance().GetJniEnv().get();
     if (env == nullptr) {
-        LOGE("StageActivityDelegateJni:: env is NULL");
+        LOGE("StageActivityDelegateJni::OffFoldStatusChange env is NULL");
+        return;
     }
     env->CallVoidMethod(stageActivityStruct_.object, stageActivityStruct_.offFoldStatusChangeMethod);
     if (env->ExceptionCheck()) {
