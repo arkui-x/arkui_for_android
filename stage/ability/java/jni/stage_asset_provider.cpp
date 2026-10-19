@@ -19,6 +19,7 @@
 #include <dirent.h>
 #include <fstream>
 #include <iostream>
+#include <pthread.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -29,6 +30,7 @@
 #include "include/core/SkFontMgr.h"
 #include "native_module_manager.h"
 #include "nlohmann/json.hpp"
+#include "src/ports/skia_ohos/HmSymbolConfig_ohos.h"
 
 using Json = nlohmann::json;
 
@@ -605,6 +607,31 @@ void StageAssetProvider::SetResourcesFilePrefixPath(const std::string& resources
     std::string fontPath("");
     fontPath = resourcesFilePrefixPath_ + SEPARATOR + SYSTEM_RES_INDEX_NAME + SEPARATOR + SYSTEM_FONT_DIR + SEPARATOR;
     SkFontMgr::SetFontMgrConfig(runtimeOS, fontPath);
+    // Warm up the HM symbol config parse on a background thread: it is
+    // otherwise parsed lazily by the first text layout that queries the
+    // HM Symbol font family, delaying that layout. The parse is idempotent
+    // and mutex-protected, so the later lazy call returns immediately;
+    // on failure it falls back to the original lazy behavior.
+    pthread_t preloadThread;
+    auto* preloadPath = new std::string(fontPath);
+    int ret = pthread_create(&preloadThread, nullptr, [](void* arg) -> void* {
+        std::string* path = static_cast<std::string*>(arg);
+        SkString fontDir(path->c_str());
+        // File name kept in sync with the skia font config parser.
+        constexpr char hmSymbolConfigFile[] = "hm_symbol_config_next.json";
+        int parseRet = skia::text::HmSymbolConfig_OHOS::LoadSymbolConfig(hmSymbolConfigFile, fontDir);
+        if (parseRet != 0) {
+            LOGW("Preload HM symbol config failed, fall back to lazy loading, ret=%{public}d", parseRet);
+        }
+        delete path;
+        return nullptr;
+    }, preloadPath);
+    if (ret == 0) {
+        pthread_detach(preloadThread);
+    } else {
+        delete preloadPath;
+        LOGW("Preload HM symbol config thread creation failed, ret=%{public}d", ret);
+    }
 }
 
 std::string StageAssetProvider::GetAppDataModuleDir() const
