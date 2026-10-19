@@ -43,7 +43,7 @@ jint JNI_OnLoad(JavaVM* vm, void*)
         return RET_FAIL;
     }
 
-    LOGI("Current ArkUI-X version is %s, platform is Android.", ARKUI_X_VERSION);
+    LOGI("Current ArkUI-X version is %{public}s, platform is Android.", ARKUI_X_VERSION);
     OHOS::Ace::AceScopedTrace aceScopedTrace("JNI_OnLoad");
     std::shared_ptr<JavaVM> javaVm(vm, DummyRelease<JavaVM>);
     if (!OHOS::Ace::Platform::JniEnvironment::GetInstance().Initialize(javaVm)) {
