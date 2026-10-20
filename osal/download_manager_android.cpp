@@ -144,10 +144,14 @@ public:
 
     bool RemoveDownloadTaskWithPreload(const std::string& url, bool isCancel = true) override
     {
+        // Same semantics as the OHOS implementation (download_manager_impl.cpp): this
+        // only cleans up the download task. CacheDownloadClient::Remove(url) must NOT
+        // be called here - it evicts the RAM entry and deletes the cache file, so every
+        // finished download would be removed right after being written and cold starts
+        // would re-download the same images forever.
         if (isCancel) {
             OHOS::Plugin::CacheDownload::CacheDownloadClient::GetInstance().Cancel(url);
         }
-        OHOS::Plugin::CacheDownload::CacheDownloadClient::GetInstance().Remove(url);
         return true;
     }
 
