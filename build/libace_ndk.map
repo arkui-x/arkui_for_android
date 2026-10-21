@@ -716,6 +716,12 @@
       OH_ArkUI_AccessibilityValue_SetCurrent;
       OH_ArkUI_AccessibilityValue_GetMax;
       OH_ArkUI_NativeModule_GetNativeAccessibilityProvider;
+      OH_ArkUI_NativeModule_UIEventInjectCompositeCommand;
+      OH_ArkUI_NativeModule_UIJsonWrapperCreate;
+      OH_ArkUI_NativeModule_UIJsonWrapperDestroy;
+      OH_ArkUI_NativeModule_UIJsonWrapperGetData;
+      OH_ArkUI_NativeModule_UIJsonWrapperGetSize;
+      OH_ArkUI_NativeModule_GetErrorMessage;
       OH_ArkUI_SurfaceCallback_SetSurfaceHideEvent;
       OH_ArkUI_SurfaceCallback_SetSurfaceShowEvent;
       OH_ArkUI_AccessibilityProvider_Dispose;

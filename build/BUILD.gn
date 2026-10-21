@@ -79,6 +79,7 @@ ohos_shared_library("ace_ndk") {
   sources = [
     "$ace_root/frameworks/core/components/xcomponent/native_interface_xcomponent_impl.cpp",
     "$ace_root/interfaces/native/native_error_message_wrapper.cpp",
+    "$ace_root/interfaces/native/ui_json_wrapper.cpp",
     "$ace_root/interfaces/native/native_interface_xcomponent_cross_platform.cpp",
     "$ace_root/interfaces/native/native_styled_string_descriptor.cpp",
     "$ace_root/interfaces/native/event/drag_and_drop_impl.cpp",
@@ -90,6 +91,7 @@ ohos_shared_library("ace_ndk") {
     "$ace_root/interfaces/native/node/native_node_ani.cpp",
     "$ace_root/interfaces/native/node/native_node_napi.cpp",
     "$ace_root/interfaces/native/node/node_utils.cpp",
+    "$ace_root/interfaces/native/node/ui_event_injection_impl.cpp",
     "$ace_root/interfaces/native/node/render_node.cpp",
     "$ace_root/interfaces/native/node/node_adapter_impl.cpp",
     "$ace_root/interfaces/native/node/native_node_extented.cpp",
