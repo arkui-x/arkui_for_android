@@ -156,6 +156,10 @@ public class StageApplicationDelegate {
 
     private String assetsModulePath = "";
 
+    // In-process cache of the forced assets scan in getAssetsPath(true); assets never
+    // change within one process, so repeated forced scans in a single startup are redundant.
+    private String cachedAssetsScanPath = null;
+
     private boolean shouldLoadUI = true;
 
     private float lastFontScale = 1.0f;
@@ -379,6 +383,10 @@ public class StageApplicationDelegate {
             return "";
         }
 
+        if (isNewVersion && cachedAssetsScanPath != null) {
+            return cachedAssetsScanPath;
+        }
+
         SharedPreferences sharedPreferences =
                 stageApplication.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
         if (sharedPreferences == null) {
@@ -397,9 +405,16 @@ public class StageApplicationDelegate {
             return "";
         }
 
-        String assetsPath = routerTraverseAssets(ASSETS_SUB_PATH);
+        Trace.beginSection("traverseAssets");
+        String assetsPath;
+        try {
+            assetsPath = routerTraverseAssets(ASSETS_SUB_PATH);
+        } finally {
+            Trace.endSection();
+        }
         edit.putString(ASSETS_PATH_KEY, assetsPath);
         edit.commit();
+        cachedAssetsScanPath = assetsPath;
 
         return assetsPath;
     }
@@ -429,9 +444,15 @@ public class StageApplicationDelegate {
             if (list == null || list.length <= 0) {
                 return;
             }
+            // The file detection (contains(".")) and resources/systemres pruning rules
+            // below must stay in sync with findArkuiXJsonPath: it walks the tree with
+            // the same order and pruning, so a rule change here needs the same change there.
             for (int i = 0; i < list.length; i++) {
                 if (list[i].contains(".")) {
+                    // File entry: record it; a file has no children, so do not call
+                    // AssetManager.list() on it (one wasted JNI scan per file otherwise).
                     assetsList.add(path + "/" + list[i]);
+                    continue;
                 }
                 String subPath;
                 if ("".equals(path)) {
@@ -1210,22 +1231,27 @@ public class StageApplicationDelegate {
     }
 
     private boolean isDynamicUpdateLibs() {
-        String jsonPath = extractJsonPathsFromAssets();
-        if (!jsonPath.isEmpty()) {
-            String assetsJsonContent = readAssetsFile(jsonPath);
-            String sandBoxJsonContent = readJsonFile(
-                    stageApplication.getApplicationContext().getFilesDir().getPath() + "/" + jsonPath);
-            if (assetsJsonContent == null || sandBoxJsonContent == null) {
-                ALog.w(LOG_TAG, "File JsonContent is null");
-                return false;
+        Trace.beginSection("isDynamicUpdateLibs");
+        try {
+            String jsonPath = extractJsonPathsFromAssets();
+            if (!jsonPath.isEmpty()) {
+                String assetsJsonContent = readAssetsFile(jsonPath);
+                String sandBoxJsonContent = readJsonFile(
+                        stageApplication.getApplicationContext().getFilesDir().getPath() + "/" + jsonPath);
+                if (assetsJsonContent == null || sandBoxJsonContent == null) {
+                    ALog.w(LOG_TAG, "File JsonContent is null");
+                    return false;
+                }
+                String assetsVersion = extractVersionFromJson(assetsJsonContent);
+                String sandBoxVersion = extractVersionFromJson(sandBoxJsonContent);
+                if (!assetsVersion.isEmpty() && !sandBoxVersion.isEmpty()) {
+                    return compareVersion(assetsVersion, sandBoxVersion);
+                }
             }
-            String assetsVersion = extractVersionFromJson(assetsJsonContent);
-            String sandBoxVersion = extractVersionFromJson(sandBoxJsonContent);
-            if (!assetsVersion.isEmpty() && !sandBoxVersion.isEmpty()) {
-                return compareVersion(assetsVersion, sandBoxVersion);
-            }
+            return false;
+        } finally {
+            Trace.endSection();
         }
-        return false;
     }
 
     private boolean compareVersion(String assetsVersion, String sandBoxVersion) {
@@ -1266,14 +1292,49 @@ public class StageApplicationDelegate {
     }
 
     private String extractJsonPathsFromAssets() {
-        String allPath = getAssetsPath(true);
-        if (allPath != null && !allPath.isEmpty()) {
-            String[] pathArray = allPath.split(";");
-            for (String path : pathArray) {
-                if (path.contains(ARKUIX_JSON)) {
-                    return path;
+        Trace.beginSection("extractJsonPathsFromAssets");
+        try {
+            return findArkuiXJsonPath(ASSETS_SUB_PATH);
+        } finally {
+            Trace.endSection();
+        }
+    }
+
+    /**
+     * Depth-first search for the first asset file whose path contains arkui-x.json,
+     * visiting entries in the same order as traverseAssets but stopping at the first
+     * match, so the whole assets tree is only walked when no arkui-x.json exists.
+     *
+     * @param path the directory under the assets folder to search
+     * @return the first matched file path, or an empty string when no arkui-x.json exists
+     */
+    private String findArkuiXJsonPath(String path) {
+        AssetManager assetManager = stageApplication.getAssets();
+        try {
+            String[] list = assetManager.list(path);
+            if (list == null || list.length <= 0) {
+                return "";
+            }
+            for (int i = 0; i < list.length; i++) {
+                String entryPath = path + "/" + list[i];
+                boolean isFile = list[i].contains(".");
+                if (isFile && entryPath.contains(ARKUIX_JSON)) {
+                    return entryPath;
+                }
+                if (isFile) {
+                    // A file entry has no children; skip the wasted AssetManager.list() call.
+                    continue;
+                }
+                if (RESOURCES_DIR.equals(list[i]) || SYSTEMRES_DIR.equals(list[i])) {
+                    continue;
+                }
+                String found = findArkuiXJsonPath(entryPath);
+                if (!found.isEmpty()) {
+                    return found;
                 }
             }
+        } catch (Exception e) {
+            ALog.e(LOG_TAG, "findArkuiXJsonPath err: " + e.getMessage());
         }
         return "";
     }
