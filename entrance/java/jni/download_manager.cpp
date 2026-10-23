@@ -24,9 +24,7 @@
 #include "base/utils/utils.h"
 
 namespace OHOS::Ace {
-std::unique_ptr<DownloadManager> DownloadManager::instance_ = nullptr;
-std::mutex DownloadManager::mutex_;
-class DownloadManagerImpl final : public DownloadManager {
+class DownloadManagerImplJni final : public DownloadManager {
 public:
     bool Download(const std::string& url, std::vector<uint8_t>& dataOut) override
     {
@@ -89,20 +87,14 @@ public:
         return nullptr;
     }
 
-    DownloadManagerImpl() = default;
+    DownloadManagerImplJni() = default;
 
-    ~DownloadManagerImpl() = default;
+    ~DownloadManagerImplJni() = default;
 };
 
-DownloadManager* DownloadManager::GetInstance()
+DownloadManager* CreateAndroidDownloadManager()
 {
-    if (!instance_) {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (!instance_) {
-            instance_.reset(new DownloadManagerImpl());
-        }
-    }
-    return instance_.get();
+    return new DownloadManagerImplJni();
 }
 
 } // namespace OHOS::Ace
