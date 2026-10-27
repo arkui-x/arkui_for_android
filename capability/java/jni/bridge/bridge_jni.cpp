@@ -355,6 +355,10 @@ std::string BridgeJni::JSCallMethodSyncJni(const std::string& bridgeName,
     env->DeleteLocalRef(jBridgeName);
     env->DeleteLocalRef(jMethodName);
     env->DeleteLocalRef(jParameters);
+    if (jStr == nullptr) {
+        LOGE("JSCallMethodSyncJni: jStr is null");
+        return "";
+    }
     const char* cStr = env->GetStringUTFChars(jStr, nullptr);
     if (cStr) {
         std::string result(cStr);
