@@ -197,7 +197,11 @@ public class StageFragment extends Fragment implements KeyboardHeightObserver {
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT);
             framelayout.setLayoutParams(params);
-            framelayout.addView(windowView.getView(), 0);
+            if (windowView != null) {
+                framelayout.addView(windowView.getView(), 0);
+            } else {
+                ALog.e(LOG_TAG, "onCreateView windowView null");
+            }
         }
         return framelayout;
     }
