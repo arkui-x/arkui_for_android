@@ -162,6 +162,8 @@ void StageFragmentDelegateJni::DispatchOnDestroy(JNIEnv* env, jclass myclass, js
     auto instanceName = env->GetStringUTFChars(str, nullptr);
     if (instanceName != nullptr) {
         AppMain::GetInstance()->DispatchOnDestroy(instanceName);
+        WindowViewAdapter::GetInstance()->RemoveWindowView(instanceName);
+        AbilityContextAdapter::GetInstance()->RemoveStageActivity(instanceName);
         env->ReleaseStringUTFChars(str, instanceName);
     }
 }
