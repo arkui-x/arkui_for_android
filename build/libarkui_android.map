@@ -219,6 +219,7 @@
       "OHOS::Ace::JsonUtil::Create(bool)";
       "OHOS::Ace::JsonUtil::CreateArray(bool)";
       "OHOS::Ace::JsonUtil::CreateSharedPtrJson(bool)";
+      "OHOS::Ace::JsonValue::Delete(char const*)";
       "OHOS::Ace::JsonValue::GetChild() const";
       "OHOS::Ace::JsonValue::PutExtAttr(char const*, char const*, OHOS::Ace::NG::InspectorFilter const&)";
       "OHOS::Ace::JsonValue::GetKey() const";
@@ -228,6 +229,7 @@
       "OHOS::Ace::JsonValue::IsNumber() const";
       "OHOS::Ace::JsonValue::Replace(char const*, int)";
       "OHOS::Ace::JsonValue::Replace(char const*, char const*)";
+      "OHOS::Ace::JsonValue::Replace(char const*, bool)";
       "OHOS::Ace::JsonValue::IsNull() const";
       "OHOS::Ace::JsonValue::GetInt() const";
       "OHOS::Ace::JsonValue::IsString() const";
@@ -240,6 +242,8 @@
       "OHOS::Ace::JsonValue::PutExtAttr(char const*, double, OHOS::Ace::NG::InspectorFilter const&)";
       "OHOS::Ace::JsonValue::GetDouble() const";
       "OHOS::Ace::JsonValue::Put(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> > const&)";
+      "OHOS::Ace::JsonValue::Put(char const*, std::__ndk1::shared_ptr<OHOS::Ace::JsonValue> const&)";
+      "OHOS::Ace::JsonValue::Put(double)";
       "OHOS::Ace::JsonValue::PutExtAttr(char const*, long, OHOS::Ace::NG::InspectorFilter const&)";
       "OHOS::Ace::JsonValue::IsArray() const";
       "OHOS::Ace::JsonValue::GetArraySize() const";
@@ -451,6 +455,7 @@
       "OHOS::Ace::NG::FrameNode::NotifyChange(int, int, long, OHOS::Ace::NG::UINode::NotificationType)";
       "OHOS::Ace::NG::FrameNode::OnThemeScopeUpdate(int)";
       "OHOS::Ace::NG::FrameNode::GetCurrentPageRootNode()";
+      "OHOS::Ace::NG::FrameNode::GetCoordinateAncestorNodeOfFrame(bool) const";
       "OHOS::Ace::NG::FrameNode::AddCustomProperty(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::NG::FrameNode::CreateLayoutTask(bool, OHOS::Ace::LayoutType)";
       "OHOS::Ace::NG::FrameNode::RemoveCustomProperty(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
@@ -465,6 +470,7 @@
       "OHOS::Ace::NG::FrameNode::DumpInfo(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&)";
       "OHOS::Ace::NG::FrameNode::DumpSimplifyInfo(std::__ndk1::shared_ptr<OHOS::Ace::JsonValue>&)";
       "OHOS::Ace::NG::FrameNode::DumpSimplifyInfoOnlyForParamConfig(std::__ndk1::shared_ptr<OHOS::Ace::JsonValue>&, OHOS::Ace::ParamConfig)";
+      "OHOS::Ace::NG::FrameNode::DumpSimplifyInfoWithParamConfig(std::__ndk1::shared_ptr<OHOS::Ace::JsonValue>&, OHOS::Ace::ParamConfig)";
       "OHOS::Ace::NG::FrameNode::DumpAdvanceInfo()";
       "OHOS::Ace::NG::FrameNode::DumpAdvanceInfo(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&)";
       "OHOS::Ace::NG::FrameNode::DumpViewDataPageNode(OHOS::Ace::RefPtr<OHOS::Ace::ViewDataWrap>, bool)";
@@ -491,7 +497,7 @@
       "OHOS::Ace::NG::FrameNode::MeasureSafeAreaInset()";
       "OHOS::Ace::NG::FrameNode::LayoutSafeAreaInset()";
       "OHOS::Ace::NG::FrameNode::Layout()";
-      "OHOS::Ace::NG::FrameNode::GetOrCreateChildByIndex(unsigned int, bool, bool)";
+      "OHOS::Ace::NG::FrameNode::GetOrCreateChildByIndex(unsigned int, bool, bool, bool)";
       "OHOS::Ace::NG::FrameNode::GetChildByIndex(unsigned int, bool)";
       "OHOS::Ace::NG::FrameNode::GetAllChildrenWithBuild(bool)";
       "OHOS::Ace::NG::FrameNode::PostponedTaskForIgnoreDefault()";
@@ -624,6 +630,7 @@
       "OHOS::Ace::NG::LayoutWrapper::SkipMeasureContent() const";
       "OHOS::Ace::NG::LayoutWrapper::GetAccumulatedSafeAreaExpand(bool, OHOS::Ace::NG::IgnoreLayoutSafeAreaOpts, OHOS::Ace::NG::IgnoreStrategy)";
       "OHOS::Ace::NG::LayoutWrapper::IsIgnoreOptsValid()";
+      "OHOS::Ace::NG::LayoutWrapper::ResetSafeAreaPadding()";
       "OHOS::Ace::NG::Modifier::Modifier()";
       "OHOS::Ace::NG::ModifierAdapter::RemoveModifier(int)";
       "OHOS::Ace::NG::NodeRenderStatusMonitor::IsRegisterNodeRenderStateChangeCallbackExceedLimit()";
@@ -1129,6 +1136,8 @@
       "OHOS::Ace::NG::LazyLayoutPattern::AfterMountToParent()";
       "OHOS::Ace::NG::LazyLayoutPattern::OnAttachToFrameNode()";
       "OHOS::Ace::NG::LazyLayoutPattern::DumpStickyHeaderHandoffInfo(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&) const";
+      "OHOS::Ace::NG::LazyLayoutPattern::GetPreparedGeometry() const";
+      "OHOS::Ace::NG::LazyLayoutPattern::RestorePreparedGeometry(std::__ndk1::shared_ptr<OHOS::Ace::NG::PreparedLayoutGeometry const> const&)";
 
       "VTT for OHOS::Ace::NG::BoxLayoutAlgorithm";
       "VTT for OHOS::Ace::NG::ParticlePattern";
@@ -1180,6 +1189,8 @@
       "OHOS::Ace::NG::UIObserverHandler::NotifyScrollEventStateChange(OHOS::Ace::WeakPtr<OHOS::Ace::AceType> const&, OHOS::Ace::NG::ScrollEventType)";
       "OHOS::Ace::NG::Pattern::OnColorModeChange(unsigned int)";
       "OHOS::Ace::NG::Pattern::UnRegisterResource(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "OHOS::Ace::NG::Pattern::ShouldIncludeDiagnostic(OHOS::Ace::NG::InspectorDumpOptions const&)";
+      "ThirdProviderTreeExporter::ExportToInspectorJson(ArkUI_AccessibilityProvider*, OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
 
       "OHOS::AppExecFwk::AbilityDelegatorRegistry::GetAbilityDelegator()";
       "OHOS::AppExecFwk::AbilityDelegatorRegistry::GetSocketConfig()";
@@ -2085,6 +2096,11 @@
       "OHOS::Ace::NG::AccessibilityProperty::GetScrollOffSet() const";
       "OHOS::Ace::NG::AccessibilityProperty::IsAccessibilityHoverPriority() const";
       "OHOS::Ace::NG::AccessibilityProperty::IsAccessibilityModal() const";
+      "OHOS::Ace::NG::AccessibilityProperty::IsEditable() const";
+      "OHOS::Ace::NG::AccessibilityProperty::IsScrollable() const";
+      "OHOS::Ace::NG::AccessibilityProperty::GetAccessibilityText() const";
+      "OHOS::Ace::NG::AccessibilityProperty::GetAccessibilityNextFocusInspectorKey() const";
+      "OHOS::Ace::NG::AccessibilityProperty::GetAccessibilityLevel() const";
       "OHOS::Ace::NG::AccessibilityProperty::GetText() const";
       "OHOS::Ace::NG::AccessibilityProperty::SetAccessibilityCustomRole(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::NG::AccessibilityProperty::SetActionSelect(std::__ndk1::function<void ()> const&)";
@@ -3071,10 +3087,13 @@
       "OHOS::Ace::NG::ScrollablePattern::OnScrollCallback(float, int)";
       "OHOS::Ace::NG::ScrollablePattern::DumpAdvanceInfo()";
       "OHOS::Ace::NG::ScrollablePattern::DumpAdvanceInfo(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&)";
+      "OHOS::Ace::NG::ScrollablePattern::DumpAdvanceInfo(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&, OHOS::Ace::ParamConfig const&)";
       "OHOS::Ace::NG::ScrollablePattern::SetAccessibilityAction()";
       "OHOS::Ace::NG::ScrollablePattern::OnAttachToMainTree()";
       "OHOS::Ace::NG::ScrollablePattern::OnColorConfigurationUpdate()";
       "OHOS::Ace::NG::ScrollablePattern::OnAttachToFrameNode()";
+      "OHOS::Ace::NG::ScrollablePattern::OnAnimateStop()";
+      "OHOS::Ace::NG::ScrollablePattern::CancelFastScroll()";
       "OHOS::Ace::NG::ScrollablePattern::OnDetachFromMainTree()";
       "OHOS::Ace::NG::ScrollablePattern::ContentChangeByDetaching(OHOS::Ace::NG::PipelineContext*)";
       "OHOS::Ace::NG::ScrollablePattern::OnDetachFromMainTreeMultiThread()";
@@ -3147,7 +3166,7 @@
       "non-virtual thunk to OHOS::Ace::NG::FrameNode::Layout()";
       "non-virtual thunk to OHOS::Ace::NG::FrameNode::LayoutSafeAreaInset()";
       "OHOS::Rosen::Drawing::ShaderEffect::CreateTwoPointConical(OHOS::Rosen::Drawing::PointF const&, float, OHOS::Rosen::Drawing::PointF const&, float, std::__ndk1::vector<OHOS::Rosen::Drawing::UIColor, std::__ndk1::allocator<OHOS::Rosen::Drawing::UIColor> > const&, std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::ColorSpace>, std::__ndk1::vector<float, std::__ndk1::allocator<float> > const&, OHOS::Rosen::Drawing::TileMode, OHOS::Rosen::Drawing::Matrix const*)";
-      "non-virtual thunk to OHOS::Ace::NG::FrameNode::GetOrCreateChildByIndex(unsigned int, bool, bool)";
+      "non-virtual thunk to OHOS::Ace::NG::FrameNode::GetOrCreateChildByIndex(unsigned int, bool, bool, bool)";
       "OHOS::Rosen::Drawing::ColorSpace::CreateSRGB()";
       "non-virtual thunk to OHOS::Ace::NG::FrameNode::GetChildByIndex(unsigned int, bool)";
       "OHOS::Rosen::Drawing::ShaderEffect::CreateSweepGradient(OHOS::Rosen::Drawing::PointF const&, std::__ndk1::vector<OHOS::Rosen::Drawing::UIColor, std::__ndk1::allocator<OHOS::Rosen::Drawing::UIColor> > const&, std::__ndk1::shared_ptr<OHOS::Rosen::Drawing::ColorSpace>, std::__ndk1::vector<float, std::__ndk1::allocator<float> > const&, OHOS::Rosen::Drawing::TileMode, float, float, OHOS::Rosen::Drawing::Matrix const*)";
@@ -3180,6 +3199,7 @@
       "virtual thunk to OHOS::Ace::NG::ScrollablePattern::~ScrollablePattern()";
       "virtual thunk to OHOS::Ace::NG::ScrollablePattern::DumpAdvanceInfo()";
       "virtual thunk to OHOS::Ace::NG::ScrollablePattern::DumpAdvanceInfo(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&)";
+      "virtual thunk to OHOS::Ace::NG::ScrollablePattern::DumpAdvanceInfo(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&, OHOS::Ace::ParamConfig const&)";
       "virtual thunk to OHOS::Ace::NG::ScrollablePattern::OnWindowHide()";
       "virtual thunk to OHOS::Ace::NG::ScrollablePattern::ToJsonValue(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&, OHOS::Ace::NG::InspectorFilter const&) const";
       "virtual thunk to OHOS::Ace::NG::ScrollablePattern::OnAttachToMainTree()";
@@ -3917,6 +3937,7 @@
       "OHOS::Ace::NG::TextPattern::DumpSimplifyInfo(std::__ndk1::shared_ptr<OHOS::Ace::JsonValue>&)";
       "OHOS::Ace::NG::TextPattern::DumpInfo(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&)";
       "OHOS::Ace::NG::TextPattern::DumpAdvanceInfo(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&)";
+      "OHOS::Ace::NG::TextPattern::DumpAdvanceInfo(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&, OHOS::Ace::ParamConfig const&)";
       "OHOS::Ace::NG::TextPattern::SetTextDetectEnable(bool)";
       "OHOS::Ace::NG::TextPattern::GetAISpanMap()";
       "OHOS::Ace::NG::TextPattern::MarkAISpanStyleChanged()";
@@ -4148,6 +4169,7 @@
       "virtual thunk to OHOS::Ace::NG::TextPattern::DumpInfo(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&)";
       "virtual thunk to OHOS::Ace::NG::TextPattern::DumpAdvanceInfo()";
       "virtual thunk to OHOS::Ace::NG::TextPattern::DumpAdvanceInfo(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&)";
+      "virtual thunk to OHOS::Ace::NG::TextPattern::DumpAdvanceInfo(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&, OHOS::Ace::ParamConfig const&)";
       "virtual thunk to OHOS::Ace::NG::TextPattern::DumpSimplifyInfo(std::__ndk1::shared_ptr<OHOS::Ace::JsonValue>&)";
       "virtual thunk to OHOS::Ace::NG::TextPattern::BeforeCreateLayoutWrapper()";
       "virtual thunk to OHOS::Ace::NG::TextPattern::BeforeCreatePaintWrapper()";
@@ -4356,16 +4378,19 @@
       "OHOS::Ace::NG::TextFieldManagerNG::SetOnFocusTextField(OHOS::Ace::WeakPtr<OHOS::Ace::NG::Pattern> const&)";
       "OHOS::Ace::NG::TextFieldManagerNG::NeedCloseKeyboard()";
       "OHOS::Ace::NG::TextFieldManagerNG::ProcessCustomKeyboard(bool, int)";
+      "OHOS::Ace::NG::TextFieldManagerNG::GetAccountList(int)";
       "OHOS::Ace::NG::TextFieldManagerNG::GetFocusedNodeCaretRect()";
       "OHOS::Ace::NG::TextFieldManagerNG::ScrollTextFieldToSafeArea()";
       "OHOS::Ace::NG::TextFieldManagerNG::TriggerAvoidOnCaretChange()";
       "OHOS::Ace::NG::TextFieldManagerNG::AddTextFieldInfo(OHOS::Ace::NG::TextFieldInfo const&)";
       "OHOS::Ace::NG::TextFieldManagerNG::GetMSDPAutoFillType(int) const";
+      "OHOS::Ace::NG::TextFieldManagerNG::GetUserNameNodeInContainer(int const&, int const&)";
       "OHOS::Ace::NG::TextFieldManagerNG::HasAutoFillPasswordNodeInContainer(int const&, int const&)";
       "OHOS::Ace::NG::TextFieldManagerNG::ParseMSDPAutoFillJsonValue(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> > const&)";
       "OHOS::Ace::NG::TextFieldManagerNG::RemoveFillContentMap(int)";
       "OHOS::Ace::NG::TextFieldManagerNG::RemoveMSDPAutoFillType(int)";
       "OHOS::Ace::NG::TextFieldManagerNG::RemoveTextFieldInfo(int const&, int const&)";
+      "OHOS::Ace::NG::TextFieldManagerNG::RemoveAccountList(int)";
       "OHOS::Ace::NG::TextFieldManagerNG::UpdateScrollableParentViewPort(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
       "OHOS::Ace::NG::TextFieldManagerNG::UpdateTextFieldInfo(OHOS::Ace::NG::TextFieldInfo const&)";
       "OHOS::Ace::NG::TextFieldTypeUtils::ToInputTypeString(OHOS::Ace::TextInputType, bool, bool)";
