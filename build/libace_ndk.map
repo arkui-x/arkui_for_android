@@ -5,6 +5,9 @@
       OH_ArkUI_RenderNodeUtils_SetRenderNodeMaskOptionFillColor;
       OH_ArkUI_RenderNodeUtils_SetRenderNodeMaskOptionStrokeColor;
       OH_ArkUI_RenderNodeUtils_CreateContentModifier;
+      OH_ArkUI_NativeModule_GetImagesByNodeIdAsync;
+      OH_ArkUI_NativeModule_ImageCollectionTakeItemByNodeId;
+      OH_ArkUI_NativeModule_ImageCollectionDestroy;
       OH_ArkUI_PostUITaskAndWait;
       OH_ArkUI_PostUITask;
       OH_ArkUI_PostAsyncUITask;

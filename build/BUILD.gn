@@ -86,6 +86,7 @@ ohos_shared_library("ace_ndk") {
     "$ace_root/interfaces/native/event/key_event_impl.cpp",
     "$ace_root/interfaces/native/event/ui_input_event.cpp",
     "$ace_root/interfaces/native/node/node_component_snapshot.cpp",
+    "$ace_root/interfaces/native/node/node_image_collection.cpp",
     "$ace_root/interfaces/native/node/native_interface_focus.cpp",
     "$ace_root/interfaces/native/node/drawable_descriptor.cpp",
     "$ace_root/interfaces/native/node/native_node_ani.cpp",
