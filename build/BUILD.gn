@@ -80,6 +80,7 @@ ohos_shared_library("ace_ndk") {
     "$ace_root/frameworks/core/components/xcomponent/native_interface_xcomponent_impl.cpp",
     "$ace_root/interfaces/native/native_error_message_wrapper.cpp",
     "$ace_root/interfaces/native/ui_json_wrapper.cpp",
+    "$ace_root/interfaces/native/ui_info_collection.cpp",
     "$ace_root/interfaces/native/native_interface_xcomponent_cross_platform.cpp",
     "$ace_root/interfaces/native/native_styled_string_descriptor.cpp",
     "$ace_root/interfaces/native/event/drag_and_drop_impl.cpp",
