@@ -3272,6 +3272,7 @@
       "OHOS::Ace::NG::Gradient::AddColor(OHOS::Ace::NG::GradientColor const&)";
       "OHOS::Ace::ToRSRect(OHOS::Ace::NG::RectT<float> const&)";
       "OHOS::Ace::NG::RosenRenderContext::SetHDRColorHeadRoom(float)";
+      "OHOS::Ace::NG::RosenRenderContext::SetSurfaceCaptureCallback(std::__ndk1::function<std::__ndk1::shared_ptr<OHOS::Media::PixelMap> ()>)";
       "OHOS::Ace::NG::PathPainter::GetPathSize(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::NG::PathPainter::DrawPath(OHOS::Rosen::Drawing::Canvas&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, OHOS::Ace::NG::OffsetT<float> const&)";
       "OHOS::Ace::AnimatableDimension::operator=(OHOS::Ace::AnimatableDimension const&)";
