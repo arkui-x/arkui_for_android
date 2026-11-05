@@ -385,6 +385,9 @@ public class SubWindow {
             subWindowView.setWidth(windowParam.width);
             subWindowView.setHeight(windowParam.height);
             subWindowView.setContentView(contentView);
+            if (clippingDisabled) { // popup / menu
+                subWindowView.setClippingEnabled(false);
+            }
             subWindowView.showAtLocation(rootView, Gravity.TOP | Gravity.START, screenX, screenY);
         }
         if (requestFocus) {
@@ -662,6 +665,18 @@ public class SubWindow {
         return true;
     }
 
+    /**
+     * Sets whether overlay clipping is disabled.
+     * Pass true for popup/menu; keep false (default) for toast/bindSheet.
+     *
+     * @param enabled true = disable clipping (popup/menu), false = default behavior
+     * @return always true in the current implementation
+     */
+    public boolean setClippingDisabled(boolean enabled) {
+        clippingDisabled = enabled;
+        return true;
+    }
+    
     /**
      * Set subwindow on top.
      *
