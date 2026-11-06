@@ -21,4 +21,10 @@ void StatisticEventAdapter::ReportStatisticEvents(
 {
     return;
 }
+
+void StatisticEventAdapter::ReportMaterialStatisticEvents(
+    const StatisticAppInfo& appInfo, const std::vector<MaterialStatisticEventInfo>& events)
+{
+    return;
+}
 } // namespace OHOS::Ace
