@@ -1439,6 +1439,15 @@ public class SubWindowManager {
         return true;
     }
 
+    public boolean setClippingDisabled(String name, boolean enabled) {
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            ALog.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+        return subWindow.setClippingDisabled(enabled);
+    }
+
     /**
      * set window on top.
      *
