@@ -386,9 +386,7 @@ public class SubWindow {
             subWindowView.setWidth(windowParam.width);
             subWindowView.setHeight(windowParam.height);
             subWindowView.setContentView(contentView);
-            if (clippingDisabled) {
-                subWindowView.setClippingEnabled(false);
-            }
+            subWindowView.setClippingEnabled(!clippingDisabled);
             subWindowView.showAtLocation(rootView, Gravity.TOP | Gravity.START, screenX, screenY);
         }
         if (requestFocus) {
