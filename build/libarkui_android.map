@@ -1448,6 +1448,7 @@
       UCNV_FROM_U_CALLBACK_SUBSTITUTE_74;
       UCNV_TO_U_CALLBACK_SUBSTITUTE_74;
 
+      OH_NativeWindow_CreateNativeWindowFromSurfaceId;
       OH_ResourceManager_*;
 
       "vtable for icu_74::UnicodeString";
