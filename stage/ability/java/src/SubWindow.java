@@ -65,6 +65,7 @@ public class SubWindow {
     private boolean skipNativeHideCallbackForRestack = false;
     private Rect[] hotAreas;
     private boolean isFullScreen = false;
+    private boolean clippingDisabled = false;
     private View mainView;
     private int mainWindowX;
     private int mainWindowY;
@@ -382,6 +383,7 @@ public class SubWindow {
             subWindowView.setWidth(windowParam.width);
             subWindowView.setHeight(windowParam.height);
             subWindowView.setContentView(contentView);
+            subWindowView.setClippingEnabled(!clippingDisabled);
             subWindowView.showAtLocation(rootView, Gravity.TOP | Gravity.START, screenX, screenY);
         }
         if (requestFocus) {
@@ -656,6 +658,17 @@ public class SubWindow {
             isFullScreen = false;
         }
         updateWindow();
+        return true;
+    }
+
+    /**
+     * Sets whether overlay clipping is disabled.
+     * Pass true for popup/menu; keep false (default) for toast/bindSheet.
+     *
+     * @param enabled true = disable clipping (popup/menu), false = default behavior
+     */
+    public boolean setClippingDisabled(boolean enabled) {
+        clippingDisabled = enabled;
         return true;
     }
 
