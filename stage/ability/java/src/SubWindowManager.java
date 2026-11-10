@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,31 +19,23 @@ import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Rect;
+import android.os.Build;
 import android.provider.Settings;
 import android.view.Display;
-import android.view.View;
 import android.view.Surface;
+import android.view.SurfaceView;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.OrientationEventListener;
 import android.widget.PopupWindow;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
-import android.database.ContentObserver;
-import android.graphics.Rect;
-import android.util.DisplayMetrics;
-
-import ohos.ace.adapter.WindowViewCommon;
-import ohos.ace.adapter.ALog;
-import ohos.ace.adapter.FoldInfo;
-import ohos.ace.adapter.FoldManager;
-import ohos.ace.adapter.WindowViewInterface;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
+import ohos.ace.adapter.ALog;
 
 /**
  * The type Sub window manager.
@@ -62,11 +54,9 @@ public class SubWindowManager {
     private static final int LOCATION_X = 0;
     private static final int LOCATION_Y = 1;
     private static final int LOCATION_SIZE = 2;
-    private static final int API_24 = 24;
     private static final int API_28 = 28;
     private static final int API_29 = 29;
     private static final int API_30 = 30;
-    private static final float DEFAULT_DENSITY_BASE_DPI = 160.0f;
 
     /*
      ** copy from native wm_common.h: enum class Orientation
@@ -76,19 +66,6 @@ public class SubWindowManager {
     private static final int HORIZONTAL = 2;
     private static final int REVERSE_VERTICAL = 3;
     private static final int REVERSE_HORIZONTAL = 4;
-    private static final int SENSOR = 5;
-    private static final int SENSOR_VERTICAL = 6;
-    private static final int SENSOR_HORIZONTAL = 7;
-    private static final int AUTO_ROTATION_RESTRICTED = 8;
-    private static final int AUTO_ROTATION_PORTRAIT_RESTRICTED = 9;
-    private static final int AUTO_ROTATION_LANDSCAPE_RESTRICTED = 10;
-    private static final int LOCKED = 11;
-    private static final int AUTO_ROTATION_UNSPECIFIED = 12;
-    private static final int USER_ROTATION_PORTRAIT = 13;
-    private static final int USER_ROTATION_LANDSCAPE = 14;
-    private static final int USER_ROTATION_PORTRAIT_INVERTED = 15;
-    private static final int USER_ROTATION_LANDSCAPE_INVERTED = 16;
-    private static final int FOLLOW_DESKTOP = 17;
     private static final int UI_DARK_COLOR = 0x66000000;
     private static final int UI_LIGHT_COLOR = 0xE5FFFFFF;
     private static SubWindowManager sinstance;
@@ -97,85 +74,10 @@ public class SubWindowManager {
     private String mInstanceName;
     private Map<String, SubWindow> mSubWindowMap = new HashMap<>();
     private int uiOptions_ = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-    private OrientationEventListener mOrientationEventListener;
-
-    private ContentObserver mRotationLockObserver;
-    private int mAutoRotationUnlockedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 
     private SubWindowManager() {
         ALog.d(TAG, "SubWindowManager created.");
         nativeSetupSubWindowManager();
-    }
-
-    /**
-     * The type Create sub window param.
-     */
-    public static class CreateSubWindowParam {
-        /**
-         * The name of subwindow.
-         */
-        String name;
-
-        /**
-         * The type of subwindow.
-         */
-        int type;
-
-        /**
-         * The mode of subwindow.
-         */
-        int mode;
-
-        /**
-         * The tag of subwindow.
-         */
-        int tag;
-
-        /**
-         * The parent id of subwindow.
-         */
-        int parentId;
-
-        /**
-         * The x coordinate of subwindow.
-         */
-        int x;
-
-        /**
-         * The y coordinate of subwindow.
-         */
-        int y;
-
-        /**
-         * The width of subwindow.
-         */
-        int width;
-
-        /**
-         * The height of subwindow.
-         */
-        int height;
-
-        /**
-         * The modality type of subwindow.
-         */
-        int modalityType;
-
-        /**
-         * Whether the subwindow is modal.
-         */
-        boolean isModal;
-
-        public CreateSubWindowParam() {
-        }
-
-        String dump() {
-            return String.format(Locale.ENGLISH,
-                "name=%s type=%d mode=%d tag=%d parentId=%d x=%d y=%d width=%d height=%d " +
-                "modalityType=%d isModal=%b",
-                name, type, mode, tag, parentId, x, y, width, height,
-                modalityType, isModal);
-        }
     }
 
     /**
@@ -211,15 +113,6 @@ public class SubWindowManager {
             int option = decorView.getSystemUiVisibility();
             uiOptions_ = uiOptions_ | option;
             uiOptionsStatic = uiOptionsStatic | option;
-            WindowViewCommon.setOnSubwindowKeyboardAvoidHeightChangedListener(
-                new WindowViewCommon.OnSubwindowKeyboardAvoidHeightChangedListener() {
-                    @Override
-                    public void onSubwindowKeyboardAvoidHeightChanged(int height) {
-                        updateAllVisibleSubwindows();
-                    }
-                });
-        } else {
-            WindowViewCommon.setOnSubwindowKeyboardAvoidHeightChangedListener(null);
         }
     }
 
@@ -231,72 +124,43 @@ public class SubWindowManager {
     public void releaseActivity(String instanceName) {
         ALog.d(TAG, "releaseActivity called, instanceName: " + instanceName + ", mInstanceName: " + mInstanceName);
         if (instanceName == mInstanceName) {
-            disableOrientationListener();
             mRootActivity = null;
-            WindowViewCommon.setOnSubwindowKeyboardAvoidHeightChangedListener(null);
         }
         return;
     }
 
     /**
-     * Update all visible subwindows.
-     */
-    public void updateAllVisibleSubwindows() {
-        if (mRootActivity == null) {
-            return;
-        }
-        View decorView = mRootActivity.getWindow().getDecorView();
-        if (decorView == null) {
-            ALog.d(TAG, "[SubwindowKbd] updateAllVisibleSubwindows: decorView is null, skip");
-            return;
-        }
-        decorView.post(new UpdateVisibleSubwindowsRunnable());
-    }
-
-    private class UpdateVisibleSubwindowsRunnable implements Runnable {
-
-        UpdateVisibleSubwindowsRunnable() {
-        }
-
-        @Override
-        public void run() {
-            for (SubWindow subWindow : mSubWindowMap.values()) {
-                if (subWindow == null || !subWindow.getSubWindowView().isShowing()) {
-                    continue;
-                }
-                subWindow.notifyKeyboardHeightChanged();
-                subWindow.updateWindow();
-            }
-        }
-    }
-
-    /**
      * Create sub window.
      *
-     * @param param   the create sub window parameter
+     * @param name     the name
+     * @param type     the type
+     * @param mode     the mode
+     * @param tag      the tag
+     * @param parentId the parent id
+     * @param x        the x
+     * @param y        the y
+     * @param width    the width
+     * @param height   the height
      * @return the boolean
      */
-    public boolean createSubWindow(CreateSubWindowParam param) {
-        if (param == null) {
-            ALog.e(TAG, "createSubWindow failed param is null");
-            return false;
-        }
+    public boolean createSubWindow(String name, int type, int mode, int tag, int parentId, int x, int y, int width,
+        int height) {
+        ALog.d(TAG,
+            "createSubWindow called: " + String.format(Locale.ENGLISH,
+                "name=%s type=%d mode=%d tag=%d parentId=%d x=%d y=%d width=%d height=%d", name, type, mode, tag,
+                parentId, x, y, width, height));
         if (mRootActivity == null) {
             ALog.e(TAG, "createSubWindow failed mRootActivity is invalid");
             return false;
         }
-        return createSubWindowInternal(param);
-    }
-
-    private boolean createSubWindowInternal(CreateSubWindowParam param) {
-        SubWindow subWindow = mSubWindowMap.get(param.name);
+        SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow == null) {
-            subWindow = new SubWindow(mRootActivity, param.name);
-            subWindow.createSubWindow(param);
-            mSubWindowMap.put(param.name, subWindow);
+            subWindow = new SubWindow(mRootActivity, name);
+            subWindow.createSubWindow(type, mode, tag, parentId, x, y, width, height);
+            mSubWindowMap.put(name, subWindow);
             return true;
         } else {
-            ALog.e(TAG, "SubWindow " + param.name + " already created.");
+            ALog.e(TAG, "SubWindow " + name + " already created.");
             return false;
         }
     }
@@ -341,7 +205,7 @@ public class SubWindowManager {
         if (mRootActivity != null) {
             View rootView = mRootActivity.getWindow().getDecorView();
             View topView = rootView.findFocus();
-            if (topView instanceof WindowViewInterface) {
+            if (topView instanceof SurfaceView) {
                 return topView;
             }
         }
@@ -358,10 +222,7 @@ public class SubWindowManager {
         ALog.d(TAG, "showWindow called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow != null) {
-            subWindow.showWindow(true);
-            if (!subWindow.isModalWindow()) {
-                restackModalWindows(subWindow);
-            }
+            subWindow.showWindow();
             if (subWindow.getSubWindowView().isShowing()) {
                 return true;
             } else {
@@ -371,15 +232,6 @@ public class SubWindowManager {
         }
         ALog.e(TAG, "not found SubWindow: " + name);
         return false;
-    }
-
-    private void restackModalWindows(SubWindow except) {
-        for (SubWindow sw : mSubWindowMap.values()) {
-            if (sw != null && sw != except && sw.isRequestedVisible() && sw.isModalWindow()) {
-                sw.dismissForRestack();
-                sw.showWindow(false);
-            }
-        }
     }
 
     /**
@@ -452,7 +304,6 @@ public class SubWindowManager {
         ALog.d(TAG, "destroyWindow called. name=" + name);
         SubWindow subWindow = mSubWindowMap.get(name);
         if (subWindow != null) {
-            subWindow.setRequestedVisible(false);
             subWindow.destroyWindow();
             mSubWindowMap.remove(name);
             return true;
@@ -530,45 +381,6 @@ public class SubWindowManager {
     }
 
     /**
-     * Gets the current window density (display density scale, densityDpi / 160).
-     * Tracks the user's display-size setting, equivalent to OH systemDensity.
-     *
-     * @return the current density scale, or 0.0f if the activity is unavailable.
-     */
-    public float getWindowDensity() {
-        if (mRootActivity == null) {
-            ALog.e(TAG, "getWindowDensity failed, mRootActivity is null");
-            return 0.0f;
-        }
-        float density = mRootActivity.getResources().getDisplayMetrics().density;
-        ALog.d(TAG, "getWindowDensity called: density=" + density);
-        return density;
-    }
-
-    /**
-     * Gets the device-stable default density (DENSITY_DEVICE_STABLE / 160).
-     * This is the factory-default density that does NOT change with the user's
-     * display-size setting, equivalent to OH defaultDensity. Falls back to the
-     * current density on API < 24.
-     *
-     * @return the default density scale, or 0.0f if the activity is unavailable.
-     */
-    public float getWindowDefaultDensity() {
-        if (mRootActivity == null) {
-            ALog.e(TAG, "getWindowDefaultDensity failed, mRootActivity is null");
-            return 0.0f;
-        }
-        float defaultDensity;
-        if (Build.VERSION.SDK_INT >= API_24 && DisplayMetrics.DENSITY_DEVICE_STABLE > 0) {
-            defaultDensity = DisplayMetrics.DENSITY_DEVICE_STABLE / DEFAULT_DENSITY_BASE_DPI;
-        } else {
-            defaultDensity = mRootActivity.getResources().getDisplayMetrics().density;
-        }
-        ALog.d(TAG, "getWindowDefaultDensity called: defaultDensity=" + defaultDensity);
-        return defaultDensity;
-    }
-
-    /**
      * Sets keep screen on.
      *
      * @param keepScreenOn the keep screen on
@@ -617,371 +429,34 @@ public class SubWindowManager {
     public boolean requestOrientation(int direction) {
         ALog.d(TAG, "requestOrientation called: direction=" + direction);
 
-        if (mRootActivity == null) {
-            return false;
-        }
+        if (mRootActivity != null) {
+            int orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 
-        int orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
-        disableOrientationListener();
+            switch (direction) {
+                case UNSPECIFIED:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                break;
+                case VERTICAL:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                    break;
+                case HORIZONTAL:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+                    break;
+                case REVERSE_VERTICAL:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+                    break;
+                case REVERSE_HORIZONTAL:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+                    break;
+                default:
+                    ALog.e(TAG, "unspecified orientation: " + orientation);
+                    break;
+            }
 
-        if (handleSpecialOrientation(direction)) {
+            mRootActivity.setRequestedOrientation(orientation);
             return true;
         }
-
-        switch (direction) {
-            case VERTICAL:
-                orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-                break;
-            case HORIZONTAL:
-                orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-                break;
-            case REVERSE_VERTICAL:
-                orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
-                break;
-            case REVERSE_HORIZONTAL:
-                orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
-                break;
-            case SENSOR:
-                orientation = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
-                break;
-            case SENSOR_VERTICAL:
-                orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
-                break;
-            case SENSOR_HORIZONTAL:
-                orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
-                break;
-            case AUTO_ROTATION_PORTRAIT_RESTRICTED:
-                orientation = ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT;
-                break;
-            case AUTO_ROTATION_LANDSCAPE_RESTRICTED:
-                orientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE;
-                break;
-            case LOCKED:
-                orientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED;
-                break;
-            default:
-                ALog.e(TAG, "unspecified orientation: " + orientation);
-                break;
-        }
-
-        mRootActivity.setRequestedOrientation(orientation);
-        return true;
-    }
-
-    private boolean handleSpecialOrientation(int direction) {
-        switch (direction) {
-            case UNSPECIFIED:
-                enableUnSpecified();
-                return true;
-            case AUTO_ROTATION_RESTRICTED:
-                enableAutoRotationRestricted(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
-                return true;
-            case AUTO_ROTATION_UNSPECIFIED:
-                enableAutoRotationRestricted(ActivityInfo.SCREEN_ORIENTATION_USER);
-                return true;
-            case USER_ROTATION_PORTRAIT:
-                enableUserRotationPortrait();
-                return true;
-            case USER_ROTATION_LANDSCAPE:
-                enableUserRotationLandscape();
-                return true;
-            case USER_ROTATION_PORTRAIT_INVERTED:
-                enableUserRotationPortrait();
-                return true;
-            case USER_ROTATION_LANDSCAPE_INVERTED:
-                enableUserRotationLandscapeInverted();
-                return true;
-            case FOLLOW_DESKTOP:
-                enableFollowDesktop();
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    /**
-     * Disable the orientation event listener.
-     */
-    private void disableOrientationListener() {
-        if (mOrientationEventListener != null) {
-            mOrientationEventListener.disable();
-            mOrientationEventListener = null;
-        }
-        if (mRotationLockObserver != null) {
-            if (mRootActivity != null) {
-                mRootActivity.getContentResolver().unregisterContentObserver(mRotationLockObserver);
-            }
-            mRotationLockObserver = null;
-        }
-    }
-
-    /**
-     * Read the system rotation-lock state from Settings.System.ACCELEROMETER_ROTATION.
-     * Value 0 means auto-rotate is disabled (locked); 1 means enabled (unlocked).
-     *
-     * @return true if rotation is locked, false otherwise.
-     */
-    private boolean isRotationLocked() {
-        if (mRootActivity == null) {
-            return false;
-        }
-        int rotationEnabled = Settings.System.getInt(
-            mRootActivity.getContentResolver(),
-            Settings.System.ACCELEROMETER_ROTATION, 1);
-        return rotationEnabled == 0;
-    }
-
-    /**
-     * Enable auto-rotation constrained by the system rotation lock.
-     * - Rotation unlocked: use the given unlockedOrientation.
-     * - Rotation locked:
-     *     phone (not tablet-like)  -> SCREEN_ORIENTATION_PORTRAIT
-     *     tablet-like              -> unlockedOrientation (e.g. FULL_USER / USER), which
-     *                                 already respects the system rotation lock, staying at
-     *                                 the current orientation, so no explicit LOCKED is needed.
-     *
-     * @param unlockedOrientation orientation applied when rotation is unlocked
-     *                            (FULL_USER for AUTO_ROTATION_RESTRICTED, USER for
-     *                            AUTO_ROTATION_UNSPECIFIED)
-     */
-    private void enableAutoRotationRestricted(int unlockedOrientation) {
-        if (mRootActivity == null) {
-            ALog.e(TAG, "enableAutoRotationRestricted failed, mRootActivity is null");
-            return;
-        }
-
-        applyAutoRotationRestricted(unlockedOrientation);
-        disableOrientationListener();
-
-        mAutoRotationUnlockedOrientation = unlockedOrientation;
-        mRotationLockObserver = new ContentObserver(new Handler(Looper.getMainLooper())) {
-            @Override
-            public void onChange(boolean selfChange) {
-                applyAutoRotationRestricted(mAutoRotationUnlockedOrientation);
-            }
-        };
-        mRootActivity.getContentResolver().registerContentObserver(
-            Settings.System.getUriFor(Settings.System.ACCELEROMETER_ROTATION),
-            false, mRotationLockObserver);
-    }
-
-    /**
-     * Called from StageActivity.onResume(). For LOCKED mode, temporarily switches to
-     * LOCKED mode: uses reflection to get system global display rotation and
-     * Apply the auto-rotation-restricted rule for the current rotation-lock state.
-     * - Phone with rotation locked: force back to PORTRAIT.
-     * - Tablet-like (locked or unlocked), or phone unlocked: the given unlockedOrientation,
-     *   which already respects the system rotation lock automatically (stays at the current
-     *   orientation when locked), so no explicit LOCKED is needed.
-     *
-     * @param unlockedOrientation orientation applied when not in the phone-locked case
-     */
-    private void applyAutoRotationRestricted(int unlockedOrientation) {
-        if (mRootActivity == null) {
-            return;
-        }
-        if (!isTabletLikeDevice() && isRotationLocked()) {
-            mRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        } else {
-            mRootActivity.setRequestedOrientation(unlockedOrientation);
-        }
-    }
-
-    /**
-     * Enable user-preferred orientation starting from portrait.
-     */
-    private void enableUserRotationPortrait() {
-        if (isTabletLikeDevice()) {
-            mRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
-            return;
-        }
-        enableUserRotation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT,
-            "User rotation portrait");
-    }
-
-    /**
-     * Enable user-preferred orientation starting from landscape.
-     */
-    private void enableUserRotationLandscape() {
-        enableUserRotation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE,
-            "User rotation landscape");
-    }
-
-    /**
-     * Enable user-preferred orientation starting from landscape inverted.
-     */
-    private void enableUserRotationLandscapeInverted() {
-        enableUserRotation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE,
-            "User rotation landscape inverted");
-    }
-
-    private void enableUnSpecified() {
-        if (mRootActivity == null) {
-            return;
-        }
-
-        int foldFeatureCount = FoldManager.getFoldFeatureCount(mRootActivity);
-        if (foldFeatureCount == 1) {
-            int[] foldStatuses = FoldManager.getFoldStatuses(mRootActivity);
-            if (foldStatuses.length > 0 && foldStatuses[0] == FoldInfo.FOLD_STATUS_EXPANDED) {
-                mRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                return;
-            }
-        }
-
-        enableFollowDesktop();
-    }
-
-    private void enableFollowDesktop() {
-        if (mRootActivity == null) {
-            ALog.e(TAG, "enableFollowDesktop failed, mRootActivity is null");
-            return;
-        }
-
-        if (!isTabletLikeDevice()) {
-            mRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-            return;
-        }
-
-        disableOrientationListener();
-
-        mOrientationEventListener = new OrientationEventListener(mRootActivity) {
-            private int lastRotationEnabled = 1;
-
-            @Override
-            public void onOrientationChanged(int orientation) {
-                if (orientation == OrientationEventListener.ORIENTATION_UNKNOWN) {
-                    return;
-                }
-
-                final Activity finalRootActivity = mRootActivity;
-                if (finalRootActivity == null) {
-                    return;
-                }
-
-                int rotationEnabled = Settings.System.getInt(
-                    finalRootActivity.getContentResolver(),
-                    Settings.System.ACCELEROMETER_ROTATION, 1);
-
-                if (rotationEnabled == lastRotationEnabled) {
-                    return;
-                }
-                lastRotationEnabled = rotationEnabled;
-                if (rotationEnabled == 0) {
-                    finalRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
-                } else {
-                    finalRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
-                }
-            }
-        };
-
-        if (mOrientationEventListener.canDetectOrientation()) {
-            mOrientationEventListener.enable();
-        } else {
-            ALog.e(TAG, "Device cannot detect orientation, fallback to user.");
-            mRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
-        }
-    }
-
-    /**
-     * Common method for user-preferred orientation.
-     * Uses OrientationEventListener with ACCELEROMETER_ROTATION detection:
-     * - Immediately forces the given initialOrientation on first call.
-     * - When control center is unlocked: maps sensor angle to device-native orientations
-     *   (bar phones: 3 directions no reverse portrait; tablets: 4 directions).
-     * - When control center is locked: stays at current orientation on all devices.
-     *
-     * @param initialOrientation orientation to force immediately (PORTRAIT or LANDSCAPE)
-     * @param logTag            tag for log messages
-     */
-    private void enableUserRotation(int initialOrientation, String logTag) {
-        if (mRootActivity == null) {
-            ALog.e(TAG, logTag + " failed, mRootActivity is null");
-            return;
-        }
-
-        mRootActivity.setRequestedOrientation(initialOrientation);
-
-        if (isTabletLikeDevice()) {
-            mRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
-            return;
-        }
-
-        disableOrientationListener();
-
-        mOrientationEventListener = new OrientationEventListener(mRootActivity) {
-            @Override
-            public void onOrientationChanged(int orientation) {
-                if (orientation == OrientationEventListener.ORIENTATION_UNKNOWN) {
-                    return;
-                }
-
-                final Activity finalRootActivity = mRootActivity;
-                if (finalRootActivity == null) {
-                    return;
-                }
-
-                int rotationEnabled = Settings.System.getInt(
-                    finalRootActivity.getContentResolver(),
-                    Settings.System.ACCELEROMETER_ROTATION, 1);
-                if (rotationEnabled == 0) {
-                    return;
-                }
-
-                int requestedOrientation = getOrientationFromAngle(orientation);
-                if (!isTabletLikeDevice()
-                        && requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT) {
-                    return;
-                }
-                finalRootActivity.setRequestedOrientation(requestedOrientation);
-            }
-        };
-
-        if (mOrientationEventListener.canDetectOrientation()) {
-            final OrientationEventListener pendingListener = mOrientationEventListener;
-            pendingListener.enable();
-        } else {
-            ALog.e(TAG, "Device cannot detect orientation, fallback to user.");
-            mRootActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
-        }
-    }
-
-    /**
-     * Map sensor orientation angle to all 4 orientation directions.
-     * Device hardware determines which directions actually take effect
-     * (phones typically skip reverse portrait, tablets support all 4).
-     *
-     * OrientationEventListener reports counterclockwise rotation from natural orientation:
-     *   0° = upright portrait, 90° = top-to-left, 180° = upside-down, 270° = top-to-right.
-     * Android SCREEN_ORIENTATION_LANDSCAPE = top-to-right (clockwise).
-     *
-     * @param orientation sensor orientation in degrees (0-359)
-     * @return ActivityInfo orientation constant
-     */
-    private static int getOrientationFromAngle(int orientation) {
-        if (orientation > 45 && orientation < 135) {
-            return ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
-        } else if (orientation >= 135 && orientation <= 225) {
-            return ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
-        } else if (orientation > 225 && orientation < 315) {
-            return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-        } else {
-            return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-        }
-    }
-
-    /**
-     * Check current device
-     * 
-     * @return if current device is a tablet-like device
-     */
-    private boolean isTabletLikeDevice() {
-        if (mRootActivity == null) {
-            return false;
-        }
-        int screenLayout = mRootActivity.getResources().getConfiguration().screenLayout
-                & Configuration.SCREENLAYOUT_SIZE_MASK;
-        return screenLayout >= Configuration.SCREENLAYOUT_SIZE_LARGE;
+        return false;
     }
 
     private void setLayoutInDisplayCutoutMode(Window window) {
@@ -1049,10 +524,8 @@ public class SubWindowManager {
         boolean result = false;
         if (isFullScreen) {
             this.uiOptions_ |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-            this.uiOptions_ |= View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
         } else {
             this.uiOptions_ &= ~View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-            this.uiOptions_ &= ~View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
         }
         result = setSystemUiVisibilityInner();
         return result;
@@ -1212,10 +685,10 @@ public class SubWindowManager {
         Rect rect = new Rect(0, 0, 0, 0);
         if (mRootActivity != null && mRootActivity instanceof StageActivity) {
             int instanceId = ((StageActivity) mRootActivity).getInstanceId();
-            int width = mRootActivity.getWindow().getDecorView().findViewById(android.R.id.content).getWidth();
-            int height = mRootActivity.getWindow().getDecorView().findViewById(android.R.id.content).getHeight();
+            int width = mRootActivity.getWindow().getDecorView().findViewById(instanceId).getWidth();
+            int height = mRootActivity.getWindow().getDecorView().findViewById(instanceId).getHeight();
             int[] location = new int[LOCATION_SIZE];
-            mRootActivity.getWindow().getDecorView().findViewById(android.R.id.content).getLocationOnScreen(location);
+            mRootActivity.getWindow().getDecorView().findViewById(instanceId).getLocationOnScreen(location);
             int x = location[LOCATION_X];
             int y = location[LOCATION_Y];
             rect.set(x, y, width, height);
@@ -1437,22 +910,6 @@ public class SubWindowManager {
     }
 
     /**
-     * Set whether the SubWindow's clipping
-     *
-     * @param name    the name
-     * @param enabled true to disable clipping (no inset consumption), false to restore.
-     * @return Setting successful or failed.
-     */
-    public boolean setClippingDisabled(String name, boolean enabled) {
-        SubWindow subWindow = mSubWindowMap.get(name);
-        if (subWindow == null) {
-            ALog.e(TAG, "not found SubWindow: " + name);
-            return false;
-        }
-        return subWindow.setClippingDisabled(enabled);
-    }
-
-    /**
      * set window on top.
      *
      * @param name   the name
@@ -1586,26 +1043,6 @@ public class SubWindowManager {
             }
         }
         return false;
-    }
-
-    /**
-     * Get screen display surface area.
-     *
-     * @return Surface Area.
-     */
-    public Rect getSurfaceRect() {
-        Rect rect = new Rect();
-        if (mRootActivity != null && mRootActivity instanceof StageActivity) {
-            View decorView = mRootActivity.getWindow().getDecorView();
-            int[] location = new int[LOCATION_SIZE];
-            decorView.getLocationOnScreen(location);
-            int x = location[LOCATION_X];
-            int y = location[LOCATION_Y];
-            rect.set(x, y, decorView.getWidth(), decorView.getHeight());
-        } else {
-            ALog.e(TAG, "mRootActivity is null");
-        }
-        return rect;
     }
 
     private native void nativeSetupSubWindowManager();
