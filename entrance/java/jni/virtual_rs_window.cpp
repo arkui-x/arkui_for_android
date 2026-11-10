@@ -1686,6 +1686,19 @@ WMError Window::SetFullScreen(bool status)
     }
 }
 
+WMError Window::SetClippingDisabled(bool enabled)
+{
+    LOGI("Window::SetClippingDisabled called. enabled=%{public}d", enabled);
+    bool result = SubWindowManagerJni::SetClippingDisabled(GetWindowName(), enabled);
+    if (result) {
+        LOGI("Window::SetClippingDisabled: success");
+        return WMError::WM_OK;
+    } else {
+        LOGI("Window::SetClippingDisabled: failed");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+}
+ 
 WMError Window::SetOnTop(bool status)
 {
     LOGI("Window::SetOnTop called. status=%{public}d", status);
