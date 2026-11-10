@@ -738,6 +738,8 @@ public class SubWindowManager {
         int resourceId = Resources.getSystem().getIdentifier("status_bar_height", "dimen", "android");
         if (resourceId > NO_HEIGHT) {
             result = Resources.getSystem().getDimensionPixelSize(resourceId);
+        } else {
+            ALog.e(TAG, "getStatusBarHeight: status_bar_height resource not found.");
         }
         return result;
     }
