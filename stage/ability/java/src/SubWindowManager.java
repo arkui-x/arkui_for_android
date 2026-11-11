@@ -929,7 +929,7 @@ public class SubWindowManager {
         }
         return subWindow.setClippingDisabled(enabled);
     }
-    
+
     /**
      * set window on top.
      *
