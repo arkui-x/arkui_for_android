@@ -119,6 +119,8 @@ void SubWindowManagerJni::SetupSubWindowManager(JNIEnv* env, jobject obj)
     subWindowManagerStruct_.setTouchHotAreaMethod =
         env->GetMethodID(clazz, "setTouchHotArea", "(Ljava/lang/String;[Landroid/graphics/Rect;)Z");
     subWindowManagerStruct_.setFullScreenMethod = env->GetMethodID(clazz, "setFullScreen", "(Ljava/lang/String;Z)Z");
+    subWindowManagerStruct_.setClippingDisabledMethod =
+        env->GetMethodID(clazz, "setClippingDisabled", "(Ljava/lang/String;Z)Z");
     subWindowManagerStruct_.setOnTopMethod = env->GetMethodID(clazz, "setOnTop", "(Ljava/lang/String;Z)Z");
     subWindowManagerStruct_.registerSubWindowMethod =
         env->GetMethodID(clazz, "registerSubWindow", "(Ljava/lang/String;J)Z");
