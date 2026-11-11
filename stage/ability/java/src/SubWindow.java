@@ -279,6 +279,7 @@ public class SubWindow {
         subWindowView.setHeight(windowParam.height);
         subWindowView.setElevation(0);
         subWindowView.setContentView(contentView);
+        subWindowView.setClippingEnabled(!clippingDisabled);
 
         int screenX = windowParam.x + mainWindowX;
         int screenY = windowParam.y + mainWindowY;
@@ -452,6 +453,17 @@ public class SubWindow {
     }
 
     /**
+     * Sets whether overlay clipping is disabled.
+     * Pass true for popup/menu; keep false (default) for toast/bindSheet.
+     *
+     * @param enabled true = disable clipping (popup/menu), false = default behavior
+     */
+    public boolean setClippingDisabled(boolean enabled) {
+        clippingDisabled = enabled;
+        return true;
+    }
+
+    /**
      * Set subwindow on top.
      *
      * @param status the status
@@ -477,6 +489,7 @@ public class SubWindow {
     private boolean isFocusable = true;
     private Rect[] hotAreas;
     private boolean isFullScreen = false;
+    private boolean clippingDisabled = false;
     private View mainView;
     private int mainWindowX;
     private int mainWindowY;
