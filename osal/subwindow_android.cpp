@@ -229,6 +229,7 @@ void SubwindowAndroid::clearStatus()
     isMenuWindow_ = false;
     SetIsToastWindow(false);
     window_->SetFullScreen(false);
+    window_->SetClippingDisabled(false);
 }
 
 void SubwindowAndroid::HideWindow()
@@ -342,6 +343,7 @@ void SubwindowAndroid::ShowPopupNG(int32_t targetId, const NG::PopupInfo& popupI
     auto overlayManager = context->GetOverlayManager();
     CHECK_NULL_VOID(overlayManager);
 
+    window_->SetClippingDisabled(true);
     ShowWindow(popupInfo.focusable);
     window_->SetFullScreen(true);
     window_->SetTouchable(true);
@@ -396,6 +398,7 @@ void SubwindowAndroid::ShowMenuNG(const RefPtr<NG::FrameNode> menuNode, int32_t 
     CHECK_NULL_VOID(context);
     auto overlay = context->GetOverlayManager();
     CHECK_NULL_VOID(overlay);
+    window_->SetClippingDisabled(true);
     ShowWindow();
     ResizeWindow();
     isMenuWindow_ = isShowed_;
@@ -423,6 +426,7 @@ void SubwindowAndroid::ShowMenuNG(std::function<void()>&& buildFunc, std::functi
     CHECK_NULL_VOID(context);
     auto overlay = context->GetOverlayManager();
     CHECK_NULL_VOID(overlay);
+    window_->SetClippingDisabled(true);
     ShowWindow();
     window_->SetFullScreen(true);
     ResizeWindow();
