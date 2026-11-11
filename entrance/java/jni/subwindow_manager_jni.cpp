@@ -780,6 +780,27 @@ bool SubWindowManagerJni::SetOnTop(const std::string& name, bool status)
     }
 }
 
+bool SubWindowManagerJni::SetClippingDisabled(const std::string& name, bool enabled)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("SubWindowManagerJni::SetClippingDisabled: env is NULL");
+        return false;
+    }
+
+    jstring windowName = env->NewStringUTF(name.c_str());
+    jboolean ret = env->CallBooleanMethod(
+        subWindowManagerStruct_.object, subWindowManagerStruct_.setClippingDisabledMethod, windowName, enabled);
+    env->DeleteLocalRef(windowName);
+    if (ret == JNI_TRUE) {
+        LOGI("SubWindowManagerJni::SetClippingDisabled: success");
+        return true;
+    } else {
+        LOGI("SubWindowManagerJni::SetClippingDisabled: failed");
+        return false;
+    }
+}
+
 bool SubWindowManagerJni::RegisterSubWindow(const std::string& name, void* subWindow)
 {
     JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
