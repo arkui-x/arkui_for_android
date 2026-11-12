@@ -185,6 +185,7 @@
       "OHOS::Ace::EngineHelper::GetEngine(int)";
       "OHOS::Ace::EngineHelper::GetDefaultDelegate()";
       "OHOS::Ace::Framework::AccessibilityEventManager::SendEventInfo(OHOS::Ace::Framework::AccessibilityEventInfo const&)";
+      "OHOS::Ace::Framework::ArkTSNativeRawInputEventWrapper::CreateSensitiveInputEvent(OHOS::Ace::RawInputEventWrapper const&, panda::ecmascript::EcmaVM*, OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
       "OHOS::Ace::Framework::CreateCurve(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, bool)";
       "OHOS::Ace::Framework::JSThemeScope::jsCurrentTheme";
       "OHOS::Ace::Framework::JSThemeUtils::GetThemeColors()";
@@ -252,12 +253,16 @@
       "OHOS::Ace::JsonValue::PutRef(char const*, std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&&)";
       "OHOS::Ace::JsonValue::PutRef(std::__ndk1::unique_ptr<OHOS::Ace::JsonValue, std::__ndk1::default_delete<OHOS::Ace::JsonValue> >&&)";
       "OHOS::Ace::Localization::FormatDuration(unsigned int, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "OHOS::Ace::Localization::FormatDurationLocalized(unsigned int, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::Localization::GetInstance()";
       "OHOS::Ace::Localization::GetWeekdays(bool)";
       "OHOS::Ace::Localization::GetDateOrder(std::__ndk1::vector<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >, std::__ndk1::allocator<std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > > >&)";
+      "OHOS::Ace::Localization::LocalizeDigits(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::Localization::LocalizeNumber(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >&, int)";
       "OHOS::Ace::Localization::GetFontLocale()";
       "OHOS::Ace::Localization::FormatDateTime(OHOS::Ace::DateTime, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "OHOS::Ace::Localization::FormatDateTimeMatchHourField(OHOS::Ace::DateTime, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "OHOS::Ace::Localization::FormatPercent(int)";
       "OHOS::Ace::Localization::GetLanguage()";
       "OHOS::Ace::Localization::GetAmPmStrings()";
       "OHOS::Ace::Localization::GetEntryLetters(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
@@ -266,6 +271,8 @@
       "OHOS::Ace::Localization::GetLunarDay(unsigned int)";
       "OHOS::Ace::Localization::TimeUnitFormat(double, OHOS::Ace::TimeUnitStyle, OHOS::Ace::MeasureFormatStyle)";
       "OHOS::Ace::Localization::GetLunarDate(OHOS::Ace::Date)";
+      "OHOS::Ace::Localization::NumberFormat(int)";
+      "OHOS::Ace::Localization::NumberFormat(double)";
       "OHOS::Ace::LogWrapper::JudgeLevel(OHOS::Ace::LogLevel)";
       "OHOS::Ace::LogWrapper::GetBriefFileName(char const*)";
       "OHOS::Ace::LogWrapper::GetIdWithReason()";
@@ -573,6 +580,7 @@
       "OHOS::Ace::NG::LayoutProperty::Clone(OHOS::Ace::RefPtr<OHOS::Ace::NG::LayoutProperty>) const";
       "OHOS::Ace::NG::LayoutProperty::GetLayoutDirection() const";
       "OHOS::Ace::NG::LayoutProperty::HasUserDefinedHeightConfig() const";
+      "OHOS::Ace::NG::LayoutProperty::HasSafeAreaPaddingSource() const";
       "OHOS::Ace::NG::LayoutProperty::UpdateMargin(OHOS::Ace::NG::PaddingPropertyT<OHOS::Ace::NG::CalcLength> const&)";
       "OHOS::Ace::NG::LayoutProperty::UpdateMeasureType(OHOS::Ace::NG::MeasureType)";
       "OHOS::Ace::NG::LayoutProperty::UpdateMaterialBorderWidth(OHOS::Ace::NG::BorderWidthPropertyT<OHOS::Ace::Dimension> const&)";
@@ -776,6 +784,7 @@
       "OHOS::Ace::NG::UINode::~UINode()";
       "OHOS::Ace::NG::UINode::OnDelete()";
       "OHOS::Ace::NG::UINode::AttachContext(OHOS::Ace::NG::PipelineContext*, bool)";
+      "OHOS::Ace::NG::UINode::AttachToMainTree(bool, OHOS::Ace::NG::PipelineContext*)";
       "OHOS::Ace::NG::UINode::DetachContext(bool)";
       "OHOS::Ace::NG::UINode::FrameCount() const";
       "OHOS::Ace::NG::UINode::CurrentFrameCount() const";
@@ -1190,6 +1199,7 @@
       "OHOS::Ace::NG::UIObserverHandler::SetRouterPageSizeChangeHandleFunc(void (*)(OHOS::Ace::NG::RouterPageInfoNG const&))";
       "OHOS::Ace::NG::UIObserverHandler::SetNavDestinationSizeChangeHandleFunc(void (*)(OHOS::Ace::NG::NavDestinationInfo const&))";
       "OHOS::Ace::NG::UIObserverHandler::SetNavDestinationSizeChangeByUniqueIdHandleFunc(void (*)(OHOS::Ace::NG::NavDestinationInfo const&))";
+      "OHOS::Ace::NG::UIObserverHandler::SetNodeSensitiveInputHandleFunc(std::__ndk1::function<void (OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, OHOS::Ace::NG::NodeSensitiveInputInfo const&)>&&)";
       "OHOS::Ace::NG::UIObserverHandler::NotifyTextChangeEvent(OHOS::Ace::NG::TextChangeEventInfo const&)";
       "OHOS::Ace::NG::UIObserverHandler::NotifyScrollEventStateChange(OHOS::Ace::WeakPtr<OHOS::Ace::AceType> const&, OHOS::Ace::NG::ScrollEventType)";
       "OHOS::Ace::NG::Pattern::OnColorModeChange(unsigned int)";
@@ -1966,6 +1976,7 @@
       "panda::ObjectRef::SetConcurrentNativePointerField(panda::ecmascript::EcmaVM const*, int, void*, void (*)(void*, void*, void*), void*, unsigned long)";
       "panda::ObjectRef::SetConcurrentNativePointerField(panda::ecmascript::EcmaVM const*, int, void*, void (*)(void*, void*, void*), void*, unsigned int)";
       "NapiValueToLocalValue(napi_value__*)";
+      "LocalValueToLocalNapiValue(panda::Local<panda::JSValueRef>)";
 
       "panda::os::thread::GetCurrentThreadId()";
       "panda::os::thread::GetNativeHandle()";
@@ -2897,6 +2908,8 @@
       "OHOS::Ace::NG::DialogManager::IsUseImmersiveEdgeLightEffect()";
       "OHOS::Ace::NG::SafeAreaInsets::Inset::ToString() const";
       "OHOS::Ace::FeatureParam::IsDialogCorrectionEnabled()";
+      "OHOS::Ace::FeatureManager::GetInstance()";
+      "OHOS::Ace::FeatureManager::GetFeatureParam(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> >&)";
       "OHOS::Ace::NG::AvoidInfoManager::AddAvoidInfoListener(OHOS::Ace::WeakPtr<OHOS::Ace::NG::IAvoidInfoListener>)";
       "OHOS::Ace::NG::AvoidInfoManager::RemoveAvoidInfoListener(OHOS::Ace::WeakPtr<OHOS::Ace::NG::IAvoidInfoListener>)";
       "OHOS::Ace::NG::DialogManager::ShouldHandleSmoothImmersiveMaterial(OHOS::Ace::RefPtr<OHOS::Ace::UiMaterial> const&)";
@@ -3348,6 +3361,7 @@
       "OHOS::Ace::SystemProperties::GetDragStartPanDistanceThreshold()";
       "OHOS::Ace::SystemProperties::IsNeedSymbol()";
       "OHOS::Ace::SystemProperties::IsSuperFoldDisplayDevice()";
+      "OHOS::Ace::SystemProperties::IsSensorCorrectionEnabled()";
       "OHOS::Ace::SystemProperties::deviceHeight_";
       "OHOS::Ace::SystemProperties::deviceWidth_";
       "OHOS::Ace::SystemProperties::textTraceEnable_";
@@ -3660,6 +3674,8 @@
       "OHOS::Ace::OptNGGradient::ResetGradient()";
       "OHOS::Ace::OptNGGradient::SetGradient(std::__ndk1::optional<OHOS::Ace::NG::Gradient> const&)";
       "OHOS::Ace::KeyEvent::ConvertCodeToString() const";
+      "OHOS::Ace::KeyEvent::HasKey(OHOS::Ace::KeyCode) const";
+      "OHOS::Ace::KeyEvent::IsKey(std::__ndk1::vector<OHOS::Ace::KeyCode, std::__ndk1::allocator<OHOS::Ace::KeyCode> > const&) const";
       "VTT for OHOS::Ace::NG::ListPattern";
       "vtable for OHOS::Ace::NG::ListPattern";
       "OHOS::Ace::NG::ListItemPattern::ListItemPattern(OHOS::Ace::RefPtr<OHOS::Ace::NG::ShallowBuilder> const&, OHOS::Ace::V2::ListItemStyle)";
@@ -3761,9 +3777,26 @@
       "OHOS::Ace::NG::NodeModifier::GetMenuViewInnerModifier()";
       "OHOS::Ace::NG::ScrollPattern::TriggerScrollBarDisplay()";
       "OHOS::Ace::NG::ScrollPattern::TriggerModifyDone()";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::AcquireTemplateInstance(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::CancelHostRealBuilds(int, OHOS::Ace::NG::ScrollPlaceholderCancelReason)";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::CacheTemplateInstance(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, OHOS::Ace::RefPtr<OHOS::Ace::NG::UINode> const&)";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::CancelRealBuildTask(int, int, OHOS::Ace::NG::ScrollPlaceholderCancelReason)";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::ClearDeferral(int, int)";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::ClearPostFlushCallback(int)";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::EnqueueRealBuild(OHOS::Ace::NG::ScrollPlaceholderPredictParams const&, unsigned long, std::__ndk1::function<bool ()>&&, OHOS::Ace::NG::ScrollPlaceholderRealBuildPriority)";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::EnqueueRealBuild(OHOS::Ace::NG::ScrollPlaceholderPredictParams const&, unsigned long long, std::__ndk1::function<bool ()>&&, OHOS::Ace::NG::ScrollPlaceholderRealBuildPriority)";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::GetVsyncDerivedFrameDeadlineNs() const";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::IsTemplateRegistered(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&) const";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::LookupTemplateForCreate(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::NG::ScrollPlaceholderManager::NotifyRealBuildStart(OHOS::Ace::NG::ScrollPlaceholderPredictParams const&)";
       "OHOS::Ace::NG::ScrollPlaceholderManager::NotifyRealBuildEnd(OHOS::Ace::NG::ScrollPlaceholderPredictParams const&, long)";
       "OHOS::Ace::NG::ScrollPlaceholderManager::NotifyRealBuildEnd(OHOS::Ace::NG::ScrollPlaceholderPredictParams const&, long long)";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::Predict(OHOS::Ace::NG::ScrollPlaceholderPredictParams const&, long) const";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::Predict(OHOS::Ace::NG::ScrollPlaceholderPredictParams const&, long long) const";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::RemoveDeferralsByShell(int, OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::RecordDeferral(int, int, OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::SetHostVisibleRange(int, int, int)";
+      "OHOS::Ace::NG::ScrollPlaceholderManager::SetPostFlushCallback(int, std::__ndk1::function<void ()>)";
       "OHOS::Ace::UIObserverStore::GetRenderStore()";
 
 
@@ -4628,6 +4661,7 @@
       "OHOS::Ace::TextInputClient::NotifyKeyboardHeight(unsigned int)";
       "virtual thunk to OHOS::Ace::SpanString::~SpanString()";
       "OHOS::Ace::NG::HandednessManager::QueryAnchorPosition(int)";
+      "OHOS::Ace::NG::HandednessManager::QueryAnchorPosition()";
       "OHOS::Ace::NG::HandednessManager::QueryPopupSideByHoldingHand()";
       "OHOS::Ace::NG::TextSelectOverlay::GetHandleReferenceOffset(OHOS::Ace::NG::RectT<float> const&)";
       "OHOS::Ace::NG::TextSelectOverlay::GetSelectedText()";
@@ -4791,6 +4825,7 @@
       "OHOS::Ace::NG::PipelineContext::AddNodesToNotifyMemoryLevel(int)";
       "OHOS::Ace::NG::PipelineContext::FlushDirtyNodeUpdate()";
       "OHOS::Ace::NG::UINode::DetachFromMainTreeByPreMakeFlag()";
+      "OHOS::Ace::NG::UINode::DetachFromMainTree(bool, bool)";
       "OHOS::Ace::NG::GestureEventHub::DumpVelocityInfoFroPanEvent(int)";
       "OHOS::Ace::Framework::JSIndicatorController::SetSwiperNodeBySwiper(OHOS::Ace::RefPtr<OHOS::Ace::AceType> const&)";
       "OHOS::Ace::NG::CommonBridge::SetSize(panda::JsiRuntimeCallInfo*)";
@@ -5122,7 +5157,7 @@
       "OHOS::Ace::NG::ArkTSUtils::SetRenderStrategy(panda::JsiRuntimeCallInfo*, unsigned int)";
       "OHOS::Ace::NG::ArkTSUtils::SetSymbolModifier(std::__ndk1::vector<OHOS::Ace::SelectParam, std::__ndk1::allocator<OHOS::Ace::SelectParam> >&, unsigned int, panda::Local<panda::JSValueRef> const&)";
       "OHOS::Ace::NG::ArkTSUtils::SetSymbolModifier(std::__ndk1::vector<OHOS::Ace::SelectParam, std::__ndk1::allocator<OHOS::Ace::SelectParam> >&, unsigned long, panda::Local<panda::JSValueRef> const&)";
-      "OHOS::Ace::NG::ArkTSUtils::SetTextBackgroundStyle(std::__ndk1::shared_ptr<OHOS::Ace::TextBackgroundStyle>, OHOS::Ace::Color, OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject>&, float const*, int const*)";
+      "OHOS::Ace::NG::ArkTSUtils::SetTextBackgroundStyle(std::__ndk1::shared_ptr<OHOS::Ace::TextBackgroundStyle>, OHOS::Ace::Color, OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject>&, float const*, int const*, OHOS::Ace::Color, OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject>&, OHOS::Ace::CalcDimension, OHOS::Ace::RefPtr<OHOS::Ace::ResourceObject>&)";
       "OHOS::Ace::NG::ArkTSUtils::SetTextStyleApply(panda::ecmascript::EcmaVM*, std::__ndk1::function<void (OHOS::Ace::WeakPtr<OHOS::Ace::NG::FrameNode>)>&, panda::Local<panda::JSValueRef>)";
       "OHOS::Ace::NG::ArkTSUtils::SetToggleBorderRadius(panda::JsiRuntimeCallInfo*)";
       "OHOS::Ace::NG::Converter::AssignArkValue(Ark_ItemDragInfo&, OHOS::Ace::ItemDragInfo const&)";
@@ -5235,6 +5270,7 @@
       "ArkUI_AccessibilityProvider::GetAccessibilityNodeCursorPosition(long, int, int&)";
       "OHOS::Ace::NG::RosenRenderContext::GetRSNode()";
       "OHOS::Rosen::RSSurfaceNode::SetFrameGravityNewVersionEnabled(bool)";
+      "OHOS::Rosen::RSSurfaceNode::SetAppRotationCorrection(OHOS::Rosen::ScreenRotation)";
       "bool OHOS::Rosen::RSNode::IsInstanceOf<OHOS::Rosen::RSSurfaceNode>() const";
       "OHOS::Rosen::RSSurfaceNode::GetFrameGravityNewVersionEnabled() const";
       "OHOS::Ace::NG::MeasureLayoutPolicySize(OHOS::Ace::NG::LayoutConstraintT<float> const&, OHOS::Ace::NG::LayoutWrapper*, OHOS::Ace::NG::SizeT<float>&)";
@@ -5248,6 +5284,7 @@
       *RenderSurfaceImpl*SetSurfaceRotation*;
       "OHOS::Ace::NG::PipelineContext::RegisterTransformHintChangeCallback(std::__ndk1::function<void (unsigned int)>&&)";
       "OHOS::Ace::NG::PipelineContext::RegisterListenerForTranslate(OHOS::Ace::WeakPtr<OHOS::Ace::NG::FrameNode>)";
+      "OHOS::Ace::UIContent::GetXComponentCompensationAngle()";
       "OHOS::Ace::UIDisplaySync::IsOnPipeline()";
       "OHOS::Ace::UIDisplaySync::AddToPipeline(OHOS::Ace::WeakPtr<OHOS::Ace::PipelineBase>&)";
       "OHOS::Ace::UIDisplaySync::DelFromPipelineOnContainer()";
@@ -5282,6 +5319,7 @@
       "OHOS::Ace::TouchEventInfo::GetHistory() const";
       "OHOS::Ace::TouchLocationInfo::GetSize() const";
       "OHOS::Ace::TouchLocationInfo::GetTouchDeviceId() const";
+      "OHOS::Ace::TouchLocationInfo::GetCurrentLocalLocation() const";
       "OHOS::Ace::UIDisplaySync::AddToPipelineOnContainer()";
       "OHOS::Ace::UIDisplaySync::RegisterOnFrameWithData(std::__ndk1::function<void (OHOS::Ace::RefPtr<OHOS::Ace::DisplaySyncData> const&)>&&)";
       "OHOS::Ace::UIDisplaySync::UnregisterOnFrame()";

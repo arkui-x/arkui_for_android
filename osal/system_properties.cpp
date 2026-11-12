@@ -582,4 +582,9 @@ bool SystemProperties::IsDeviceSystemMaterialSupported()
 {
     return true;
 }
+
+bool SystemProperties::IsSensorCorrectionEnabled()
+{
+    return false;
+}
 } // namespace OHOS::Ace
