@@ -18,6 +18,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Build;
 import android.provider.Settings;
@@ -734,13 +735,12 @@ public class SubWindowManager {
      */
     public int getStatusBarHeight() {
         int result = NO_HEIGHT;
-        if (mRootActivity != null) {
-            int resourceId = mRootActivity.getResources().getIdentifier("status_bar_height", "dimen", "android");
-            if (resourceId > NO_HEIGHT) {
-                result = mRootActivity.getResources().getDimensionPixelSize(resourceId);
-            }
+        Resources resources = mRootActivity != null ? mRootActivity.getResources() : Resources.getSystem();
+        int resourceId = resources.getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > NO_HEIGHT) {
+            result = resources.getDimensionPixelSize(resourceId);
         } else {
-            ALog.e(TAG, "The mRootActivity is null, getStatusBarHeight failed.");
+            ALog.e(TAG, "getStatusBarHeight: status_bar_height resource not found.");
         }
         return result;
     }
