@@ -459,6 +459,7 @@ void SubwindowAndroid::HideMenuNG(bool showPreviewAnimation, bool startDrag)
         return;
     }
     isShowed_ = false;
+    window_->SetClippingDisabled(false);
     auto aceContainer = Platform::AceContainerSG::GetContainer(childContainerId_);
     CHECK_NULL_VOID(aceContainer);
     auto context = DynamicCast<NG::PipelineContext>(aceContainer->GetPipelineContext());
@@ -480,6 +481,7 @@ void SubwindowAndroid::HideMenuNG(const RefPtr<NG::FrameNode>& menu, int32_t tar
         return;
     }
     isShowed_ = false;
+    window_->SetClippingDisabled(false);
     LOGI("Subwindow hide menu for target id %{public}d", targetId);
     auto aceContainer = Platform::AceContainerSG::GetContainer(childContainerId_);
     CHECK_NULL_VOID(aceContainer);
