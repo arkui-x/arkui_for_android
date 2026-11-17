@@ -458,7 +458,7 @@ public class SubWindow {
      * @param enabled true = disable clipping (popup/menu), false = default behavior
      */
     public boolean setClippingDisabled(boolean enabled) {
-        clippingDisabled = enabled;
+        subWindowView.setClippingEnabled(!enabled);
         return true;
     }
 
