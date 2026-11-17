@@ -279,7 +279,6 @@ public class SubWindow {
         subWindowView.setHeight(windowParam.height);
         subWindowView.setElevation(0);
         subWindowView.setContentView(contentView);
-        subWindowView.setClippingEnabled(!clippingDisabled);
 
         int screenX = windowParam.x + mainWindowX;
         int screenY = windowParam.y + mainWindowY;
@@ -489,7 +488,6 @@ public class SubWindow {
     private boolean isFocusable = true;
     private Rect[] hotAreas;
     private boolean isFullScreen = false;
-    private boolean clippingDisabled = false;
     private View mainView;
     private int mainWindowX;
     private int mainWindowY;
