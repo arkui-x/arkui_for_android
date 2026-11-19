@@ -1465,15 +1465,15 @@ WMError Window::SetOnTop(bool status)
     }
 }
 
-WMError Window::SetClippingDisabled(bool enabled)
+WMError Window::SetSubWindowClippingEnabled(bool enabled)
 {
-    LOGI("Window::SetClippingDisabled called. enabled=%{public}d", enabled);
-    bool result = SubWindowManagerJni::SetClippingDisabled(GetWindowName(), enabled);
+    LOGI("Window::SetSubWindowClippingEnabled called. enabled=%{public}d", enabled);
+    bool result = SubWindowManagerJni::SetSubWindowClippingEnabled(GetWindowName(), enabled);
     if (result) {
-        LOGI("Window::SetClippingDisabled: success");
+        LOGI("Window::SetSubWindowClippingEnabled: success");
         return WMError::WM_OK;
     } else {
-        LOGI("Window::SetClippingDisabled: failed");
+        LOGI("Window::SetSubWindowClippingEnabled: failed");
         return WMError::WM_ERROR_INVALID_WINDOW;
     }
 }
