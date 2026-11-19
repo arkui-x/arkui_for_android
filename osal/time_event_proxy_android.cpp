@@ -15,8 +15,6 @@
 #include "core/event/time/time_event_proxy.h"
 
 namespace OHOS::Ace {
-std::unique_ptr<TimeEventProxy> TimeEventProxy::instance_;
-std::mutex TimeEventProxy::mutex_;
 
 TimeEventProxy* TimeEventProxy::GetInstance()
 {

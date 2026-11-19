@@ -1677,9 +1677,14 @@
       "OHOS::Rosen::DisplayManagerAgent::UnregisterDisplayListener()";
       "OHOS::Rosen::DisplayManagerAgent::RegisterFoldStatusListener()";
       "OHOS::Rosen::DisplayManagerAgent::UnRegisterFoldStatusListener()";
+      "OHOS::Rosen::RsVulkanContext::GetForEffectKit()";
       "OHOS::Rosen::RsVulkanContext::GetSingleton(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Rosen::RsVulkanContext::CreateDrawingContext()";
+      "OHOS::Rosen::RsVulkanContext::CreateDrawingGPUContext(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Rosen::RsVulkanContext::ReleaseDrawingContextForThread(int)";
+      "OHOS::Rosen::RsVulkanContext::ReleaseContextForEffectKit(std::__ndk1::unique_ptr<OHOS::Rosen::RsVulkanContext, std::__ndk1::default_delete<OHOS::Rosen::RsVulkanContext> >&)";
+      "OHOS::Rosen::RsVulkanContext::~RsVulkanContext()";
+      "OHOS::Rosen::RsVulkanInterface::IsValid() const";
       "OHOS::AbilityRuntime::Platform::ApplicationContext::GetInstance()";
       "OHOS::AbilityRuntime::Platform::ApplicationContext::SetLanguage(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::AbilityRuntime::GetNativePointerFromCallbackInfo(napi_env__*, napi_callback_info__*, char const*)";
@@ -2860,7 +2865,7 @@
       "OHOS::Rosen::Drawing::MemoryStream::MemoryStream(void const*, unsigned long, bool)";
       "OHOS::Rosen::Drawing::Typeface::MakeFromStream(std::__ndk1::unique_ptr<OHOS::Rosen::Drawing::MemoryStream, std::__ndk1::default_delete<OHOS::Rosen::Drawing::MemoryStream> >, int)";
       "OHOS::Rosen::Drawing::MemoryStream::MemoryStream(void const*, unsigned int, bool)";
-      "OHOS::Ace::NG::RosenEffectConverter::ConvertToFrostedGlassFilter(OHOS::Ace::FrostedGlassParam const&, float)";
+      "OHOS::Ace::NG::RosenEffectConverter::ConvertToFrostedGlassFilter(OHOS::Ace::FrostedGlassParam const&, float, OHOS::Ace::ExtraGlassParam const*)";
       "OHOS::Ace::NG::NodeModifier::GetBubbleInnerModifier()";
       "OHOS::Ace::NG::NodeModifier::GetCheckboxCustomModifier()";
       "OHOS::Ace::NG::ToggleButtonModelNG::SetSelectedColor(OHOS::Ace::Color const&)";
@@ -3070,6 +3075,7 @@
       "OHOS::Ace::NG::ScrollablePattern::RecordScrollEvent(OHOS::Ace::Recorder::EventType)";
       "OHOS::Ace::NG::ScrollablePattern::UpdateScrollBarRegion(float, float, OHOS::Ace::Size, OHOS::Ace::Offset)";
       "OHOS::Ace::NG::ScrollablePattern::UpdateCapiScrollEventSource(bool)";
+      "OHOS::Ace::NG::ScrollablePattern::UpdateAnimateOverScroll(int, bool, bool)";
       "OHOS::Ace::NG::ScrollablePattern::HandleOnDragStatusCallback(OHOS::Ace::NG::DragEventType const&, OHOS::Ace::RefPtr<OHOS::Ace::NotifyDragEvent> const&)";
       "OHOS::Ace::NG::ScrollablePattern::IsScrollableSpringEffect() const";
       "OHOS::Ace::NG::ScrollablePattern::IsMouseDragScrollDefaultEnabled() const";
@@ -3252,6 +3258,10 @@
       "OHOS::Ace::NG::ScopedViewStackProcessor::ScopedViewStackProcessor(int)";
       "OHOS::Ace::NG::ScopedViewStackProcessor::~ScopedViewStackProcessor()";
       "panda::StringRef::ToString(panda::ecmascript::EcmaVM const*)";
+      "panda::MapRef::GetValue(panda::ecmascript::EcmaVM const*, int)";
+      "panda::MapRef::GetSize(panda::ecmascript::EcmaVM const*)";
+      "panda::MapRef::GetKey(panda::ecmascript::EcmaVM const*, int)";
+      "panda::JSValueRef::IsMap(panda::ecmascript::EcmaVM const*)";
       "OHOS::Ace::UiSessionManager::GetInstance()";
       "OHOS::Ace::UiMaterial::SetImmersiveOptions(OHOS::Ace::ImmersiveOptions const&)";
       "OHOS::Ace::UiMaterial::GetImmersiveOptions() const";
@@ -4488,6 +4498,7 @@
       "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuShowCopyAll(OHOS::Ace::NG::SelectMenuInfo&, bool, bool)";
       "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuShowAutoFill(OHOS::Ace::NG::SelectMenuInfo&, bool)";
       "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuShowTranslate(OHOS::Ace::NG::SelectMenuInfo&, bool, bool)";
+      "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuShowTranslateInput(OHOS::Ace::NG::SelectMenuInfo&, bool, bool, bool)";
       "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuShowSearch(OHOS::Ace::NG::SelectMenuInfo&, bool, bool)";
       "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuShowShare(OHOS::Ace::NG::SelectMenuInfo&, bool)";
       "OHOS::Ace::NG::BaseTextSelectOverlay::FillMenuShowAIWrite(OHOS::Ace::NG::SelectMenuInfo&, bool)";
@@ -5190,8 +5201,11 @@
       "OHOS::Ace::NG::ScrollablePattern::MultiSelectable() const";
       "OHOS::Ace::NG::ScrollablePattern::SetVelocityScale(double)";
       "OHOS::Ace::NG::ScrollablePattern::SuggestOpIncGroup(bool)";
+      "OHOS::Ace::NG::ScrollableUtils::CalcDecodeWindowCount(int)";
+      "OHOS::Ace::NG::ScrollableUtils::IsLowMemoryDeviceRuntime()";
       "OHOS::Ace::NG::ScrollableUtils::RecycleItemsOutOfBoundary(OHOS::Ace::Axis, float, int, int, OHOS::Ace::NG::LayoutWrapper*)";
       "OHOS::Ace::NG::ScrollableUtils::ResolveEffectiveDefaultContentClip(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, OHOS::Ace::NG::ScrollablePaintProperty const*)";
+      "OHOS::Ace::NG::ScrollableUtils::UpdateCachedItemDecodeState(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, bool)";
       "OHOS::Ace::NG::ScrollBarProxy::StopScrollBarAnimator(bool) const";
       "OHOS::Ace::NG::SelectableContainerPattern::ApplyEditModeToVisibleItems()";
  	  "OHOS::Ace::NG::SelectableContainerPattern::ClearSelectedZone()";
