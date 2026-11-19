@@ -455,10 +455,11 @@ public class SubWindow {
      * Sets whether overlay clipping is disabled.
      * Pass true for popup/menu; keep false (default) for toast/bindSheet.
      *
-     * @param enabled true = disable clipping (popup/menu), false = default behavior
+     * @param enabled true to enable clipping (default), false to disable
+     * @return Setting successful or failed.
      */
-    public boolean setClippingDisabled(boolean enabled) {
-        subWindowView.setClippingEnabled(!enabled);
+    public boolean setSubWindowClippingEnabled(boolean enabled) {
+        subWindowView.setClippingEnabled(enabled);
         return true;
     }
 
