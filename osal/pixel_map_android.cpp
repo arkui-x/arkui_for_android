@@ -295,6 +295,11 @@ void PixelMapAndroid::SavePixelMapToFile(const std::string& dst) const {}
 
 void PixelMapAndroid::SetMemoryName(std::string pixelMapName) const {}
 
+bool PixelMapAndroid::ReadPixel(int32_t x, int32_t y, uint32_t& pixel) const
+{
+    return false;
+}
+
 Media::PixelFormat PixelMapAndroid::ConvertToMediaPixelFormat(Ace::PixelFormat pixelFormat)
 {
     switch (pixelFormat) {

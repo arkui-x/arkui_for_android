@@ -52,6 +52,7 @@ public:
     uint32_t WritePixels(const WritePixelsOptions& opts) override;
     uint32_t GetInnerColorGamut() const override;
     void SetMemoryName(std::string pixelMapName) const override;
+    bool ReadPixel(int32_t x, int32_t y, uint32_t& pixel) const override;
 private:
     std::shared_ptr<Media::PixelMap> pixmap_;
 };
