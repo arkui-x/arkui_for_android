@@ -327,6 +327,7 @@ public:
     bool IsFocused();
     WMError SetTouchHotAreas(const std::vector<Rect>& rects);
     WMError SetFullScreen(bool status);
+    WMError SetSubWindowClippingEnabled(bool enabled);
     WMError SetOnTop(bool status);
 
     /**
