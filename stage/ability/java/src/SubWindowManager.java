@@ -915,6 +915,22 @@ public class SubWindowManager {
     }
 
     /**
+     * Set whether the SubWindow's clipping
+     *
+     * @param name    the name
+     * @param enabled true to enable clipping (default), false to disable
+     * @return Setting successful or failed.
+     */
+    public boolean setSubWindowClippingEnabled(String name, boolean enabled) {
+        SubWindow subWindow = mSubWindowMap.get(name);
+        if (subWindow == null) {
+            ALog.e(TAG, "not found SubWindow: " + name);
+            return false;
+        }
+        return subWindow.setSubWindowClippingEnabled(enabled);
+    }
+
+    /**
      * set window on top.
      *
      * @param name   the name

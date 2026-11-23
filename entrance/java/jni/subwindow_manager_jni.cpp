@@ -119,6 +119,8 @@ void SubWindowManagerJni::SetupSubWindowManager(JNIEnv* env, jobject obj)
     subWindowManagerStruct_.setTouchHotAreaMethod =
         env->GetMethodID(clazz, "setTouchHotArea", "(Ljava/lang/String;[Landroid/graphics/Rect;)Z");
     subWindowManagerStruct_.setFullScreenMethod = env->GetMethodID(clazz, "setFullScreen", "(Ljava/lang/String;Z)Z");
+    subWindowManagerStruct_.setSubWindowClippingEnabledMethod =
+        env->GetMethodID(clazz, "setSubWindowClippingEnabled", "(Ljava/lang/String;Z)Z");
     subWindowManagerStruct_.setOnTopMethod = env->GetMethodID(clazz, "setOnTop", "(Ljava/lang/String;Z)Z");
     subWindowManagerStruct_.registerSubWindowMethod =
         env->GetMethodID(clazz, "registerSubWindow", "(Ljava/lang/String;J)Z");
@@ -774,6 +776,28 @@ bool SubWindowManagerJni::SetOnTop(const std::string& name, bool status)
         return true;
     } else {
         LOGI("SubWindowManagerJni::setOnTop: failed");
+        return false;
+    }
+}
+
+bool SubWindowManagerJni::SetSubWindowClippingEnabled(const std::string& name, bool enabled)
+{
+    JNIEnv* env = JniEnvironment::GetInstance().GetJniEnv().get();
+    if (env == nullptr) {
+        LOGE("SubWindowManagerJni::SetSubWindowClippingEnabled: env is NULL");
+        return false;
+    }
+
+    jstring windowName = env->NewStringUTF(name.c_str());
+    jboolean ret = env->CallBooleanMethod(
+        subWindowManagerStruct_.object, subWindowManagerStruct_.setSubWindowClippingEnabledMethod, windowName,
+        enabled);
+    env->DeleteLocalRef(windowName);
+    if (ret == JNI_TRUE) {
+        LOGI("SubWindowManagerJni::setSubWindowClippingEnabled: success");
+        return true;
+    } else {
+        LOGI("SubWindowManagerJni::setSubWindowClippingEnabled: failed");
         return false;
     }
 }

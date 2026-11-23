@@ -1465,4 +1465,17 @@ WMError Window::SetOnTop(bool status)
     }
 }
 
+WMError Window::SetSubWindowClippingEnabled(bool enabled)
+{
+    LOGI("Window::SetSubWindowClippingEnabled called. enabled=%{public}d", enabled);
+    bool result = SubWindowManagerJni::SetSubWindowClippingEnabled(GetWindowName(), enabled);
+    if (result) {
+        LOGI("Window::SetSubWindowClippingEnabled: success");
+        return WMError::WM_OK;
+    } else {
+        LOGI("Window::SetSubWindowClippingEnabled: failed");
+        return WMError::WM_ERROR_INVALID_WINDOW;
+    }
+}
+
 } // namespace OHOS::Rosen
