@@ -1353,8 +1353,8 @@ public class AceWeb extends AceWebBase {
         Activity activity = (Activity) webView.getContext();
         FrameLayout.LayoutParams params;
         if (height != 0 && width != 0) {
-            params = new FrameLayout.LayoutParams((int) width, (int) height);
-            params.setMargins((int) left, (int) top, 0, 0);
+            params = new FrameLayout.LayoutParams(Math.round(width), Math.round(height));
+            params.setMargins(Math.round(left), Math.round(top), 0, 0);
         } else {
             params = new FrameLayout.LayoutParams(DEFAULT_LAYOUT_SIZE, DEFAULT_LAYOUT_SIZE);
         }
