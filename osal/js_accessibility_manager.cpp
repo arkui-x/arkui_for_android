@@ -1460,7 +1460,7 @@ void JsAccessibilityManager::UpdateCacheInfoNG4FrameNode(std::list<Accessibility
             nodeInfo.RemoveChild(child);
         }
         nodeInfo.AddChild(virtualNode->GetAccessibilityId());
-        auto uiParentNode = AceType::DynamicCast<NG::UINode>(frameNodeParent);
+        RefPtr<NG::UINode> uiParentNode = frameNodeParent;
         if (!uiVirtualNode->GetChildren(true).empty()) {
             UpdateVirtualNodeInfo(infos, virtualInfo, uiVirtualNode, cacheParam.commonProperty, cacheParam.ngPipeline);
         }

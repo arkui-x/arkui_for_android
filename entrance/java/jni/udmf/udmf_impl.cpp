@@ -176,7 +176,7 @@ napi_value UdmfClientImpl::TransformSummary(const DragSummaryInfo& summaryInfo)
 
 RefPtr<UnifiedData> UdmfClientImpl::CreateUnifiedData()
 {
-    return AceType::DynamicCast<UnifiedData>(AceType::MakeRefPtr<UnifiedDataImpl>());
+    return AceType::MakeRefPtr<UnifiedDataImpl>();
 }
 
 int32_t UdmfClientImpl::SetData(const RefPtr<UnifiedData>& unifiedData, std::string& key)
