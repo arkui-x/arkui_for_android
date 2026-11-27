@@ -1575,6 +1575,7 @@
       "OHOS::Ace::NG::FocusHub::SetEnabled(bool)";
       "OHOS::Ace::NG::FocusHub::RequestFocusImmediately(OHOS::Ace::FocusReason)";
       "OHOS::Ace::NG::FocusHub::SetPaintColor(OHOS::Ace::Color const&)";
+      "OHOS::Ace::NG::FocusHub::SetPaintWidth(OHOS::Ace::Dimension const&)";
       "OHOS::Ace::NG::FocusHub::PaintFocusState(bool)";
       "OHOS::Ace::NG::FocusHub::SetFocusType(OHOS::Ace::NG::FocusType)";
       "OHOS::Ace::NG::FocusHub::IsFocusable()";
@@ -1760,6 +1761,7 @@
       "OHOS::Ace::NG::PipelineContext::GetFocusManager() const";
       "OHOS::Ace::NG::PipelineContext::GetOverlayManager()";
       "OHOS::Ace::NG::PipelineContext::AddWindowSizeChangeCallback(int)";
+      "OHOS::Ace::NG::PipelineContext::AddWindowVisibilityChangedCallback(int, std::__ndk1::function<void (bool)> const&)";
       "OHOS::Ace::NG::PipelineContext::SetCallBackNode(OHOS::Ace::WeakPtr<OHOS::Ace::NG::FrameNode> const&)";
       "OHOS::Ace::NG::PipelineContext::AddVisibleAreaChangeNode(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, std::__ndk1::vector<double, std::__ndk1::allocator<double> > const&, std::__ndk1::function<void (bool, double)> const&, bool, bool)";
       "OHOS::Ace::NG::PipelineContext::AddBuildFinishCallBack(std::__ndk1::function<void ()>&&)";
@@ -1784,6 +1786,7 @@
       "OHOS::Ace::NG::PipelineContext::RemoveOnAreaChangeNode(int)";
       "OHOS::Ace::NG::PipelineContext::RemoveWindowSizeChangeCallback(int)";
       "OHOS::Ace::NG::PipelineContext::RemoveWindowStateChangedCallback(int)";
+      "OHOS::Ace::NG::PipelineContext::RemoveWindowVisibilityChangedCallback(int)";
       "OHOS::Ace::NG::PipelineContext::GetCustomTitleHeight()";
       "OHOS::Ace::NG::PipelineContext::GetContainerModalTitleHeight()";
       "OHOS::Ace::NG::PipelineContext::GetContainerModalButtonsRect(OHOS::Ace::NG::RectT<float>&, OHOS::Ace::NG::RectT<float>&)";
@@ -3281,6 +3284,7 @@
       "OHOS::Ace::MaterialUtils::GetImmersiveShadow(float)";
       "OHOS::Ace::MaterialUtils::GetTypeFromMaterial(OHOS::Ace::UiMaterial const*)";
       "OHOS::Ace::MaterialUtils::GetConfiguredMaterialState()";
+      "OHOS::Ace::MaterialUtils::GetColorByMode(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&, OHOS::Ace::ColorMode, unsigned int)";
       "OHOS::Ace::MaterialUtils::GetNodeColorMode(OHOS::Ace::RefPtr<OHOS::Ace::NG::FrameNode> const&)";
       SendArkUISyncEvent;
       "OHOS::Ace::NG::PaintProperty::GetHost() const";
@@ -3432,6 +3436,7 @@
       "OHOS::Ace::NG::ImageModelNG::SetSupportSvg2(OHOS::Ace::NG::FrameNode*, bool)";
       "OHOS::Ace::NG::ImageModelNG::SetResizableSlice(OHOS::Ace::NG::FrameNode*, OHOS::Ace::ImageResizableSlice&)";
       "OHOS::Ace::NG::ImageModelNG::SetResizableLattice(OHOS::Ace::NG::FrameNode*, OHOS::Ace::RefPtr<OHOS::Ace::DrawingLattice> const&)";
+      "OHOS::Ace::NG::ImageModelNG::SetBorderRadius(OHOS::Ace::NG::FrameNode*, OHOS::Ace::NG::BorderRadiusPropertyT<OHOS::Ace::Dimension> const&)";
       "OHOS::Ace::NG::ImageModelNG::ResetSupportSvg2(OHOS::Ace::NG::FrameNode*)";
       "OHOS::Ace::NG::ImageModelNG::ResetResizableSlice(OHOS::Ace::NG::FrameNode*)";
       "OHOS::Ace::NG::ImageModelNG::ResetResizableLattice(OHOS::Ace::NG::FrameNode*)";
@@ -3502,6 +3507,15 @@
       "OHOS::Ace::NG::StackPattern::OnDirtyLayoutWrapperSwap(OHOS::Ace::RefPtr<OHOS::Ace::NG::LayoutWrapper> const&, OHOS::Ace::NG::DirtySwapConfig const&)";
       "OHOS::Ace::NG::StackPattern::DumpInfo()";
       "OHOS::Ace::NG::StackPattern::GetOrCreateVerticalOverflowHandler(OHOS::Ace::WeakPtr<OHOS::Ace::NG::FrameNode> const&)";
+      "OHOS::Ace::NG::StickyHeaderPattern::BeginEdgeUpdate(bool)";
+      "OHOS::Ace::NG::StickyHeaderPattern::DetachStickyEdges(OHOS::Ace::NG::FrameNode*)";
+      "OHOS::Ace::NG::StickyHeaderPattern::EdgeState::EdgeState()";
+      "OHOS::Ace::NG::StickyHeaderPattern::IsValidEdgeContent(bool, OHOS::Ace::RefPtr<OHOS::Ace::NG::UINode> const&) const";
+      "OHOS::Ace::NG::StickyHeaderPattern::NotifyStickyHeaderChange()";
+      "OHOS::Ace::NG::StickyHeaderPattern::PublishNextStickyHeaderGap(std::__ndk1::optional<float> const&)";
+      "OHOS::Ace::NG::StickyHeaderPattern::SetSticky(OHOS::Ace::NG::StickyStyle)";
+      "OHOS::Ace::NG::StickyHeaderPattern::SetEdgeGeometry(OHOS::Ace::NG::OffsetT<float> const&, float, std::__ndk1::optional<float>)";
+      "OHOS::Ace::NG::StickyHeaderPattern::UpdateStickyEdgePositions(float, float)";
       "OHOS::Ace::Alignment::GetAlignmentStr(OHOS::Ace::TextDirection) const";
       "OHOS::Ace::Alignment::GetAlignment(OHOS::Ace::TextDirection, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&)";
       "OHOS::Ace::NG::LayoutProperty::GenIgnoreOpts() const";
@@ -4197,6 +4211,7 @@
       "OHOS::Ace::DragEvent::GetResult()";
       "OHOS::Ace::DragEvent::GetPressedKeyCodes() const";
       "OHOS::Ace::DataDetectorAdapter::IsAskCeliaSupported()";
+      "non-virtual thunk to OHOS::Ace::NG::LazyLayoutPattern::PublishNextStickyHeaderGap(std::__ndk1::optional<float> const&)";
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::ApplyPageTranslateResult(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, long)";
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::ApplyPageTranslateResult(std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char> > const&, long long)";
       "non-virtual thunk to OHOS::Ace::NG::TextPattern::BetweenSelectedPosition(OHOS::Ace::Offset const&)";
@@ -4835,6 +4850,7 @@
       "OHOS::Ace::NG::UINode::GetPath()";
       "OHOS::Ace::NG::PipelineContext::AddNodesToNotifyMemoryLevel(int)";
       "OHOS::Ace::NG::PipelineContext::FlushDirtyNodeUpdate()";
+      "OHOS::Ace::NG::PipelineContext::IsImmersiveStrategySet(OHOS::Ace::ImmersiveStrategy) const";
       "OHOS::Ace::NG::UINode::DetachFromMainTreeByPreMakeFlag()";
       "OHOS::Ace::NG::UINode::DetachFromMainTree(bool, bool)";
       "OHOS::Ace::NG::GestureEventHub::DumpVelocityInfoFroPanEvent(int)";
