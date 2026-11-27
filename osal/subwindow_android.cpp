@@ -570,7 +570,7 @@ RefPtr<NG::FrameNode> SubwindowAndroid::ShowDialogNG(
         CHECK_NULL_RETURN(parentcontext, nullptr);
         auto parentOverlay = parentcontext->GetOverlayManager();
         CHECK_NULL_RETURN(parentOverlay, nullptr);
-        parentOverlay->SetSubWindowId(SubwindowManager::GetInstance()->GetDialogSubwindowInstanceId(GetSubwindowId()));
+        parentOverlay->SetSubWindowId(childContainerId_);
     }
     ShowWindow();
     window_->SetFullScreen(true);
@@ -613,7 +613,7 @@ void SubwindowAndroid::OpenCustomDialogNG(const DialogProperties& dialogProps, s
         CHECK_NULL_VOID(parentcontext);
         auto parentOverlay = parentcontext->GetOverlayManager();
         CHECK_NULL_VOID(parentOverlay);
-        parentOverlay->SetSubWindowId(SubwindowManager::GetInstance()->GetDialogSubwindowInstanceId(GetSubwindowId()));
+        parentOverlay->SetSubWindowId(childContainerId_);
     }
     ShowWindow();
     window_->SetFullScreen(true);
